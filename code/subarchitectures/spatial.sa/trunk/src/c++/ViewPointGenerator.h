@@ -61,7 +61,7 @@ public:
   map<int, vector<int> > m_viewconesIntersections;
 
   vector<pair<unsigned int, double> > getOrdered2DCandidateViewCones(vector<
-      NavData::FNodePtr> &nodes);
+      NavData::FNodePtr> &nodes,vector<SensingAction> &excluded_cones);
 
   bool isPointSameSide(XVector3D p1, XVector3D p2, XVector3D a, XVector3D b);
   void findBoundingRectangle(XVector3D a, XVector3D b, XVector3D c,
@@ -85,7 +85,7 @@ public:
       NavData::FNodePtr> &nodes);
 
   std::vector<Cure::Pose3D> sample2DGridFromNodes(
-      vector<NavData::FNodePtr> &nodes);
+      vector<NavData::FNodePtr> &nodes,vector<SensingAction> &excluded_cones);
 
   AVS_ContinualPlanner * m_component;
   std::vector<Cure::Pose3D> m_samples2D;

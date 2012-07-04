@@ -85,7 +85,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
       {
         SCOPED_TIME_LOG;
         vector<pair<unsigned int, double> > ordered2DVClist =
-            getOrdered2DCandidateViewCones(nodes);
+            getOrdered2DCandidateViewCones(nodes, result3DVCList);
 
         if (ordered2DVClist.size() == 0) {
           return result3DVCList;
@@ -94,8 +94,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
         // We have the VC candidate list ordered according to their 2D pdf sums
         // now for the top X candidate get a bunch of tilt angles and calculate the 3D cone sums
         double xW, yW;
-        size_t maxiterations = 1 < ordered2DVClist.size() ? 1
-            : ordered2DVClist.size();
+        size_t maxiterations = 1;
         for (size_t j = 0; j < maxiterations; j++) {
           //	for (unsigned int j = 0; j < ordered2DVClist.size() * m_best3DConeRatio; j++) 
           lgm->index2WorldCoords(m_samples2D[ordered2DVClist[j].first].getX(),
@@ -136,6 +135,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
           }
         }
       }
+      GDProbSum conesum;
       {
         SCOPED_TIME_LOG;
         GDProbSum sumcells;
@@ -154,17 +154,12 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
               "getBest3DViewCones: Before whole map PDF sums to: %f",
               initialMapPDFSum);
 
-          // Got the best cone for this map, now change the map and get a new sum of remaining 3D cones
-          bloxelmap->coneModifier(unordered3DVCList[bestindex].pos[0],
+          bloxelmap->coneQuery(unordered3DVCList[bestindex].pos[0],
               unordered3DVCList[bestindex].pos[1],
               unordered3DVCList[bestindex].pos[2],
               unordered3DVCList[bestindex].pan,
               unordered3DVCList[bestindex].tilt, m_horizangle, m_vertangle,
-              m_conedepth, 5, 5, isobstacle, scalefunctor, scalefunctor,
-              m_minDistance);
-          if (m_component->m_usePeekabot) {
-            m_component->displayPDF(*bloxelmap);
-          }
+              m_conedepth, 5, 5, isobstacle, conesum, conesum, m_minDistance);
         }
         {
           SCOPED_TIME_LOG;
@@ -178,7 +173,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 
           m_component->log("Best index %d", bestindex);
           //lastConePDFSum = unordered3DVCList[bestindex].totalprob;
-          lastConePDFSum = initialMapPDFSum - postMapPDFSum;
+          lastConePDFSum = conesum.getResult();
           if (lastConePDFSum < m_minRelativeConeProb * initialMapPDFSum) {
             if (test_num + 1 == max_test_num && result3DVCList.empty()) {
               m_component->getLogger()->warn(
@@ -203,6 +198,18 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
               continue;
             }
           }
+          // Got the best cone for this map, now change the map and get a new sum of remaining 3D cones
+          bloxelmap->coneModifier(unordered3DVCList[bestindex].pos[0],
+              unordered3DVCList[bestindex].pos[1],
+              unordered3DVCList[bestindex].pos[2],
+              unordered3DVCList[bestindex].pan,
+              unordered3DVCList[bestindex].tilt, m_horizangle, m_vertangle,
+              m_conedepth, 5, 5, isobstacle, scalefunctor, scalefunctor,
+              m_minDistance);
+          if (m_component->m_usePeekabot) {
+            m_component->displayPDF(*bloxelmap);
+          }
+
           m_lastMapPDFSum = postMapPDFSum;
 
           totalprobsum += lastConePDFSum;
@@ -241,10 +248,10 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(
           sumcells, m_minDistance);
       //	m_component->log("PDFSum of cone: %f.", sumcells.getResult());
 
-      cout << "cone #" << i << " " << viewpoint.pos[0] << " "
-          << viewpoint.pos[1] << " " << viewpoint.pos[2] << " "
-          << viewpoint.pan << " " << viewpoint.tilt << " pdfsum of cone: "
-          << sumcells.getResult() << endl;
+      //cout << "cone #" << i << " " << viewpoint.pos[0] << " "
+      //    << viewpoint.pos[1] << " " << viewpoint.pos[2] << " "
+      //    << viewpoint.pan << " " << viewpoint.tilt << " pdfsum of cone: "
+      //    << sumcells.getResult() << endl;
 
       //    /* Show view cone on a temporary map, display the map and wipe it*/
       samplepoints[i].totalprob = sumcells.getResult();
@@ -262,7 +269,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(
 }
 
 vector<pair<unsigned int, double> > ViewPointGenerator::getOrdered2DCandidateViewCones(
-    vector<NavData::FNodePtr> &nodes) {
+    vector<NavData::FNodePtr> &nodes, vector<SensingAction> &excluded_cones) {
 
   m_component->log("ViewPointGenerator::getOrdered3DCandidateViewCones");
   std::vector<std::vector<pair<int, int> > > VCones;
@@ -270,7 +277,7 @@ vector<pair<unsigned int, double> > ViewPointGenerator::getOrdered2DCandidateVie
   if (m_component->m_sampleRandomPoints)
     m_samples2D = sample2DGrid();
   else
-    m_samples2D = sample2DGridFromNodes(nodes);
+    m_samples2D = sample2DGridFromNodes(nodes, excluded_cones);
 
   vector<pair<unsigned int, double> > orderedVClist, tmp;
   if (m_samples2D.size() == 0) {
@@ -309,6 +316,7 @@ vector<pair<unsigned int, double> > ViewPointGenerator::getOrdered2DCandidateVie
   vector<unsigned int>::iterator it;
   for (unsigned int i = 0; i < VCones.size(); i++) {
     sum = 0;
+
     for (unsigned int j = 0; j < VCones[i].size(); j++) {
       x = VCones[i][j].first;
       y = VCones[i][j].second;
@@ -317,8 +325,8 @@ vector<pair<unsigned int, double> > ViewPointGenerator::getOrdered2DCandidateVie
         sum += (*lgmpdf)(x, y);
 
       }
-
     }
+
     if (orderedVClist.size() == 0) {
       orderedVClist.push_back(make_pair(i, sum));
     } else {
@@ -428,7 +436,7 @@ double ViewPointGenerator::getPathLength(Cure::Pose3D start,
 
 }
 std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGridFromNodes(vector<
-    NavData::FNodePtr> &nodes) {
+    NavData::FNodePtr> &nodes, vector<SensingAction> &excluded_cones) {
   m_component->log("ViewPointGenerator::sample2DGridFromNodes2DGrid");
   srand( time(NULL));
   std::vector<Cure::Pose3D> samples;
@@ -437,7 +445,7 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGridFromNodes(vector<
 
   for (size_t i = 0; i < nodes.size(); i++) {
     double theta = (rand() % 360) * M_PI / 180;
-    for (int j = 0; j < 10; j++) {
+    for (double j = 0; j < 10; j++) {
       double angle = theta + j / 10 * 2 * M_PI;
       while (angle > M_PI)
         angle -= 2 * M_PI;
@@ -446,13 +454,36 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGridFromNodes(vector<
 
       double x = nodes[i]->x + dist * cos(angle);
       double y = nodes[i]->y + dist * sin(angle);
-      int cx, cy;
-      if (lgm->worldCoords2Index(x, y, cx, cy) == 0) {
-        Cure::Pose3D singlesample;
-        singlesample.setX(cx);
-        singlesample.setY(cy);
-        singlesample.setTheta(angle);
-        samples.push_back(singlesample);
+      bool excluded = false;
+
+      for (size_t q = 0; q < excluded_cones.size(); q++) {
+        double diff_angle = angle - excluded_cones[q].pan;
+        while (diff_angle > M_PI)
+          diff_angle -= 2 * M_PI;
+        while (diff_angle < -M_PI)
+          diff_angle += 2 * M_PI;
+
+        if (((x - excluded_cones[q].pos[0]) * (x - excluded_cones[q].pos[0])
+            + (y - excluded_cones[q].pos[1]) * (y - excluded_cones[q].pos[1])
+            < 0.001) && (diff_angle < 0.01)) {
+          excluded = true;
+          m_component->log("reject sample x %f y %f angle %f (nodes %d)", x, y, angle,
+              nodes.size());
+          break;
+        }
+      }
+      if (!excluded) {
+        int cx, cy;
+        m_component->log("sample x %f y %f angle %f (nodes %d)", x, y, angle,
+            nodes.size());
+        if (lgm->worldCoords2Index(x, y, cx, cy) == 0) {
+          m_component->log("take");
+          Cure::Pose3D singlesample;
+          singlesample.setX(cx);
+          singlesample.setY(cy);
+          singlesample.setTheta(angle);
+          samples.push_back(singlesample);
+        }
       }
     }
   }
