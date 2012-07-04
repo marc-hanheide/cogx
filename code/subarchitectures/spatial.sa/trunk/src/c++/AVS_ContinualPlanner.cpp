@@ -1006,7 +1006,7 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
   {
     double probabilityRemoved = 0.0;
     double finished = false;
-    while (!finished) {
+    while (!finished && grouped_cones.size() > 1) {
       finished = true;
 
       // Find the lowest probability cone group
@@ -2018,7 +2018,7 @@ void AVS_ContinualPlanner::configure(
   m_maxViewConeCount = 20;
   it = _config.find("--maxViewConeCount");
   if (it != _config.end()) {
-    m_samplesize = (atof(it->second.c_str()));
+    m_maxViewConeCount = (atoi(it->second.c_str()));
     log("Max view cone count: %d", m_maxViewConeCount);
   }
 

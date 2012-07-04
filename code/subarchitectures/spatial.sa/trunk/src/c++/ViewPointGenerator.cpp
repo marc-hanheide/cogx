@@ -67,6 +67,8 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
     angles.push_back(rad);
   }
 
+  const int max_test_num = 10;
+
   double totalprobsum = 0;
   double lastConePDFSum = 1;
   vector<SensingAction> result3DVCList;
@@ -74,7 +76,8 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
     SCOPED_TIME_LOG;
     int test_num = 0;
     while ((totalprobsum < m_bloxelmapPDFsum * m_pdfthreshold)
-        && (result3DVCList.size() < m_maxViewConeCount) && (test_num < 10)) {
+        && (result3DVCList.size() < m_maxViewConeCount) && (test_num
+        < max_test_num)) {
       SCOPED_TIME_LOG;
       vector<SensingAction> unordered3DVCList, ordered3DVCList, tmp;
       SensingAction sample;
@@ -177,17 +180,28 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
           //lastConePDFSum = unordered3DVCList[bestindex].totalprob;
           lastConePDFSum = initialMapPDFSum - postMapPDFSum;
           if (lastConePDFSum < m_minRelativeConeProb * initialMapPDFSum) {
-            m_component->log(
-                "Best cone's prob. sum. is less than %f\% of total, skip",
-                m_minRelativeConeProb * 100);
-            test_num++;
-            continue;
+            if (test_num + 1 == max_test_num && result3DVCList.empty()) {
+              m_component->getLogger()->warn(
+                  "Keeping low probability view cone as last resort!");
+            } else {
+              m_component->log(
+                  "Best cone's prob. sum. is less than %f\% of total, skip",
+                  m_minRelativeConeProb * 100);
+              test_num++;
+              continue;
+            }
           }
           if (lastConePDFSum < m_minConeProb) {
-            m_component->log("Best cone's prob. sum. is less than %f\%, skip",
-                m_minConeProb * 100);
-            test_num++;
-            continue;
+            if (test_num + 1 == max_test_num && result3DVCList.empty()) {
+              m_component->getLogger()->warn(
+                  "Keeping low probability view cone as last resort!");
+            } else {
+              m_component->log(
+                  "Best cone's prob. sum. is less than %f\%, skip",
+                  m_minConeProb * 100);
+              test_num++;
+              continue;
+            }
           }
           m_lastMapPDFSum = postMapPDFSum;
 
