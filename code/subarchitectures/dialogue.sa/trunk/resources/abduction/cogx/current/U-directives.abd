@@ -82,6 +82,24 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	int : string_content(Int, feature, 'objecttype') / p(1.0),
 	understand : topic(Speaker, Hearer, _EpSt, Int, SubjNom, SubjNom).
 
+% tell me what X is
+% @{tell1_1:communication}(tell ^ <Mood>imp ^ <Actor>(addressee1_1:entity ^ addressee) ^ <Patient>(what1_1:entity ^ what ^ <Scope-in>(be1_1:ascription ^ be ^ <Tense>pres ^ <Cop-Restr>(context1_1:entity ^ context ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific) ^ <Cop-Scope>(what1_1:entity) ^ <Subject>(context1_1:entity))) ^ <Subject>(addressee1_1:entity) ^ <Recipient>(i1_1:person ^ I ^ <Num>sg))
+
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	i : prop(Nom, tell),
+	i : sort(Nom, communication),
+	i : rel_Patient(Nom, PatNom),
+		i : prop(PatNom, what),
+		i : 'rel_Scope-in'(PatNom, BeNom),
+		i : 'rel_Cop-Restr'(BeNom, RestrNom),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'description-request') / p(1.0),
+	understand : topic(Speaker, Hearer, _EpSt, Int, RestrNom, RestrNom).
+
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 % Asking about feature values.
 
