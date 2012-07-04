@@ -918,7 +918,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 			for (EpistemicReferenceHypothesis hypo : added.getResult().hypos) {
 				addHypo(hypo);
 			}
-			adjustMaximum();
+//			adjustMaximum();
 		}
 
 		private void adjustMaximum() {
@@ -960,6 +960,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 
 		@Override
 		public ReferenceResolutionResultWrapper toResult() {
+                        adjustMaximum();
 			return result;
 		}
 
