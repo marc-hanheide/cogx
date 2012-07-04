@@ -187,6 +187,8 @@ public:
 
       void ChangeCurrentViewConeColor(double r, double g, double b);
 
+      bool getExistenceProbabilityFromConceptual(double &outPdfMass, const string &id);
+
       std::set<int> m_processedViewConeIDs;
 
       class AVSServer: public SpatialData::AVSInterface {
