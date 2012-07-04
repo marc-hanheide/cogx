@@ -51,6 +51,70 @@ cast::CASTComponentPtr newComponent() {
 }
 }
 
+bool
+AVS_ContinualPlanner::getExistenceProbabilityFromConceptual(double &outPdfMass, const string &id)
+{
+  //Query Conceptual to learn the initial pdf values
+  log("Querying for %s", id.c_str());
+  ConceptualData::ProbabilityDistributions conceptualProbdist =
+      m_queryHandlerServerInterfacePrx->query(id);
+  SpatialProbabilities::ProbabilityDistribution probdist =
+      conceptualProbdist[0];
+
+  if (probdist.massFunction.size() == 0) {
+    log("Got an empty distribution!");
+  }
+
+  //  for (size_t i = 0; i < probdist.massFunction.size(); i++) {
+  //    ostringstream ss;
+  //    for (size_t j = 0; j < probdist.massFunction[i].variableValues.size(); j++) {
+  //      SpatialProbabilities::StringRandomVariableValuePtr tmp =
+  //	SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(probdist.massFunction[i].variableValues[j]);
+  //      if (tmp != 0) {
+  //	ss << tmp->value << " ";
+  //      }
+  //    }
+  //    log ("ProbDist element %i: %f (%s)", i, 
+  //	probdist.massFunction[i].probability,
+  //	ss.str().c_str());
+  //  }
+
+  // Find the probability value that corresponds to existence of the object
+  bool queryError = false;
+  if (probdist.massFunction.size() != 2) {
+    error("Unexpected probability distribution cardinality %i!",
+        probdist.massFunction.size());
+    queryError = true;
+  } else if (probdist.massFunction[0].variableValues.size() != 1
+      || probdist.massFunction[1].variableValues.size() != 1) {
+    error("Unexpected number of variables!", probdist.massFunction.size());
+    queryError = true;
+  } else {
+    SpatialProbabilities::StringRandomVariableValuePtr tmp1 =
+        SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+            probdist.massFunction[0].variableValues[0]);
+    SpatialProbabilities::StringRandomVariableValuePtr tmp2 =
+        SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+            probdist.massFunction[1].variableValues[0]);
+
+    if (tmp1->value == "exists") {
+      outPdfMass = probdist.massFunction[0].probability;
+    } else if (tmp2->value == "exists") {
+      outPdfMass = probdist.massFunction[1].probability;
+    } else {
+      error("No \"exists\" value in query result!");
+      queryError = true;
+    }
+  }
+
+  if (queryError) {
+    return false;
+  }
+
+  log("Got probability for %s Conceptual %f", id.c_str(), outPdfMass);
+  return true;
+}
+
 AVS_ContinualPlanner::AVS_ContinualPlanner() :
   m_sampler(&m_relationEvaluator) {
   // TODO Auto-generated constructor stub
@@ -1439,61 +1503,10 @@ void AVS_ContinualPlanner::generateViewCones(
   m_currentCureObstMap = m_templateRoomGridMaps[newVPCommand->roomId];
 
   // now we have our room map let's fill it
-  //Query Conceptual to learn the initial pdf values
-  log("Querying for %s", id.c_str());
-  ConceptualData::ProbabilityDistributions conceptualProbdist =
-      m_queryHandlerServerInterfacePrx->query(id);
-  SpatialProbabilities::ProbabilityDistribution probdist =
-      conceptualProbdist[0];
 
-  if (probdist.massFunction.size() == 0) {
-    log("Got an empty distribution!");
-  }
-
-  //  for (size_t i = 0; i < probdist.massFunction.size(); i++) {
-  //    ostringstream ss;
-  //    for (size_t j = 0; j < probdist.massFunction[i].variableValues.size(); j++) {
-  //      SpatialProbabilities::StringRandomVariableValuePtr tmp =
-  //	SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(probdist.massFunction[i].variableValues[j]);
-  //      if (tmp != 0) {
-  //	ss << tmp->value << " ";
-  //      }
-  //    }
-  //    log ("ProbDist element %i: %f (%s)", i, 
-  //	probdist.massFunction[i].probability,
-  //	ss.str().c_str());
-  //  }
-
-  // Find the probability value that corresponds to existence of the object
-  bool queryError = false;
   double pdfmass;
-  if (probdist.massFunction.size() != 2) {
-    error("Unexpected probability distribution cardinality %i!",
-        probdist.massFunction.size());
-    queryError = true;
-  } else if (probdist.massFunction[0].variableValues.size() != 1
-      || probdist.massFunction[1].variableValues.size() != 1) {
-    error("Unexpected number of variablesi!", probdist.massFunction.size());
-    queryError = true;
-  } else {
-    SpatialProbabilities::StringRandomVariableValuePtr tmp1 =
-        SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
-            probdist.massFunction[0].variableValues[0]);
-    SpatialProbabilities::StringRandomVariableValuePtr tmp2 =
-        SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
-            probdist.massFunction[1].variableValues[0]);
-
-    if (tmp1->value == "exists") {
-      pdfmass = probdist.massFunction[0].probability;
-    } else if (tmp2->value == "exists") {
-      pdfmass = probdist.massFunction[1].probability;
-    } else {
-      error("No \"exists\" value in query result!");
-      queryError = true;
-    }
-  }
-
-  if (queryError) {
+  if (!getExistenceProbabilityFromConceptual(pdfmass, id)) 
+  {
     if (WMAddress != "") {
       newVPCommand->status = SpatialData::FAILED;
       wrn("Overwriting command to change status to: FAILED");
@@ -1502,8 +1515,6 @@ void AVS_ContinualPlanner::generateViewCones(
     }
     return;
   }
-
-  log("Got probability for %s Conceptual %f", id.c_str(), pdfmass);
 
   m_locationToInitialPdfmass[id] = pdfmass;
 
