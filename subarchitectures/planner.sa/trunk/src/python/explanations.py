@@ -560,7 +560,10 @@ def get_causal_relations(node):
         if isinstance(elem, pddl.effects.ConditionalEffect):
             return elem
 
-    with node.action.instantiate(node.full_args, parent=expl_domain): #FIXME: crashes here sometimes
+    if isinstance(node, plans.DummyNode):
+        return
+
+    with node.action.instantiate(node.full_args, parent=expl_domain):
         for ceff in pddl.visitors.visit(node.action.effect, get_ceffs, []):
             conds = ceff.condition.visit(pddl.visitors.collect_literals)
             effs = ceff.effect.visit(pddl.visitors.collect_literals)
@@ -730,7 +733,7 @@ def postprocess_explanations(expl_plan, exec_plan):
             return {'style' : 'invis', 'label' : ''}
         if data['svar'].modality == pddl.mapl.committed and data['val'] == pddl.FALSE:
             return {'style' : 'invis', 'label' : ''}
-        if data['svar'].function.name in ("phase", "enabled", "started"):
+        if data['svar'].function.name in ("phase", "enabled", "started", "done"):
             return {'style' : 'invis', 'label' : ''}
         if data['type'] == 'prevent_threat':
             return {'style' : 'invis', 'label' : ''}
