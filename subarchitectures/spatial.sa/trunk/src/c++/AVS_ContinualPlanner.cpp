@@ -1786,7 +1786,7 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
   //log("ViewConeUpdate: Whole map PDF sums to: %f", initialMapPDFSum);
   // then deal with those bloxels that belongs to this cone
 
-  GDProbScale scalefunctor(1 - m_sensingProb);
+  GDProbScale scalefunctor(1 - m_sensingProb); 
   map->coneModifier(viewcone.second.pos[0], viewcone.second.pos[1],
       viewcone.second.pos[2], viewcone.second.pan, viewcone.second.tilt,
       m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, scalefunctor,

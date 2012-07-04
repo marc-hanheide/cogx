@@ -80,7 +80,7 @@ public:
     ConeGroup() {
       isprocessed = false;
     }
-    ;
+    ; 
   };
 
   typedef std::map<int, ConeGroup> MapConeType;
