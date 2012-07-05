@@ -118,7 +118,7 @@ AVS_ContinualPlanner::getExistenceProbabilityFromConceptual(double &outPdfMass, 
 AVS_ContinualPlanner::AVS_ContinualPlanner() :
   m_sampler(&m_relationEvaluator) {
   // TODO Auto-generated constructor stub
-  m_sensingProb = 1.0;
+  m_sensingProb = 0.99;
   m_defaultBloxelCell.pdf = 0;
   m_defaultBloxelCell.occupancy = SpatialGridMap::UNKNOWN;
   m_gotPC = false;
@@ -1505,16 +1505,20 @@ void AVS_ContinualPlanner::generateViewCones(
   // now we have our room map let's fill it
 
   double pdfmass;
-  if (!getExistenceProbabilityFromConceptual(pdfmass, id)) 
-  {
-    if (WMAddress != "") {
-      newVPCommand->status = SpatialData::FAILED;
-      wrn("Overwriting command to change status to: FAILED");
-      overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand> (
-          WMAddress, newVPCommand);
-    }
-    return;
-  }
+
+  pdfmass = 1.0; // Normalise the probability mass in the room to 1.0
+
+//  //Get p(exists) for this room from Conceptual.SA
+//	if (!getExistenceProbabilityFromConceptual(pdfmass, id)) 
+//  {
+//    if (WMAddress != "") {
+//      newVPCommand->status = SpatialData::FAILED;
+//      wrn("Overwriting command to change status to: FAILED");
+//      overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand> (
+//          WMAddress, newVPCommand);
+//    }
+//    return;
+//  }
 
   m_locationToInitialPdfmass[id] = pdfmass;
 
@@ -1815,11 +1819,41 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
   result->supportObjectId = m_currentConeGroup->supportObjectId;
   result->roomId = m_currentConeGroup->roomId;
 
+
+	// Compute total cone probability sum before modification
+	double totalConeProbabilityBefore = 0.0;
+
+	for(std::map<int, ConeGroup>::iterator it = m_beliefConeGroups.begin();
+			it != m_beliefConeGroups.end(); it++) {
+		vector<ViewPointGenerator::SensingAction> &cones = it->second.viewcones;
+
+		for(size_t i = 0; i < cones.size(); i++) {
+
+		totalConeProbabilityBefore += 
+			cones[i].totalprob;
+		}
+	}
+	log ("totalConeProbabilityBefore = %f", totalConeProbabilityBefore);
+
+	// The Location we're searching (e.g. cornflakes ON table IN room1)
+  string currentLocation = m_currentConeGroup->bloxelMapId;
+
   double
       oldConeProbability =
           m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob;
   double lostProbability = oldConeProbability * m_sensingProb;
   double newConeProbability = oldConeProbability - lostProbability;
+	log ("oldConeProbability = %f", oldConeProbability);
+	log ("lostProbability = %f", lostProbability);
+	log ("newConeProbability = %f", newConeProbability);
+
+  // New total before renormalisation
+	double totalConeProbabilityAfter = totalConeProbabilityBefore - lostProbability;
+	log ("totalConeProbabilityAfter = %f", totalConeProbabilityAfter);
+	// Factor by which to renormalise
+  double normalisationBlowup = 
+		m_locationToInitialPdfmass[currentLocation] / totalConeProbabilityAfter;
+	log ("normalisationBlowup = %f", totalConeProbabilityAfter);
 
   // ASSUMPTION: m_locationToBeta has such a key since it's filled in generateViewCones first!
   if (isAllConeGroupsProcessed) {
@@ -1828,9 +1862,11 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
 
     result->beta = 0.99999;
   } else {
-    result->beta = m_locationToBeta[m_currentConeGroup->bloxelMapId]
-        + lostProbability
-            / m_locationToInitialPdfmass[m_currentConeGroup->bloxelMapId];
+		//The difference between beta and 1 should decrease by this much
+		double proportionLostNow = lostProbability / m_locationToInitialPdfmass[m_currentConeGroup->bloxelMapId];
+
+		result->beta = m_locationToBeta[m_currentConeGroup->bloxelMapId];
+    result->beta += (1-result->beta)*proportionLostNow;
   }
   m_locationToBeta[m_currentConeGroup->bloxelMapId] = result->beta;
 
@@ -1844,6 +1880,55 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
 
   log("Updating conegroup probability");
 
+	log("Sum probabilities check (before): %f",
+			m_beliefConeGroups[coneGroupID].getTotalProb());
+	log(
+			"current viewcone prob: %f",
+			m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob);
+
+	// First adjust the probability of the processed cone
+	m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob
+		= newConeProbability;
+
+  // Then adjust the probability of each cone 
+	for(std::map<int, ConeGroup>::iterator it = m_beliefConeGroups.begin();
+			it != m_beliefConeGroups.end(); it++) {
+		vector<ViewPointGenerator::SensingAction> &cones = it->second.viewcones;
+
+		for(size_t i = 0; i < cones.size(); i++) {
+			cones[i].totalprob *= normalisationBlowup;
+		}
+	}
+
+	// Then post the changes to each Belief on WM
+
+	for(std::map<int, ConeGroup>::iterator it = m_beliefConeGroups.begin();
+			it != m_beliefConeGroups.end(); it++) {
+		updateConeGroupBelief(it->first);
+	}
+  
+  // this means it's the first time we're reporting search result
+  if (m_locationToBetaWMAddress.count(m_currentConeGroup->bloxelMapId) == 0) {
+    log(
+        "this is the first time we're adding a ObjectSearchResult for this id: %s",
+        m_currentConeGroup->bloxelMapId.c_str());
+    string wmid = newDataID();
+    m_locationToBetaWMAddress[m_currentConeGroup->bloxelMapId] = wmid;
+    addToWorkingMemory(wmid, result);
+  } else {
+    try {
+      log("overwriting object search result at WMAdress %s",
+          m_locationToBetaWMAddress[m_currentConeGroup->bloxelMapId].c_str());
+      overwriteWorkingMemory(
+          m_locationToBetaWMAddress[m_currentConeGroup->bloxelMapId], result);
+    } catch (DoesNotExistOnWMException e) {
+      error("Error! ObjectSearchResult missing on WM!");
+    }
+  }
+}
+
+void AVS_ContinualPlanner::updateConeGroupBelief(int coneGroupID)
+{
   //get the belief id
   try {
     log("Getting relevant conegroup belief with %s",
@@ -1862,14 +1947,6 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
     log("Got conegroup beliefs probability %f ", floatformula->val);
     //		log("Will subtract %f from it:", differenceMapPDFSum* (1/ m_locationToConeGroupNormalization[m_currentConeGroup->bloxelMapId]));
 
-    log("Sum probabilities check (before): %f",
-        m_beliefConeGroups[coneGroupID].getTotalProb());
-    log(
-        "current viewcone prob: %f",
-        m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob);
-
-    m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob
-        = newConeProbability;
     //    m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob -= differenceMapPDFSum*(1/m_locationToConeGroupNormalization[m_currentConeGroup->bloxelMapId]);
 
     log(
@@ -1890,25 +1967,6 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
 
   } catch (DoesNotExistOnWMException e) {
     error("Error! ConeGroup belief missing on WM!");
-  }
-
-  // this means it's the first time we're reporting search result
-  if (m_locationToBetaWMAddress.count(m_currentConeGroup->bloxelMapId) == 0) {
-    log(
-        "this is the first time we're adding a ObjectSearchResult for this id: %s",
-        m_currentConeGroup->bloxelMapId.c_str());
-    string wmid = newDataID();
-    m_locationToBetaWMAddress[m_currentConeGroup->bloxelMapId] = wmid;
-    addToWorkingMemory(wmid, result);
-  } else {
-    try {
-      log("overwriting object search result at WMAdress %s",
-          m_locationToBetaWMAddress[m_currentConeGroup->bloxelMapId].c_str());
-      overwriteWorkingMemory(
-          m_locationToBetaWMAddress[m_currentConeGroup->bloxelMapId], result);
-    } catch (DoesNotExistOnWMException e) {
-      error("Error! ObjectSearchResult missing on WM!");
-    }
   }
 }
 
