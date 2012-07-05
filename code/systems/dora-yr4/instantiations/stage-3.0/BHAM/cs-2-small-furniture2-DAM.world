@@ -4,10 +4,12 @@ include "../common/box.inc"
 include "barrier.inc"
 include "desk.inc"
 include "long-desk.inc"
-include "big-desk.inc"
+#include "big-desk.inc"
 include "shelf-unit.inc"
-include "row-of-chairs.inc"
+#include "row-of-chairs.inc"
 include "chair.inc"
+include "fakebookcase.inc"
+include "filingcabinet.inc"
 
 window
 (
@@ -40,51 +42,65 @@ p3dx_with_urg_and_blobfinder (
  pose [24.310 9.045 0 0]
  )
 
+ fakebookcase
+ (
+ name "polystyrene1"
+ color "black"
+ pose [18.190 4.730 0 90.000]
+ )
+
+ filingcabinet
+ (
+ name "cabinet1"
+ color "black"
+ pose [17.105 7.220 0 0]
+ )
+
 # chairs
 
  chair
  (
  name "chair1"
  color "black"
- pose [15.728 2.500 0 0]
+ pose [16.819 4.136 0 0]
  )
 
  chair
  (
  name "chair2"
  color "black"
- pose [13.955 -1.909 0 0]
+ pose [15.091 5.636 0 0]
  )
 
- row-of-chairs
- (
- name "row-of-chairs1"
- color "black"
- pose [14.636 1.773 0 0]
- )
+# row-of-chairs
+# (
+# name "row-of-chairs1"
+# color "black"
+# pose [14.636 1.773 0 0]
+# )
 
- row-of-chairs
- (
- name "row-of-chairs2"
- color "black"
- pose [12.727 3.545 0 90.000]
- )
+# row-of-chairs
+# (
+# name "row-of-chairs2"
+# color "black"
+# pose [12.727 3.545 0 90.000]
+# )
 
 # desks
 
- long-desk
- (
- name "corridor-table1"
- color "black"
- pose [15.841 7.329 0 0]
- )
+# long-desk
+# (
+# name "corridor-table1"
+# color "black"
+# pose [15.841 7.329 0 0]
+# )
 
- long-desk
- (
- name "corridor-table2"
- color "black"
- pose [14.023 7.329 0 0]
- )
+# long-desk
+# (
+# name "corridor-table2"
+# color "black"
+# pose [14.023 7.329 0 0]
+# )
 
  desk
  (
@@ -135,11 +151,13 @@ p3dx_with_urg_and_blobfinder (
  pose [17.735 3.805 0 90.000]
  )
 
- big-desk
+ model
  (
- name "big-desk"
+ #name "big-desk"
+ bitmap "./big-table1.pnm"
+ size [2.800 1.600 0.720]
  color "black"
- pose [14.642 3.722 0 0]
+ pose [14.960 3.904 0 45.000]
  )
 
  desk
