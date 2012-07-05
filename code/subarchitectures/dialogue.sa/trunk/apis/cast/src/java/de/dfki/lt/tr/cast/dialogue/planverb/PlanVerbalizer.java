@@ -1,31 +1,34 @@
 package de.dfki.lt.tr.cast.dialogue.planverb;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 
 import comadata.ComaRoom;
 
 import SpatialData.Place;
+import SpatialData.PlaceStatus;
 import VisionData.VisualObject;
 
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.WorkingMemoryReaderComponent;
 import cast.cdl.WorkingMemoryAddress;
+import castutils.castextensions.IceXMLSerializer;
 
 import scala.collection.immutable.Set;
 
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.cast.dialogue.GBeliefMemory;
 import de.dfki.lt.tr.cast.dialogue.realisation.LFRealiser;
 import de.dfki.lt.tr.cast.dialogue.realisation.RealisationClient;
 import de.dfki.lt.tr.cast.dialogue.realisation.TarotCCGRealiser;
-import de.dfki.lt.tr.planverb.domain.NoAnnotationFoundException;
-import de.dfki.lt.tr.planverb.domain.UnknownOperatorException;
 import de.dfki.lt.tr.planverb.generation.Message;
 import de.dfki.lt.tr.planverb.generation.ProtoLFMessage;
 import de.dfki.lt.tr.planverb.generation.StringMessage;
@@ -61,6 +64,10 @@ public class PlanVerbalizer {
 	private final static String DEFAULTNGRAMFILE   = "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt";
 	private final static String DEFAULTGRAMMARFILE = "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml";
 	
+	public boolean debug_lf_out = false;
+	
+	public GBeliefMemory m_gbmemory = new GBeliefMemory();
+	
 
 	/**
 	 * Creates and initializes a new PlanVerbalizer object.
@@ -77,7 +84,7 @@ public class PlanVerbalizer {
 	public PlanVerbalizer(String annotatedDomainFile, String pddlDomainFile,  String grammarFile, String ngramFile, String hostname, Integer port, WorkingMemoryReaderComponent component) throws IOException  {
 		// init CAST component for WM access and logging
 		m_castComponent = component;
-
+		
 		log("PlanVerbalizer constructor called with annotatedDomainFile = " + annotatedDomainFile +
 				" pddlDomainFile = " + pddlDomainFile + " grammarFile = " + grammarFile);
 		
@@ -109,6 +116,116 @@ public class PlanVerbalizer {
 		log("finished PlanVerbalizer constructor");
 	}
 	
+	public PlanVerbalizer(String annotatedDomainFile, String pddlDomainFile,  String grammarFile, String ngramFile, String hostname, Integer port, String gbmemoryFile) throws IOException  {
+		// init CAST component for WM access and logging
+		m_castComponent = null;
+
+		// Load gbmemory from file
+		File f = new File(gbmemoryFile);
+		readFromFile(f);
+		
+		log(m_gbmemory.getTimeStampMap());
+		
+		log("PlanVerbalizer constructor called with annotatedDomainFile = " + annotatedDomainFile +
+				"\npddlDomainFile = " + pddlDomainFile + "\ngrammarFile = " + grammarFile + 
+				"\nngamFile = " + ngramFile + "\nhostname = " + hostname + 
+				"\nport = " + port + "\ngbmemoryFile = " + gbmemoryFile);
+		
+		// initialize planner-related stuff
+		File adf = new File(annotatedDomainFile);
+		File pddf = new File(pddlDomainFile);
+		PDDLDomainModel domainModel = new PDDLDomainModel(adf, pddf);
+		m_contentDeterminator = new PDDLContentDeterminator(domainModel);
+
+	
+		try {
+			m_realiser = new RealisationClient(hostname, port);
+		} catch (UnknownHostException e) {
+			logException(e);
+			log("trying to use object-based tarot realiser instead of the realiserver.");
+			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
+			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
+			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
+		} catch (IOException e) {
+			logException(e);
+			log("trying to use object-based tarot realiser instead of the realiserver.");
+			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
+			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
+			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
+		}
+		
+		// initialize lexicon substitutions for the time being...
+		initLexicalSubstitutions();
+		log("finished PlanVerbalizer constructor");
+	}
+	
+	private GroundedBelief getGBelief(WMAddress referentWMA) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+		//Uncommented but not the deleted, in case future generations don't want to use GBeliefMemory
+
+		/*if (m_castComponent != null) {
+			GroundedBelief gbWME = m_castComponent.getMemoryEntry(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), GroundedBelief.class);
+			return gbWME;
+		} else {*/
+		//GroundedBelief gbWME = m_gbmemory.getGBelief(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), taskID, poplanID);
+
+		log("called getGBelief("+referentWMA.toString()+")");
+		GroundedBelief gbWME;
+		String[] beliefTempIndexWMA = referentWMA.id().split(",");
+		if (beliefTempIndexWMA.length>1) {
+
+			WorkingMemoryAddress beliefWMA = new WorkingMemoryAddress(beliefTempIndexWMA[1], referentWMA.subarchitecture());
+			String[] beliefTempIndices = beliefTempIndexWMA[0].split("_");
+			int beliefTaskID = Integer.parseInt(beliefTempIndices[0]);
+			int beliefPOPlanID = Integer.parseInt(beliefTempIndices[1]);
+
+//			log("beliefWMA = " + beliefWMA.id + "@" + beliefWMA.subarchitecture + " - beliefTaskID = " + beliefTaskID + " - beliefPOPlanID = " + beliefPOPlanID);
+
+			gbWME = m_gbmemory.getValidGBelief(beliefWMA, beliefTaskID, beliefPOPlanID);
+		} else {
+			gbWME = m_gbmemory.getLastValidGBelief(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()));
+		}
+
+		
+		return gbWME;
+	}
+
+	/**
+	 * Read the GBeliefMemory object from the given file
+	 * 
+	 * @param gbmemoryFile
+	 * 				the file to read from
+	 */
+	private void readFromFile(File gbmemoryFile) {
+		
+		try {
+//			FileInputStream f = new FileInputStream(gbmemoryFile);
+//			ObjectInputStream s = new ObjectInputStream(f);
+//			m_gbmemory = (GBeliefMemory) s.readObject();
+			StringBuilder text = new StringBuilder();
+		    String NL = System.getProperty("line.separator");
+		    Scanner scanner = new Scanner(new FileInputStream(gbmemoryFile));
+		    try {
+		      while (scanner.hasNextLine()){
+		        text.append(scanner.nextLine() + NL);
+		      }
+		    }
+		    finally{
+		      scanner.close();
+		    }
+//		    log("Text read in: " + text);
+		    
+		    m_gbmemory = IceXMLSerializer.fromXMLString(text.toString(), GBeliefMemory.class);
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * add missing lexical items to this method!
 	 * caution: please add blanks before and after each word!
@@ -130,74 +247,34 @@ public class PlanVerbalizer {
 
 		//m_preLexicalSub. put("m-location ^ via ", "m-through ^ through");
         // TODO find a solution for indirect speech
-		m_preLexicalSub. put("ascription ^ be", "ascription ^ be ^ <Mood>ind ^ <Tense>pres");
+		m_preLexicalSub. put("ascription ^ be", "ascription ^ be ^ <Mood>ind ^ <Tense>past");
 		//m_preLexicalSub. put("<ExecutionStatus>PENDING", "<Mood>ind ^ <Tense>fut ^ <Modifier>(will1_0:modal ^ will)");
 		
 		m_preLexicalSub.put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
+		
+		m_postLexicalSub.put("cones", "viewcones");
+		m_postLexicalSub.put("did not search for", "didn't find");
+		m_postLexicalSub.put("did not", "could not successfully");
+
+		m_preLexicalSub.put("placeholder", "recreationroom");
+		m_postLexicalSub.put("recreationroom", "placeholder");
 	}
 	
-	public String verbalizeHistory(final List<POPlan> hlist) {
-	log("entering verbalizeHistory()");
-		
-		History h = new PDDLHistory(hlist);
-		
-		// this does not work yet!
-		List<Message> messages = m_contentDeterminator.determineMessages(h);
-		if (messages!=null) {
-			log("contentDeterminator returned " + messages.size() + " messages for the full History.");
-		} else {
-			// therefore process each POPlan individually:
-			log("determineMessages(History) doesn't work yet. Verbalizing each POPlan individually instead.");
-
-			messages = new ArrayList<Message>();
-			int _currPOPlanBlock = 0;
-			for (POPlan poPlan : (List<POPlan>) h.getEpisodes()) {
-				try {
-					messages.addAll(m_contentDeterminator.determineMessages(poPlan, _currPOPlanBlock));
-				} catch (BuildException e) {
-					logException(e);
-				} catch (ParseException e) {
-					logException(e);
-				} catch (NoAnnotationFoundException e) {
-					logException(e);
-				} catch (UnknownOperatorException e) {
-					logException(e);
-				}
-				_currPOPlanBlock+=1;
-			}
-
-			log("contentDeterminator returned " + messages.size() + " messages.");
-		}
-		return realizeMessages(messages);
+	public String verbalizeHistory(final List<POPlan> hlist, int planningTaskID) {
+		log("entering verbalizeHistory()");
+		History h = new PDDLHistory(hlist, planningTaskID);
+		return verbalizeHistory(h);
 	}
 	
-	
-	/**
-	 * The main interface method. Generates a verbal report for a given partially ordered plan (POPlan).
-	 * 
-	 * @param poplan
-	 * @return a string with the full verbal report of the POPlan
-	 */
-	public String verbalizePOPlan(POPlan poplan) {
-        // call the content determinator
-		List<Message> messages = null;
-		try {
-			messages = m_contentDeterminator.determineMessages(poplan, 1);
-		} catch (BuildException e) {
-			logException(e);
-		} catch (ParseException e) {
-			logException(e);
-		} catch (NoAnnotationFoundException e) {
-			logException(e);
-		} catch (UnknownOperatorException e) {
-			logException(e);
-		}
-		// if errors prevented the creation of a message list, report it...
-		if (messages==null) return "I am sorry. I don't know what to say about this Pee Oh Plan.";
-		else log("verbalizePOPlan() determined " + messages.size() + " messages for POPlan.");
+	public String verbalizeHistory(History h) {
+	  log("entering verbalizeHistory()");
+		
+		List<Message> messages = m_contentDeterminator.determineMessages(h);	
+		log("contentDeterminator returned " + messages.size() + " messages for the full History.");
 
 		return realizeMessages(messages);
 	}
+
 
 	
 	public String realizeMessages(List<Message> messages) {
@@ -216,6 +293,12 @@ public class PlanVerbalizer {
 					log(log_sb.toString());
 					return "";
 				}
+				log("Current Message is a ProtoLFMessage:\n" + ((ProtoLFMessage) msg).getProtoLF());
+
+				// do GRE 
+				protoLF = doGRE(protoLF);
+				log_sb.append("\n doGRE() yielded: \n" + protoLF.toString());
+
 				// perform lexical substitution before realization
 				try {
 					protoLF = preProcessLexiconSubstitution(protoLF);
@@ -225,11 +308,7 @@ public class PlanVerbalizer {
 				} catch (ParseException e) {
 					logException(e);
 				}
-
-				// do GRE 
-				protoLF = doGRE(protoLF);
-				log_sb.append("\n doGRE() yielded: \n" + protoLF.toString());
-
+ 
 				// make missing parts consistent (e.g. subj agreement)
 				BasicLogicalForm finalLF = finalizeProtoLF(protoLF);
 				log_sb.append("\n finalizeProtoLF() yielded: \n" + finalLF.toString());
@@ -244,13 +323,20 @@ public class PlanVerbalizer {
 					log_sb.append("\n appending postProcessLexiconSubstitution() final output text: \n" + outputText);
 					output_sb.append(outputText + ". \n");
 				} else {
-					log_sb.append("\n not appending any output text.");        			
+					if (debug_lf_out) {
+						log_sb.append("\n appending original LF to output text.");
+						output_sb.append(finalLF.toString() + "\n");
+					} else {
+						log_sb.append("\n no realisation found for LF " + finalLF.toString());
+						output_sb.append("\n");
+					}
 				}
 			} else if (msg instanceof StringMessage) {
 				String outputText = ((StringMessage) msg).getText();
 				log_sb.append("\n appending current Message, which is a StringMessage: \n " + outputText);
-
-				output_sb.append(outputText + ". \n");
+				// rhetorical markers are prepended to the subsequent sentence:
+				if ("after that".equals(outputText.toLowerCase())) output_sb.append(outputText + " "); // no full stop + line break
+				else output_sb.append(outputText + ". \n");
 			}
         }
     	log(log_sb.toString());
@@ -276,7 +362,8 @@ public class PlanVerbalizer {
     	for (WMAddress referentWMA : jswma) {
     		log_sb.append("\n current referentWMA = " + referentWMA);
     		try {
-    			GroundedBelief gbWME = m_castComponent.getMemoryEntry(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), GroundedBelief.class);
+    			//GroundedBelief gbWME = m_castComponent.getMemoryEntry(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), GroundedBelief.class);
+    			GroundedBelief gbWME = getGBelief(referentWMA);
     			
     			// check if it is the robot itself
     			if (isRobot(gbWME)) {
@@ -339,15 +426,16 @@ public class PlanVerbalizer {
         	// TODO add <Modifier>(w1:modal ^ could)
         	@Override
             public BasicState.Builder doWork(BasicState.Builder builder) {
-                return builder.addFeature("Mood", "ind").addFeature("Polarity", "neg"); 
+                return builder.addFeature("Mood", "ind").addFeature("Polarity", "neg").addFeature("Tense", "past"); 
             }
         };        
         protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "FAILED", failedPastTenseReplacer);
+        protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "UNSUCCESSFUL", failedPastTenseReplacer);
 
         
         // execution status = pending will be removed and the overall LF will be put into a control verb
 //        if (protoLF.toString().contains("<ExecutionStatus>PENDING")) {
-//            FeatureReplacer pendingReplacer = new FeatureReplacer() {
+//            FeatureReplacer pendingReplacer = new FeatureReplacerPlanVerbalizer constructor cal() {
 //                @Override
 //                public BasicState.Builder doWork(BasicState.Builder builder) {
 //
@@ -389,6 +477,8 @@ public class PlanVerbalizer {
 	private BasicLogicalForm preProcessLexiconSubstitution(BasicLogicalForm blf) throws BuildException, ParseException {
 		boolean changed = false;
 		String lfString = blf.toString();
+		
+		log(m_preLexicalSub.toString());
 
 		for (String badWord : m_preLexicalSub.keySet()) {
 			if (lfString.contains(badWord)) {
@@ -437,10 +527,22 @@ public class PlanVerbalizer {
 		if (gbProxy.getType().equals(
 				SimpleDiscreteTransferFunction
 				.getBeliefTypeFromCastType(ComaRoom.class))) {
-			String cat = gbProxy.getContent().get(
+			String cat = "";
+			try {
+				cat = gbProxy.getContent().get(
 					ComaRoomTransferFunction.CATEGORY_ID)
 					.getDistribution().getMostLikely().getProposition();
+			} catch (AssertionError ae) {
+				logException(ae);
+			}
 			if (cat==null || cat.equals("")) cat = "room";
+			// for PEV!!! 2012-06-25 (hz)
+			cat = "room";
+			int roomID = gbProxy.getContent().get(
+					ComaRoomTransferFunction.ROOM_ID).
+					getDistribution().getMostLikely().getInteger();
+			// if (placeID==0) placeID = 10; // TODO temporary fix for out of vocab word 'zeroth'!
+			final String placeIDF = new Integer(roomID).toString();
 			final String catF = cat;
 			
 //			log("Gbelief is a room with category: " + catF);
@@ -449,14 +551,21 @@ public class PlanVerbalizer {
 	            @Override
 	            public BasicLogicalForm.Builder doWork(String nom, BasicState s, BasicLogicalForm.Builder lfBuilder) {
 
+	                String depStateNom = BasicPatterns.uniqueNominal(lfBuilder);
+
+	                BasicState depState = BasicState.newBuilder("number-id") //"number-ordinal")
+	                        .setProposition(placeIDF)
+	                        .build();
+	                
 	                BasicState headState = BasicState.newBuilder("e-place")
 	                        .setProposition(catF)
 	                        .addFeature("Delimitation", "unique")
 	                        .addFeature("Quantification", "specific")
 	                        .addFeature("Num", "sg")
+	                        .addRelation("Modifier", depStateNom)
 	                        .build();
 
-	                return lfBuilder.updateState(nom, headState);
+	                return lfBuilder.addState(depStateNom, depState).updateState(nom, headState);
 	            }
 	        };
 	        return myRefRep;
@@ -494,6 +603,11 @@ public class PlanVerbalizer {
 					getDistribution().getMostLikely().getInteger();
 			// if (placeID==0) placeID = 10; // TODO temporary fix for out of vocab word 'zeroth'!
 			final String placeIDF = new Integer(placeID).toString();
+			String placestatus = gbProxy.getContent().get(PlaceTransferFunction.PLACE_STATUS_ID)
+					.getDistribution().getMostLikely().getProposition();
+			if (placestatus.equals(PlaceStatus.PLACEHOLDER.toString())) placestatus = "placeholder";
+			else placestatus = "place";
+			final String placeStatusF = placestatus;
 			
 //			log("Gbelief is a place with place ID: " + placeIDF);
 			
@@ -506,14 +620,14 @@ public class PlanVerbalizer {
 	                BasicState depState = BasicState.newBuilder("number-id") //"number-ordinal")
 	                        .setProposition(placeIDF)
 	                        .build();
-	                
+
 	                BasicState headState = BasicState.newBuilder("e-place")
-	                        .setProposition("place")
-	                        .addFeature("Delimitation", "unique")
-	                        .addFeature("Quantification", "specific")
-	                        .addFeature("Num", "sg")
-	                        .addRelation("Modifier", depStateNom)
-	                        .build();
+	                		.setProposition(placeStatusF) 
+	                		.addFeature("Delimitation", "unique")
+	                		.addFeature("Quantification", "specific")
+	                		.addFeature("Num", "sg")
+	                		.addRelation("Modifier", depStateNom)
+	                			.build();
 
 	                return lfBuilder.addState(depStateNom, depState).updateState(nom, headState);
 	            }
@@ -538,7 +652,7 @@ public class PlanVerbalizer {
 	public ReferentReplacer getDoesNotExistReplacer(WMAddress _lfWMA) {
 		log("getDoesNotExistReplacer called for " + _lfWMA);
 				
-		ReferentReplacer myRefRep = null;		
+		ReferentReplacer myRefRep = null;	
 
 		if (_lfWMA.subarchitecture().equals("spatial.sa")) {
 			if (_lfWMA.id().split(":").length==2) {
@@ -592,8 +706,36 @@ public class PlanVerbalizer {
 				return myRefRep;
 			} // end else (i.e. spatial.sa but not well-formed WMA id
 		} // end if spatial.sa WMA
-		log("Don't know what to do with WMA: " + _lfWMA);
-		return null;
+		else {
+			// "1_1_6,room3":castreferent ^ "1_1_6,room3"
+			log(_lfWMA + " looks like a hypothetical room");
+			final String catF;
+			final String builderTypeF;
+			if (_lfWMA.toString().split(",")[1].toLowerCase().startsWith("room")) {
+				catF = "room";
+				builderTypeF = "e-place";
+			} else {
+				catF = "thing";
+				builderTypeF = "thing";
+			}
+			myRefRep = new ReferentReplacer() {
+				@Override
+				public BasicLogicalForm.Builder doWork(String nom, BasicState s, BasicLogicalForm.Builder lfBuilder) {
+
+					BasicState headState = BasicState.newBuilder(builderTypeF)
+							.setProposition(catF)
+							.addFeature("Delimitation", "existential")
+							.addFeature("Quantification", "specific")
+							.addFeature("Num", "sg")
+							.build();
+
+					return lfBuilder.updateState(nom, headState);
+				}
+			};
+			return myRefRep;
+		}
+		//log("Don't know what to do with WMA: " + _lfWMA);
+		//return null;
 	}
 	
 	/** 
@@ -617,6 +759,24 @@ public class PlanVerbalizer {
 	private void logException(Throwable e) {
 		if (m_castComponent!=null) m_castComponent.logException(e);
 		else System.out.println(e.getLocalizedMessage());
+	}
+	
+	public static void main(String[] args) {
+		File f = new File(args[7]);
+		
+		PlanVerbalizer test;
+		try {
+			test = new PlanVerbalizer(args[0], args[1], args[2], args[3], args[4], Integer.parseInt(args[5]), args[6]);
+			test.debug_lf_out = true;
+			System.out.println(test.verbalizeHistory(new PDDLHistory(f, Integer.parseInt(args[8]))));
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 //	public static void main(String[] args) throws FileNotFoundException, IOException, BuildException, ParseException, NoAnnotationFoundException, UnknownOperatorException {
