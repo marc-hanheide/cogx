@@ -1,14 +1,19 @@
 package manipulation.execution.george;
 
-import VisionData.VisualObject;
 import manipulation.execution.slice.ArmMovementTask;
 import manipulation.execution.slice.ManipulationTaskStatus;
 import manipulation.execution.slice.ManipulationTaskType;
+import VisionData.VisualObject;
 import cast.CASTException;
+import cast.ConsistencyException;
+import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.SubarchitectureComponentException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
@@ -46,6 +51,25 @@ public class ManipulationActionInterface extends
 		@Override
 		protected TriBool executionResult(ArmMovementTask _cmd) {
 			if (_cmd.status == ManipulationTaskStatus.MCSUCCEEDED) {
+				
+				//Update object timestamp, ticket 528
+				try {
+					WorkingMemoryAddress voAddr = _cmd.objPointerSeq[0].address;
+					VisualObject visualObject = getComponent().getMemoryEntry(voAddr, VisualObject.class);
+					CASTTime tm = getComponent().getTimeServer().getCASTTime();
+					visualObject.salience = tm.s + 1e-6 * tm.us;
+					getComponent().overwriteWorkingMemory(voAddr, visualObject);
+					log("updated salience of visual object");
+				} catch (DoesNotExistOnWMException e) {
+					logException(e);
+				} catch (UnknownSubarchitectureException e) {
+					logException(e);
+				} catch (ConsistencyException e) {
+					logException(e);
+				} catch (PermissionException e) {
+					logException(e);
+				}
+				
 				return TriBool.TRITRUE;
 			} else {
 				return TriBool.TRIFALSE;
@@ -55,6 +79,9 @@ public class ManipulationActionInterface extends
 		@Override
 		protected void actionComplete() {
 			try {
+				
+
+				
 				((ManipulationActionInterface) getComponent())
 						.updateArmRestingState(!ManipulationActionInterface.ARM_IS_RESTING);
 			} catch (SubarchitectureComponentException e) {
