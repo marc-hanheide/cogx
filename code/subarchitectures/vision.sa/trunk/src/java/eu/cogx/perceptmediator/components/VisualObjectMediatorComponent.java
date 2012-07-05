@@ -4,7 +4,7 @@ import VisionData.VisualObject;
 import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.PerceptBindingMediator;
 import eu.cogx.perceptmediator.components.abstr.PerceptMediatorComponent;
-import eu.cogx.perceptmediator.transferfunctions.VisualObjectTransferFunction;
+import eu.cogx.perceptmediator.transferfunctions.attic.VisualObjectTransferFunction;
 
 public class VisualObjectMediatorComponent extends PerceptMediatorComponent {
 
