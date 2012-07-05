@@ -2,10 +2,15 @@ package manipulation.execution.george;
 
 import VisionData.VisualObject;
 import cast.CASTException;
+import cast.ConsistencyException;
+import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.SubarchitectureComponentException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
@@ -48,6 +53,8 @@ public class FakeManipulationActionInterface extends
 
 		protected void actionComplete() {
 			try {
+				
+				
 				((FakeManipulationActionInterface) getComponent())
 						.updateArmRestingState(!FakeManipulationActionInterface.ARM_IS_RESTING);
 			} catch (SubarchitectureComponentException e) {
@@ -79,6 +86,26 @@ public class FakeManipulationActionInterface extends
 
 					println("FAKE ARM STUFF: sleeping, updating robot state, then returning true");
 					Thread.sleep(3000);
+					
+					
+					//Update object timestamp, ticket 528
+					try {
+						WorkingMemoryAddress voAddr = visObjPtr.address;
+						VisualObject visualObject = getComponent().getMemoryEntry(voAddr, VisualObject.class);
+						CASTTime tm = getComponent().getTimeServer().getCASTTime();
+						visualObject.salience = tm.s + 1e-6 * tm.us;
+						getComponent().overwriteWorkingMemory(voAddr, visualObject);
+						log("updated salience of visual object");
+					} catch (DoesNotExistOnWMException e) {
+						logException(e);
+					} catch (UnknownSubarchitectureException e) {
+						logException(e);
+					} catch (ConsistencyException e) {
+						logException(e);
+					} catch (PermissionException e) {
+						logException(e);
+					}
+					
 					actionComplete();
 					return TriBool.TRITRUE;
 
