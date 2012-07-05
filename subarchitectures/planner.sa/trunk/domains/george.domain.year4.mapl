@@ -570,6 +570,12 @@
       (and
         (not (= ?v VISUAL_OBJECT_DUMMY))
         (not (= (presence ?v) REMOVED))
+        (exists (?p - ProtoObject) 
+            (and 
+              (= (po-is-associated-with ?p) ?v)
+              (= (target-object (current-viewcone ?r)) ?p)
+            )
+          )
       )
     :effect
       (and
