@@ -3,12 +3,18 @@ package eu.cogx.goals.george;
 import motivation.slice.TutorInitiativeMotive;
 import cast.CASTException;
 import cast.SubarchitectureComponentException;
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
+import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
 import de.dfki.lt.tr.dialogue.intentions.RichIntention;
 import dialogue.execution.AbstractDialogueActionInterface;
+import eu.cogx.beliefs.slice.MergedBelief;
 
 public class InterpretedIntentionMotiveGenerator extends
 		AbstractInterpretedIntentionMotiveGenerator<InterpretedIntention> {
@@ -32,7 +38,8 @@ public class InterpretedIntentionMotiveGenerator extends
 			motive = generateMotiveFromIntention(_addr, _intention, false);
 			// mark referents of chosen intention
 			if (motive != null) {
-				markReferent(_intention.addressContent.get("about"));
+				markReferent(aboutBeliefAddress(_intention));
+				monitorForObjectVisibility(_intention,motive);
 			}
 		} catch (CASTException e) {
 			// reset in case of exception in markReferent
@@ -40,6 +47,49 @@ public class InterpretedIntentionMotiveGenerator extends
 			logException(e);
 		}
 		return motive;
+	}
+
+	private class VOBeliefMonitor implements WorkingMemoryChangeReceiver {
+
+		private final WorkingMemoryAddress m_motiveAddress;
+
+		public VOBeliefMonitor(TutorInitiativeMotive _motive) {
+			m_motiveAddress = _motive.thisEntry;
+		}
+
+		@Override
+		public void workingMemoryChanged(WorkingMemoryChange _wmc)
+				throws CASTException {
+
+			println("InterpretedIntentionMotiveGenerator.monitorForObjectVisibility() - UPDATE");
+			
+			
+			// if belief is deleted then delete motive and remove filter
+			if (_wmc.operation == WorkingMemoryOperation.DELETE) {
+				deleteFromWorkingMemory(m_motiveAddress);
+				removeChangeFilter(this);
+			} else {
+				// OVERWRITE
+				MergedBelief mb = getMemoryEntry(_wmc.address,
+						MergedBelief.class);
+				CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
+						.create(MergedBelief.class, mb);
+
+				// delete motive if object is no longer visible
+				if (!VisualObjectMotiveGenerator.visualObjectIsVisible(belief)) {
+
+					deleteFromWorkingMemory(m_motiveAddress);
+					removeChangeFilter(this);
+				}
+			}
+		}
+	}
+
+	private void monitorForObjectVisibility(InterpretedIntention _intention, TutorInitiativeMotive motive) {
+
+		addChangeFilter(ChangeFilterFactory.createAddressFilter(aboutBeliefAddress(_intention)),
+				new VOBeliefMonitor(motive));
+
 	}
 
 	@Override

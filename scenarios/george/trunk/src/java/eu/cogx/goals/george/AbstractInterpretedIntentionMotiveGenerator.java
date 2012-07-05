@@ -291,6 +291,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 		if (motive != null) {
 			motive.referenceEntry = _addr;
+			motive.thisEntry = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
 		} else {
 			log("unknown InterpretedIntention type");
 			logIntention(_intention);
@@ -506,8 +507,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	 * @throws UnknownSubarchitectureException
 	 */
 	protected WorkingMemoryAddress aboutBeliefAddress(
-			InterpretedIntention _intention) throws DoesNotExistOnWMException,
-			UnknownSubarchitectureException {
+			InterpretedIntention _intention) {
 		return _intention.addressContent.get("about");
 	}
 
