@@ -813,7 +813,10 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
             m_label.c_str(), m_recEntries[m_label].object->conf, toString(B).c_str());
         // set confidence to 0 to indicate that we consider the object not detected
         // NOTE: this threshold is stupid. let the caller decide, what to do with the result.
-        // m_recEntries[m_label].object->conf = 0.;
+
+        // GSH 2012-07-05 uncommented the line below, setting the confidence to zero
+        // because otherwise Dora thinks she has seen the object
+        m_recEntries[m_label].object->conf = 0.;
         P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
         m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
       }
