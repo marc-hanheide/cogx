@@ -1,8 +1,9 @@
 #!/bin/bash
 
-timestamp=`date +%d_%m_%Y_%H_%M`
+timestamp=`date +%Y-%m-%d_%H:%M`
 mydir="subarchitectures/dialogue.sa/resources/pev-test-data/$timestamp"
 mkdir -p $mydir
 
-cp GBeliefHistory $mydir
+cp GBeliefHistory.xml $mydir
 mv subarchitectures/planner.sa/src/python/history-*.pddl $mydir
+cp logs/log.xml $mydir
