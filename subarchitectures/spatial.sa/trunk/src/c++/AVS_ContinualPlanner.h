@@ -189,6 +189,9 @@ public:
 
       bool getExistenceProbabilityFromConceptual(double &outPdfMass, const string &id);
 
+			// Updates the WM entry to match the internal representation
+			void updateConeGroupBelief(int coneGroupID);
+
       std::set<int> m_processedViewConeIDs;
 
       class AVSServer: public SpatialData::AVSInterface {
