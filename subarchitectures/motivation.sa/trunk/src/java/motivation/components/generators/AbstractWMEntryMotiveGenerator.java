@@ -303,16 +303,21 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 		}
 	}
 
-	protected WorkingMemoryAddress insertNewGoal(M motive) throws AlreadyExistsOnWMException,
-			DoesNotExistOnWMException, UnknownSubarchitectureException {
+	protected WorkingMemoryAddress insertNewGoal(M motive)
+			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
+		
+		if (motive.thisEntry == null) {
+			motive.thisEntry = new WorkingMemoryAddress(
+					newDataID(), getSubarchitectureID());
+		}
+		
 		motive.thisEntry = new WorkingMemoryAddress(newDataID(),
 				getSubarchitectureID());
 		assignCosts(motive);
 		if (isMonitoringMotivesForCompletion()) {
-			addChangeFilter(
-					ChangeFilterFactory.createAddressFilter(
-							motive.thisEntry,
-							WorkingMemoryOperation.OVERWRITE),
+			addChangeFilter(ChangeFilterFactory.createAddressFilter(
+					motive.thisEntry, WorkingMemoryOperation.OVERWRITE),
 					new MotiveCompletionChangeReceiver());
 		}
 		addToWorkingMemory(motive.thisEntry, motive);
@@ -322,7 +327,7 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 	protected void checkForAdditions(WorkingMemoryAddress addr, T newEntry,
 			List<M> newAdditions) {
 		M n = checkForAddition(addr, newEntry);
-		if (n!=null)
+		if (n != null)
 			newAdditions.add(n);
 	}
 
