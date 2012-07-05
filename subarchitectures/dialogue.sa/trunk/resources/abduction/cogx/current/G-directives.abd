@@ -38,7 +38,7 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, [Feature]),
 	verbalised_feature_value(Feature, Hypo, pos, VerbalisedHypo),
 
-	event : produce_text([is, ObjectRE, VerbalisedHypo]) / -1.0.
+	event : produce_text([is, ObjectRE, VerbalisedHypo, '?']) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -63,13 +63,13 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 	get_rexp_for_related(RelatedEntity, RExp),
 
-	event : produce_text([is, there, a, Label, Relation, RExp]) / -1.0.
+	event : produce_text([is, there, a, Label, Relation, RExp, '?']) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 %get_rexp_for_related(Entity, [the, dummy]).
 get_rexp_for_related(Entity, ObjectRE) <-
-	? generate : reference_generation(Entity, yes, no, ObjectRE, []).
+	? generate : reference_generation(Entity, yes, no, ObjectRE, [roomtype]).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -84,7 +84,7 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	plural(Label, LabelPl),
 	plural(Category, CategoryPl),
 
-	event : produce_text([are, LabelPl, typically, in, CategoryPl]) / -1.0.
+	event : produce_text([are, LabelPl, typically, in, CategoryPl, '?']) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -100,7 +100,7 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	plural(Label, LabelPl),
 	plural(OtherLabel, OtherLabelPl),
 
-	event : produce_text([are, LabelPl, typically, Relation, OtherLabelPl]) / -1.0.
+	event : produce_text([are, LabelPl, typically, Relation, OtherLabelPl, '?']) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -132,7 +132,7 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 	verbalised_feature(Feature, VerbalisedFeature),
 
-	event : produce_text([what, VerbalisedFeature, is, ObjectRE]) / -1.0.
+	event : produce_text([what, VerbalisedFeature, is, ObjectRE, '?']) / -1.0.
 
 %-------------------------------------------------------------------------
 % VERIFICATION
