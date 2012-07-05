@@ -14,10 +14,12 @@
  * GNU General Public License for more details.
  */
 #include "Scene2D.h"
+#include "belief_utils.hpp"
 
 #include <Math.hpp>
 #include <CameraParameters.h> // projectPoint
 #include <cast/architecture/ChangeFilterFactory.hpp>
+#include <beliefs.hpp>
 #include <beliefs_cogx.hpp>
 #include <sstream>
 #include <iomanip>
@@ -704,16 +706,7 @@ void CScene2D::onChange_MergedBelief(const cdl::WorkingMemoryChange & _wmc)
    //   grounded belief -> ancestors -> *visual-object id* (D)
    //
 
-   // pbel->hist is of type: AbstractBeliefHistory->CASTBeliefHistory
-   auto pmrgHist = dynamic_cast<beliefcore::history::CASTBeliefHistory*>(pbel->hist.get());
-   if (pmrgHist) {
-      //m_display.setHtml("BELIEF-TESTING", pbel->id + "b", pmrgHist->ice_id());
-
-      // Go through all WM pointers in ancestors
-      for (auto pwmpAncestor : pmrgHist->ancestors) {
-      }
-   }
-   //beliefcogx
+   auto pwmpVo = cast::beliefs::recurseAncestorsForType(*this, pbel, cast::typeName<VisionData::VisualObject>());
 }
 
 //void CScene2D::onChange_SOI(const cdl::WorkingMemoryChange & _wmc)

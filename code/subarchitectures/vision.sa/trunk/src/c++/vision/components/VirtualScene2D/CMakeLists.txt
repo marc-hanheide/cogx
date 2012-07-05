@@ -20,7 +20,10 @@ ENABLE_COGX_VISUALIZATION(TRUE)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 # Set the sources.
-SET(SOURCES Scene2D.cpp)
+SET(SOURCES
+   Scene2D.cpp
+   belief_utils.cpp
+   )
 
 add_cast_component(VirtualScene2D ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME}
