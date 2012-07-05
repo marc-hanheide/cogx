@@ -262,4 +262,20 @@ IFOPTALL(%(feature_options), visualization)
 
    CPP MG dialogue.v11n DialogInteraction
    CPP MG INFO.trace GeorgeEventTrace
+
+
+### all types to be logged from WMs if debug is enabled
+VARDEFAULT logged_types=<multiline>
+  execution.slice.Action,
+  autogen.Planner.Action,
+  autogen.Planner.PlanningTask,
+  de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention,
+  de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions,
+  VisionData.VisualLearningTask
+</multiline>
+
+   ### starts the WM logger that logs all operation of subscribed types on INFO level in the logs.
+   ### Set %(logged_types) to select the types you are interested in
+   JAVA MG wmlogger castutils.experimentation.WMLogger --subscribe "%(logged_types)"
+
 ENDIF
