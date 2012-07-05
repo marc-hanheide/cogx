@@ -259,7 +259,8 @@ public:
 };
 #endif
 
-void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pVisObj)
+void CScene2D::drawVisualObject(const cast::cdl::WorkingMemoryAddress& objaddr,
+      const VisualObjectPtr& pVisualObject)
 #if 1
 {
    if (! m_pVideoServer.get()) {
@@ -271,6 +272,19 @@ void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pV
    if (!m_pVideoServer->getCameraParameters(m_camid, camPars)) {
       error("Could not obtain CameraParameters (id=%d) from '%s'",
             m_camid, m_videoServerName.c_str());
+      return;
+   }
+
+   VisualObjectPtr pVisObj;
+   if (pVisualObject.get()) {
+      pVisObj = pVisualObject;
+   }
+   else {
+      if (mObjects.find(objaddr) != mObjects.end()) {
+         pVisObj = mObjects[objaddr];
+      }
+   }
+   if (!pVisObj.get()) {
       return;
    }
 
@@ -304,6 +318,37 @@ void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pV
    std::string color = getBestLabel(pVisObj->colorLabels, pVisObj->colorDistrib);
    std::string shape = getBestLabel(pVisObj->shapeLabels, pVisObj->shapeDistrib);
 
+   //cast::cdl::WorkingMemoryAddress objaddr;
+   //objaddr.subarchitecture = "vision.sa";
+   //objaddr.id = id;
+   if (mObjectBeliefsByVo.find(objaddr) != mObjectBeliefsByVo.end()) {
+     CBeliefContentPtr pbel = mObjectBeliefsByVo[objaddr]; 
+     auto fmtfloat = [](double x) -> std::string {
+        ostringstream ss;
+        ss << std::fixed << std::setprecision(2) << x;
+        return ss.str();
+     };
+     std::string v;
+     if (pbel->colorName != "") {
+        v = fmtfloat(pbel->colorProb) + " " + pbel->colorName;
+        if (v != color) {
+           color = v + " (" + color + ")";
+        }
+     }
+     if (pbel->shapeName != "") {
+        v = fmtfloat(pbel->shapeProb) + " " + pbel->shapeName;
+        if (v != shape) {
+           shape = v + " (" + shape + ")";
+        }
+     }
+     if (pbel->identName != "") {
+        v = fmtfloat(pbel->identProb) + " " + pbel->identName;
+        if (v != ident) {
+           ident = v + " (" + ident + ")";
+        }
+     }
+   }
+
    //CContours ctrs;
    // if (pProtoObj.get())
    //ctrs.findContours(pProtoObj->mask);
@@ -331,7 +376,7 @@ void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pV
 
    p.fontname("sans-serif");
    p.pencolorname("yellow");
-   p.fframedtext(x0, YY(y0+h0/2+dy), id);
+   p.fframedtext(x0, YY(y0+h0/2+dy), objaddr.id);
    dy += true_size;
    if (ident != "") {
       p.fframedtext(x0, YY(y0+h0/2+dy), ident);
@@ -350,7 +395,7 @@ void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pV
    p.closepl();
    std::string svg = p.getScreenSvg();
 
-   m_display.setObject(OBJ_VISUAL_OBJECTS, id, svg);
+   m_display.setObject(OBJ_VISUAL_OBJECTS, objaddr.id, svg);
 }
 #else
 {
@@ -497,7 +542,7 @@ void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pV
 
 void CScene2D::onChange_VisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
-   cdl::WorkingMemoryAddress addr = _wmc.address;
+   const cdl::WorkingMemoryAddress& addr = _wmc.address;
 
    // VisualObject provides label values
    VisualObjectPtr pVisObj;
@@ -508,6 +553,7 @@ void CScene2D::onChange_VisualObject(const cdl::WorkingMemoryChange & _wmc)
       }
    }
    catch(DoesNotExistOnWMException){
+      m_display.removePart(OBJ_VISUAL_OBJECTS, addr.id);
       mObjects.erase(addr);
       //log("CScene2D: VisualObject %s deleted while working...", descAddr(addr).c_str());
       return;
@@ -515,13 +561,14 @@ void CScene2D::onChange_VisualObject(const cdl::WorkingMemoryChange & _wmc)
    if (! pVisObj.get()) return;
 
    if (pVisObj->presence == VisionData::VopREMOVED) {
-      m_display.removePart(OBJ_VISUAL_OBJECTS, _wmc.address.id);
+      //println(" **** Remove '%s'", addr.id.c_str());
+      m_display.removePart(OBJ_VISUAL_OBJECTS, addr.id);
       mObjects.erase(addr);
       return;
    }
 
    try {
-      drawVisualObject(_wmc.address.id, pVisObj);
+      drawVisualObject(_wmc.address, pVisObj);
    }
    catch(const std::exception &e) {
       println("drawVisualObject FAILED with: %s", e.what());
@@ -606,7 +653,7 @@ void CScene2D::onChange_CameraMotionState(const cdl::WorkingMemoryChange & _wmc)
       for (auto ivo : mObjects) {
          if (ivo.second.get()) {
             if (ivo.second->presence == VisionData::VopVISIBLE)
-               drawVisualObject(ivo.first.id, ivo.second);
+               drawVisualObject(ivo.first, ivo.second);
             else
                m_display.removePart(OBJ_VISUAL_OBJECTS, ivo.first.id);
          }
@@ -646,7 +693,15 @@ void CScene2D::onChange_MergedBelief(const cdl::WorkingMemoryChange & _wmc)
    }
    //m_display.setHtml("BELIEF-TESTING", pbel->id + "a", "YO-cast<br>");
 
-   CBeliefContent voProps;
+   CBeliefContentPtr pvoProps;
+   if (mObjectBeliefsByB.find(_wmc.address) == mObjectBeliefsByB.end()) {
+      pvoProps.reset(new CBeliefContent());
+      pvoProps->beliefAddr = _wmc.address;
+      mObjectBeliefsByB[_wmc.address] = pvoProps;
+   }
+   else {
+      pvoProps = mObjectBeliefsByB[_wmc.address];
+   }
 
    //char ch = 'A';
    // Visit all MergedBelief porperties from content
@@ -677,24 +732,24 @@ void CScene2D::onChange_MergedBelief(const cdl::WorkingMemoryChange & _wmc)
          // Labels are in ElementaryFormula
          auto pname = dynamic_cast<beliefcore::logicalcontent::ElementaryFormula*>(itpair.val.get());
          if (pname) {
-            if (itdist.first == "color") voProps.colorName = pname->prop;
-            else if (itdist.first == "shape") voProps.shapeName = pname->prop;
-            else if (itdist.first == "objecttype") voProps.identName = pname->prop;
+            if (itdist.first == "color") pvoProps->colorName = pname->prop;
+            else if (itdist.first == "shape") pvoProps->shapeName = pname->prop;
+            else if (itdist.first == "objecttype") pvoProps->identName = pname->prop;
          }
 
          // Probabilities for labels are in FloatFormula
          auto pval = dynamic_cast<beliefcore::logicalcontent::FloatFormula*>(itpair.val.get());
          if (pval) {
-            if (itdist.first == "color-prob") voProps.colorProb = pval->val;
-            else if (itdist.first == "shape-prob") voProps.shapeProb = pval->val;
-            else if (itdist.first == "objecttype-prob") voProps.identProb = pval->val;
+            if (itdist.first == "color-prob") pvoProps->colorProb = pval->val;
+            else if (itdist.first == "shape-prob") pvoProps->shapeProb = pval->val;
+            else if (itdist.first == "objecttype-prob") pvoProps->identProb = pval->val;
          }
       }
       //ostringstream ss;
       //ss << "&nbsp;&nbsp;&npsp; * ";
-      //ss << " co-" << voProps.colorName << "=" << voProps.colorProb;
-      //ss << " sh-" << voProps.shapeName << "=" << voProps.shapeProb;
-      //ss << " id-" << voProps.identName << "=" << voProps.identProb;
+      //ss << " co-" << pvoProps->colorName << "=" << pvoProps->colorProb;
+      //ss << " sh-" << pvoProps->shapeName << "=" << pvoProps->shapeProb;
+      //ss << " id-" << pvoProps->identName << "=" << pvoProps->identProb;
       //ss << "<br>";
       //m_display.setHtml("BELIEF-TESTING", pbel->id + "b" + ch + "d", ss.str());
    }
@@ -706,7 +761,19 @@ void CScene2D::onChange_MergedBelief(const cdl::WorkingMemoryChange & _wmc)
    //   grounded belief -> ancestors -> *visual-object id* (D)
    //
 
-   auto pwmpVo = cast::beliefs::recurseAncestorsForType(*this, pbel, cast::typeName<VisionData::VisualObject>());
+   // Discover the address of the VisualObject if it was not discovered, yet
+   if (pvoProps->visualObjectAddr.id == "") {
+      //println("*** recurseAncestorsForType");
+      auto pwmpVo = cast::beliefs::recurseAncestorsForType(*this, pbel, cast::typeName<VisionData::VisualObject>());
+      if (pwmpVo.get()) {
+         pvoProps->visualObjectAddr = pwmpVo->address;
+         mObjectBeliefsByVo[pvoProps->visualObjectAddr] = pvoProps;
+      }
+   }
+
+   if (pvoProps->visualObjectAddr.id != "") {
+      drawVisualObject(pvoProps->visualObjectAddr, nullptr);
+   }
 }
 
 //void CScene2D::onChange_SOI(const cdl::WorkingMemoryChange & _wmc)
