@@ -73,6 +73,11 @@ public class AssumedBeliefTracker extends ManagedComponent {
 
 	}
 
+	@Override
+	protected void start() {
+		tracker.registerListeners();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 

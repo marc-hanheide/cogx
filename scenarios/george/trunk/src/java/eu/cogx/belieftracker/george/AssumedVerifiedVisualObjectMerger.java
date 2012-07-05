@@ -83,6 +83,11 @@ public class AssumedVerifiedVisualObjectMerger extends ManagedComponent {
 
 	}
 
+	@Override
+	protected void start() {
+		merger.registerListeners();
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
