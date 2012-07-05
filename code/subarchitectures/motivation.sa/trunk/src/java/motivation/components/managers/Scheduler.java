@@ -67,6 +67,7 @@ public class Scheduler extends AbstractScheduler {
 				// executionFuture.cancel(true);
 				// executionFuture = null;
 				// }
+				
 				if (executionFuture == null) {
 
 					// we are currently not executing
@@ -91,7 +92,7 @@ public class Scheduler extends AbstractScheduler {
 					WMEntryQueueElement<PlanningTask> plan = doPlanning(
 							prioritySet, possibleGoals, impossibleGoals);
 
-					if (plan != null) {
+					if (plan != null && possibleGoals.size() > 0) {
 						log("we have a plan to execute: "
 								+ plan.getEntry().firstActionID + "costs: "
 								+ plan.getEntry().costs);
