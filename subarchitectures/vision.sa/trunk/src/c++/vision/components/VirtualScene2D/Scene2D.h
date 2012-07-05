@@ -28,8 +28,8 @@ class CScene2D:
 {
    struct CBeliefContent
    {
-      std::string beliefId;
-      std::string visualObjectId;
+      cast::cdl::WorkingMemoryAddress beliefAddr;
+      cast::cdl::WorkingMemoryAddress visualObjectAddr;
 
       std::string colorName;
       double colorProb;
@@ -45,7 +45,8 @@ class CScene2D:
    };
    typedef std::shared_ptr<CBeliefContent> CBeliefContentPtr;
    std::map<cast::cdl::WorkingMemoryAddress, VisionData::VisualObjectPtr> mObjects;
-   std::map<cast::cdl::WorkingMemoryAddress, CBeliefContentPtr> mObjectBeliefs;
+   std::map<cast::cdl::WorkingMemoryAddress, CBeliefContentPtr> mObjectBeliefsByB;
+   std::map<cast::cdl::WorkingMemoryAddress, CBeliefContentPtr> mObjectBeliefsByVo;
 
 private:
    class CDisplayClient: public cogx::display::CDisplayClient
@@ -105,7 +106,7 @@ protected:
    void onAdd_MergedBelief(const cast::cdl::WorkingMemoryChange & _wmc);
    void onChange_MergedBelief(const cast::cdl::WorkingMemoryChange & _wmc);
 
-   void drawVisualObject(const std::string& id, const VisionData::VisualObjectPtr& pVisObj);
+   void drawVisualObject(const cast::cdl::WorkingMemoryAddress& objaddr, const VisionData::VisualObjectPtr& pVisObj);
          // , const VisionData::ProtoObjectPtr& pProtoObj);
 
 public:
