@@ -121,14 +121,13 @@ public class VisualObjectMotiveGenerator extends
 				"The single motive version should not be called directly for this generator");
 	}
 
-	protected boolean visualObjectIsVisible(
+	public static boolean visualObjectIsVisible(
 			CASTIndependentFormulaDistributionsBelief<MergedBelief> _belief) {
 		FormulaDistribution fd = _belief.getContent().get(
 				VisualObjectTransferFunction.PRESENCE_KEY);
 		String presenceValue = fd.getDistribution().firstValue()
 				.getProposition();
 
-		log("visual object presence: " + presenceValue);
 		return presenceValue
 				.equals(VisualObjectTransferFunction.PRESENCE_VISIBLE);
 	}
