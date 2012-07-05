@@ -9,7 +9,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Map.Entry;
 
+import coma.aux.ComaGBeliefHelper;
 import comadata.ComaRoom;
 
 import SpatialData.Place;
@@ -18,14 +20,20 @@ import VisionData.VisualObject;
 
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
+import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryReaderComponent;
 import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.IceXMLSerializer;
+import castutils.castextensions.WMView;
 
 import scala.collection.immutable.Set;
 
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
+import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
+import de.dfki.lt.tr.cast.dialogue.ComaReferringExpressionGeneration;
 import de.dfki.lt.tr.cast.dialogue.GBeliefMemory;
+import de.dfki.lt.tr.cast.dialogue.POPlanMonitor;
 import de.dfki.lt.tr.cast.dialogue.realisation.LFRealiser;
 import de.dfki.lt.tr.cast.dialogue.realisation.RealisationClient;
 import de.dfki.lt.tr.cast.dialogue.realisation.TarotCCGRealiser;
@@ -56,7 +64,7 @@ public class PlanVerbalizer {
 	
 	private final PDDLContentDeterminator m_contentDeterminator;
 	private LFRealiser m_realiser;
-	private WorkingMemoryReaderComponent m_castComponent;
+	private ManagedComponent m_castComponent;
 	
 	private HashMap<String, String> m_preLexicalSub  = new HashMap<String, String>();
 	private HashMap<String, String> m_postLexicalSub = new HashMap<String, String>();
@@ -67,6 +75,8 @@ public class PlanVerbalizer {
 	public boolean debug_lf_out = false;
 	
 	public GBeliefMemory m_gbmemory = new GBeliefMemory();
+	
+	final protected WMView<GroundedBelief> view = WMView.create(this.m_castComponent, GroundedBelief.class);
 	
 
 	/**
@@ -83,7 +93,7 @@ public class PlanVerbalizer {
 	 */
 	public PlanVerbalizer(String annotatedDomainFile, String pddlDomainFile,  String grammarFile, String ngramFile, String hostname, Integer port, WorkingMemoryReaderComponent component) throws IOException  {
 		// init CAST component for WM access and logging
-		m_castComponent = component;
+		m_castComponent = (ManagedComponent)component;
 		
 		log("PlanVerbalizer constructor called with annotatedDomainFile = " + annotatedDomainFile +
 				" pddlDomainFile = " + pddlDomainFile + " grammarFile = " + grammarFile);
@@ -365,6 +375,8 @@ public class PlanVerbalizer {
     			//GroundedBelief gbWME = m_castComponent.getMemoryEntry(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), GroundedBelief.class);
     			GroundedBelief gbWME = getGBelief(referentWMA);
     			
+    			log("getDeterminer with address " + referentWMA + " returned: " + getDeterminer(gbWME));
+    			
     			// check if it is the robot itself
     			if (isRobot(gbWME)) {
     				log_sb.append("\n WMA is the robot itself.");
@@ -399,6 +411,99 @@ public class PlanVerbalizer {
     	log(log_sb.toString());
     	return protoLF;
     }
+    
+    private String getDeterminer(GroundedBelief referentGB) {
+		
+    	if (this.m_castComponent != null) {
+    		
+    		if (((POPlanMonitor) this.m_castComponent).m_comareasoner != null) {
+    	
+		    	this.m_castComponent.log("GETDET: getDeterminer(" + referentGB.id + ")called");
+				// currently only handles "the" vs. "this" -- could also be extended to "a"
+				// currently only handles ComaRooms
+				CASTIndependentFormulaDistributionsBelief<GroundedBelief> referentGBProxy = 
+					CASTIndependentFormulaDistributionsBelief.create(GroundedBelief.class, referentGB);
+			
+				if (referentGBProxy.getType().equals(
+						SimpleDiscreteTransferFunction
+						.getBeliefTypeFromCastType(ComaRoom.class))) {
+					this.m_castComponent.log("GETDET: referent is a ComaRoom");
+					try {
+		
+						for (Entry<WorkingMemoryAddress, GroundedBelief> g : this.view.entrySet()) {
+							GroundedBelief currGBelief = g.getValue();
+							if (currGBelief.type.equals("Robot")) {
+								this.m_castComponent.log("GETDET: found the GroundedBelief of the Robot!");
+								CASTIndependentFormulaDistributionsBelief<GroundedBelief> robotGBProxy =
+									CASTIndependentFormulaDistributionsBelief.create(GroundedBelief.class, 	currGBelief);
+								robotGBProxy.getContent();
+								WMPointer isInRelateePtr = WMPointer.create(robotGBProxy.getContent().get(
+								"is-in").getDistribution().getMostLikely().get());
+		
+								if (isInRelateePtr!=null) {
+									this.m_castComponent.log("GETDET: found the is-in relatee, going to read its WME");
+									GroundedBelief gbOfRobotsPlace = this.m_castComponent.getMemoryEntry(isInRelateePtr.get().pointer, 
+											GroundedBelief.class);
+									this.m_castComponent.debug("GETDET: loaded WME of Robot's Place GBelief with ID " + gbOfRobotsPlace.id);
+		
+									CASTIndependentFormulaDistributionsBelief<GroundedBelief> gbPlaceProxy = 
+										CASTIndependentFormulaDistributionsBelief.create(GroundedBelief.class, gbOfRobotsPlace);
+									this.m_castComponent.debug("GETDET: created a CASTIndependentFormulaDistributionsBelief proxy for the Robot's Place");
+		
+									int placeID = -1;
+									try {
+										placeID  = gbPlaceProxy.getContent().get(
+												PlaceTransferFunction.PLACE_ID_ID)
+												.getDistribution().getMostLikely().getInteger();
+									} catch (BeliefInvalidQueryException e) {
+										this.m_castComponent.log("GETDET: Caught runtime exception: Belief formula is not of type proposition");
+										this.m_castComponent.logException(e);
+									}
+									this.m_castComponent.log("GETDET: robot is at place with ID " + placeID);
+		
+									String[] roomInstances = ((POPlanMonitor) this.m_castComponent).m_comareasoner.getRelatedInstancesByRelation(
+											"dora:place"+placeID, "dora:constituentOfRoom");
+									this.m_castComponent.log("GETDET: place" + placeID + " is in " + roomInstances.length + " room(s)");
+									
+									String roomReferent = "dora:" + ComaGBeliefHelper.getGBeliefComaIndividualName(referentGB);
+									this.m_castComponent.log("GETDET: let's check whether one of them is the referent " + referentGB.id);
+		
+									for (String roomIns : roomInstances) {
+										if (roomIns.startsWith(":")) roomIns = "dora" + roomIns;
+										this.m_castComponent.log("GETDET: current room instance is: " + roomIns + " and room refertent is " + roomReferent);
+										if (roomIns.equals(roomReferent)) {
+											this.m_castComponent.log("GETDET: the referent is the room in which the robot currently is -> THIS");
+											return "this";
+										}
+									}
+								}
+		
+							} else {
+								this.m_castComponent.debug("GETDET: current looked at GBelief is not about the Robot -- continuing...");
+								continue;
+							}
+						}
+					} catch (UnknownSubarchitectureException e) {
+						this.m_castComponent.log("GETDET: caught an UnknownSubarchitectureException");
+						this.m_castComponent.logException(e);
+					} catch (DoesNotExistOnWMException e) {
+						this.m_castComponent.log("GETDET: caught a DoesNotExistOnWMException");
+						this.m_castComponent.logException(e);
+					}
+				} else {
+					this.m_castComponent.log("GETDET: referent is not a ComaRoom");
+				}
+				this.m_castComponent.log("GETDET: reached end of getDeterminer() method -> THE");
+				return "the";
+    		} else {
+    			this.m_castComponent.log("GETDET: no coma reasoner -> THE");
+    			return "the";
+    		}
+    	} else {
+    		log("GETDET: running in standalone mode -> THE");
+    		return "the";
+    	}
+	}
     
 
 	/**
