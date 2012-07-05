@@ -28,6 +28,9 @@ class CScene2D:
 {
    struct CBeliefContent
    {
+      std::string beliefId;
+      std::string visualObjectId;
+
       std::string colorName;
       double colorProb;
       std::string shapeName;
@@ -40,8 +43,9 @@ class CScene2D:
          identProb = -1;
       }
    };
+   typedef std::shared_ptr<CBeliefContent> CBeliefContentPtr;
    std::map<cast::cdl::WorkingMemoryAddress, VisionData::VisualObjectPtr> mObjects;
-   std::map<cast::cdl::WorkingMemoryAddress, CBeliefContent> mObjectBeliefs;
+   std::map<cast::cdl::WorkingMemoryAddress, CBeliefContentPtr> mObjectBeliefs;
 
 private:
    class CDisplayClient: public cogx::display::CDisplayClient
