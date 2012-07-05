@@ -87,7 +87,7 @@ extends AbstractReferenceResolutionComponent<LastMentionedReferenceResolver> {
 				WorkingMemoryAddress qudAboutAddr = getLastMentioned();
 				if (qudAboutAddr != null) {
 					dFormula referent = new PointerFormula(0, qudAboutAddr, "");
-					double score = 1.0;
+					double score = 10.0;
 					result.hypos.add(new EpistemicReferenceHypothesis(epst, referent, score));
 				}
 			}
