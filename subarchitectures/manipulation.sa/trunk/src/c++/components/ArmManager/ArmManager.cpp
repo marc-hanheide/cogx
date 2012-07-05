@@ -55,6 +55,8 @@ void ArmManager::start()
   m_halt_arm = true;
   m_repeat_arm_movement = false;
   m_pointing_now = false;
+  m_pointingOffsetVer = POINTING_OFFSET_VER;
+  m_pointingOffsetHor = POINTING_OFFSET_VER;
 
   //  addChangeFilter(createGlobalTypeFilter<VisualObject>(cdl::ADD),
   //    new MemberFunctionChangeReceiver<ArmManager>(this, &ArmManager::receiveNewObject));
@@ -168,12 +170,22 @@ Pose3 ArmManager::pointingPose(const Pose3 objPose)
   Pose3 pointingPose = objPose;
 
   double dist = sqrt(sqr(pointingPose.pos.x) + sqr(pointingPose.pos.y));
-  double fact = (dist - POINTING_OFFSET)/dist;
+  double fact = (dist - m_pointingOffsetHor)/dist;
   debug("Calculation pointing pose x:%f y:%f dist: %f fact:%f xp:%f yp:%f",
       pointingPose.pos.x, pointingPose.pos.y, dist, fact,
       pointingPose.pos.x*fact, pointingPose.pos.y*fact);
-  pointingPose.pos.x*=fact;
-  pointingPose.pos.y*=fact;
+  
+  pointingPose.pos.x *= fact;
+  pointingPose.pos.y *= fact;
+  pointingPose.pos.z += m_pointingOffsetVer;
+  
+  double sin = pointingPose.pos.z + m_pointingOffsetVer;
+  double tan = sqrt(sqr(m_pointingOffsetHor) + sqr(sin));
+  
+  pointingPose.rot.m11 = m_pointingOffsetHor/tan;
+  pointingPose.rot.m12 = sin/tan;
+  pointingPose.rot.m21 = -sin/tan;
+  pointingPose.rot.m22 = m_pointingOffsetHor/tan;
 
   return pointingPose;
 }
@@ -191,6 +203,8 @@ bool ArmManager::pointAtObject(cdl::WorkingMemoryAddress addr)
     println("pointAtObject: the object does not exist!");
     return false;
   }
+  
+ // addCloseGripperCommand();
 
   return addMoveArmToPose(pointingPose(objPose));
 
@@ -330,6 +344,61 @@ bool ArmManager::addMoveToHomeCommand()
   return true;
 }
 
+
+bool ArmManager::addCloseGripperCommand()
+{
+  log("Close gripper.");
+
+  CloseGripperCommandPtr closeGripperCom = new CloseGripperCommand();
+  closeGripperCom->comp = COMPINIT;
+  closeGripperCom->status = NEW;
+  //	moveToHomeCom->targetObjectAddr = wma;
+  //	farArmMovementCom->offset = offset;
+  string data_id = newDataID();
+  m_repeat_arm_movement = true;
+
+  while(m_repeat_arm_movement){
+    m_repeat_arm_movement = false;
+    addToWorkingMemory(data_id, closeGripperCom);
+    // Wait for arm to finish
+    debug("Waiting for gripper to close");
+    while(m_halt_arm && isRunning())
+      sleepComponent(100);
+    m_halt_arm = true;
+    if(!isRunning())
+      return false;
+    deleteFromWorkingMemory(data_id);
+  }
+  log("Arm movement finished.");
+  return true;
+}
+
+
+bool ArmManager::addOpenGripperCommand()
+{
+  log("Open gripper.");
+  
+  OpenGripperCommandPtr openGripperCom = new OpenGripperCommand();
+  openGripperCom->comp = COMPINIT;
+  openGripperCom->status = NEW;
+  string data_id = newDataID();
+  m_repeat_arm_movement = true;
+
+  while(m_repeat_arm_movement){
+    m_repeat_arm_movement = false;
+    addToWorkingMemory(data_id, openGripperCom);
+    // Wait for arm to finish
+    debug("Waiting for gripper to open");
+    while(m_halt_arm && isRunning())
+      sleepComponent(100);
+    m_halt_arm = true;
+    if(!isRunning())
+      return false;
+    deleteFromWorkingMemory(data_id);
+  }
+  log("Arm movement finished.");
+  return true;
+}
 
 void ArmManager::overwriteFarArmMovementCommand(const cdl::WorkingMemoryChange & _wmc)
 {

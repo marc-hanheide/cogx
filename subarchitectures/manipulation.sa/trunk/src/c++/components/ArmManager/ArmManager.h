@@ -9,7 +9,8 @@
 #ifndef ARM_MANAGER_H
 #define ARM_MANAGER_H
 
-#define POINTING_OFFSET 0.3
+#define POINTING_OFFSET_HOR 0.1
+#define POINTING_OFFSET_VER 0.1
 
 #include <cast/architecture/ManagedComponent.hpp>
 
@@ -44,6 +45,8 @@ private:
   bool m_halt_arm;
   bool m_repeat_arm_movement;
   bool m_pointing_now;
+  double m_pointingOffsetVer;
+  double m_pointingOffsetHor;
 
   cdl::WorkingMemoryAddress m_pointedObjAddr;
 
@@ -84,6 +87,8 @@ private:
   bool addFarArmMovementCommand(cast::cdl::WorkingMemoryAddress wma); //, cogx::Math::Vector3 offset);
   bool addMoveToHomeCommand();
   bool addMoveArmToPose(cogx::Math::Pose3 pose);
+  bool addOpenGripperCommand();
+  bool addCloseGripperCommand();
 
   void receiveNewCommand(const cdl::WorkingMemoryChange &_wmc);
   void receiveDeletedObject(const cdl::WorkingMemoryChange &_wmc);
