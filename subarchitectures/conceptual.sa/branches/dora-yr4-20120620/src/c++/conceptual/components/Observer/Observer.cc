@@ -1298,7 +1298,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 
   case cdl::OVERWRITE:
   {
-    log("OVERWRITE");
+    debug("OVERWRITE");
     SpatialProperties::RoomShapePlacePropertyPtr shapePlacePropertyPtr;
     try
     {
