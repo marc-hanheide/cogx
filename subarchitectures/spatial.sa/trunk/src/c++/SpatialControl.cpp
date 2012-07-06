@@ -2118,16 +2118,16 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom) {
       wrn ("WARNING: SpatialControl::updateCtrl - interval: %f s",
           ((double) diff) * 1e-6);
     } else {
-      log("SpatialControl::updateCtrl - interval: %f s", ((double) diff) * 1e-6);
+      debug("SpatialControl::updateCtrl - interval: %f s", ((double) diff) * 1e-6);
     }
 
     diff = (newTime.s - m_lastSLAMPoseTime.s) * 1000000l + (newTime.us
         - m_lastSLAMPoseTime.us);
-    if (diff > 1500000) {
+    if (diff > 1800000) {
       wrn("WARNING: SpatialControl::updateCtrl - SLAM pose age: %f s",
           ((double) diff) * 1e-6);
     } else {
-      log("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double) diff)
+      debug("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double) diff)
           * 1e-6);
     }
   }
