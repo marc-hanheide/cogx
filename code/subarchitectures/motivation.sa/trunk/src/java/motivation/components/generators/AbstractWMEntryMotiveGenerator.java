@@ -312,8 +312,7 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 					newDataID(), getSubarchitectureID());
 		}
 		
-		motive.thisEntry = new WorkingMemoryAddress(newDataID(),
-				getSubarchitectureID());
+
 		assignCosts(motive);
 		if (isMonitoringMotivesForCompletion()) {
 			addChangeFilter(ChangeFilterFactory.createAddressFilter(
