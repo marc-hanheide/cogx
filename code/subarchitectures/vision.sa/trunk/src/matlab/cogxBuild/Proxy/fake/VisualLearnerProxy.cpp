@@ -25,7 +25,7 @@ class _InitMe_
 {
 public:
    _InitMe_() {
-#if 0
+#if 1
       // Full set of colors
       labelConceptMap.clear();
       labelConceptMap["red"] = 1;
