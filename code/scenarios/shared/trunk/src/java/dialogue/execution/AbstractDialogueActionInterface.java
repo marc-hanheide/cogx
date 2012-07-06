@@ -899,7 +899,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			} catch (CASTException e) {
 				logException(e);
 			}
-
+			setCompletion(true);
 			return result;
 
 		}
@@ -925,7 +925,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			} catch (CASTException e) {
 				logException(e);
 			}
-
+			setCompletion(true);
 			return result;
 
 		}
@@ -952,7 +952,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			} catch (CASTException e) {
 				logException(e);
 			}
-
+			setCompletion(true);
 			return result;
 
 		}
@@ -978,7 +978,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			} catch (CASTException e) {
 				logException(e);
 			}
-
+			setCompletion(true);
 			return result;
 
 		}
@@ -1004,7 +1004,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			} catch (CASTException e) {
 				logException(e);
 			}
-
+			setCompletion(true);
 			return result;
 
 		}
@@ -1021,6 +1021,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			JOptionPane.showMessageDialog(null,
 					"OI YOU! Add a new object that looks " + getAction().value
 							+ " DO AS I SAY! .... please xxx");
+			setCompletion(true);
 			return TriBool.TRITRUE;
 		}
 	}
@@ -1043,7 +1044,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			} catch (CASTException e) {
 				logException(e);
 			}
-
+			setCompletion(true);
 			return result;
 		}
 
