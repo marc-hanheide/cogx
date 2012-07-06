@@ -126,6 +126,7 @@ class AbsMLNListener :  public AbsMLNClient
 	q->atoms.push_back(qstr);
 	
     addToWorkingMemory(newDataID(), m_bindingSA, q);
+    log("Provided new query '%s' to MLN engine id %s", qstr.c_str(), q->engId.c_str());
   }
   
   void setQuery(vector<string> eidl, string qstr)
@@ -134,6 +135,22 @@ class AbsMLNListener :  public AbsMLNClient
 	
 	for(it = eidl.begin(); it < eidl.end(); it++)
 	  setQuery(*it, qstr);
+  }
+  
+  void triggerWtLearning(string eid, vector<string> trueEvd, vector<string> falseEvd)
+  {
+	LearnWtsPtr wl = new LearnWts();
+	
+	vector<string>::iterator it;
+	for(it = trueEvd.begin(); it < trueEvd.end(); it++)
+	  wl->trueEvidence.push_back(*it);
+	for(it = falseEvd.begin(); it < falseEvd.end(); it++)
+	  wl->falseEvidence.push_back(*it);
+	wl->engId = eid;	
+	
+	addToWorkingMemory(newDataID(), getBindingSA(), wl);
+	log("Triggered learning in MLN engine id %s", query.c_str(), q->engId.c_str());
+
   }
   
  public:
