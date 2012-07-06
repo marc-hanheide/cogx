@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import coma.aux.ComaGBeliefHelper;
 import comadata.ComaRoom;
@@ -39,6 +41,7 @@ import de.dfki.lt.tr.cast.dialogue.realisation.RealisationClient;
 import de.dfki.lt.tr.cast.dialogue.realisation.TarotCCGRealiser;
 import de.dfki.lt.tr.planverb.generation.Message;
 import de.dfki.lt.tr.planverb.generation.ProtoLFMessage;
+import de.dfki.lt.tr.planverb.generation.RhetoricalMarkerMessage;
 import de.dfki.lt.tr.planverb.generation.StringMessage;
 import de.dfki.lt.tr.planverb.planning.pddl.PDDLContentDeterminator;
 import de.dfki.lt.tr.planverb.planning.pddl.PDDLDomainModel;
@@ -283,11 +286,43 @@ public class PlanVerbalizer {
 		List<Message> messages = m_contentDeterminator.determineMessages(h);	
 		log("contentDeterminator returned " + messages.size() + " messages for the full History.");
 
-		return realizeMessages(messages);
+		return aggregateStrings(realizeMessages(messages));
 	}
 
 
 	
+	private String aggregateStrings(String text) {
+//		System.out.println("entered");
+		String[] sentences = text.split("\n");
+		for (int i=0; i < sentences.length -1 ; i++) {
+//			System.out.println(sentences[i]);
+			Pattern pattern = Pattern.compile("(in the room )([a-z]+)( at the place )([a-z]+)");
+			// In case you would like to ignore case sensitivity you could use this
+			// statement
+			// Pattern pattern = Pattern.compile("\\s+", Pattern.CASE_INSENSITIVE);
+			Matcher matcher = pattern.matcher(sentences[i]);
+			// Check all occurrences
+			while (matcher.find()) {
+//				System.out.println("Current sentence = " + sentences[i]);
+//				System.out.print("Start index: " + matcher.start());
+//				System.out.print(" End index: " + matcher.end() + " ");
+//				System.out.println(matcher.group());
+				sentences[i+1] = sentences[i+1].replaceAll(matcher.group(), "there");
+				sentences[i+1] = "and " + sentences[i+1];
+			}
+		}
+		
+		String output = "";
+		for (int i=0; i < sentences.length -1; i++) {
+			output+=sentences[i];
+			if (!sentences[i+1].startsWith("because") && !sentences[i+1].startsWith("and") && !sentences[i+1].startsWith("but")) output += ".\n";
+//			else if (sentences[i+1].startsWith("and then")) output += ".\n";
+			else output += " ";
+		}
+		
+		return output + sentences[sentences.length-1] + ".";
+	}
+
 	public String realizeMessages(List<Message> messages) {
 		StringBuilder log_sb = new StringBuilder();
 		StringBuilder output_sb = new StringBuilder();
@@ -343,7 +378,7 @@ public class PlanVerbalizer {
 				if (!realization.equals("")) {
 					String outputText = postProcessLexiconSubstitution(realization);
 					log_sb.append("\n appending postProcessLexiconSubstitution() final output text: \n" + outputText);
-					output_sb.append(outputText + ". \n");
+					output_sb.append(outputText + "\n");
 				} else {
 					if (debug_lf_out) {
 						log_sb.append("\n appending original LF to output text.");
@@ -357,8 +392,9 @@ public class PlanVerbalizer {
 				String outputText = ((StringMessage) msg).getText();
 				log_sb.append("\n appending current Message, which is a StringMessage: \n " + outputText);
 				// rhetorical markers are prepended to the subsequent sentence:
-				if ("after that".equals(outputText.toLowerCase())) output_sb.append(outputText + " "); // no full stop + line break
-				else output_sb.append(outputText + ". \n");
+				if (msg instanceof RhetoricalMarkerMessage) {
+					output_sb.append(outputText + " "); // no full stop + line break
+				} else output_sb.append(outputText + "\n");
 			}
         }
     	log(log_sb.toString());
@@ -611,19 +647,25 @@ public class PlanVerbalizer {
 		boolean changed = false;
 		String lfString = blf.toString();
 		
+//		System.out.println("++++++++++++++ WMA" + lfString);
+		
 		if (lfString.contains("place_")) {
 			String matchPattern = "(place_)(_?[0-9a-zA-Z]+)(_?)(_?[0-9a-zA-Z]+)(\")";
 			String replacePattern = "$2:$4@PLANNERPLACE$5";
 			lfString = lfString.replaceAll(matchPattern, replacePattern);
 			changed = true;
+//			System.out.println("++++++++++++++ place_!" + lfString);
 		}
 		
 		if (lfString.contains("room")) {
 			String matchPattern = "(room)([0-9]+)(\":castreferent)";
-			String replacePattern = "room$2@HYPOTHETICAL";
+			String replacePattern = "room:$2@HYPOTHETICAL$3";
 			lfString = lfString.replaceAll(matchPattern, replacePattern);
 			changed = true;
+//			System.out.println("++++++++++++++ roomX!" + lfString);
 		}
+		
+//		System.out.println("++++++++++++++ RESULT" + lfString);
 		
 		if (!changed) return blf;
 		else return BasicLogicalForm.checkedFromString(lfString);
@@ -856,7 +898,7 @@ public class PlanVerbalizer {
 
 						BasicState headState = BasicState.newBuilder(builderTypeF)
 								.setProposition(catF)
-								.addFeature("Delimitation", "existential")
+								.addFeature("Delimitation", "unique")
 								.addFeature("Quantification", "specific")
 								.addFeature("Num", "sg")
 								.build();
@@ -885,7 +927,7 @@ public class PlanVerbalizer {
 
 					BasicState headState = BasicState.newBuilder(builderTypeF)
 							.setProposition(catF)
-							.addFeature("Delimitation", "existential")
+							.addFeature("Delimitation", "unique")
 							.addFeature("Quantification", "specific")
 							.addFeature("Num", "sg")
 							.build();
@@ -925,10 +967,18 @@ public class PlanVerbalizer {
 	public static void main(String[] args) {
 		File f = new File(args[7]);
 		
+		
 		PlanVerbalizer test;
+		
+	
 		try {
 			test = new PlanVerbalizer(args[0], args[1], args[2], args[3], args[4], Integer.parseInt(args[5]), args[6]);
 			test.debug_lf_out = true;
+			//System.out.println(test.aggregateStrings("my task was to search for a magazine and to find it.\nI assumed the room zero was a meetingroom.\nI moved to the placeholder one from the place zero.\nbecause I wanted to go to the placeholder two via the place zero from the placeholder one.\nI wanted to go to the placeholder three from the placeholder two via the place zero.\nI wanted to move from the placeholder three to the place zero.\nI wanted to create viewcones in the room zero at the place zero.\nI wanted to search for a magazine in the room zero at the place zero.\nthen I assumed the placeholder four was in a meetingroom.\nI moved from the place one to the placeholder four.\nbecause I wanted to create viewcones in a room at the placeholder four.\nI wanted to look for a magazine in some room at the placeholder four.\nafter that I assumed the room zero was a meetingroom.\nI went to the placeholder two via the place one from the place four.\nbecause I wanted to move from the placeholder two to the place one.\nI wanted to go to the placeholder three from the place one via the place zero.\nI wanted to move from the placeholder three to the place zero.\nI wanted to create viewcones in the room zero at the place zero.\nI wanted to search for a magazine in the room zero at the place zero.\nafterwards I assumed the room zero was a meetingroom.\nI moved from the place two to the placeholder three.\nbecause I wanted to go to the placeholder six from the placeholder three via the place two.\nI wanted to go to the placeholder seven from the placeholder six via the place two.\nI wanted to move from the placeholder seven to the place two.\nI wanted to create viewcones in the room zero at the place two.\nI wanted to search for a magazine in the room zero at the place two.\nafter that I assumed the room zero was a meetingroom.\nI moved to the placeholder seven from the place three.\nbecause I wanted to go to the placeholder eight from the placeholder seven via the place three.\nI wanted to move from the placeholder eight to the place three.\nI wanted to go to the placeholder six via the place two from the place three.\nI wanted to move from the placeholder six to the place two.\nI wanted to create viewcones in the room zero at the place two.\nI wanted to search for a magazine in the room zero at the place two.\nthen I assumed the room zero was a meetingroom.\nI moved from the place seven to the placeholder nine.\nI moved to the place seven from the placeholder nine.\nI went to the placeholder eight from the place seven via the place three.\nI moved from the placeholder eight to the place three.\nbecause I wanted to create viewcones in the room zero at the place three.\nI wanted to search for a magazine in the room zero at the place three.\nafterwards I assumed a magazine was in the room zero.\nbecause I wanted to search for a magazine in the room zero at the place three.\nthen I assumed a magazine was in the room zero.\nI didn't find a magazine in the room zero at the place three.\n"));
+			
+			//if ("".toLowerCase().equals("")) return;
+			
+			
 			System.out.println(test.verbalizeHistory(new PDDLHistory(f, Integer.parseInt(args[8]))));
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block

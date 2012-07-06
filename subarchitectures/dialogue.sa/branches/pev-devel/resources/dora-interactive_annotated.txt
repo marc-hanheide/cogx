@@ -539,7 +539,7 @@
    ;; Searches for an object in the room
    ;; precondition: robot is in the specified room
 
-;;LF search_for_object_in_room => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?tid_?block_?step,?r:castreferent ^ ?tid_?block_?step,?r)) ^ <Modifier>(at_?block_?step:m-location ^ around ^ <Anchor>(?tid_?block_?step,?p:castreferent ^ ?tid_?block_?step,?p))))
+;;LF search_for_object_in_room => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?tid_?block_?step,?r:castreferent ^ ?tid_?block_?step,?r)) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?tid_?block_?step,?p:castreferent ^ ?tid_?block_?step,?p))))
    (:action search_for_object_in_room
             :agent (?a - robot)
             :parameters (?l - label ?r - room)
