@@ -18,6 +18,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 import castutils.experimentation.StopWatch;
+import castutils.time.Rate;
 import execution.components.AbstractExecutionManager;
 import execution.slice.TriBool;
 
@@ -100,6 +101,8 @@ public class SerialPlanExecutor extends Thread {
 
 	
 	private void initCallbacks() {
+		
+		
 		// if either struct is deleted we stop execution
 		m_stopCallback = new WorkingMemoryChangeReceiver() {
 			@Override
@@ -242,12 +245,19 @@ public class SerialPlanExecutor extends Thread {
 			actionWrapper = triggerNextAction(null);
 			assert actionWrapper != null : "first action should not be null";
 
+			Rate rate = new Rate(4);
+			
 			while (m_component.isRunning() && hasNotBeenStopped()) {
 
-				// wait for the component to receive changes
-				m_component.waitForChanges();
+				m_component.log("waiting for changes");
 				
+				rate.sleep();
+
+				m_component.log("awake");
+
 				m_component.lockComponent();
+				
+				m_component.log("component locked");
 				
 				while (m_component.isPaused()) {
 					m_component.log("we are paused... let's wait");
@@ -265,17 +275,28 @@ public class SerialPlanExecutor extends Thread {
 
 					// if we've been explicitly stopped
 					if (m_exeState == ExecutionState.HALTED) {
+						
+						m_component.log("ExecutionState.HALTED");
 						// if something is happening
 						if (actionWrapper.isInProgress()) {
 							m_component.log("stopping action in progress");
 							m_component.stopExecution(actionWrapper
 									.getActionAddress());
 						}
+						
 					} else if (hasNotBeenStopped()) {
+						
+						m_component.log("still running");
+						
 						// if one of the changes completed our action
 						if (!actionWrapper.isInProgress()) {
+						
+							m_component.log("action wrapper not in progress");
+							
 							// and we haven't told the planner its complete
 							if (!actionWrapper.haveSentCompletionSignal()) {
+
+								m_component.log("completion sent not sent, doing so");								
 								
 								// update state on completion as appropriate,
 								// return
@@ -284,6 +305,9 @@ public class SerialPlanExecutor extends Thread {
 								signalActionComplete(actionWrapper);
 							} else {
 								
+								m_component.log("completion sent, triggering next action");
+
+								
 								// try to trigger the next action. if nothing is
 								// triggered then actionWrapper doesn't change.
 								actionWrapper = triggerNextAction(actionWrapper);
@@ -291,8 +315,10 @@ public class SerialPlanExecutor extends Thread {
 						}
 					}
 				}
+				m_component.log("loop");								
 			
 				m_component.unlockComponent();
+				m_component.log(" and unlocked");					
 				
 			}
 		} catch (CASTException e) {
