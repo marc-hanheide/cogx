@@ -1,5 +1,6 @@
 package eu.cogx.goals.george;
 
+import VisionData.VisualObject;
 import motivation.slice.TutorInitiativeLearningMotive;
 import motivation.slice.TutorInitiativeMotive;
 import cast.AlreadyExistsOnWMException;
@@ -8,6 +9,7 @@ import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
+import cast.architecture.ChangeFilterFactory;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTUtils;
@@ -18,6 +20,7 @@ import de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
 import de.dfki.lt.tr.dialogue.intentions.RichIntention;
 import dialogue.execution.AbstractDialogueActionInterface;
+import eu.cogx.goals.george.AbstractInterpretedIntentionMotiveGenerator.VOBeliefMonitor;
 import execution.slice.Robot;
 
 /**
@@ -112,6 +115,11 @@ public class PossibleInterpretationsMotiveGenerator
 			markReferent(aboutBeliefAddress(iint));
 		}
 
+		// Monitor so motive is deleted if any objects change in visibility
+		// (including new appearances).
+		// This is not ideal, but it's the easiest, most reliable approach
+		monitorForObjectVisibility(motive);
+
 		// if this is an attributed belief task, mark attributions in all
 		// referents too
 		if (motive instanceof TutorInitiativeLearningMotive) {
@@ -126,6 +134,12 @@ public class PossibleInterpretationsMotiveGenerator
 		}
 
 		return motive;
+	}
+
+	private void monitorForObjectVisibility(TutorInitiativeMotive motive) {
+		addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(VisualObject.class),
+				new VOBeliefMonitor(motive));
 	}
 
 	private boolean neeedsDisambiguation(PossibleInterpretedIntentions _pii) {
@@ -217,7 +231,8 @@ public class PossibleInterpretationsMotiveGenerator
 		}
 
 		// now execute success effects on resolved intention
-		if (!_pii.resolvedIntention.equals(NewIntentionRecognizer.EMPTY_ADDRESS)) {
+		if (!_pii.resolvedIntention
+				.equals(NewIntentionRecognizer.EMPTY_ADDRESS)) {
 			InterpretedIntention iint = _pii.intentions
 					.get(_pii.resolvedIntention);
 
