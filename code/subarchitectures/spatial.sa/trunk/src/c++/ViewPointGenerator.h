@@ -47,8 +47,9 @@ public:
       BloxelMap* pbloxelmap, int samplesize, size_t maxViewConeCount,
       double sampleawayfromobs, double conedepth, double tiltstep,
       double panstep, double horizangle, double vertangle, double minDistance,
-      double minConeProb, double minRelativeConeProb, double pdfsum,
-      double pdfthreshold, double robotx, double roboty);
+      double minConeProb, double minRelativeConeProb,
+      double samplesAroundPlace, double pdfsum, double pdfthreshold,
+      double robotx, double roboty);
   virtual ~ViewPointGenerator();
   double m_lastMapPDFSum;
   //NEW
@@ -61,7 +62,7 @@ public:
   map<int, vector<int> > m_viewconesIntersections;
 
   vector<pair<unsigned int, double> > getOrdered2DCandidateViewCones(vector<
-      NavData::FNodePtr> &nodes,vector<SensingAction> &excluded_cones);
+      NavData::FNodePtr> &nodes, vector<SensingAction> &excluded_cones);
 
   bool isPointSameSide(XVector3D p1, XVector3D p2, XVector3D a, XVector3D b);
   void findBoundingRectangle(XVector3D a, XVector3D b, XVector3D c,
@@ -85,7 +86,7 @@ public:
       NavData::FNodePtr> &nodes);
 
   std::vector<Cure::Pose3D> sample2DGridFromNodes(
-      vector<NavData::FNodePtr> &nodes,vector<SensingAction> &excluded_cones);
+      vector<NavData::FNodePtr> &nodes, vector<SensingAction> &excluded_cones);
 
   AVS_ContinualPlanner * m_component;
   std::vector<Cure::Pose3D> m_samples2D;
@@ -107,6 +108,7 @@ public:
   double m_pdfthreshold;
   double m_sensingProb;
   double m_panstep;
+  double m_samplesAroundPlace;
 
 };
 }
