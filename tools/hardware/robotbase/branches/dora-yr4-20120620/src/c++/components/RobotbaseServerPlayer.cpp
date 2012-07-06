@@ -290,7 +290,7 @@ RobotbaseServerPlayer::runComponent()
       //nah: added isRunning check to prevent hang on CAST stop()
       if ( isRunning() && (!m_PushClients[i].timer.isRunning() ||
 			   m_PushClients[i].timer.split() >= m_PushClients[i].interval )) {
-        log("pushed odom to client %d", i);    
+        debug("pushed odom to client %d", i);    
         m_PushClients[i].timer.restart();
         m_PushClients[i].prx->receiveOdometry(m_Odom);
       }
