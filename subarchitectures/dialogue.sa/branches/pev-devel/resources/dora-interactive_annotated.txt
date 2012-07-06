@@ -29,7 +29,7 @@
    ;; derived predicates
 ;;LF attached_to_room => @{state_?block_?step:event}(context ^ <Subject>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Modifier>(next_?block_?step:m-location ^ next ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)))
    (attached_to_room ?p - place ?r - room)
-;;LF not_fully_explored => @{state_?block_?step:ascripton}(be ^ <Polarity>neg ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(explored_?block_?step:state ^ explored ^ <Modifier>(full_?block_?step:modifier ^ full))
+;;LF not_fully_explored => @{state_?block_?step:ascripton}(be ^ <Polarity>neg ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(explored_?block_?step:state ^ explored ^ <Modifier>(full_?block_?step:modifier ^ full)))
    (not_fully_explored ?r)
    (trans_related ?o - visualobject ?where - (either visualobject room))
    (cones_exist  ?l - label ?rel - spatial_relation ?where - (either visualobject room))
@@ -82,12 +82,12 @@
    ;; The result of applying the default knowledge.
    ;; E.g. category(r1) = kitchen AND (dora__in_room cornflakes kitchen) => (obj_exists cornflakes in kitchen)
    ;; Also see the rules below
-;;LF obj_exists => @{state_?block_?step:action-non-motion(find ^ <Mood>ind ^ <Tense>pres ^ <Voice>passive ^ <Actor>(context_?block_?step:entity ^ context) ^ <Modifier>(can_?block_?step:modal ^ can) ^ <Modifier>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)) ^ <Patient>(=var_?block_?step:thing ^ =var  ^ <Delimitation>variable ^ <Quantification>unspecific))
+;;LF obj_exists => @{state_?block_?step:action-non-motion}(find ^ <Mood>ind ^ <Tense>pres ^ <Voice>passive ^ <Actor>(context_?block_?step:entity ^ context) ^ <Patient>(=var_?block_?step:thing ^ =var  ^ <Delimitation>variable ^ <Quantification>unspecific) ^ <Modifier>(can_?block_?step:modal ^ can) ^ <Modifier>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)))
    (obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room)) - boolean
    (p-obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room) ?c - category) - number
 
    ;; === room properties ===
-;;LF category => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))
+;;LF category => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))
    (category ?r - room) - category
    (identity ?r - room) - category
    (roomid ?r - room) - number
@@ -740,6 +740,8 @@
             :effect (and 
                      (increase (total-cost) 10))
             )
+
+;;LF ask-for-object-existence => @{step_?block_?step:communication}(ask ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(context_?block_?step:person ^ context ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(if_?block_?step:m-condition ^ if ^ <Event>(be_?block_?step:ascription ^ be ^ <Cop-Restr>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(?rel_?block_?step:m-location ^ ?rel ^ <Anchor>(?tid_?block_?step,?what:castreferent ^ ?what)))
 
    (:observe person
              :agent (?a - robot)
