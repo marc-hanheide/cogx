@@ -39,6 +39,41 @@ import execution.slice.Robot;
 public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.Object>
 		extends AbstractWMEntryMotiveGenerator<TutorInitiativeMotive, T> {
 
+	protected class VOBeliefMonitor implements WorkingMemoryChangeReceiver {
+
+		private final WorkingMemoryAddress m_motiveAddress;
+
+		public VOBeliefMonitor(TutorInitiativeMotive _motive) {
+			m_motiveAddress = _motive.thisEntry;
+		}
+
+		@Override
+		public void workingMemoryChanged(WorkingMemoryChange _wmc)
+				throws CASTException {
+
+			println("InterpretedIntentionMotiveGenerator.monitorForObjectVisibility() - UPDATE");
+
+			// if belief is deleted then delete motive and remove filter
+			if (_wmc.operation == WorkingMemoryOperation.DELETE) {
+				deleteFromWorkingMemory(m_motiveAddress);
+				removeChangeFilter(this);
+			} else {
+				// OVERWRITE
+				MergedBelief mb = getMemoryEntry(_wmc.address,
+						MergedBelief.class);
+				CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
+						.create(MergedBelief.class, mb);
+
+				// delete motive if object is no longer visible
+				if (!VisualObjectMotiveGenerator.visualObjectIsVisible(belief)) {
+
+					deleteFromWorkingMemory(m_motiveAddress);
+					removeChangeFilter(this);
+				}
+			}
+		}
+	}
+	
 	public AbstractInterpretedIntentionMotiveGenerator(Class<T> _entryCls) {
 		super(TutorInitiativeMotive.class, _entryCls);
 		monitorMotivesForDeletion(true);

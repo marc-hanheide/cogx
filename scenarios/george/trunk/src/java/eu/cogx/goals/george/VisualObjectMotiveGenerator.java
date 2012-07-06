@@ -49,7 +49,7 @@ public class VisualObjectMotiveGenerator extends
 
 	// TODO Add config options to set these
 	private boolean m_colourEnabled = true;
-	private boolean m_shapeEnabled = false;
+	private boolean m_shapeEnabled = true;
 	private boolean m_identityEnabled = false;
 
 	public VisualObjectMotiveGenerator() {

@@ -106,6 +106,7 @@ public class FakeManipulationActionInterface extends
 						logException(e);
 					}
 					
+					setCompletion(true);
 					actionComplete();
 					return TriBool.TRITRUE;
 
@@ -134,6 +135,7 @@ public class FakeManipulationActionInterface extends
 				logException(e);
 			}
 			actionComplete();
+			setCompletion(true);
 			return TriBool.TRITRUE;
 
 		}
