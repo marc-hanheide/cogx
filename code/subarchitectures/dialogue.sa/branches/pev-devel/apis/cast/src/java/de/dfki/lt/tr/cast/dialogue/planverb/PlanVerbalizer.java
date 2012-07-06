@@ -261,13 +261,14 @@ public class PlanVerbalizer {
 		//m_preLexicalSub. put("<ExecutionStatus>PENDING", "<Mood>ind ^ <Tense>fut ^ <Modifier>(will1_0:modal ^ will)");
 		
 		m_preLexicalSub.put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
+		m_preLexicalSub.put("m-cause", "m-condition");
 		
 		m_postLexicalSub.put("cones", "viewcones");
 		m_postLexicalSub.put("did not search for", "didn't find");
 		m_postLexicalSub.put("did not", "could not successfully");
-
-		m_preLexicalSub.put("placeholder", "recreationroom");
-		m_postLexicalSub.put("recreationroom", "placeholder");
+		
+		//m_preLexicalSub.put("placeholder", "recreationroom");
+		//m_postLexicalSub.put("recreationroom", "placeholder");
 	}
 	
 	public String verbalizeHistory(final List<POPlan> hlist, int planningTaskID) {
@@ -305,6 +306,17 @@ public class PlanVerbalizer {
 				}
 				log("Current Message is a ProtoLFMessage:\n" + ((ProtoLFMessage) msg).getProtoLF());
 
+				// fixing malformed WMAs before GRE
+				try {
+					protoLF = preProcessWMAs(protoLF);
+					log_sb.append("\n WMA substitution before realization yielded: \n" + protoLF.toString());
+				} catch (BuildException e) {
+					logException(e);
+				} catch (ParseException e) {
+					logException(e);
+				}
+				
+				
 				// do GRE 
 				protoLF = doGRE(protoLF);
 				log_sb.append("\n doGRE() yielded: \n" + protoLF.toString());
@@ -371,11 +383,15 @@ public class PlanVerbalizer {
     	Collection<WMAddress> jswma = scala.collection.JavaConversions.asJavaCollection(swma);
     	for (WMAddress referentWMA : jswma) {
     		log_sb.append("\n current referentWMA = " + referentWMA);
+    		WMAddress lookupWMA;
+    		if (referentWMA.subarchitecture().equals("PLANNERPLACE")) {
+    			lookupWMA = new WMAddress(referentWMA.id().toUpperCase(), "spatial.sa");
+    		} else lookupWMA = referentWMA;
     		try {
     			//GroundedBelief gbWME = m_castComponent.getMemoryEntry(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), GroundedBelief.class);
-    			GroundedBelief gbWME = getGBelief(referentWMA);
+    			GroundedBelief gbWME = getGBelief(lookupWMA);
     			
-    			log("getDeterminer with address " + referentWMA + " returned: " + getDeterminer(gbWME));
+    			log("getDeterminer with address " + lookupWMA + " returned: " + getDeterminer(gbWME));
     			
     			// check if it is the robot itself
     			if (isRobot(gbWME)) {
@@ -572,6 +588,29 @@ public class PlanVerbalizer {
 
     
 	/**
+	 * This method performs the WMA substitution pre-processing step.
+	 * 
+	 * @param blf
+	 * @return a BasicLogicalForm that doesn't contain a malformed WMA
+	 * @throws BuildException
+	 * @throws ParseException
+	 */
+	private BasicLogicalForm preProcessWMAs(BasicLogicalForm blf) throws BuildException, ParseException {
+		boolean changed = false;
+		String lfString = blf.toString();
+		
+		if (lfString.contains("place_")) {
+			String matchPattern = "(place_)([0-9a-zA-Z]+)(_+)(\\w+)(\")";
+			String replacePattern = "$2:$4@PLANNERPLACE$5";
+			lfString = lfString.replaceAll(matchPattern, replacePattern);
+			changed = true;
+		}
+		
+		if (!changed) return blf;
+		else return BasicLogicalForm.checkedFromString(lfString);
+	}   
+    
+	/**
 	 * This method performs the lexical substitution pre-processing step.
 	 * 
 	 * @param blf
@@ -583,15 +622,13 @@ public class PlanVerbalizer {
 		boolean changed = false;
 		String lfString = blf.toString();
 		
-		log(m_preLexicalSub.toString());
-
 		for (String badWord : m_preLexicalSub.keySet()) {
 			if (lfString.contains(badWord)) {
 				lfString = lfString.replace(badWord, m_preLexicalSub.get(badWord));
 				changed = true;
 			}
 		}
-		
+
 		if (!changed) return blf;
 		else return BasicLogicalForm.checkedFromString(lfString);
 	}
