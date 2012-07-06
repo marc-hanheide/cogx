@@ -469,7 +469,7 @@ void DisplayNavInPB::newPlanePointCloud(
 
 void DisplayNavInPB::newShapeProperty(
     const cast::cdl::WorkingMemoryChange &objID) {
-  log("Entered newShapeProperty");
+  debug("Entered newShapeProperty");
 
   // Get the property
   SpatialProperties::RoomShapePlacePropertyPtr property;
@@ -503,8 +503,7 @@ void DisplayNavInPB::newShapeProperty(
   std::map<long, Node>::iterator nodeIter = m_Nodes.find(fnodePtr->nodeId);
 
   if (nodeIter == m_Nodes.end()) {
-    println(
-        "error: coma room contains a node I do not know about: placeID = %d",
+    error("error: coma room contains a node I do not know about: placeID = %d",
         property->placeId);
 
     log("Exited newShapeProperty");
@@ -521,7 +520,7 @@ void DisplayNavInPB::newShapeProperty(
 
   addProperties(sp, property->placeId);
 
-  log("Exited newShapeProperty");
+  debug("Exited newShapeProperty");
 }
 
 void DisplayNavInPB::newSizeProperty(
@@ -1094,7 +1093,7 @@ void DisplayNavInPB::runComponent() {
   log("Connected to peekabot, ready to go");
   if (m_PeekabotClient.is_connected()) {
     while (isRunning()) {
-      log("while loop");
+      debug("while loop");
 
       ptz::PTZReading ptuPose;
       if (m_ReadPTU) {
@@ -1139,7 +1138,7 @@ void DisplayNavInPB::runComponent() {
           m_ProxyKinect.set_vertices(kinectVerts);
         }
 
-        log("Display robot pose");
+        debug("Display robot pose");
         // Display robot pose
         if (m_ShowRobot && m_RobotPose) {
           m_ProxyRobot.set_pose(m_RobotPose->x, m_RobotPose->y, 0,
@@ -1157,7 +1156,7 @@ void DisplayNavInPB::runComponent() {
         // Display the line map
         if (m_ShowWalls && m_LineMap) {
 
-          log("Displaying %d wall segments", m_LineMap->lines.size());
+          debug("Displaying %d wall segments", m_LineMap->lines.size());
 
           for (int i = m_LineMap->lines.size(); i > 10000; i++) {
             peekabot::PolygonProxy pp;
@@ -1192,7 +1191,7 @@ void DisplayNavInPB::runComponent() {
           }
 
         }
-        log("Display the people");
+        debug("Display the people");
         // Display the people being tracked
         if (m_ShowPeople)
           displayPeople();
@@ -1262,7 +1261,7 @@ void DisplayNavInPB::displayPeople() {
 }
 
 void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID) {
-  log("Entered newRobotPose");
+  debug("Entered newRobotPose");
 
   NavData::RobotPose2dPtr oobj = getMemoryEntry<NavData::RobotPose2d> (
       objID.address);
@@ -1271,7 +1270,7 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID) {
     IceUtil::Mutex::Lock lock(m_Mutex);
     m_RobotPose = oobj;
   }
-  log("newRobotPose(x=%.2f y=%.2f a=%.4f t=%ld.%06ld", m_RobotPose->x,
+  debug("newRobotPose(x=%.2f y=%.2f a=%.4f t=%ld.%06ld", m_RobotPose->x,
       m_RobotPose->y, m_RobotPose->theta, (long) m_RobotPose->time.s,
       (long) m_RobotPose->time.us);
   if (m_ShowPath) {
@@ -1328,20 +1327,20 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID) {
           ConceptualData::ProbabilityDistributions conceptualProbdist =
               m_queryHandlerServerInterfacePrx->query("p(*room" + roomid
                   + "_category)");
-          log("prod dist has: %d", conceptualProbdist.size());
+          debug("prod dist has: %d", conceptualProbdist.size());
           if (conceptualProbdist.size() != 0) {
             SpatialProbabilities::ProbabilityDistribution probdist =
                 conceptualProbdist[0];
             double maxprob = -1;
             int maxindex = -1;
-            log("massfunction has: %d", probdist.massFunction.size());
+            debug("massfunction has: %d", probdist.massFunction.size());
             for (unsigned int i = 0; i < probdist.massFunction.size(); i++) {
               if (probdist.massFunction[i].probability > maxprob) {
                 maxindex = i;
                 maxprob = probdist.massFunction[i].probability;
               }
             }
-            log("maxprob index is: %d", maxindex);
+            debug("maxprob index is: %d", maxindex);
             SpatialProbabilities::StringRandomVariableValuePtr val =
                 new SpatialProbabilities::StringRandomVariableValue;
             val
@@ -1350,7 +1349,7 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID) {
             peekabot::PolylineProxy ProxyPathLogtemp;
             if (val->value != m_currentMostLikelyRoom) {
               m_currentMostLikelyRoom = val->value;
-              log("Changing line color!");
+              debug("Changing line color!");
               ProxyPathLogtemp.add(m_ProxyTrajectory, "path_log",
                   peekabot::AUTO_ENUMERATE_ON_CONFLICT);
               peekabot::VertexSet set;
@@ -1380,7 +1379,7 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID) {
       }
     }
   }
-  log("Exited newRobotPose");
+  debug("Exited newRobotPose");
 }
 
 void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID) {
@@ -1482,7 +1481,7 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID) {
 }
 
 void DisplayNavInPB::newLineMap(const cdl::WorkingMemoryChange &objID) {
-  log("newLineMap called");
+  debug("newLineMap called");
 
   shared_ptr<CASTData<NavData::LineMap> > oobj = getWorkingMemoryEntry<
       NavData::LineMap> (objID.address);
@@ -1491,7 +1490,7 @@ void DisplayNavInPB::newLineMap(const cdl::WorkingMemoryChange &objID) {
     IceUtil::Mutex::Lock lock(m_Mutex);
     m_LineMap = oobj->getData();
   }
-  log("Exited newLineMap");
+  debug("Exited newLineMap");
 }
 
 void DisplayNavInPB::newPerson(const cdl::WorkingMemoryChange &objID) {
@@ -2542,7 +2541,7 @@ void DisplayNavInPB::redisplayEdgesToNode(const DisplayNavInPB::Node &node) {
         displayEdge(node, n->second);
         log("Redisplaying edge between nodes %ld and %ld", node.m_Id, e->second);
       } else {
-        log("WARNING: Did not find node %ld, couldn't redisplay edge from %ld",
+        wrn("Did not find node %ld, couldn't redisplay edge from %ld",
             e->second, node.m_Id);
       }
     } else if (e->second == node.m_Id) {
@@ -2551,7 +2550,7 @@ void DisplayNavInPB::redisplayEdgesToNode(const DisplayNavInPB::Node &node) {
         displayEdge(node, n->second);
         log("Redisplaying edge between nodes %ld and %ld", node.m_Id, e->first);
       } else {
-        log("WARNING: Did not find node %ld, couldn't redisplay edge from %ld",
+        wrn("Did not find node %ld, couldn't redisplay edge from %ld",
             e->first, node.m_Id);
       }
     }

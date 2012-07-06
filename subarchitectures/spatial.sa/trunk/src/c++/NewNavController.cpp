@@ -811,7 +811,7 @@ void NewNavController::trimPath(const Cure::Pose3D &cp,
 }
 
 int NewNavController::updateCtrl() {
-  SCOPED_TIME_LOG;
+  //SCOPED_TIME_LOG;
   if (m_PP == 0) {
     m_sc->error("Must call setPoseProvider first\n");
     return RETVAL_ERROR;
@@ -824,7 +824,7 @@ int NewNavController::updateCtrl() {
   cmd.type = Cure::MotionAlgorithm::CMD_TYPE_STOP;
   cmd.v = cmd.w = cmd.dir = 0;
 
-  m_sc->log("m_TaskType=%d\n", m_TaskType);
+  m_sc->debug("m_TaskType=%d\n", m_TaskType);
 
   bool turnMode = (m_TaskType == TASKTYPE_ROTATE);
   bool gatewaySpeed = false;
