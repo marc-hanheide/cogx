@@ -20,7 +20,7 @@ public class RealisationClient implements LFRealiser {
 	private String  m_hostname = "localhost";
 	private Integer m_port     =  4321;
 	
-	private static final int TIMEOUT = 1000;
+	private static final int TIMEOUT = 1000; //-1; // 100000; //1000;
 	
 	public RealisationClient(String hostname, Integer port) throws UnknownHostException, IOException {
 		if (!hostname.equals("")) m_hostname = hostname;
@@ -47,6 +47,8 @@ public class RealisationClient implements LFRealiser {
 	public String realiseString(String lfString) throws BuildException, ParseException {
 		while (m_out.checkError()) {
 			System.err.println("socket connection broken. trying to reconnect in " + TIMEOUT);
+			//if (new Integer. TIMEOUT+1==0) return "timeout";
+			if (new Integer(TIMEOUT).equals(new Integer(-1))) return "the realiserver crashed";
 			try {
 				synchronized(this) {
 					this.wait(TIMEOUT);
