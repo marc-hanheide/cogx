@@ -1,0 +1,15 @@
+#!/bin/bash
+
+cd ${CMAKE_CURRENT_SOURCE_DIR}
+python makeproject.py \
+   --matlabversion 780 \
+   --mscriptroot ${MSOURCE_DIR}\
+   --libraryname  ${MCCPROJECT_NAME}\
+   --projectroot ${CMAKE_CURRENT_BINARY_DIR}\
+   --buildoutput ${MCCBUILD_DIR}\
+   --distriboutput ${MCCDIST_DIR}\
+   --export mfile-export.txt\
+   --separatectf ${SEPARATE_CTF}
+
+cd -
+matlab -r "deploytool -build ${MCC_PROJECT}"
