@@ -153,7 +153,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
           } else {
             initialMapPDFSum = m_lastMapPDFSum;
           }
-          m_component->log(
+          m_component->debug(
               "getBest3DViewCones: Before whole map PDF sums to: %f",
               initialMapPDFSum);
 
@@ -170,11 +170,11 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
           bloxelmap->universalQuery(sumcells);
           double postMapPDFSum = sumcells.getResult();
 
-          m_component->log(
+          m_component->debug(
               "getBest3DViewCones: After whole map PDF sums to: %f",
               postMapPDFSum);
 
-          m_component->log("Best index %d", bestindex);
+          m_component->debug("Best index %d", bestindex);
           //lastConePDFSum = unordered3DVCList[bestindex].totalprob;
           lastConePDFSum = conesum.getResult();
           if (lastConePDFSum < m_minRelativeConeProb * initialMapPDFSum) {
@@ -182,7 +182,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
               m_component->getLogger()->warn(
                   "Keeping low probability view cone as last resort!");
             } else {
-              m_component->log(
+              m_component->debug(
                   "Best cone's prob. sum. is less than %f\% of total, skip",
                   m_minRelativeConeProb * 100);
               test_num++;
@@ -194,7 +194,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
               m_component->getLogger()->warn(
                   "Keeping low probability view cone as last resort!");
             } else {
-              m_component->log(
+              m_component->debug(
                   "Best cone's prob. sum. is less than %f\%, skip",
                   m_minConeProb * 100);
               test_num++;
@@ -219,7 +219,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
           unordered3DVCList[bestindex].totalprob = lastConePDFSum;
           result3DVCList.push_back(unordered3DVCList[bestindex]);
 
-          m_component->log(
+          m_component->debug(
               "Added new 3DCone to result set with prob: %f, total so far: %f",
               unordered3DVCList[bestindex].totalprob, totalprobsum);
         }
@@ -239,7 +239,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(
   SpatialGridMap::GDProbSum sumcells;
   SpatialGridMap::GDIsObstacle isobstacle;
   m_component->log("ViewPointGenerator::getViewConeSums");
-  m_component->log("Got %d 3D ViewCones", samplepoints.size());
+  m_component->debug("Got %d 3D ViewCones", samplepoints.size());
 
   try {
     for (unsigned int i = 0; i < samplepoints.size(); i++) {
@@ -343,12 +343,12 @@ vector<pair<unsigned int, double> > ViewPointGenerator::getOrdered2DCandidateVie
         }
       }
       if (!inserted) {
-        m_component->log("pushing 2D cone back");
+        m_component->debug("pushing 2D cone back");
         orderedVClist.push_back(make_pair(i, sum));
       }
     }
   }
-  m_component->log("Ordered 2D VC list has %d cones", orderedVClist.size());
+  m_component->debug("Ordered 2D VC list has %d cones", orderedVClist.size());
   //	for(unsigned int i=0; i < orderedVClist.size(); i++){
   //	m_component->log("Sum of VC #%d is %f", i, orderedVClist[i].second);
   //		}
@@ -470,17 +470,17 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGridFromNodes(vector<
             + (y - excluded_cones[q].pos[1]) * (y - excluded_cones[q].pos[1])
             < 0.001) && (diff_angle < 15. * M_PI / 180)) {
           excluded = true;
-          m_component->log("reject sample x %f y %f angle %f (nodes %d)", x, y,
+          m_component->debug("reject sample x %f y %f angle %f (nodes %d)", x, y,
               angle, nodes.size());
           break;
         }
       }
       if (!excluded) {
         int cx, cy;
-        m_component->log("sample x %f y %f angle %f (nodes %d)", x, y, angle,
+        m_component->debug("sample x %f y %f angle %f (nodes %d)", x, y, angle,
             nodes.size());
         if (lgm->worldCoords2Index(x, y, cx, cy) == 0) {
-          m_component->log("take");
+          m_component->debug("take");
           Cure::Pose3D singlesample;
           singlesample.setX(cx);
           singlesample.setY(cy);
@@ -491,7 +491,7 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGridFromNodes(vector<
     }
   }
 
-  m_component->log("Got %d 2D samples", samples.size());
+  m_component->debug("Got %d 2D samples", samples.size());
 
   return samples;
 }
@@ -509,8 +509,8 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
   int i = 0;
   int randx, randy;
   double xW, yW, angle;
-  cout << "sampling 2D points" << endl;
-  m_component->log("Sampling %d points ", m_samplesize);
+
+  m_component->debug("Sampling %d points ", m_samplesize);
   bool haspoint;
   Cure::Pose3D singlesample;
   int giveup = 0;
@@ -546,10 +546,10 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
       start.setY(m_roboty);
       dest.setX(xW);
       dest.setY(yW);
-      m_component->log("from: %f, %f", xW, yW);
+      m_component->debug("from: %f, %f", xW, yW);
 
       double d = getPathLength(start, dest, lgm);
-      m_component->log("path to here: %3.2f", d);
+      m_component->debug("path to here: %3.2f", d);
       // There is a path to this destination
       //	    log("there's a path to this destination");
       if (d > 0) {
