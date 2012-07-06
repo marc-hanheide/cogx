@@ -51,9 +51,8 @@ cast::CASTComponentPtr newComponent() {
 }
 }
 
-bool
-AVS_ContinualPlanner::getExistenceProbabilityFromConceptual(double &outPdfMass, const string &id)
-{
+bool AVS_ContinualPlanner::getExistenceProbabilityFromConceptual(
+    double &outPdfMass, const string &id) {
   //Query Conceptual to learn the initial pdf values
   log("Querying for %s", id.c_str());
   ConceptualData::ProbabilityDistributions conceptualProbdist =
@@ -567,14 +566,14 @@ void AVS_ContinualPlanner::newGroundedBelief(
 
         m_fromBeliefIdtoVisualLabel[objID.address.id] = visualobjectid;
 
-	ConeGroup &currentConeGroup = m_beliefConeGroups[m_currentConeGroupNumber];
+        ConeGroup &currentConeGroup =
+            m_beliefConeGroups[m_currentConeGroupNumber];
 
         SpatialProperties::ObjectPlacePropertyPtr result =
             new SpatialProperties::ObjectPlaceProperty;
         result->category = currentConeGroup.searchedObjectCategory;
         result->relation = currentConeGroup.relation;
-        result->supportObjectCategory
-            = currentConeGroup.supportObjectCategory;
+        result->supportObjectCategory = currentConeGroup.supportObjectCategory;
         result->supportObjectId = currentConeGroup.supportObjectId;
         result->placeId = currentConeGroup.placeId;
 
@@ -637,22 +636,24 @@ void AVS_ContinualPlanner::newViewPointGenerationCommand(
   }
 }
 
-int AVS_ContinualPlanner::createRoomObstacleMap(int roomId){
+int AVS_ContinualPlanner::createRoomObstacleMap(int roomId) {
   SpatialData::MapInterfacePrx mapPrx(getIceServer<SpatialData::MapInterface> (
-        "spatial.control"));
+      "spatial.control"));
   SpatialData::LocalGridMap grid = mapPrx->getRoomGridMap(roomId);
-  
-  Cure::LocalGridMap<unsigned char>* lgm = new Cure::LocalGridMap<unsigned char>(grid.size, grid.cellSize, '2', Cure::LocalGridMap<unsigned char>::MAP1, grid.xCenter, grid.yCenter);
-  
+
+  Cure::LocalGridMap<unsigned char>* lgm =
+      new Cure::LocalGridMap<unsigned char>(grid.size, grid.cellSize, '2',
+          Cure::LocalGridMap<unsigned char>::MAP1, grid.xCenter, grid.yCenter);
+
   // Convert from SpatialData::LocalGridMap to Cure::LocalGridMap
   int lp1 = 0;
-  for(int x = -grid.size ; x <= grid.size; x++){
-    for(int y = -grid.size ; y <= grid.size; y++){ 
-      (*lgm)(x,y) = (grid.data[lp1]);
+  for (int x = -grid.size; x <= grid.size; x++) {
+    for (int y = -grid.size; y <= grid.size; y++) {
+      (*lgm)(x, y) = (grid.data[lp1]);
       lp1++;
     }
   }
- 
+
   double xW, yW;
   for (int x = -lgm->getSize(); x < lgm->getSize(); x++) {
     for (int y = -lgm->getSize(); y < lgm->getSize(); y++) {
@@ -674,24 +675,23 @@ int AVS_ContinualPlanner::createRoomObstacleMap(int roomId){
       }
     }
   }
-  
+
   m_templateRoomGridMaps[roomId] = lgm;
 
   return 0;
 }
 
 int AVS_ContinualPlanner::createRoomBloxelMap(int roomId) {
-  if (createRoomObstacleMap(roomId)<0)
+  if (createRoomObstacleMap(roomId) < 0)
     return -1;
-  
+
   CureObstMap* lgm = m_templateRoomGridMaps[roomId];
-  
+
   m_templateRoomBloxelMaps[roomId] = new SpatialGridMap::GridMap<GridMapData>(
       (*lgm).getSize() * 2 + 1, (*lgm).getSize() * 2 + 1, m_cellsize,
       m_minbloxel, 0, 2.0, (*lgm).getCentXW(), (*lgm).getCentYW(), 0,
       m_defaultBloxelCell);
-  
-  
+
   GDMakeObstacle makeobstacle;
   for (int x = -(*lgm).getSize(); x < (*lgm).getSize(); x++) {
     for (int y = -(*lgm).getSize(); y < (*lgm).getSize(); y++) {
@@ -703,13 +703,12 @@ int AVS_ContinualPlanner::createRoomBloxelMap(int roomId) {
           if ((*m_lgmKH)(nx, ny) != FLT_MAX) {
             if ((*m_lgmKH)(nx, ny) - 0.1 > 0)
               m_templateRoomBloxelMaps[roomId]->boxSubColumnModifier(x
-                  + (*lgm).getSize(), y + (*lgm).getSize(),
-                  (*m_lgmKH)(nx, ny) / 2, (*m_lgmKH)(nx, ny) - 0.1,
-                  makeobstacle);
+                  + (*lgm).getSize(), y + (*lgm).getSize(), (*m_lgmKH)(nx, ny)
+                  / 2, (*m_lgmKH)(nx, ny) - 0.1, makeobstacle);
           } else {
             m_templateRoomBloxelMaps[roomId]->boxSubColumnModifier(x
-                + (*lgm).getSize(), y + (*lgm).getSize(),
-                m_LaserPoseR.getZ(), m_minbloxel, makeobstacle);
+                + (*lgm).getSize(), y + (*lgm).getSize(), m_LaserPoseR.getZ(),
+                m_minbloxel, makeobstacle);
             //m_LaserPoseR.getZ()+0.775,  m_mapceiling, makeobstacle);
           }
         }
@@ -892,32 +891,30 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
       m_objectBloxelMaps[id], m_samplesize, m_maxViewConeCount,
       m_sampleawayfromobs, m_conedepth, m_tiltstep, m_panstep, m_horizangle,
       m_vertangle, m_minDistance, m_minConeProb, m_minRelativeConeProb,
-      pdfmass, m_pdfthreshold, node->x, node->y);
+      m_samplesAroundPlace, pdfmass, m_pdfthreshold, node->x, node->y);
 
-  
-    
   vector<SpatialData::PlacePtr> placesInMap;
   getMemoryEntries<SpatialData::Place> (placesInMap, "spatial.sa");
 
   FrontierInterface::PlaceInterfacePrx agg(getIceServer<
       FrontierInterface::PlaceInterface> ("place.manager"));
   log("got interface");
-  
+
   SpatialData::PlaceIDSeq currentRoomPlaceIds;
-  
+
   vector<NavData::FNodePtr> nodesForPlaces;
   for (unsigned int i = 0; i < placesInMap.size(); i++) {
     NavData::FNodePtr node = agg->getNodeFromPlaceID(placesInMap[i]->id);
     nodesForPlaces.push_back(node);
   }
-  
+
   for (size_t j = 0; j < comarooms[comaroom_i]->containedPlaceIds.size(); j++) {
     currentRoomPlaceIds.push_back(comarooms[comaroom_i]->containedPlaceIds[j]);
     NavData::FNodePtr node = agg->getNodeFromPlaceID(
         comarooms[comaroom_i]->containedPlaceIds[j]);
     m_roomNodes[roomId].push_back(node);
   }
-  
+
   vector<ViewPointGenerator::SensingAction> viewcones =
       coneGenerator.getBest3DViewCones(m_roomNodes[roomId]);
 
@@ -1082,34 +1079,40 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
       double lowestConeGroupProbability = FLT_MAX;
       int lowestPropabilityID = -1;
       for (size_t i = 0; i < grouped_cones.size(); i++) {
-	double probInThisGroup = 0; // Normalised probability
-	const vector<ViewPointGenerator::SensingAction> &group = grouped_cones[i];
-	for (size_t j = 0; j < group.size(); j++) {
-	  probInThisGroup += pdfmass * group[j].totalprob / (totalUnNormalisedMass - probabilityRemoved);
-	}
-	if (probInThisGroup < lowestConeGroupProbability) {
-	  lowestConeGroupProbability = probInThisGroup;
-	  lowestPropabilityID = i;
-	}
+        double probInThisGroup = 0; // Normalised probability
+        const vector<ViewPointGenerator::SensingAction> &group =
+            grouped_cones[i];
+        for (size_t j = 0; j < group.size(); j++) {
+          probInThisGroup += pdfmass * group[j].totalprob
+              / (totalUnNormalisedMass - probabilityRemoved);
+        }
+        if (probInThisGroup < lowestConeGroupProbability) {
+          lowestConeGroupProbability = probInThisGroup;
+          lowestPropabilityID = i;
+        }
       }
 
       if (lowestConeGroupProbability < m_minConeGroupProb) {
-	// Need to prune away a cone group
-	finished = false;
+        // Need to prune away a cone group
+        finished = false;
 
-	double probInThisGroup = 0;// Non-normalised probability
-	const vector<ViewPointGenerator::SensingAction> &group = grouped_cones[lowestPropabilityID];
-	for (size_t j = 0; j < group.size(); j++) {
-	  probInThisGroup += group[j].totalprob; 
-	}
+        double probInThisGroup = 0;// Non-normalised probability
+        const vector<ViewPointGenerator::SensingAction> &group =
+            grouped_cones[lowestPropabilityID];
+        for (size_t j = 0; j < group.size(); j++) {
+          probInThisGroup += group[j].totalprob;
+        }
 
-	probabilityRemoved += probInThisGroup;
+        probabilityRemoved += probInThisGroup;
 
-	grouped_cones.erase(grouped_cones.begin() + lowestPropabilityID);
-	grouped_cones_minAngle.erase(grouped_cones_minAngle.begin() + lowestPropabilityID);
-	grouped_cones_maxAngle.erase(grouped_cones_maxAngle.begin() + lowestPropabilityID);
+        grouped_cones.erase(grouped_cones.begin() + lowestPropabilityID);
+        grouped_cones_minAngle.erase(grouped_cones_minAngle.begin()
+            + lowestPropabilityID);
+        grouped_cones_maxAngle.erase(grouped_cones_maxAngle.begin()
+            + lowestPropabilityID);
 
-	log("Rejecting cone group with total probability %f (scaled to %f)", probInThisGroup, lowestConeGroupProbability);
+        log("Rejecting cone group with total probability %f (scaled to %f)",
+            probInThisGroup, lowestConeGroupProbability);
       }
     }
   }
@@ -1137,14 +1140,14 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
   coneGroupNormalisation /= pdfmass;
 
   log("%f Total prob %f, normalizing constant %f", pdfmass,
-      coneGroupNormalisation, 1
-          / coneGroupNormalisation);
+      coneGroupNormalisation, 1 / coneGroupNormalisation);
 
   for (size_t i = 0; i < grouped_cones.size(); i++) {
     vector<ViewPointGenerator::SensingAction> &curConeGroup = grouped_cones[i];
     for (size_t j = 0; j < curConeGroup.size(); j++) {
 
-      log("viewcone %d in group %d before blow up  %f", j, i, curConeGroup[j].totalprob);
+      log("viewcone %d in group %d before blow up  %f", j, i,
+          curConeGroup[j].totalprob);
 
       curConeGroup[j].totalprob = curConeGroup[j].totalprob * (1
           / coneGroupNormalisation);
@@ -1164,7 +1167,7 @@ int AVS_ContinualPlanner::createConeGroup(ConeGroup &c, vector<
     string id) {
 
   m_coneGroupId++;
-  
+
   int closestnode = GetClosestNodeId(gr[0].pos[0], gr[0].pos[1], gr[0].pos[2]);
   int conePlaceId = GetPlaceIdFromNodeId(closestnode);
 
@@ -1206,7 +1209,8 @@ int AVS_ContinualPlanner::createConeGroup(ConeGroup &c, vector<
   return 0;
 }
 
-int AVS_ContinualPlanner::createConeGroupBelief(ConeGroup c,SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand) {
+int AVS_ContinualPlanner::createConeGroupBelief(ConeGroup c,
+    SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand) {
   cast::cdl::WorkingMemoryAddress placeWMaddress;
   // Get the place id for this cone
   vector<boost::shared_ptr<cast::CASTData<GroundedBelief> > > placeBeliefs;
@@ -1307,7 +1311,6 @@ int AVS_ContinualPlanner::createConeGroupBelief(ConeGroup c,SpatialData::Relatio
   }
 
   log("Creating ConeGroup belief");
-
 
   m_beliefConeGroups[m_coneGroupId] = c;
   m_locationToConeGroupIDs[id].push_back(m_coneGroupId);
@@ -1524,17 +1527,17 @@ void AVS_ContinualPlanner::generateViewCones(
 
   pdfmass = 1.0; // Normalise the probability mass in the room to 1.0
 
-//  //Get p(exists) for this room from Conceptual.SA
-//	if (!getExistenceProbabilityFromConceptual(pdfmass, id)) 
-//  {
-//    if (WMAddress != "") {
-//      newVPCommand->status = SpatialData::FAILED;
-//      wrn("Overwriting command to change status to: FAILED");
-//      overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand> (
-//          WMAddress, newVPCommand);
-//    }
-//    return;
-//  }
+  //  //Get p(exists) for this room from Conceptual.SA
+  //	if (!getExistenceProbabilityFromConceptual(pdfmass, id)) 
+  //  {
+  //    if (WMAddress != "") {
+  //      newVPCommand->status = SpatialData::FAILED;
+  //      wrn("Overwriting command to change status to: FAILED");
+  //      overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand> (
+  //          WMAddress, newVPCommand);
+  //    }
+  //    return;
+  //  }
 
   m_locationToInitialPdfmass[id] = pdfmass;
 
@@ -1573,7 +1576,7 @@ void AVS_ContinualPlanner::generateViewCones(
     if (createConeGroup(c, grouped_cones[i], grouped_cones_minAngle[i],
         grouped_cones_maxAngle[i], newVPCommand, id) < 0)
       return;
-    if (createConeGroupBelief(c,newVPCommand) < 0)
+    if (createConeGroupBelief(c, newVPCommand) < 0)
       return;
     if (m_usePeekabot) {
       showProbability( m_coneGroupId);
@@ -1807,7 +1810,7 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
   //log("ViewConeUpdate: Whole map PDF sums to: %f", initialMapPDFSum);
   // then deal with those bloxels that belongs to this cone
 
-  GDProbScale scalefunctor(1 - m_sensingProb); 
+  GDProbScale scalefunctor(1 - m_sensingProb);
   map->coneModifier(viewcone.second.pos[0], viewcone.second.pos[1],
       viewcone.second.pos[2], viewcone.second.pan, viewcone.second.tilt,
       m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, scalefunctor,
@@ -1836,7 +1839,6 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
   result->supportObjectId = currentConeGroup.supportObjectId;
   result->roomId = currentConeGroup.roomId;
 
-
   // Compute total cone probability sum before modification
   double totalConeProbabilityBefore = 0.0;
 
@@ -1848,46 +1850,49 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
       m_locationToConeGroupIDs.begin(); it != m_locationToConeGroupIDs.end(); it++) {
     for (size_t i = 0; i < it->second.size(); i++) {
       if (it->second[i] == m_currentConeGroupNumber) {
-	// Found cone group ID in this location
-	locationID = it->first;
+        // Found cone group ID in this location
+        locationID = it->first;
       }
     }
   }
   if (locationID == "") {
-    error("Could not find location ID for cone group %d!", m_currentConeGroupNumber);
+    error("Could not find location ID for cone group %d!",
+        m_currentConeGroupNumber);
 
     return;
   }
 
   std::vector<int> &coneGroupsInLocation = m_locationToConeGroupIDs[locationID];
-  for(size_t i = 0; i < coneGroupsInLocation.size(); i++) {
+  for (size_t i = 0; i < coneGroupsInLocation.size(); i++) {
     ConeGroup &coneGroup = m_beliefConeGroups[coneGroupsInLocation[i]];
 
     vector<ViewPointGenerator::SensingAction> &cones = coneGroup.viewcones;
-    for(size_t j = 0; j < cones.size(); j++) {
+    for (size_t j = 0; j < cones.size(); j++) {
       totalConeProbabilityBefore += cones[j].totalprob;
     }
   }
-  log ("totalConeProbabilityBefore = %f", totalConeProbabilityBefore);
+  log("totalConeProbabilityBefore = %f", totalConeProbabilityBefore);
 
   // The Location we're searching (e.g. cornflakes ON table IN room1)
   string currentLocation = currentConeGroup.bloxelMapId;
 
-  double oldConeProbability =
-    m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob;
+  double
+      oldConeProbability =
+          m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob;
   double lostProbability = oldConeProbability * m_sensingProb;
   double newConeProbability = oldConeProbability - lostProbability;
-	log ("oldConeProbability = %f", oldConeProbability);
-	log ("lostProbability = %f", lostProbability);
-	log ("newConeProbability = %f", newConeProbability);
+  log("oldConeProbability = %f", oldConeProbability);
+  log("lostProbability = %f", lostProbability);
+  log("newConeProbability = %f", newConeProbability);
 
   // New total before renormalisation
-	double totalConeProbabilityAfter = totalConeProbabilityBefore - lostProbability;
-	log ("totalConeProbabilityAfter = %f", totalConeProbabilityAfter);
-	// Factor by which to renormalise
-  double normalisationBlowup = 
-		m_locationToInitialPdfmass[currentLocation] / totalConeProbabilityAfter;
-	log ("normalisationBlowup = %f", normalisationBlowup);
+  double totalConeProbabilityAfter = totalConeProbabilityBefore
+      - lostProbability;
+  log("totalConeProbabilityAfter = %f", totalConeProbabilityAfter);
+  // Factor by which to renormalise
+  double normalisationBlowup = m_locationToInitialPdfmass[currentLocation]
+      / totalConeProbabilityAfter;
+  log("normalisationBlowup = %f", normalisationBlowup);
 
   // ASSUMPTION: m_locationToBeta has such a key since it's filled in generateViewCones first!
   if (isAllConeGroupsProcessed) {
@@ -1896,11 +1901,12 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
 
     result->beta = 0.99999;
   } else {
-		//The difference between beta and 1 should decrease by this much
-		double proportionLostNow = lostProbability / m_locationToInitialPdfmass[currentConeGroup.bloxelMapId];
+    //The difference between beta and 1 should decrease by this much
+    double proportionLostNow = lostProbability
+        / m_locationToInitialPdfmass[currentConeGroup.bloxelMapId];
 
-		result->beta = m_locationToBeta[currentConeGroup.bloxelMapId];
-    result->beta += (1-result->beta)*proportionLostNow;
+    result->beta = m_locationToBeta[currentConeGroup.bloxelMapId];
+    result->beta += (1 - result->beta) * proportionLostNow;
   }
   m_locationToBeta[currentConeGroup.bloxelMapId] = result->beta;
 
@@ -1914,33 +1920,33 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
 
   log("Updating conegroup probability");
 
-	log("Sum probabilities check (before): %f",
-			m_beliefConeGroups[coneGroupID].getTotalProb());
-	log(
-			"current viewcone prob: %f",
-			m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob);
+  log("Sum probabilities check (before): %f",
+      m_beliefConeGroups[coneGroupID].getTotalProb());
+  log(
+      "current viewcone prob: %f",
+      m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob);
 
-	// First adjust the probability of the processed cone
-	m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob
-		= newConeProbability;
+  // First adjust the probability of the processed cone
+  m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob
+      = newConeProbability;
 
   // Then adjust the probability of each cone 
-	for(std::map<int, ConeGroup>::iterator it = m_beliefConeGroups.begin();
-			it != m_beliefConeGroups.end(); it++) {
-		vector<ViewPointGenerator::SensingAction> &cones = it->second.viewcones;
+  for (std::map<int, ConeGroup>::iterator it = m_beliefConeGroups.begin(); it
+      != m_beliefConeGroups.end(); it++) {
+    vector<ViewPointGenerator::SensingAction> &cones = it->second.viewcones;
 
-		for(size_t i = 0; i < cones.size(); i++) {
-			cones[i].totalprob *= normalisationBlowup;
-		}
-	}
+    for (size_t i = 0; i < cones.size(); i++) {
+      cones[i].totalprob *= normalisationBlowup;
+    }
+  }
 
-	// Then post the changes to each Belief on WM
+  // Then post the changes to each Belief on WM
 
-	for(std::map<int, ConeGroup>::iterator it = m_beliefConeGroups.begin();
-			it != m_beliefConeGroups.end(); it++) {
-		updateConeGroupBelief(it->first);
-	}
-  
+  for (std::map<int, ConeGroup>::iterator it = m_beliefConeGroups.begin(); it
+      != m_beliefConeGroups.end(); it++) {
+    updateConeGroupBelief(it->first);
+  }
+
   // this means it's the first time we're reporting search result
   if (m_locationToBetaWMAddress.count(currentConeGroup.bloxelMapId) == 0) {
     log(
@@ -1961,8 +1967,7 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
   }
 }
 
-void AVS_ContinualPlanner::updateConeGroupBelief(int coneGroupID)
-{
+void AVS_ContinualPlanner::updateConeGroupBelief(int coneGroupID) {
   //get the belief id
   try {
     log("Getting relevant conegroup belief with %s",
@@ -2145,6 +2150,13 @@ void AVS_ContinualPlanner::configure(
   if (it != _config.end()) {
     m_minRelativeConeProb = (atof(it->second.c_str()));
     log("Min relative cone probability: %f", m_minRelativeConeProb);
+  }
+
+  m_samplesAroundPlace = 10;
+  it = _config.find("--samplesAroundPlace");
+  if (it != _config.end()) {
+    m_samplesAroundPlace = (atof(it->second.c_str()));
+    log("Number of samples around each place: %f", m_samplesAroundPlace);
   }
 
   m_minConeGroupProb = 0.0;
@@ -2466,8 +2478,7 @@ void AVS_ContinualPlanner::owtNavCommand(
       }
       if (m_runInSimulation) {
         m_processedViewConeIDs.insert(m_currentViewCone.first);
-        log("Updating the %s bloxel map",
-            currentConeGroup.bloxelMapId.c_str());
+        log("Updating the %s bloxel map", currentConeGroup.bloxelMapId.c_str());
         ViewConeUpdate(m_currentViewCone,
             m_objectBloxelMaps[currentConeGroup.bloxelMapId]);
         m_currentProcessConeGroup->status = SpatialData::SUCCESS;

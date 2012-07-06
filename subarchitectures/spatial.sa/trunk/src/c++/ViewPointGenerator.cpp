@@ -22,7 +22,8 @@ ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component,
     size_t maxViewConeCount, double sampleawayfromobs, double conedepth,
     double tiltstep, double panstep, double horizangle, double vertangle,
     double minDistance, double minConeProb, double minRelativeConeProb,
-    double pdfsum, double pdfthreshold, double robotx, double roboty) {
+    double samplesAroundPlace, double pdfsum, double pdfthreshold,
+    double robotx, double roboty) {
   // TODO Auto-generated destructor stub
 
   m_component = component;
@@ -37,6 +38,8 @@ ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component,
   m_minDistance = minDistance;
   m_minConeProb = minConeProb;
   m_minRelativeConeProb = minRelativeConeProb;
+  m_samplesAroundPlace = samplesAroundPlace;
+
   m_bloxelmapPDFsum = pdfsum;
   m_pdfthreshold = pdfthreshold;
   m_robotx = robotx;
@@ -445,8 +448,8 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGridFromNodes(vector<
 
   for (size_t i = 0; i < nodes.size(); i++) {
     double theta = (rand() % 360) * M_PI / 180;
-    for (double j = 0; j < 10; j++) {
-      double angle = theta + j / 10 * 2 * M_PI;
+    for (double j = 0; j < m_samplesAroundPlace; j++) {
+      double angle = theta + j / m_samplesAroundPlace * 2 * M_PI;
       while (angle > M_PI)
         angle -= 2 * M_PI;
       while (angle < -M_PI)
@@ -465,10 +468,10 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGridFromNodes(vector<
 
         if (((x - excluded_cones[q].pos[0]) * (x - excluded_cones[q].pos[0])
             + (y - excluded_cones[q].pos[1]) * (y - excluded_cones[q].pos[1])
-            < 0.001) && (diff_angle < 15. * M_PI / 180 )) {
+            < 0.001) && (diff_angle < 15. * M_PI / 180)) {
           excluded = true;
-          m_component->log("reject sample x %f y %f angle %f (nodes %d)", x, y, angle,
-              nodes.size());
+          m_component->log("reject sample x %f y %f angle %f (nodes %d)", x, y,
+              angle, nodes.size());
           break;
         }
       }

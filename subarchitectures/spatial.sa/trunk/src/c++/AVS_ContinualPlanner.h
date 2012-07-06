@@ -81,7 +81,7 @@ public:
     ConeGroup() {
       isprocessed = false;
     }
-    ; 
+    ;
   };
 
   typedef std::map<int, ConeGroup> MapConeType;
@@ -105,7 +105,8 @@ public:
       double maxAngle,
       SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand,
       string id);
-  int createConeGroupBelief(ConeGroup c, SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand);
+  int createConeGroupBelief(ConeGroup c,
+      SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand);
 
   void generateViewCones(
       SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand,
@@ -125,200 +126,201 @@ public:
   void startMovePanTilt(double pan, double tilt, double tolerance);
   void overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID);
   //	 void MovePanTilt(double pan, double tilt, double tolerance);
-      void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
-      void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd,
-          std::string label, std::string visualObjectID);
+  void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
+  void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd,
+      std::string label, std::string visualObjectID);
 
-      void showProbability(int coneGroupID);
-      void Recognize();
-      void addARTagCommand();
-      void PostViewCone(const ViewPointGenerator::SensingAction &nbv, int id);
-      void ViewConeUpdate(
-          std::pair<int, ViewPointGenerator::SensingAction> viewcone,
-          BloxelMap* map);
-      void newGroundedBelief(const cast::cdl::WorkingMemoryChange &objID);
-      std::string relationToString(SpatialData::SpatialRelation rel);
-      int GetPlaceIdFromNodeId(int nodeId);
-      int GetClosestNodeId(double x, double y, double a);
-      void newProcessConeCommand(const cast::cdl::WorkingMemoryChange &objID);
-      void putObjectInMap(BloxelMap &map, spatial::Object *object);
-      void receivePointCloud(BloxelMap *map,
-          FrontierInterface::WeightedPointCloudPtr cloud, double totalMass);
-      void newSpatialObject(const cast::cdl::WorkingMemoryChange &objID);
-      void displayPDF(BloxelMap map);
-      void owtARTagCommand(const cast::cdl::WorkingMemoryChange &objID);
-      void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
-      void setConeDepth(const string &label);
-      ViewPointGenerator::SensingAction getRandomViewCone(
-          ViewPointGenerator::SensingAction s);
+  void showProbability(int coneGroupID);
+  void Recognize();
+  void addARTagCommand();
+  void PostViewCone(const ViewPointGenerator::SensingAction &nbv, int id);
+  void ViewConeUpdate(
+      std::pair<int, ViewPointGenerator::SensingAction> viewcone,
+      BloxelMap* map);
+  void newGroundedBelief(const cast::cdl::WorkingMemoryChange &objID);
+  std::string relationToString(SpatialData::SpatialRelation rel);
+  int GetPlaceIdFromNodeId(int nodeId);
+  int GetClosestNodeId(double x, double y, double a);
+  void newProcessConeCommand(const cast::cdl::WorkingMemoryChange &objID);
+  void putObjectInMap(BloxelMap &map, spatial::Object *object);
+  void receivePointCloud(BloxelMap *map,
+      FrontierInterface::WeightedPointCloudPtr cloud, double totalMass);
+  void newSpatialObject(const cast::cdl::WorkingMemoryChange &objID);
+  void displayPDF(BloxelMap map);
+  void owtARTagCommand(const cast::cdl::WorkingMemoryChange &objID);
+  void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
+  void setConeDepth(const string &label);
+  ViewPointGenerator::SensingAction getRandomViewCone(
+      ViewPointGenerator::SensingAction s);
 
-      VisualPB_Bloxel* pbVis;
-    private:
-      ////////////////////
-      // Configure options
-      ////////////////////
+  VisualPB_Bloxel* pbVis;
+private:
+  ////////////////////
+  // Configure options
+  ////////////////////
 
-      bool m_usePeekabot;
-      bool m_sampleRandomPoints;
-      double m_maxRange;
-      int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
-      bool m_randomViewCones;
-      bool m_usePTZ;
-      bool m_ignoreTilt;
-      bool m_runInSimulation;
-      bool m_bUseWallPrior;
-      int m_gridsize;
-      double m_sensingProb;
-      double m_samplesize;
-      int m_maxViewConeCount;
-      double m_cellsize, m_sampleawayfromobs;
-      double m_minbloxel;
-      double m_minConeProb;
-      double m_minRelativeConeProb;
-      double m_minConeGroupProb;
-      double m_conedepth;
-      double m_horizangle;
-      double m_minDistance;
-      double m_vertangle;
-      double m_tiltstep;
-      double m_panstep;
-      double m_pdfthreshold;
-      double m_mapceiling;
-      std::string m_PbHost;
-      int m_PbPort;
+  bool m_usePeekabot;
+  bool m_sampleRandomPoints;
+  double m_maxRange;
+  int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
+  bool m_randomViewCones;
+  bool m_usePTZ;
+  bool m_ignoreTilt;
+  bool m_runInSimulation;
+  bool m_bUseWallPrior;
+  int m_gridsize;
+  double m_sensingProb;
+  double m_samplesize;
+  int m_maxViewConeCount;
+  double m_cellsize, m_sampleawayfromobs;
+  double m_minbloxel;
+  double m_minConeProb;
+  double m_minRelativeConeProb;
+  double m_samplesAroundPlace;
+  double m_minConeGroupProb;
+  double m_conedepth;
+  double m_horizangle;
+  double m_minDistance;
+  double m_vertangle;
+  double m_tiltstep;
+  double m_panstep;
+  double m_pdfthreshold;
+  double m_mapceiling;
+  std::string m_PbHost;
+  int m_PbPort;
 
+  struct ForbiddenZone {
+    double minX;
+    double maxX;
+    double minY;
+    double maxY;
+  };
+  std::vector<ForbiddenZone> m_forbiddenZones;
+  map<int, vector<NavData::FNodePtr> > m_roomNodes;
 
-      struct ForbiddenZone {
-        double minX;
-        double maxX;
-        double minY;
-        double maxY;
-      };
-      std::vector<ForbiddenZone> m_forbiddenZones;
-      map<int, vector<NavData::FNodePtr> > m_roomNodes;
+  peekabot::PeekabotClient m_PeekabotClient;
+  std::map<int, peekabot::GroupProxy> m_ProxyViewPointsList;
+  std::map<int, peekabot::PolygonProxy*> m_ProxyViewPointsPolygonsList;
+  peekabot::GroupProxy* m_proxyCone;
+  peekabot::PolygonProxy* m_proxyConePolygons;
+  peekabot::GroupProxy m_ProxyViewPoints;
+  peekabot::GroupProxy m_ProxyForbiddenMap;
 
-      peekabot::PeekabotClient m_PeekabotClient;
-      std::map<int, peekabot::GroupProxy> m_ProxyViewPointsList;
-      std::map<int, peekabot::PolygonProxy*> m_ProxyViewPointsPolygonsList;
-      peekabot::GroupProxy* m_proxyCone;
-      peekabot::PolygonProxy* m_proxyConePolygons;
-      peekabot::GroupProxy m_ProxyViewPoints;
-      peekabot::GroupProxy m_ProxyForbiddenMap;
+  /////////////////////////////
+  // State of ongoing search(es)
+  /////////////////////////////
 
-      /////////////////////////////
-      // State of ongoing search(es)
-      /////////////////////////////
+  // What the conegroups for the location initally summed to.
+  // Will be 1 always, currently
+  std::map<std::string, double> m_locationToInitialPdfmass;
 
-      // What the conegroups for the location initally summed to.
-      // Will be 1 always, currently
-      std::map<std::string, double> m_locationToInitialPdfmass;
+  // This holds bloxel maps for each location i.e. <object,rel,(object2),room>
+  std::map<std::string, BloxelMap*> m_objectBloxelMaps;
 
-      // This holds bloxel maps for each location i.e. <object,rel,(object2),room>
-      std::map<std::string, BloxelMap*> m_objectBloxelMaps; 
+  std::set<int> m_processedViewConeIDs;
 
-      std::set<int> m_processedViewConeIDs;
+  BloxelMap* m_currentBloxelMap;
+  CureObstMap* m_currentCureObstMap;
 
-      BloxelMap* m_currentBloxelMap;
-      CureObstMap* m_currentCureObstMap;
+  // Id of this SensingAction's ConeGroup and the SensingAction itself
+  std::pair<int, ViewPointGenerator::SensingAction> m_currentViewCone;
+  size_t m_currentViewConeNumber;
+  int m_currentConeGroupNumber;
 
-      // Id of this SensingAction's ConeGroup and the SensingAction itself
-      std::pair<int, ViewPointGenerator::SensingAction> m_currentViewCone;
-      size_t m_currentViewConeNumber;
-      int m_currentConeGroupNumber;
+  // Counter for providing a unique Id for each cone group
+  int m_coneGroupId;
 
-      // Counter for providing a unique Id for each cone group
-      int m_coneGroupId; 
-
-      SpatialData::ProcessConeGroupPtr m_currentProcessConeGroup;
-      std::string m_processConeGroupCommandWMAddress;
-      std::string m_generateViewConesCommandWMAddress;
-      SpatialData::RelationalViewPointGenerationCommandPtr
+  SpatialData::ProcessConeGroupPtr m_currentProcessConeGroup;
+  std::string m_processConeGroupCommandWMAddress;
+  std::string m_generateViewConesCommandWMAddress;
+  SpatialData::RelationalViewPointGenerationCommandPtr
       m_currentVPGenerationCommand;
 
-      //Keeps track of which location is associated with which cone groups
-      std::map<std::string, std::vector<int> > m_locationToConeGroupIDs;
-      //Stores the cone groups by unique ID
-      std::map<int, ConeGroup> m_beliefConeGroups;
-      std::map<std::string, std::string> m_fromBeliefIdtoVisualLabel;
-      std::map<int, std::string> m_coneGroupIdToBeliefId;
-      std::map<std::string, double> m_locationToBeta; // search location's so far explored region
-      std::map<std::string, std::string> m_locationToBetaWMAddress; //search location's ObjectSearchResult WMAddress
+  //Keeps track of which location is associated with which cone groups
+  std::map<std::string, std::vector<int> > m_locationToConeGroupIDs;
+  //Stores the cone groups by unique ID
+  std::map<int, ConeGroup> m_beliefConeGroups;
+  std::map<std::string, std::string> m_fromBeliefIdtoVisualLabel;
+  std::map<int, std::string> m_coneGroupIdToBeliefId;
+  std::map<std::string, double> m_locationToBeta; // search location's so far explored region
+  std::map<std::string, std::string> m_locationToBetaWMAddress; //search location's ObjectSearchResult WMAddress
 
-      void connectPeekabot();
-      void createFOV(peekabot::GroupProxy &proxy,
-          peekabot::PolygonProxy* &proxyConeParts, double fovHorizAngle,
-          double fovVertiAngle, double* color, double opacity,
-          NavData::ViewPoint viewpoint);
+  void connectPeekabot();
+  void createFOV(peekabot::GroupProxy &proxy,
+      peekabot::PolygonProxy* &proxyConeParts, double fovHorizAngle,
+      double fovVertiAngle, double* color, double opacity,
+      NavData::ViewPoint viewpoint);
 
-      void ChangeCurrentViewConeColor(double r, double g, double b);
+  void ChangeCurrentViewConeColor(double r, double g, double b);
 
-      bool getExistenceProbabilityFromConceptual(double &outPdfMass, const string &id);
+  bool getExistenceProbabilityFromConceptual(double &outPdfMass,
+      const string &id);
 
-			// Updates the WM entry to match the internal representation
-			void updateConeGroupBelief(int coneGroupID);
+  // Updates the WM entry to match the internal representation
+  void updateConeGroupBelief(int coneGroupID);
 
-      class AVSServer: public SpatialData::AVSInterface {
-      public:
-        virtual void simulateViewCones(
-            const SpatialData::RelationalViewPointGenerationCommandPtr &cmd,
-            const Ice::Current &);
-        virtual void processViewCones(const int id, const Ice::Current &);
-        AVS_ContinualPlanner *m_pOwner;
-        AVSServer(AVS_ContinualPlanner *owner) :
-        m_pOwner(owner) {
-        }
-      };
+  class AVSServer: public SpatialData::AVSInterface {
+  public:
+    virtual void simulateViewCones(
+        const SpatialData::RelationalViewPointGenerationCommandPtr &cmd,
+        const Ice::Current &);
+    virtual void processViewCones(const int id, const Ice::Current &);
+    AVS_ContinualPlanner *m_pOwner;
+    AVSServer(AVS_ContinualPlanner *owner) :
+      m_pOwner(owner) {
+    }
+  };
 
-      NavData::RobotPose2dPtr lastRobotPose;
+  NavData::RobotPose2dPtr lastRobotPose;
 
-      Cure::LocalGridMap<double> *m_lgmKH;
+  Cure::LocalGridMap<double> *m_lgmKH;
 
-      std::map<int, BloxelMap*> m_templateRoomBloxelMaps; // template room bloxel maps to instantiate objectBloxelMaps from
-      std::map<int, CureObstMap*> m_templateRoomGridMaps; // template room 2D grid maps
+  std::map<int, BloxelMap*> m_templateRoomBloxelMaps; // template room bloxel maps to instantiate objectBloxelMaps from
+  std::map<int, CureObstMap*> m_templateRoomGridMaps; // template room 2D grid maps
 
-      //ptz::PTZInterfacePrx m_ptzInterface;
+  //ptz::PTZInterfacePrx m_ptzInterface;
 
-      std::string m_waitingForPTZCommandID;
-      enum {
-        NO_WAITING, WAITING_TO_RECOGNIZE, WAITING_TO_RETURN
-      }m_ptzWaitingStatus;
+  std::string m_waitingForPTZCommandID;
+  enum {
+    NO_WAITING, WAITING_TO_RECOGNIZE, WAITING_TO_RETURN
+  } m_ptzWaitingStatus;
 
-      VariableNameGenerator m_namegenerator;
+  VariableNameGenerator m_namegenerator;
 
-      SpatialGridMap::GridMapData m_defaultBloxelCell;
-      Cure::SensorPose m_LaserPoseR;
-      std::string m_queryHandlerName;
-      bool m_gotPC;
-      bool m_gotNewGenerateViewCone;
+  SpatialGridMap::GridMapData m_defaultBloxelCell;
+  Cure::SensorPose m_LaserPoseR;
+  std::string m_queryHandlerName;
+  bool m_gotPC;
+  bool m_gotNewGenerateViewCone;
 
-      // labels of tagged objects
+  // labels of tagged objects
 
-      std::vector<std::string> m_siftObjects;
-      std::vector<std::string> m_ARtaggedObjects;
-      std::vector<std::string> m_allObjects;
-      /** ICE proxy to the QueryHandlerInterface. */
-      ConceptualData::QueryHandlerServerInterfacePrx
+  std::vector<std::string> m_siftObjects;
+  std::vector<std::string> m_ARtaggedObjects;
+  std::vector<std::string> m_allObjects;
+  /** ICE proxy to the QueryHandlerInterface. */
+  ConceptualData::QueryHandlerServerInterfacePrx
       m_queryHandlerServerInterfacePrx;
-      FrontierInterface::WeightedPointCloudPtr m_cloud;
-      DensitySampler m_sampler;
-      RelationEvaluator m_relationEvaluator;
+  FrontierInterface::WeightedPointCloudPtr m_cloud;
+  DensitySampler m_sampler;
+  RelationEvaluator m_relationEvaluator;
 
-      MainDialog *_mainDialog;
+  MainDialog *_mainDialog;
 
-      class NavCommandReceiver: public cast::WorkingMemoryChangeReceiver {
-      public:
+  class NavCommandReceiver: public cast::WorkingMemoryChangeReceiver {
+  public:
 
-        NavCommandReceiver(AVS_ContinualPlanner & _component,
-            SpatialData::NavCommandPtr _cmd);
+    NavCommandReceiver(AVS_ContinualPlanner & _component,
+        SpatialData::NavCommandPtr _cmd);
 
-        void workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc);
-      private:
-        AVS_ContinualPlanner & m_component;
-        SpatialData::NavCommandPtr m_cmd;
-      };
+    void workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc);
+  private:
+    AVS_ContinualPlanner & m_component;
+    SpatialData::NavCommandPtr m_cmd;
+  };
 
-    };
-  }
+};
+}
 ;
 
 #endif /* AVS_CONTINUALPLANNER_H_ */
