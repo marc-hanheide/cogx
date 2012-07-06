@@ -152,6 +152,7 @@ class AbsMLNEvdFilter :  public AbsMLNClient
 	  if(it->type == m_beliefType
 		&& (m_epiStatuses.empty() || m_epiStatuses.count(it->estatus))
 		&& (m_relevantKeys.count(it->key) || m_instKeys.count(it->key))) {
+		
 		filtFact.insert(pair<string,MLNFact>(it->atom,*it));
 	  }
 	}

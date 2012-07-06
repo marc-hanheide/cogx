@@ -206,7 +206,9 @@ class AbsMLNClient :  public ManagedComponent
   	
 	distributeEvd(evd);
   }
-
+  
+  
+/*
   void distributeQuery(string query)
   {
 	QueryPtr q = new Query();
@@ -216,7 +218,7 @@ class AbsMLNClient :  public ManagedComponent
 	addToWorkingMemory(newDataID(), getBindingSA(), q);
 	log("Provided new query '%s' to MLN engine id %s", query.c_str(), q->engId.c_str());
   }
-/* 
+ 
   void distributeQuery(string query)
   {
 	QueryPtr q = new Query();

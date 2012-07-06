@@ -97,8 +97,150 @@ resolution(t_belief)
 2       !color(a1,P_yellow) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
 2.05       !color(a1,P_orange) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
 -2.1			!color(a1,P_yellow) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
--2.1			!color(a1,P_orange) v !color_constraint(A_red) v resolution(a1) v !belief(a1) 
+-2.1			!color(a1,P_orange) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
 
+// Pink (assuming RGB, Yellow, Orange 
+
+2.2				!color(a1,P_pink) v !color_constraint(A_pink) v resolution(a1) v !belief(a1)
+-2.15			!color(a1,P_pink) v !color_constraint(A_pink) v !resolution(a1) v !belief(a1)
+
+-2			!color(a1,P_green) v !color_constraint(A_pink) v resolution(a1) v !belief(a1)
+1.8       !color(a1,P_green) v !color_constraint(A_pink) v !resolution(a1) v !belief(a1)
+2.1       !color(a1,P_pink) v !color_constraint(A_green) v !resolution(a1) v !belief(a1)
+-2			!color(a1,P_pink) v !color_constraint(A_green) v resolution(a1) v !belief(a1)
+
+-2.2			!color(a1,P_blue) v !color_constraint(A_pink) v resolution(a1) v !belief(a1)
+2.3       !color(a1,P_blue) v !color_constraint(A_pink) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_pink) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_pink) v !color_constraint(A_blue) v resolution(a1) v !belief(a1)
+
+-2.05			!color(a1,P_red) v !color_constraint(A_pink) v resolution(a1) v !belief(a1)
+2       !color(a1,P_red) v !color_constraint(A_pink) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_pink) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
+-2.1			!color(a1,P_pink) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
+
+-2.2			!color(a1,P_yellow) v !color_constraint(A_pink) v resolution(a1) v !belief(a1)
+2.3       !color(a1,P_yellow) v !color_constraint(A_pink) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_pink) v !color_constraint(A_yellow) v !resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_pink) v !color_constraint(A_yellow) v resolution(a1) v !belief(a1)
+
+-2			!color(a1,P_orange) v !color_constraint(A_pink) v resolution(a1) v !belief(a1)
+1.8       !color(a1,P_orange) v !color_constraint(A_pink) v !resolution(a1) v !belief(a1)
+2.1       !color(a1,P_pink) v !color_constraint(A_orange) v !resolution(a1) v !belief(a1)
+-2			!color(a1,P_pink) v !color_constraint(A_orange) v resolution(a1) v !belief(a1)
+
+// Yellow, Orange (assuming RBG)
+2.2				!color(a1,P_yellow) v !color_constraint(A_yellow) v resolution(a1) v !belief(a1)
+-2			!color(a1,P_orange) v !color_constraint(A_yellow) v resolution(a1) v !belief(a1)
+-1.9			!color(a1,P_yellow) v !color_constraint(A_orange) v resolution(a1) v !belief(a1)
+2.2       !color(a1,P_orange) v !color_constraint(A_orange) v resolution(a1) v !belief(a1)
+-2.15			!color(a1,P_yellow) v !color_constraint(A_yellow) v !resolution(a1) v !belief(a1)
+2.05       !color(a1,P_orange) v !color_constraint(A_yellow) v !resolution(a1) v !belief(a1)
+2.1       !color(a1,P_yellow) v !color_constraint(A_orange) v !resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_orange) v !color_constraint(A_orange) v !resolution(a1) v !belief(a1)
+
+-2.1			!color(a1,P_green) v !color_constraint(A_orange) v resolution(a1) v !belief(a1)
+-2			!color(a1,P_green) v !color_constraint(A_yellow) v resolution(a1) v !belief(a1)
+1.8       !color(a1,P_green) v !color_constraint(A_yellow) v !resolution(a1) v !belief(a1)
+2.1       !color(a1,P_green) v !color_constraint(A_orange) v !resolution(a1) v !belief(a1)
+2.1       !color(a1,P_yellow) v !color_constraint(A_green) v !resolution(a1) v !belief(a1)
+2.05       !color(a1,P_orange) v !color_constraint(A_green) v !resolution(a1) v !belief(a1)
+-2			!color(a1,P_yellow) v !color_constraint(A_green) v resolution(a1) v !belief(a1)
+-2			!color(a1,P_orange) v !color_constraint(A_green) v resolution(a1) v !belief(a1)
+
+-2.1			!color(a1,P_blue) v !color_constraint(A_orange) v resolution(a1) v !belief(a1)
+-2.2			!color(a1,P_blue) v !color_constraint(A_yellow) v resolution(a1) v !belief(a1)
+2.3       !color(a1,P_blue) v !color_constraint(A_yellow) v !resolution(a1) v !belief(a1)
+2.05       !color(a1,P_blue) v !color_constraint(A_orange) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_yellow) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1)
+1.9       !color(a1,P_orange) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_yellow) v !color_constraint(A_blue) v resolution(a1) v !belief(a1)
+-2			!color(a1,P_orange) v !color_constraint(A_blue) v resolution(a1) v !belief(a1)
+
+-2.1			!color(a1,P_red) v !color_constraint(A_orange) v resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_red) v !color_constraint(A_yellow) v resolution(a1) v !belief(a1)
+2       !color(a1,P_red) v !color_constraint(A_yellow) v !resolution(a1) v !belief(a1)
+2.2       !color(a1,P_red) v !color_constraint(A_orange) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_yellow) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
+2.05       !color(a1,P_orange) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
+-2.1			!color(a1,P_yellow) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
+-2.1			!color(a1,P_orange) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
+
+// White (assuming RGB, Yellow, Orange, Pink
+
+2.2				!color(a1,P_white) v !color_constraint(A_white) v resolution(a1) v !belief(a1)
+-2.15			!color(a1,P_white) v !color_constraint(A_white) v !resolution(a1) v !belief(a1)
+
+-2			!color(a1,P_green) v !color_constraint(A_white) v resolution(a1) v !belief(a1)
+1.8       !color(a1,P_green) v !color_constraint(A_white) v !resolution(a1) v !belief(a1)
+2.1       !color(a1,P_white) v !color_constraint(A_green) v !resolution(a1) v !belief(a1)
+-2			!color(a1,P_white) v !color_constraint(A_green) v resolution(a1) v !belief(a1)
+
+-2.2			!color(a1,P_blue) v !color_constraint(A_white) v resolution(a1) v !belief(a1)
+2.3       !color(a1,P_blue) v !color_constraint(A_white) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_white) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_white) v !color_constraint(A_blue) v resolution(a1) v !belief(a1)
+
+-2.05			!color(a1,P_red) v !color_constraint(A_white) v resolution(a1) v !belief(a1)
+2       !color(a1,P_red) v !color_constraint(A_white) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_white) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
+-2.1			!color(a1,P_white) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
+
+-2.2			!color(a1,P_yellow) v !color_constraint(A_white) v resolution(a1) v !belief(a1)
+2.3       !color(a1,P_yellow) v !color_constraint(A_white) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_white) v !color_constraint(A_yellow) v !resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_white) v !color_constraint(A_yellow) v resolution(a1) v !belief(a1)
+
+-2			!color(a1,P_orange) v !color_constraint(A_white) v resolution(a1) v !belief(a1)
+1.8       !color(a1,P_orange) v !color_constraint(A_white) v !resolution(a1) v !belief(a1)
+2.1       !color(a1,P_white) v !color_constraint(A_orange) v !resolution(a1) v !belief(a1)
+-2			!color(a1,P_white) v !color_constraint(A_orange) v resolution(a1) v !belief(a1)
+
+-2.2			!color(a1,P_pink) v !color_constraint(A_white) v resolution(a1) v !belief(a1)
+2.3       !color(a1,P_pink) v !color_constraint(A_white) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_white) v !color_constraint(A_pink) v !resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_white) v !color_constraint(A_pink) v resolution(a1) v !belief(a1)
+
+
+// Black (assuming RGB, Yellow, Orange, Pink, White
+
+2.2				!color(a1,P_black) v !color_constraint(A_black) v resolution(a1) v !belief(a1)
+-2.15			!color(a1,P_black) v !color_constraint(A_black) v !resolution(a1) v !belief(a1)
+
+-2			!color(a1,P_green) v !color_constraint(A_black) v resolution(a1) v !belief(a1)
+1.8       !color(a1,P_green) v !color_constraint(A_black) v !resolution(a1) v !belief(a1)
+2.1       !color(a1,P_black) v !color_constraint(A_green) v !resolution(a1) v !belief(a1)
+-2			!color(a1,P_black) v !color_constraint(A_green) v resolution(a1) v !belief(a1)
+
+-2.2			!color(a1,P_blue) v !color_constraint(A_black) v resolution(a1) v !belief(a1)
+2.3       !color(a1,P_blue) v !color_constraint(A_black) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_black) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_black) v !color_constraint(A_blue) v resolution(a1) v !belief(a1)
+
+-2.05			!color(a1,P_red) v !color_constraint(A_black) v resolution(a1) v !belief(a1)
+2       !color(a1,P_red) v !color_constraint(A_black) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_black) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
+-2.1			!color(a1,P_black) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
+
+-2.2			!color(a1,P_yellow) v !color_constraint(A_black) v resolution(a1) v !belief(a1)
+2.3       !color(a1,P_yellow) v !color_constraint(A_black) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_black) v !color_constraint(A_yellow) v !resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_black) v !color_constraint(A_yellow) v resolution(a1) v !belief(a1)
+
+-2			!color(a1,P_orange) v !color_constraint(A_black) v resolution(a1) v !belief(a1)
+1.8       !color(a1,P_orange) v !color_constraint(A_black) v !resolution(a1) v !belief(a1)
+2.1       !color(a1,P_black) v !color_constraint(A_orange) v !resolution(a1) v !belief(a1)
+-2			!color(a1,P_black) v !color_constraint(A_orange) v resolution(a1) v !belief(a1)
+
+-2.2			!color(a1,P_pink) v !color_constraint(A_black) v resolution(a1) v !belief(a1)
+2.3       !color(a1,P_pink) v !color_constraint(A_black) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_black) v !color_constraint(A_pink) v !resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_black) v !color_constraint(A_pink) v resolution(a1) v !belief(a1)
+
+-2.2			!color(a1,P_white) v !color_constraint(A_black) v resolution(a1) v !belief(a1)
+2.3       !color(a1,P_white) v !color_constraint(A_black) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_black) v !color_constraint(A_white) v !resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_black) v !color_constraint(A_white) v resolution(a1) v !belief(a1)
 
 //Shape
 1.5       !shape(a1,P_compact) v !shape_constraint(A_compact) v resolution(a1) v !belief(a1)
