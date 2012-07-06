@@ -538,7 +538,7 @@ IFOPTALL(%(feature_options), vision)
         CPP MG viewer       VideoViewer --videohost localhost --videoname VideoServer --camid 0
 
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/ObjectRecognizer3D
-        # CPP MG recognizer.3D ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --confidence %(object_detector_confidence) --save-images
+        CPP MG recognizer.3D ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --confidence %(object_detector_confidence) --save-images
     ENDIF
 
     IFOPTALL(%(hardware_options), prosilica)
@@ -560,7 +560,7 @@ IFOPTALL(%(feature_options), vision)
         JAVA MG blobdetector  vision.components.BlobjectDetector --label-magazine 255,0,0 --label-table 0,255,0 --label-chocolate_chips 0,0,255  --label-sugar 255,0,255
 
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/ObjectRecognizer3D
-        # CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+        CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
         JAVA MG recognizer.people vision.components.BlobbyPeopleDetector --label-person 255,255,0
     ENDIF
 
