@@ -341,6 +341,8 @@ def apply_high_p_assumptions(init_state, domain):
             if probs[f] > 0.91 and probs[f] < 1.0:
                 print "set:", f, probs[f]
                 new_state.set(f)
+                csvar = f.svar.as_modality(pddl.mapl.commit, [f.value])
+                new_state[csvar] = pddl.TRUE
 
     return new_state
 
