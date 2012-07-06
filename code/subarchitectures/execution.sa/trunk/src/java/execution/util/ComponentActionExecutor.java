@@ -4,9 +4,12 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import execution.slice.Action;
 
-public abstract class ComponentActionExecutor<ActionClass extends Action> implements ActionExecutor<ActionClass> {
+public abstract class ComponentActionExecutor<ActionClass extends Action>
+		implements ActionExecutor<ActionClass> {
 
 	private final ManagedComponent m_component;
+
+	private boolean m_hasCompleted = false;
 
 	public void debug(Object _o, Throwable _t) {
 		m_component.debug(_o, _t);
@@ -51,6 +54,15 @@ public abstract class ComponentActionExecutor<ActionClass extends Action> implem
 	protected WorkingMemoryAddress newWorkingMemoryAddress() {
 		return new WorkingMemoryAddress(getComponent().newDataID(),
 				getComponent().getSubarchitectureID());
+	}
+
+	public void setCompletion(boolean _hasCompleted) {
+		m_hasCompleted = _hasCompleted;
+	}
+
+	@Override
+	public boolean hasCompleted() {
+		return m_hasCompleted;
 	}
 
 }

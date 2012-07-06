@@ -58,6 +58,12 @@ public class TestActionExecutor extends ManagedComponent {
 		public void stopExecution() {
 		}
 
+		@Override
+		public boolean hasCompleted() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
 	}
 
 	private class PrintExecutor implements ActionExecutor<Action> {
@@ -89,6 +95,12 @@ public class TestActionExecutor extends ManagedComponent {
 
 		@Override
 		public void stopExecution() {
+		}
+
+		@Override
+		public boolean hasCompleted() {
+			// TODO Auto-generated method stub
+			return false;
 		}
 
 	}
