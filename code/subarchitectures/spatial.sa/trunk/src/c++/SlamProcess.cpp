@@ -236,7 +236,7 @@ void SlamProcess::runComponent() {
 }
 
 void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom) {
-  SCOPED_TIME_LOG;
+  //SCOPED_TIME_LOG;
   if (castOdom.odompose.empty()) {
     println("WARNING: Odometry struct contained no odompose which si needed");
     return;
@@ -247,7 +247,7 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom) {
   char buf[256];
   sprintf(buf, "Got odometry x=%.3f, y=%.3f, theta=%.3f t=%ld.%06ld", p.x, p.y,
       p.theta, (long) castOdom.time.s, (long) castOdom.time.us);
-  log(buf);
+  debug(buf);
 
   Cure::Pose3D odom;
   CureHWUtils::convOdomToCure(castOdom, odom);
@@ -297,9 +297,9 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom) {
     IceUtil::Mutex::Lock lock(m_Mutex);
     m_PP->addOdometry(odom);
 
-		log("pose est after addOdometry x=%.2f y=%.2f a=%.4f t=%.6f",
-				m_PP->getPose().getX(), m_PP->getPose().getY(),
-				m_PP->getPose().getTheta(), m_PP->getPose().getTime().getDouble());
+    debug("pose est after addOdometry x=%.2f y=%.2f a=%.4f t=%.6f",
+        m_PP->getPose().getX(), m_PP->getPose().getY(),
+        m_PP->getPose().getTheta(), m_PP->getPose().getTime().getDouble());
   }
 
   if (m_outputRawData)
@@ -312,7 +312,7 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom) {
 }
 
 void SlamProcess::processScan2d(const Laser::Scan2d &castScan) {
-  SCOPED_TIME_LOG;
+  //SCOPED_TIME_LOG;
   if (m_ScansToIgnoreBeforeStart > 0) {
     m_ScansToIgnoreBeforeStart--;
     return;
@@ -365,7 +365,7 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan) {
 
       if (m_LastUsedOdom.getTime() > 0) {
 
-        println("Performing fake measurement update to kick start");
+        debug("Performing fake measurement update to kick start");
 
         {
           IceUtil::Mutex::Lock lock(m_Mutex);
@@ -421,7 +421,7 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan) {
       }
 
     } else {
-      SCOPED_TIME_LOG;
+      //SCOPED_TIME_LOG;
 
       debug("addXXXX(#=%d a0=%.2f aS=%.4f r0=%.2f rEnd=%.2f t=%ld.%06ld)",
           cureScan.getNPts(), cureScan.getStartAngle(),
@@ -438,22 +438,22 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan) {
       debug("Took %.3fs to extract %d lines, %.3fs to update (tot %.3fs)", dt,
           n, timer.stop() - dt, timer.stop());
       {
-        SCOPED_TIME_LOG;
+        //SCOPED_TIME_LOG;
         IceUtil::Mutex::Lock lock(m_Mutex);
         int err = m_PP->addMeasurementSet(measSet);
         if (err != 0) {
           log("Got error value %d from addMeasurementSet!", err);
-//          if (m_LastUsedOdom.getDoubleTime() > cureScan.getDoubleTime())
-//            getLogger()->warn("Update failed, should have worked!");
+          //          if (m_LastUsedOdom.getDoubleTime() > cureScan.getDoubleTime())
+          //            getLogger()->warn("Update failed, should have worked!");
         }
       }
 
-      log("pose est after addXXXX x=%.2f y=%.2f a=%.4f t=%.6f",
+      debug("pose est after addXXXX x=%.2f y=%.2f a=%.4f t=%.6f",
           m_PP->getPose().getX(), m_PP->getPose().getY(),
           m_PP->getPose().getTheta(), m_PP->getPose().getTime().getDouble());
 
       {
-        SCOPED_TIME_LOG;
+        //SCOPED_TIME_LOG;
         updateRobotPoseInWM(m_PP->getPose().getTime());
 
         storeDataToFile();
@@ -466,9 +466,9 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan) {
 
   } else {
 
-		updateRobotPoseInWM(cureScan.getTime());
+    updateRobotPoseInWM(cureScan.getTime());
 
-//    debug("No update, since not moving");
+    //    debug("No update, since not moving");
 
   }
 }
@@ -497,8 +497,8 @@ void SlamProcess::updateRobotPoseInWM(const Cure::Timestamp &timestamp) {
   Cure::Pose3D pose = m_PP->getPose();
   m_Mutex.unlock();
 
-	// Fake new timestamp for "updates" while robot is standing still
-	pose.setTime(timestamp); 
+  // Fake new timestamp for "updates" while robot is standing still
+  pose.setTime(timestamp);
 
   // Write estimated robot pose data into robot pose IDL structure
   NavData::RobotPose2dPtr pRP = new NavData::RobotPose2d;

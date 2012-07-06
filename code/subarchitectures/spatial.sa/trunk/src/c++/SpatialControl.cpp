@@ -217,7 +217,7 @@ void SpatialControl::CreateGridMap() {
     }
   }
   m_ProxyGridMap.set_cells(cells);
-  SCOPED_TIME_LOG;
+  //SCOPED_TIME_LOG;
   double kinectZ = 1.45;
   if (m_show3Dobstacles) {
     peekabot::OccupancySet3D cells1;
@@ -1075,7 +1075,7 @@ void SpatialControl::updateGridMaps() {
   }
 
   if (m_UsePointCloud) {
-    SCOPED_TIME_LOG;
+    //SCOPED_TIME_LOG;
     /* Bounding box for new point cloud data */
     int pointcloudMinXi = INT_MAX, pointcloudMaxXi = INT_MIN;
     int pointcloudMinYi = INT_MAX, pointcloudMaxYi = INT_MIN;
@@ -1102,15 +1102,15 @@ void SpatialControl::updateGridMaps() {
         > KINECT_PANTILT_DELAY) {
       PointCloud::SurfacePointSeq points;
       {
-        SCOPED_TIME_LOG;
+        //SCOPED_TIME_LOG;
         getPoints(true, 640 / 4, points);
       }
       {
-        SCOPED_TIME_LOG;
+        //SCOPED_TIME_LOG;
         std::sort(points.begin(), points.end(), ComparePoints());
       }
       {
-        SCOPED_TIME_LOG;
+        //SCOPED_TIME_LOG;
 
         for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it
             != points.end(); ++it) {
@@ -1172,14 +1172,14 @@ void SpatialControl::updateGridMaps() {
     }
     {
       /* Project the height map onto the 2D obstacle map */
-      SCOPED_TIME_LOG;
+      //SCOPED_TIME_LOG;
       blitHeightMap(*tmp_lgm, m_lgmKH, min(pointcloudMinXi, laserMinXi), max(
           pointcloudMaxXi, laserMaxXi), min(pointcloudMinYi, laserMinYi), max(
           pointcloudMaxYi, laserMaxYi), m_obstacleMinHeight,
           m_obstacleMaxHeight);
     }
     if (m_usePeekabot) {
-      SCOPED_TIME_LOG;
+      //SCOPED_TIME_LOG;
 
       if (m_PBDisplayMutex.tryLock()) {
         if (!m_bDoPBSync) {
@@ -1524,7 +1524,7 @@ void SpatialControl::runComponent() {
   while (isRunning()) {
 
     if (m_bNavGraphNeedsRefreshing) {
-      SCOPED_TIME_LOG;
+      //SCOPED_TIME_LOG;
       //May change to true while refreshNavGraph is ongoing;
       //in that case it will simply run again next pass
       m_bNavGraphNeedsRefreshing = false;
@@ -1542,7 +1542,7 @@ void SpatialControl::runComponent() {
       m_OdomQueueMutex.unlock();
 
       {
-        SCOPED_TIME_LOG;
+        //SCOPED_TIME_LOG;
         processOdometry(cureOdom);
       }
       m_OdomQueueMutex.lock();
@@ -1647,7 +1647,7 @@ void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID) {
 }
 
 void SpatialControl::refreshNavGraph() {
-  SCOPED_TIME_LOG;
+  //SCOPED_TIME_LOG;
   //  m_Mutex.lock();
 
   // Lock just in case m_last_ng is being updated by newNavGraph()
@@ -2074,7 +2074,7 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) {
 void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom) {
   Cure::Pose3D cureOdom;
   CureHWUtils::convOdomToCure(castOdom, cureOdom);
-  log("Processing odometry x=%.2f y=%.2f a=%.4f t=%.6f", cureOdom.getX(),
+  debug("Processing odometry x=%.2f y=%.2f a=%.4f t=%.6f", cureOdom.getX(),
       cureOdom.getY(), cureOdom.getTheta(), cureOdom.getTime().getDouble());
 
   //Can't defer this; odometry must be in the TOPP before
@@ -2104,9 +2104,9 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom) {
 }
 
 void SpatialControl::processOdometry(Cure::Pose3D cureOdom) {
-  log("Processing odometry x=%.2f y=%.2f a=%.4f t=%.6f", cureOdom.getX(),
+  debug("Processing odometry x=%.2f y=%.2f a=%.4f t=%.6f", cureOdom.getX(),
       cureOdom.getY(), cureOdom.getTheta(), cureOdom.getTime().getDouble());
-  log("CASTTime: %f", getCASTTime().s + 1e-6 * getCASTTime().us);
+  debug("CASTTime: %f", getCASTTime().s + 1e-6 * getCASTTime().us);
 
   {
     static cast::cdl::CASTTime oldTime = getCASTTime();
@@ -2115,7 +2115,7 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom) {
         - oldTime.us);
     oldTime = newTime;
     if (diff > 1500000) {
-      wrn ("WARNING: SpatialControl::updateCtrl - interval: %f s",
+      wrn("WARNING: SpatialControl::updateCtrl - interval: %f s",
           ((double) diff) * 1e-6);
     } else {
       debug("SpatialControl::updateCtrl - interval: %f s", ((double) diff) * 1e-6);
@@ -2359,11 +2359,11 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom) {
     }
 
     {
-      SCOPED_TIME_LOG;
+      //SCOPED_TIME_LOG;
       m_LMapMutex.lock();
     }
     {
-      SCOPED_TIME_LOG;
+      //SCOPED_TIME_LOG;
       Cure::NewNavController::updateCtrl();
     }
     m_LMapMutex.unlock();
@@ -2407,7 +2407,7 @@ void SpatialControl::mapUpdaterLoop() {
 
         m_taskStatusMutex.unlock();
       }
-      SCOPED_TIME_LOG;
+      //SCOPED_TIME_LOG;
       updateGridMaps();
     }
     sleepComponent(500);
@@ -2970,7 +2970,7 @@ SpatialData::LocalGridMap SpatialControl::getRoomGridMap(int roomId) {
  * Removes unreachable and overlapped node hypotheses, samples the new ones, assigns the the parent nodes.
  */
 SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis() {
-  SCOPED_TIME_LOG;
+  //SCOPED_TIME_LOG;
   getLogger()->info("Refreshing node hypotheses");
 
   SpatialData::NodeHypothesisSeq ret;
@@ -2993,7 +2993,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis() {
   vector<SpatialData::NodeHypothesisPtr> hypotheses;
   getMemoryEntries<SpatialData::NodeHypothesis> (hypotheses);
   {
-    SCOPED_TIME_LOG;
+    //SCOPED_TIME_LOG;
     for (vector<SpatialData::NodeHypothesisPtr>::iterator extantHypIt =
         hypotheses.begin(); extantHypIt != hypotheses.end(); extantHypIt++) {
       SpatialData::NodeHypothesisPtr extantHyp = *extantHypIt;
@@ -3031,7 +3031,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis() {
     }
   }
   {
-    SCOPED_TIME_LOG;
+    //SCOPED_TIME_LOG;
     //LOOP POINTS AROUND OVERLAPPED PLACEHOLDERS
     for (vector<SpatialData::NodeHypothesisPtr>::iterator extantHypIt =
         overlapped_hypotheses.begin(); extantHypIt
@@ -3095,11 +3095,11 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis() {
 
   //2. LOOP POINTS AROUND ROBOT
   {
-    SCOPED_TIME_LOG;
+    //SCOPED_TIME_LOG;
 
     Cure::Pose3D currPose;
     {
-      SCOPED_TIME_LOG;
+      //SCOPED_TIME_LOG;
       IceUtil::Mutex::Lock lock(m_PPMutex);
       currPose = m_TOPP.getPose();
     }
@@ -3109,7 +3109,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis() {
 
     m_lgm->worldCoords2Index(currPose.getX(), currPose.getY(), robotxi, robotyi);
     {
-      SCOPED_TIME_LOG;
+      //SCOPED_TIME_LOG;
 
       counter1 = 0;
       counter2 = 0;

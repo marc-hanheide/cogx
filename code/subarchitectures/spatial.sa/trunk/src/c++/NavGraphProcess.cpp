@@ -1186,7 +1186,7 @@ void NavGraphProcess::receiveOdometry(const Robotbase::Odometry &castOdom) {
     return;
   }
 
-  log("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f", cureOdom.getX(),
+  debug("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f", cureOdom.getX(),
       cureOdom.getY(), cureOdom.getTheta(), cureOdom.getTime().getDouble());
 
   IceUtil::Mutex::Lock lock(m_TOPPMutex);
