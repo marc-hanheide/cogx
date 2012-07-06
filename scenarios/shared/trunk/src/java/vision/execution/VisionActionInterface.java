@@ -131,7 +131,7 @@ public class VisionActionInterface extends
 									+ model);
 				}
 			}
-
+			setCompletion(true);
 			return TriBool.TRITRUE;
 		}
 	}
@@ -170,6 +170,7 @@ public class VisionActionInterface extends
 				}
 			}
 
+			setCompletion(true);
 			return TriBool.TRITRUE;
 		}
 	}
