@@ -314,7 +314,7 @@ LaserServerPlayer::runComponent()
         if ( isRunning() &&
              (!m_PushClients[i].timer.isRunning() ||
               (m_PushClients[i].timer.split() >= m_PushClients[i].interval) ) ) {
-          log("pushed scan to client %d", i);
+          debug("pushed scan to client %d", i);
           m_PushClients[i].timer.restart();
           m_PushClients[i].prx->receiveScan2d(m_Scan);
         }
