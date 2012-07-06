@@ -58,8 +58,10 @@ add_custom_target(${LIBRARY_NAME}_MatlabProject ALL
    )
 
 configure_file(buildvisuallearnerctf.sh.in buildvisuallearnerctf.sh)
+configure_file(cpvisuallearnerprebuilt.sh.in cpvisuallearnerprebuilt.sh)
 install(PROGRAMS
    ${CMAKE_CURRENT_BINARY_DIR}/buildvisuallearnerctf.sh
+   ${CMAKE_CURRENT_BINARY_DIR}/cpvisuallearnerprebuilt.sh
    DESTINATION ${OUTPUT}/bin
    )
 
