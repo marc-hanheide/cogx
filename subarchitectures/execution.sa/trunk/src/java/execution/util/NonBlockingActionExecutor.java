@@ -68,6 +68,7 @@ public abstract class NonBlockingActionExecutor<ActionType extends Action>
 	 * @param _success
 	 */
 	protected void executionComplete(TriBool _success) {
+		setCompletion(true);
 		m_callback.executionComplete(_success);
 	}
 

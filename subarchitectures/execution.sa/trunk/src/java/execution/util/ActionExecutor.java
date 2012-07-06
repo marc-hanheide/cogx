@@ -62,5 +62,11 @@ public interface ActionExecutor<ActionClass extends Action> {
 	 * @return
 	 */
 	Class<ActionClass> getActionClass();
+	
+	/**
+	 * Returns true once an action has completed. If the action being executed is cancelled somehow (e.g. deleted) and this returns false then stopExecution will be called.
+	 * @return
+	 */
+	boolean hasCompleted();
 
 }

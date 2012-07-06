@@ -56,7 +56,7 @@ public abstract class NonBlockingCompleteFromStatusExecutor<ActionType extends A
 	
 	@Override
 	public void stopExecution() {
-		// can't stop this one
+	
 	}
 
 	/**

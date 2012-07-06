@@ -140,8 +140,10 @@ public class LocalActionStateManager extends Thread {
 		@Override
 		public void workingMemoryChanged(WorkingMemoryChange _arg0)
 				throws CASTException {
-			m_component.log("Seen delete, so stopping execution...");
-			m_executor.stopExecution();
+			if (!m_executor.hasCompleted()) {
+				m_component.log("Seen delete, so stopping execution...");
+				m_executor.stopExecution();
+			}
 			m_component.removeChangeFilter(this);
 		}
 
@@ -169,10 +171,11 @@ public class LocalActionStateManager extends Thread {
 		}
 
 		try {
-			Action action = m_component.getMemoryEntry(_wmc.address, Action.class);
+			Action action = m_component.getMemoryEntry(_wmc.address,
+					Action.class);
 
 			m_component.println("object from WM class: " + action.getClass());
-			
+
 			if (executor.accept(executor.getActionClass().cast(action))) {
 				actionAccepted(_wmc.address, action);
 				m_executorQueue.add(new ExecutorWrapper(executor, action,
@@ -249,7 +252,7 @@ public class LocalActionStateManager extends Thread {
 
 					if (executor.isBlockingAction()) {
 						TriBool executionSuccess = executor.execute();
-
+						
 						// need to lock to protect from other updates
 						m_component.lockComponent();
 						actionCompleted(executionSuccess,
