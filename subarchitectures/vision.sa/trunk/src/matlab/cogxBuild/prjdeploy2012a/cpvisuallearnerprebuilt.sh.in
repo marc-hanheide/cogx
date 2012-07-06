@@ -1,0 +1,26 @@
+#!/bin/bash
+
+bits=$(getconf LONG_BIT)
+
+if [ "$bits" == "32" ]; then
+   bindir=glnx86
+elif [ "$bits" == "64" ]; then
+   bindir=glnax64
+else
+   echo "UNKNOWN ARCHITECTURE"
+   exit
+fi
+
+bindir="${COGX_ROOT}/subarchitectures/vision.sa/prebuilt/VisualLearner/$bindir"
+ctfdir="${CMAKE_CURRENT_BINARY_DIR}/build"
+prxdir="${CMAKE_CURRENT_BINARY_DIR}/../Proxy"
+
+if [ -f $ctfdir/libVisualLearnerCtf.h -a -f $prxdir/libVisualLearnerProxy.so ]; then
+   cp -u $ctfdir/libVisualLearnerCtf.h     $bindir/
+   cp -u $ctfdir/libVisualLearnerCtf.so    $bindir/
+   cp -u $ctfdir/readme.txt                $bindir/
+   cp -u $prxdir/libVisualLearnerProxy.so  $bindir/
+else
+   echo "SOME FILES DO NOT EXIST"
+fi
+ 
