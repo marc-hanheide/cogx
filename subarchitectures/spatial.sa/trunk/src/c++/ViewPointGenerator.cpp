@@ -465,7 +465,7 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGridFromNodes(vector<
 
         if (((x - excluded_cones[q].pos[0]) * (x - excluded_cones[q].pos[0])
             + (y - excluded_cones[q].pos[1]) * (y - excluded_cones[q].pos[1])
-            < 0.001) && (diff_angle < 0.01)) {
+            < 0.001) && (diff_angle < 15. * M_PI / 180 )) {
           excluded = true;
           m_component->log("reject sample x %f y %f angle %f (nodes %d)", x, y, angle,
               nodes.size());
