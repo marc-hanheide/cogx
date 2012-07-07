@@ -207,6 +207,8 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 
 	private ExecutorService executor = Executors.newCachedThreadPool();
 
+	private boolean m_listenersRegistered = false;
+
 	/**
 	 * create new synchronizer only for given memory operations
 	 * 
@@ -408,13 +410,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Runnable#run()
-	 */
-	@Override
-	public void run() {
+	public void registerListeners() {
 		log("register listeners for type " + fromType.getSimpleName());
 		component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				fromType, WorkingMemoryOperation.ADD), entryQueue);
@@ -422,10 +418,27 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 				fromType, WorkingMemoryOperation.OVERWRITE), entryQueue);
 		component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				fromType, WorkingMemoryOperation.DELETE), entryQueue);
+		m_listenersRegistered  = true;
+	}
+	
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Runnable#run()
+	 */
+	@Override
+	public void run() {
 
-		if (createInSA == null)
+		
+		if(!m_listenersRegistered) {
+			registerListeners();
+		}
+		
+		if (createInSA == null) {
 			createInSA = component.getSubarchitectureID();
-
+		}
+			
 		try {
 			allTrackedBeliefs.start();
 		} catch (UnknownSubarchitectureException e1) {
@@ -434,6 +447,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 		}
 
 		start();
+		
 		try {
 			while (component.isRunning()) {
 				try {
