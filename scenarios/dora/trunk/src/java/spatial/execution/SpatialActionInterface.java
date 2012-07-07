@@ -650,6 +650,11 @@ public class SpatialActionInterface extends ManagedComponent {
 		}
 
 		@Override
+		public boolean hasCompleted() {
+			return m_isComplete;
+		}
+
+		@Override
 		public void stopExecution() {
 			// remove overwrite receiver
 			if (!m_isComplete) {
