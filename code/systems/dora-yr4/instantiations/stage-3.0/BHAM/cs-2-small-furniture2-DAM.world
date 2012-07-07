@@ -14,10 +14,10 @@ include "filingcabinet.inc"
 window
 (
 	#This is the size the simulation window will be in pixels
-	size [1278.000 716.000]
+	size [400.000 400.000]
 	#This is how many metres of the simulated environment each pixel shows
 	scale 22.000
-	center [27.254 0.518]
+	center [19.981 6.109]
 )
 
 floorplan
@@ -29,7 +29,7 @@ floorplan
 
 p3dx_with_urg_and_blobfinder (
 	name "dora"
-	pose [18.845 8.427 0 -90.000]
+	pose [16.845 5.700 0 -90.000]
 	color "red"
 )
 
@@ -69,7 +69,7 @@ p3dx_with_urg_and_blobfinder (
  (
  name "chair2"
  color "black"
- pose [15.091 5.636 0 0]
+ pose [13.136 6.136 0 0]
  )
 
 # row-of-chairs
@@ -113,7 +113,7 @@ p3dx_with_urg_and_blobfinder (
  (
  name "desk2"
  color "black"
- pose [14.250 10.420 0 90.000]
+ pose [16.886 8.329 0 90.000]
  )
 
  long-desk
