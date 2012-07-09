@@ -11,13 +11,15 @@ include "chair.inc"
 include "fakebookcase.inc"
 include "filingcabinet.inc"
 
+interval_real 10
+
 window
 (
 	#This is the size the simulation window will be in pixels
-	size [400.000 400.000]
+	size [316.000 718.000]
 	#This is how many metres of the simulated environment each pixel shows
 	scale 22.000
-	center [19.981 6.109]
+	center [18.572 -0.300]
 )
 
 floorplan
@@ -29,7 +31,7 @@ floorplan
 
 p3dx_with_urg_and_blobfinder (
 	name "dora"
-	pose [16.845 5.700 0 -90.000]
+	pose [16.527 -2.664 0 -90.000]
 	color "red"
 )
 
@@ -62,14 +64,14 @@ p3dx_with_urg_and_blobfinder (
  (
  name "chair1"
  color "black"
- pose [16.819 4.136 0 0]
+ pose [13.683 -4.000 0 0]
  )
 
  chair
  (
  name "chair2"
  color "black"
- pose [13.136 6.136 0 0]
+ pose [15.181 -3.273 0 0]
  )
 
 # row-of-chairs
@@ -106,35 +108,35 @@ p3dx_with_urg_and_blobfinder (
  (
  name "desk1"
  color "black"
- pose [22.550 10.245 0 0]
+ pose [15.277 -5.573 0 0]
  )
 
  long-desk
  (
  name "desk2"
  color "black"
- pose [16.886 8.329 0 90.000]
+ pose [14.977 -7.671 0 90.000]
  )
 
  long-desk
  (
  name "desk3"
  color "black"
- pose [14.305 12.830 0 90.000]
+ pose [15.623 0.103 0 90.000]
  )
 
  desk
  (
  name "desk4"
  color "black"
- pose [18.045 13.040 0 90.000]
+ pose [18.045 12.995 0 90.000]
  )
 
  desk
  (
  name "desk5"
  color "black"
- pose [23.930 10.220 0 0]
+ pose [15.294 -6.371 0 0]
  )
 
  shelf-unit
@@ -148,7 +150,7 @@ p3dx_with_urg_and_blobfinder (
  (
  name "shelf-unit2"
  color "black"
- pose [17.735 3.805 0 90.000]
+ pose [17.690 2.169 0 90.000]
  )
 
  model
@@ -157,14 +159,14 @@ p3dx_with_urg_and_blobfinder (
  bitmap "./big-table1.pnm"
  size [2.800 1.600 0.720]
  color "black"
- pose [14.960 3.904 0 45.000]
+ pose [14.096 -2.096 0 45.000]
  )
 
  desk
  (
  name "desk8"
  color "black"
- pose [21.928 8.109 0 0]
+ pose [13.837 -5.118 0 0]
  )
 
  long-desk
@@ -194,14 +196,14 @@ p3dx_with_urg_and_blobfinder (
  (
  name "extrabarrier1"
  color "black"
- pose [18.600 1.225 0 0]
+ pose [14.873 -8.775 0 0]
  )
 
  barrier
  (
  name "extrabarrier2"
  color "black"
- pose [19.060 1.225 0 0]
+ pose [15.105 -4.957 0 0]
  )
 
 # barriers to close office doors:
@@ -252,14 +254,14 @@ p3dx_with_urg_and_blobfinder (
  (
  name "barrier7"
  color "black"
- pose [17.900 0.900 0 90.000]
+ pose [19.809 8.127 0 90.000]
  )
 
  barrier
  (
  name "barrier8"
  color "black"
- pose [17.900 -8.350 0 90.000]
+ pose [19.855 -10.350 0 90.000]
  )
 
  barrier
