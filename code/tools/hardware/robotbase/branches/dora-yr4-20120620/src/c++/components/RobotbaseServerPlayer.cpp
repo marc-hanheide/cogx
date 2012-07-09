@@ -18,10 +18,14 @@
 
 #include <Utils/HelpFunctions.hh>
 #include <fstream>
+//#include "../../../../../../subarchitectures/spatial.sa/src/c++/TimeLogger.hpp"
+
+
 using namespace Robotbase;
 using namespace cast;
 using namespace cast::cdl;
 
+//#define SCOPED_TIME_LOG TimeLogger logger(this, __FILE__, __LINE__);
 
 /**
  * The function called to create a new instance of our component.
@@ -348,6 +352,7 @@ RobotbaseServerPlayer::execMotionCommand(const ::Robotbase::MotionCommand& cmd)
 
       log("execMotionCommand v=%.2fm/s w=%.3frad/s (got v=%.2fm/s w=%.3frad/s",v,w,cmd.speed,cmd.rotspeed);
       if (!m_Joydrive) {
+//	SCOPED_TIME_LOG;
         m_Position->SetSpeed(v,w);
       }
     } else  {
@@ -358,6 +363,7 @@ RobotbaseServerPlayer::execMotionCommand(const ::Robotbase::MotionCommand& cmd)
       log("execMotionCommand (NOT CONNECTED) v=%.2fm/s w=%.3frad/s",
               cmd.speed, cmd.rotspeed);    
   }
+  log("execMotionCommand exited");
 }
   
 
@@ -370,7 +376,9 @@ RobotbaseServerPlayer::RobotbaseServerI::registerOdometryPushClient
   println("registerScan2dPushClient");
 
   OdometryClient client;
+
   // created this proxy as oneway allowing async data dispatch
+  //client.prx = c;
   client.prx = c->ice_collocationOptimized(false)->ice_oneway();
   client.interval = desiredInterval;
 
