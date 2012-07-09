@@ -50,7 +50,6 @@ SETVAR feature_options=<multiline>
 # enable dialogue	
     dialogue		
     plan_verbalisation
-    !plan_verbalisation
     hgv_verbalisation
 # enable motivation base
     motivation		
