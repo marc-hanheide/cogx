@@ -57,7 +57,7 @@ JoystickDrivable::configure(const std::map<std::string,std::string> & config)
   }
   printf("JoystickDrivable: Using cfgFile=%s\n", cfgFile.c_str());
 
-  std::string joyDev = "/dev/joystick";
+  std::string joyDev = "/dev/js0";
   int id_east_west = Cure::Hal::JOY_RP2_AXIS_LEFT_EW;
   int id_north_south = Cure::Hal::JOY_RP2_AXIS_LEFT_NS;
   int zero_trans_id = Cure::Hal::JOY_RP2_BUTTON_6;
