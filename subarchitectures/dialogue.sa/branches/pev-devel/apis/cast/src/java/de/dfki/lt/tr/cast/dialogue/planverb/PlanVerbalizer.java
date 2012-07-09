@@ -274,9 +274,9 @@ public class PlanVerbalizer {
 		//m_postLexicalSub.put("recreationroom", "placeholder");
 	}
 	
-	public String verbalizeHistory(final List<POPlan> hlist, int planningTaskID) {
+	public String verbalizeHistory(final List<POPlan> hlist, int planningTaskID, String task) {
 		log("entering verbalizeHistory()");
-		History h = new PDDLHistory(hlist, planningTaskID);
+		History h = new PDDLHistory(hlist, planningTaskID, task);
 		return verbalizeHistory(h);
 	}
 	
@@ -420,7 +420,7 @@ public class PlanVerbalizer {
     	for (WMAddress referentWMA : jswma) {
     		log_sb.append("\n current referentWMA = " + referentWMA);
     		WMAddress lookupWMA;
-    		if (referentWMA.subarchitecture().equals("PLANNERPLACE")) {
+    		if (referentWMA.subarchitecture().equals("PLANNERPLACE") || referentWMA.subarchitecture().equals("COMAROOM")) {
     			String[] parts = referentWMA.id().split(":");
     			
     			if (parts[0].charAt(0) == '_') {
@@ -433,7 +433,8 @@ public class PlanVerbalizer {
     				parts[1] = parts[1].toUpperCase();
     			}
     			
-    			lookupWMA = new WMAddress(parts[0] + ":" + parts[1], "spatial.sa");
+    			if (referentWMA.subarchitecture().equals("PLANNERPLACE")) lookupWMA = new WMAddress(parts[0] + ":" + parts[1], "spatial.sa");
+    			else lookupWMA = new WMAddress(parts[0] + ":" + parts[1], "coma"); //if (referentWMA.subarchitecture().equals("COMAROOM"))
     		} else lookupWMA = referentWMA;
     		try {
     			//GroundedBelief gbWME = m_castComponent.getMemoryEntry(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), GroundedBelief.class);
@@ -650,22 +651,35 @@ public class PlanVerbalizer {
 //		System.out.println("++++++++++++++ WMA" + lfString);
 		
 		if (lfString.contains("place_")) {
-			String matchPattern = "(place_)(_?[0-9a-zA-Z]+)(_?)(_?[0-9a-zA-Z]+)(\")";
+			String matchPattern = "(place_)(_?[0-9a-zA-Z]+)(_)(_?[0-9a-zA-Z]+)(\")";
 			String replacePattern = "$2:$4@PLANNERPLACE$5";
 			lfString = lfString.replaceAll(matchPattern, replacePattern);
 			changed = true;
 //			System.out.println("++++++++++++++ place_!" + lfString);
 		}
 		
-		if (lfString.contains("room")) {
-			String matchPattern = "(room)([0-9]+)(\":castreferent)";
-			String replacePattern = "room:$2@HYPOTHETICAL$3";
+		// 1_2_1,room_0__a1
+		if (lfString.contains("room_")) {
+//			String matchPattern = "(room_)([0-9a-zA-Z]+)(\":castreferent)";
+//			String replacePattern = "room:$2@HYPOTHETICAL$3";
+			String matchPattern = "(room_)(_?[0-9a-zA-Z]+)(_)(_?[0-9a-zA-Z]+)(\")";
+			String replacePattern = "$2:$4@COMAROOM$5";
 			lfString = lfString.replaceAll(matchPattern, replacePattern);
 			changed = true;
 //			System.out.println("++++++++++++++ roomX!" + lfString);
 		}
 		
-//		System.out.println("++++++++++++++ RESULT" + lfString);
+		if (lfString.contains("room")) {
+//			String matchPattern = "(room_)([0-9a-zA-Z]+)(\":castreferent)";
+//			String replacePattern = "room:$2@HYPOTHETICAL$3";
+			String matchPattern = "(room)([0-9a-zA-Z]+)(\")";
+			String replacePattern = "$1$2@HYPOROOM$3";
+			lfString = lfString.replaceAll(matchPattern, replacePattern);
+			changed = true;
+//			System.out.println("++++++++++++++ roomX!" + lfString);
+		}
+
+		//		System.out.println("++++++++++++++ RESULT" + lfString);
 		
 		if (!changed) return blf;
 		else return BasicLogicalForm.checkedFromString(lfString);
@@ -885,7 +899,7 @@ public class PlanVerbalizer {
 //		                 <Quantification>specific)
 				final String catF;
 				final String builderTypeF;
-				if (_lfWMA.id().toLowerCase().startsWith("room")) {
+				if (_lfWMA.id().toLowerCase().startsWith("room") || _lfWMA.subarchitecture().contains("coma")) {
 					catF = "room";
 					builderTypeF = "e-place";
 				} else {
