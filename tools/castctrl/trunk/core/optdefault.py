@@ -11,10 +11,12 @@ CURE_LIB_DIR=/usr/local/lib/cure
 MERCURY_ROOT=/usr/local/lib/mercury
 
 #MATLAB_ARCH=glnx86
-#MATLAB_I_ARCH=i386
+#MATLAB_JRE_ARCH=i386
+#MATLAB_LIB_ARCH=i386
 
 MATLAB_ARCH=glnxa64
-MATLAB_I_ARCH=i686
+MATLAB_JRE_ARCH=amd64
+MATLAB_LIB_ARCH=x86_64
 
 # -- Matlab dir - for mcc
 #MATLAB_DIR=/usr/local/MATLAB/R2012a
@@ -22,13 +24,13 @@ MATLAB_I_ARCH=i686
 MATLAB_MCR_ROOT=/usr/local/MATLAB/MATLAB_Compiler_Runtime/v717
 
 MATLAB_MCR_LD_PATH=<pathlist>
-   /usr/lib/${MATLAB_I_ARCH}-linux-gnu
+   /usr/lib/${MATLAB_LIB_ARCH}-linux-gnu
    ${MATLAB_MCR_ROOT}/runtime/${MATLAB_ARCH}
    ${MATLAB_MCR_ROOT}/bin/${MATLAB_ARCH}
    ${MATLAB_MCR_ROOT}/sys/os/${MATLAB_ARCH}
-   ${MATLAB_MCR_ROOT}/sys/java/jre/${MATLAB_ARCH}/jre/lib/${MATLAB_I_ARCH}/native_threads
-   ${MATLAB_MCR_ROOT}/sys/java/jre/${MATLAB_ARCH}/jre/lib/${MATLAB_I_ARCH}/server
-   ${MATLAB_MCR_ROOT}/sys/java/jre/${MATLAB_ARCH}/jre/lib/${MATLAB_I_ARCH}
+   ${MATLAB_MCR_ROOT}/sys/java/jre/${MATLAB_ARCH}/jre/lib/${MATLAB_JRE_ARCH}/native_threads
+   ${MATLAB_MCR_ROOT}/sys/java/jre/${MATLAB_ARCH}/jre/lib/${MATLAB_JRE_ARCH}/server
+   ${MATLAB_MCR_ROOT}/sys/java/jre/${MATLAB_ARCH}/jre/lib/${MATLAB_JRE_ARCH}
 </pathlist>
 
 XAPPLRESDIR=${MATLAB_MCR_ROOT}/X11/app-defaults
