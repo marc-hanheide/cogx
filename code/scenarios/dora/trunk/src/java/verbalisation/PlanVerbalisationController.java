@@ -3,20 +3,19 @@ package verbalisation;
 import java.util.HashMap;
 import java.util.Map;
 
-import autogen.Planner.Completion;
 import autogen.Planner.Goal;
 import autogen.Planner.PlanningTask;
-import cast.architecture.ChangeFilterFactory;
-import cast.architecture.ManagedComponent;
-import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.ManagedComponent;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import de.dfki.lt.tr.dialogue.production.PlanVerbalizationRequest;
+import de.dfki.lt.tr.dialogue.slice.produce.PEVTaskStatus;
 
 /** Simple component to keep track of PlanningTasks and trigger verbalisation.
  * @author Graham Horn
@@ -32,7 +31,7 @@ public class PlanVerbalisationController extends ManagedComponent
     super();
     m_gui = new PlanVerbalisationControllerFrame(this);
     m_gui.pack();
-    m_gui.setSize(700, 200);
+    m_gui.setSize(800, 200);
     m_gui.setVisible(true);
   }
   
@@ -58,6 +57,28 @@ public class PlanVerbalisationController extends ManagedComponent
               throws CASTException
           {
             processOverwrittenPlanningTask(_wmc);
+          }
+        });
+    
+    addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+        PEVTaskStatus.class, WorkingMemoryOperation.ADD),
+        new WorkingMemoryChangeReceiver()
+        {
+          public void workingMemoryChanged(WorkingMemoryChange _wmc)
+              throws CASTException
+          {
+            processPEVTaskStatus(_wmc);
+          }
+        });
+    
+    addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+        PEVTaskStatus.class, WorkingMemoryOperation.OVERWRITE),
+        new WorkingMemoryChangeReceiver()
+        {
+          public void workingMemoryChanged(WorkingMemoryChange _wmc)
+              throws CASTException
+          {
+            processPEVTaskStatus(_wmc);
           }
         });
   }
@@ -93,6 +114,39 @@ public class PlanVerbalisationController extends ManagedComponent
     return result;
   }
 
+  private void processPEVTaskStatus(WorkingMemoryChange _wmc)
+  {
+    PEVTaskStatus verbalisation_status;
+    try
+    {
+      verbalisation_status = getMemoryEntry(_wmc.address, PEVTaskStatus.class);
+      switch (verbalisation_status.status)
+      {
+        case INPROGRESS:
+          log("PEVTaskStatus for task " + verbalisation_status.taskID + " is IN PROGRESS");
+          break;
+        case COMPLETED:
+          log("PEVTaskStatus for task " + verbalisation_status.taskID + " is COMPLETED");
+          break;
+        case FAILED:
+          log("PEVTaskStatus for task " + verbalisation_status.taskID + " is FAILED");
+          break;
+        default:
+          log("PEVTaskStatus for task " + verbalisation_status.taskID + " is unknown");        
+      }
+      m_gui.updateVerbalisationStatus(verbalisation_status);
+    }
+    catch (DoesNotExistOnWMException e)
+    {
+      logException(e);
+    }
+    catch (UnknownSubarchitectureException e)
+    {
+      logException(e);
+    }
+    
+  }
+  
   private void processAddedPlanningTask(WorkingMemoryChange _wmc)
   {
     PlanningTask _newPlanningTask;

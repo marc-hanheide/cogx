@@ -4,8 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 
-import javax.swing.JButton; 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -16,9 +17,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
 
+import autogen.Planner.Goal;
 import autogen.Planner.PlanningTask;
+import de.dfki.lt.tr.dialogue.slice.produce.PEVTaskStatus;
 
 /** GUI to keep track of PlanningTasks and trigger verbalisation.
  * @author Graham Horn
@@ -53,10 +55,13 @@ public class PlanVerbalisationControllerFrame extends JFrame
     tasksTable.setModel(tasksTableModel);
     tasksTable.getColumnModel().getColumn(0).setPreferredWidth(80);
     tasksTable.getColumnModel().getColumn(2).setPreferredWidth(150);
+    tasksTable.getColumnModel().getColumn(3).setPreferredWidth(150);
     tasksTable.getColumnModel().getColumn(0).setMaxWidth(90);
     tasksTable.getColumnModel().getColumn(2).setMaxWidth(180);
+    tasksTable.getColumnModel().getColumn(3).setMaxWidth(180);
     tasksTable.getColumnModel().getColumn(0).setMinWidth(80);
     tasksTable.getColumnModel().getColumn(2).setMinWidth(150);
+    tasksTable.getColumnModel().getColumn(3).setMinWidth(150);
     tasksTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     tasksTable.getSelectionModel().addListSelectionListener(new ListSelectionListener()
     {    
@@ -113,17 +118,25 @@ public class PlanVerbalisationControllerFrame extends JFrame
     tasksTableModel.updatePlanningTask(planning_task);
   }
   
+  public void updateVerbalisationStatus(PEVTaskStatus verbalisation_status)
+  {
+    tasksTableModel.updateVerbalisationStatus(verbalisation_status);
+  }
+  
   private class PlanningTaskTableModel extends AbstractTableModel
   {
     public static final int TASK_ID_COLUMN = 0;
     public static final int GOAL_COLUMN = 1;
     public static final int STATUS_COLUMN = 2;
+    public static final int VERBALISATION_STATUS_COLUMN = 3;
 
-    private String[] columnNames = { "Task ID", "Goal", "Execution Status"};
+    private String[] columnNames = { "Task ID", "Goal(s)", "Execution Status", "PEV Status"};
     private ArrayList<PlanningTask> planningTasks;
+    private HashMap<Integer, PEVTaskStatus> planVerbalisationStatusMap;
     
     public PlanningTaskTableModel() {
       planningTasks = new ArrayList<PlanningTask>();
+      planVerbalisationStatusMap = new HashMap<Integer, PEVTaskStatus>();
     }
 
     public int getTaskId(int row)
@@ -153,16 +166,57 @@ public class PlanVerbalisationControllerFrame extends JFrame
         }
         case GOAL_COLUMN:
         {
-          return PlanVerbalisationController.goalToString(planning_task.goals[0]);
+          StringBuilder return_sb = new StringBuilder();
+          for (Goal goal : planning_task.goals)
+          {
+            return_sb.append(PlanVerbalisationController.goalToString(goal));
+            return_sb.append("\n");
+          }
+          return return_sb.toString();
         }
         case STATUS_COLUMN:
         {
           return PlanVerbalisationController.planningTaskExecutionStatusToString(planning_task);
         }
+        case VERBALISATION_STATUS_COLUMN:
+        {
+          PEVTaskStatus verbalisation_status = planVerbalisationStatusMap.get(planning_task.id);
+          if (verbalisation_status == null)
+          {
+            return "";
+          }
+          else
+          {
+            switch (verbalisation_status.status)
+            {
+              case INPROGRESS:
+              {
+                return "active";
+              }
+              case COMPLETED:
+              {
+                return "done";
+              }
+              case FAILED:
+              {
+                return "failed";
+              }
+              default:
+              {
+                return "unknown";
+              }
+            }
+          }
+        }
       }
       return null;
     }
   
+    public void updateVerbalisationStatus(PEVTaskStatus verbalisation_status)
+    {
+      planVerbalisationStatusMap.put(verbalisation_status.taskID, verbalisation_status);
+      fireTableDataChanged();
+    }
     
     public void updatePlanningTask(PlanningTask planning_task)
     {
