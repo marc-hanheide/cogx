@@ -7,10 +7,29 @@ CAST_INSTALL_ROOT=${CAST_DIR}
 CUDA_ROOT=/usr/local/cuda
 CURE_LIB_DIR=/usr/local/lib/cure
 MERCURY_ROOT=/usr/local/lib/mercury
-MATLAB_ARCH=glnx86
-#MATLAB_ARCH=glnxa64
-MATLAB_RUNTIME_DIR=/opt/MATLAB/MATLAB_Compiler_Runtime/v78/runtime/${MATLAB_ARCH}
-# MATLAB_RUNTIME_DIR=/usr/share/matlabR2008a/bin/${MATLAB_ARCH}
+
+#MATLAB_ARCH=glnx86
+#MATLAB_I_ARCH=i386
+
+MATLAB_ARCH=glnxa64
+MATLAB_I_ARCH=i686
+
+# -- Matlab dir - for mcc
+#MATLAB_DIR=/usr/local/MATLAB/R2012a
+# -- Matlab MCR root - for running the system
+MATLAB_MCR_ROOT=/usr/local/MATLAB/MATLAB_Compiler_Runtime/v717
+
+MATLAB_MCR_LD_PATH=<pathlist>
+   /usr/lib/${MATLAB_I_ARCH}-linux-gnu
+   ${MATLAB_MCR_ROOT}/runtime/${MATLAB_ARCH}
+   ${MATLAB_MCR_ROOT}/bin/${MATLAB_ARCH}
+   ${MATLAB_MCR_ROOT}/sys/os/${MATLAB_ARCH}
+   ${MATLAB_MCR_ROOT}/sys/java/jre/${MATLAB_ARCH}/jre/lib/${MATLAB_I_ARCH}/native_threads
+   ${MATLAB_MCR_ROOT}/sys/java/jre/${MATLAB_ARCH}/jre/lib/${MATLAB_I_ARCH}/server
+   ${MATLAB_MCR_ROOT}/sys/java/jre/${MATLAB_ARCH}/jre/lib/${MATLAB_I_ARCH}
+</pathlist>
+
+XAPPLRESDIR=${MATLAB_MCR_ROOT}/X11/app-defaults
 
 COGX_BUILD_DIR=${COGX_ROOT}/BUILD
 COGX_LIB_DIR=${COGX_ROOT}/output/lib
@@ -28,14 +47,12 @@ CAST_ICE_CONFIG=${CAST_INSTALL_ROOT}/${CAST_CONFIG_PATH}
 
 ICE_CONFIG=${CAST_ICE_CONFIG}
 
-V4R_DIR=${COGX_ROOT}/tools/v4r
-
 PATH=<pathlist>
    ${COGX_ROOT}/output/bin
    ${CUDA_ROOT}/bin
    ${MERCURY_ROOT}/bin
    ${PATH}
-   ${V4R_DIR}/bin
+   ${MATLAB_DIR}/bin
 </pathlist>
 
 LD_LIBRARY_PATH=<pathlist>
@@ -44,9 +61,8 @@ LD_LIBRARY_PATH=<pathlist>
    ${COGX_LIB_DIR}
    ${CURE_LIB_DIR}
    ${CUDA_ROOT}/lib
-   ${MATLAB_RUNTIME_DIR}
-   ${V4R_DIR}/lib
    /usr/lib/PhysX/v2.8.3
+   ${MATLAB_MCR_LD_PATH}
 </pathlist>
 DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
 
