@@ -581,7 +581,7 @@
    ;; Searches for an object ON another object
    ;; precondition: robot is in the same room as the specified object
 
-;;LF search_for_object_at_object => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?l?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?tid_?block_?step,?p:castreferent ^ ?tid_?block_?step,?p)))
+;;LF search_for_object_at_object => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(?rel_?block_?step:m-location ^ ?rel ^ <Anchor>(?tid_?block_?step,?o2:castreferent ^ ?tid_?block_?step,?o2)))
    (:action search_for_object_at_object
             :agent (?a - robot)
             :parameters (?l - label ?o - visualobject ?rel - spatial_relation)
