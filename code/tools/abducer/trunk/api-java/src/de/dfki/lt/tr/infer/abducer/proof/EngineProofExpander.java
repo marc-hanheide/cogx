@@ -1,9 +1,8 @@
 package de.dfki.lt.tr.infer.abducer.proof;
 
 import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 public class EngineProofExpander
 implements ProofExpander {
@@ -20,8 +19,8 @@ implements ProofExpander {
 	}
 
 	@Override
-	public Set<Proof> expand(Proof proof) {
-		Set<Proof> expansion = new TreeSet<Proof>();
+	public List<Proof> expand(Proof proof) {
+		List<Proof> expansion = new ArrayList<Proof>();
 
 		engine.startProving(proof.getMarkedQueries());
 		List<ProofWithCost> result = engine.getProofs(timeout);

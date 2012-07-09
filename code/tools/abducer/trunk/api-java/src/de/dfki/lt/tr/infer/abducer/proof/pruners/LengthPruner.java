@@ -3,7 +3,6 @@ package de.dfki.lt.tr.infer.abducer.proof.pruners;
 import de.dfki.lt.tr.infer.abducer.proof.Proof;
 import de.dfki.lt.tr.infer.abducer.proof.ProofPruner;
 import java.util.Iterator;
-import java.util.NavigableSet;
 
 public class LengthPruner
 implements ProofPruner {
@@ -15,8 +14,7 @@ implements ProofPruner {
 	}
 
 	@Override
-	public void prune(NavigableSet<Proof> proofs) {
-		Iterator<Proof> iter = proofs.iterator();
+	public void prune(Iterator<Proof> iter) {
 		int i = 0;
 		while (iter.hasNext()) {
 			Proof p = iter.next();

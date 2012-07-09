@@ -6,8 +6,7 @@ import de.dfki.lt.tr.infer.abducer.lang.NullAssumabilityFunction;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Proof
-implements Comparable<Proof> {
+public class Proof {
 
 	private final List<MarkedQuery> proof;
 	private double cost;
@@ -86,11 +85,6 @@ implements Comparable<Proof> {
 			}
 		}
 		return false;
-	}
-
-	@Override
-	public int compareTo(Proof other) {
-		return Double.compare(getCost(), other.getCost());
 	}
 
 }

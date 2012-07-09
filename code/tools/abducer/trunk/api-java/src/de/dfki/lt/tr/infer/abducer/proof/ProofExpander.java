@@ -1,9 +1,9 @@
 package de.dfki.lt.tr.infer.abducer.proof;
 
-import java.util.Set;
+import java.util.List;
 
 public interface ProofExpander {
 
-	public Set<Proof> expand(Proof pwc);
+	public List<Proof> expand(Proof pwc);
 	
 }
