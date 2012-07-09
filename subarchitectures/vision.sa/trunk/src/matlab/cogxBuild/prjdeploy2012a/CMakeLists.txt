@@ -33,34 +33,38 @@ SET(OUTRUNTIMES)
 
 SET(MCC_PROJECT  ${CMAKE_CURRENT_BINARY_DIR}/${MCCPROJECT_NAME}.prj)
 SET(MCC_OUTPUT   ${OUTHEADERS} ${OUTLIBRARIES} ${OUTRUNTIMES} )
+SET(MCC_MAKEFILE ${CMAKE_CURRENT_BINARY_DIR}/${MCCPROJECT_NAME}.mak)
 
 ## Create the project file to be used by MCC
 FIND_PROGRAM(CMAKE_PYTHON python)
 
-add_custom_target(${LIBRARY_NAME}_MatlabProject ALL
-      COMMAND ${CMAKE_PYTHON}
-         makeproject.py 
-         --matlabversion 780 
-         --mscriptroot ${MSOURCE_DIR}
-         --libraryname  ${MCCPROJECT_NAME}
-         --projectroot ${CMAKE_CURRENT_BINARY_DIR}
-         --buildoutput ${MCCBUILD_DIR}
-         --distriboutput ${MCCDIST_DIR}
-         --export mfile-export.txt
-         --separatectf ${SEPARATE_CTF}
-#~             --cppexport cfile-export.txt
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      DEPENDS
-         makeproject.py 
-         deployment.prj.in
-         matlab.dir.in
-         mfile-export.txt
+add_custom_command(OUTPUT ${MCC_MAKEFILE}
+   COMMAND ${CMAKE_PYTHON}
+      makebuildscript.py 
+      --export mfile-export.txt
+      --libraryname  ${MCCPROJECT_NAME}
+      --mscriptroot  ${MSOURCE_DIR}
+      --buildroot    ${CMAKE_CURRENT_BINARY_DIR}
+      --buildoutput  ${CMAKE_CURRENT_BINARY_DIR}/build
+      --separatectf  ${SEPARATE_CTF}
+      --makefile
+   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+   DEPENDS
+      makebuildscript.py 
+      mccbuild.mak.in
+      mfile-export.txt
    )
 
-configure_file(buildvisuallearnerctf.sh.in buildvisuallearnerctf.sh)
+add_custom_target(MccVisualLearnerCtf ALL
+   DEPENDS ${MCC_MAKEFILE}
+   COMMAND make -f ${MCC_MAKEFILE}
+   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+   )
+
+#configure_file(buildvisuallearnerctf.sh.in buildvisuallearnerctf.sh)
 configure_file(cpvisuallearnerprebuilt.sh.in cpvisuallearnerprebuilt.sh)
 install(PROGRAMS
-   ${CMAKE_CURRENT_BINARY_DIR}/buildvisuallearnerctf.sh
+   #${CMAKE_CURRENT_BINARY_DIR}/buildvisuallearnerctf.sh
    ${CMAKE_CURRENT_BINARY_DIR}/cpvisuallearnerprebuilt.sh
    DESTINATION ${OUTPUT}/bin
    )
