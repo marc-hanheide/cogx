@@ -58,9 +58,6 @@
 
     (arm-in-resting-position ?r - Robot)
 
-    (object-of-desired-color-available ?c - ColorName)
-    (object-of-desired-shape-available ?s - ShapeName)
-
     (global-color-question-answered ?v - VisualObject)
     (global-shape-question-answered ?v - VisualObject)
     (global-objecttype-question-answered ?v - VisualObject)
@@ -98,6 +95,9 @@
     (learn-autonomous-objecttype-threshold ?r - Robot) - number
     (convinced-of-objecttype-threshold ?r - Robot) - number
     (believe-in-objecttype-threshold ?r - Robot) - number
+
+    (object-of-desired-color-available ?r - Robot) - ColorName
+    (object-of-desired-shape-available ?r - Robot) - ShapeName
 
     (target-object ?vc - ViewCone) - ProtoObject
     (po-is-associated-with ?p - ProtoObject) - VisualObject
@@ -707,8 +707,8 @@
     :precondition (and)
     :effect 
       (and 
-     	(object-of-desired-color-available ?c) 
-	(update (object-of-desired-color-available ?c) true)
+     	(assign (object-of-desired-color-available ?r) ?c)
+	(update (object-of-desired-color-available ?r) ?c)
       )
   )
 
@@ -718,8 +718,8 @@
     :precondition (and)
     :effect 
       (and 
-     	(object-of-desired-shape-available ?s)
-	(update (object-of-desired-shape-available ?s) true)
+     	(assign (object-of-desired-shape-available ?r) ?s)
+	(update (object-of-desired-shape-available ?r) ?s)
       )
   )
 
