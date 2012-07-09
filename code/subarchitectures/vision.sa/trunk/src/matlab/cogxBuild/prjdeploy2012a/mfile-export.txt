@@ -20,18 +20,6 @@ ODKDErec
 ODKDEunlearn
 ODKDEupdate
 
-# Affordance Learner
-trainclassifier
-testclassifier
-loadtrainingdata
-AlgorithmFactory
-Evaluator
-som_make
-som_demo1
-som_demo2
-som_demo3
-som_demo4
-
 # some glue
 cogxMatlabWarnings
 cogxVisualLearner_recognise

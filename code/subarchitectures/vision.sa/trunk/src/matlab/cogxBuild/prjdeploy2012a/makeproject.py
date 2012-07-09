@@ -121,7 +121,7 @@ def FindToolboxDirs(rootdir):
 
 def FindProjectDirs(rootdir):
     res = []
-    prunedirs = ["*/.svn", "*/backup", "*/demo", "*/xdata", "*/prjdeploy"]
+    prunedirs = ["*/.svn", "*/backup", "*/demo", "*/xdata", "*/prjdeploy", "*/attic"]
     skippaths = []
     for dn in prunedirs:
         sp = os.path.join(rootdir, dn)
