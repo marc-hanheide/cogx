@@ -1,23 +1,18 @@
 package de.dfki.lt.tr.infer.abducer.proof;
 
 import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import org.apache.log4j.Logger;
 
 public class ProofSet {
 
 	private final Logger logger;
 	private final ProofPruner pruner;
-	private final TreeSet<Proof> proofs;
+	private final ArrayList<Proof> proofs;
 
 	private ProofSet(Logger logger, ProofPruner pruningMethod, Collection<Proof> proofs) {
 		this.logger = logger;
-		this.proofs = new TreeSet<Proof>(proofs);
+		this.proofs = new ArrayList<Proof>(proofs);
 		this.pruner = pruningMethod;
 	}
 
@@ -34,12 +29,16 @@ public class ProofSet {
 	}
 
 	public Proof getMostLikely() {
-		try {
-			return proofs.first();
-		}
-		catch (NoSuchElementException ex) {
-			return null;
-		}
+                double minCost = Double.POSITIVE_INFINITY;
+                Proof minProof = null;
+                
+                for (Proof p : proofs) {
+                    if (p.getCost() < minCost) {
+                        minProof = p;
+                    }
+                }
+                
+                return minProof;
 	}
 
 	public boolean isUnsolved() {
@@ -102,7 +101,7 @@ public class ProofSet {
 		}
 		else {
 			logger.trace("the proof has unsolved queries, will expand");
-			Set<Proof> expansion = ctx.getExpander().expand(p);
+			List<Proof> expansion = ctx.getExpander().expand(p);
 			proofs.remove(p);
 			proofs.addAll(expansion);
 			return expansionStep(ctx);
@@ -180,7 +179,7 @@ public class ProofSet {
 	 */
 
 	protected final void prune() {
-		pruner.prune(proofs);
+		pruner.prune(proofs.iterator());
 	}
 
 }

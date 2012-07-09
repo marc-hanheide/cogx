@@ -1,9 +1,9 @@
 package de.dfki.lt.tr.infer.abducer.proof;
 
-import java.util.NavigableSet;
+import java.util.Iterator;
 
 public interface ProofPruner {
 
-	void prune(NavigableSet<Proof> proofs);
+	void prune(Iterator<Proof> proofs);
 
 }
