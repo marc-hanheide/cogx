@@ -34,7 +34,7 @@ endif (NOT BUILD_SA_VISION_VISLEARNER_FAKE)
 if (BUILD_SA_VISION_VISLEARNER_FAKE)
    SET(SOURCES 
       fake/VisualLearnerProxy.cpp
-      fake/AffordanceLearnerProxy.cpp
+      #fake/AffordanceLearnerProxy.cpp
       Enumerator.cpp
       )
    add_library(VisualLearnerProxy_fake SHARED ${SOURCES})
