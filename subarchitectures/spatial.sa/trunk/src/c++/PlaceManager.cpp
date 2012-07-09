@@ -310,9 +310,11 @@ void PlaceManager::SaveConnectivityProperties() {
   ofstream fout("Connectivities.txt");
   for (vector<SpatialProperties::ConnectivityPathPropertyPtr>::iterator it =
       cpps.begin(); it != cpps.end(); it++) {
-    fout << (*it)->place1Id << " " << (*it)->place2Id << " "
-        << (SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(
-            (*it)->distribution))->data[0].value << endl;
+    if ((_getNodeForPlace((*it)->place1Id) != 0)
+        && (_getNodeForPlace((*it)->place2Id) != 0))
+      fout << (*it)->place1Id << " " << (*it)->place2Id << " "
+          << (SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(
+              (*it)->distribution))->data[0].value << endl;
   }
 }
 
@@ -1654,7 +1656,7 @@ NavData::FNodePtr PlaceManager::getCurrentNavNode() {
   }
   // log("getCurrentNavNode exited");
   if (ret == 0)
-// TODO this is printed often - why???
+    // TODO this is printed often - why???
     log("Warning: Found no current Nav Node");
   return ret;
 }
