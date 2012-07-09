@@ -1,0 +1,23 @@
+
+libname="%(prjname)s"
+
+buildtype="-T link:lib -W cpplib:$libname"
+verbose="-v"
+warnings="-w enable:specified_file_mismatch -w enable:repeated_file -w enable:switch_ignored -w enable:missing_lib_sentinel -w enable:demo_license"
+
+# Files (Matlab functions) to export
+srcdir="%(sourceroot)s"
+exportfiles="
+   %(mfiles)s
+"
+
+# Directories to search for included scripts
+includedirs="
+   %(includedirs)s
+"
+
+# Ouptut of the compilation
+workdir="%(builddir)s"
+
+mcc $buildtype -d $workdir $warnings $verbose $includedirs $exportfiles
+

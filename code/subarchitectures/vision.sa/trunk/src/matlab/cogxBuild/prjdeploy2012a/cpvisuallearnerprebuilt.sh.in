@@ -20,6 +20,11 @@ if [ -f $ctfdir/libVisualLearnerCtf.h -a -f $prxdir/libVisualLearnerProxy.so ]; 
    cp -u $ctfdir/libVisualLearnerCtf.so    $bindir/
    cp -u $ctfdir/readme.txt                $bindir/
    cp -u $prxdir/libVisualLearnerProxy.so  $bindir/
+   if [ -f $ctfdir/libVisualLearnerCtf.ctf ]; then    
+      cp -u $ctfdir/libVisualLearnerCtf.so    $bindir/
+   else
+      rm  $bindir/libVisualLearnerCtf.so
+   fi
 else
    echo "SOME FILES DO NOT EXIST"
 fi
