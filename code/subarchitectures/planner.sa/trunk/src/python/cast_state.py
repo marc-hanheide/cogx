@@ -175,12 +175,48 @@ class CASTState(object):
             n.prepare_actions()
         for n in self.pnodes:
             actions += n.to_actions(cp_domain, filter_func=None)
+        actions += [self.hyp_action(f, cp_domain) for f in self.state.iterfacts() if f.svar.modality == pddl.mapl.hyp]
+        
 
         for a in actions:
-            cp_domain.add_action(a)
+            if a is not None:
+                cp_domain.add_action(a)
         
         return cp_domain
 
+    def hyp_action(self, fact, domain):
+        assert fact.svar.modality == pddl.mapl.hyp
+        for o in chain(fact.svar.args, fact.svar.modal_args):
+            if not o.is_instance_of(pddl.t_object):
+                return None
+            domain.add_constant(o)
+
+        started_pred = domain.predicates.get("started", [])
+
+        svar = fact.svar.nonmodal()
+        value = fact.svar.modal_args[0]
+                                               
+        name = "__commit-%s-%s-%s" % (svar.function.name, "-".join(a.name for a in svar.args), value.name)
+
+        agent = pddl.Parameter("?a", pddl.mapl.t_planning_agent)
+        a = pddl.mapl.MAPLAction(name, [agent], [], [], pddl.Conjunction([]), None, pddl.ConjunctiveEffect([]), [], domain)
+        b = pddl.Builder(a)
+
+        if started_pred:
+            a.precondition.parts.append(b.cond("not", (started_pred, )))
+
+        a.precondition.parts.append(b.cond("not", ("committed", svar.as_term())))
+        # a.precondition.parts.append(b.cond("not", ("started",)))
+
+        cvar = svar.as_modality(pddl.mapl.commit, [value])
+        a.effect.parts.append(cvar.as_literal(_class=pddl.effects.SimpleEffect))
+            # a.precondition.parts.append(b.cond("not", ("committed", svar.as_term())))
+
+        a.set_total_cost(0)
+
+        return a
+
+    
     def check_consistency(self, detstate):
         if self.consistency_cond is None:
             return True
@@ -807,7 +843,7 @@ class CASTState(object):
             
         elif len(fact.svar.args) > 1:
             for i, arg in enumerate(self.featvalue_from_object(a) for a in fact.svar.args):
-                feat = "element%d" % i
+                feat = "val%d" % i
                 pair = distribs.FormulaProbPair(arg, 1.0)
                 features.append(distribs.BasicProbDistribution(feat, distribs.FormulaValues([pair])))
             fval = self.featvalue_from_object(fact.value)
@@ -845,7 +881,7 @@ class CASTState(object):
 
                 found = True
                 for i, arg in enumerate(arg_values):
-                    dist, _ = get_value_dist(bel.content, "element%d" % i)
+                    dist, _ = get_value_dist(bel.content, "val%d" % i)
                     if not dist:
                         found = False
                         break
