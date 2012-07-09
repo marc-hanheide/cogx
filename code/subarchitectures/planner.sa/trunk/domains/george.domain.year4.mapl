@@ -16,9 +16,8 @@
     GREEN - ColorName
     BLUE - ColorName
     YELLOW - ColorName
-    ORANGE - ColorName
-    BLACK - ColorName
-    
+    ORANGE - ColorName    
+    BLACK - ColorName    
 
     UNKNOWN_SHAPE - ShapeName
     COMPACT - ShapeName
