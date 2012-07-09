@@ -333,7 +333,7 @@
     :effect 
       (and
         (assign (attributed-color ?v) (color ?v))
-        (is-potential-object-in-question ?v)
+        ;;(is-potential-object-in-question ?v)
         (increase (total-cost) 2)
       )
   )
@@ -354,7 +354,7 @@
     :effect 
       (and
         (assign (attributed-color ?v) ?c)        
-        (is-potential-object-in-question ?v)
+        ;;(is-potential-object-in-question ?v)
         (increase (total-cost) 1)
       )
   )
@@ -374,7 +374,7 @@
     :effect 
       (and 
         (assign (attributed-shape ?v) (shape ?v))
-        (is-potential-object-in-question ?v)
+        ;;(is-potential-object-in-question ?v)
         (increase (total-cost) 2)
       )
   )
@@ -395,7 +395,7 @@
     :effect 
       (and 
         (assign (attributed-shape ?v) ?s)
-        (is-potential-object-in-question ?v)
+        ;;(is-potential-object-in-question ?v)
         (increase (total-cost) 1)
       )
   )
@@ -460,7 +460,7 @@
               (= (target-object (current-viewcone ?r)) ?p)
             )
           )
-          (is-object-in-question ?v)
+          ;;(is-object-in-question ?v)
         )
         (and
           (allow-autonomous-color-learning ?v ?c ?r)
@@ -498,7 +498,7 @@
               (= (target-object (current-viewcone ?r)) ?p)
             )
           )
-          (is-object-in-question ?v)
+          ;;(is-object-in-question ?v)
         )
         (and
           (allow-autonomous-shape-learning ?v ?s ?r)
@@ -536,7 +536,7 @@
               (= (target-object (current-viewcone ?r)) ?p)
             )
           )
-          (is-object-in-question ?v)
+          ;;(is-object-in-question ?v)
         )
         ;;(and
         ;;  (allow-autonomous-objecttype-learning ?v ?t ?r)
