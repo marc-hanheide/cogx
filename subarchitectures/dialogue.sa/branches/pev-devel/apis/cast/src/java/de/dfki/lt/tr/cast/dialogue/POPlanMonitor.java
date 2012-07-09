@@ -18,6 +18,7 @@ import java.util.HashSet;
 
 import comadata.ComaReasonerInterfacePrx;
 
+import autogen.Planner.Goal;
 import autogen.Planner.POPlan;
 import autogen.Planner.PlanningTask;
 
@@ -440,10 +441,20 @@ public class POPlanMonitor extends ManagedComponent {
 			// check if we know about the given taskID -- necessary when listening to external PEV Request triggers that might be illegal
 			return "I am sorry. Task ID " + taskID + " is not known to me.";
 		}
-
+		
+		String goalString = "";
+		if (this.planningTaskMap.get(taskID).goals.length>0) {
+			goalString = this.planningTaskMap.get(taskID).goals[0].goalString;
+			for (Goal _currG : this.planningTaskMap.get(taskID).goals) {
+				if (_currG.importance < 0.0) {
+					goalString = _currG.goalString;
+				}
+			}
+		}
+		
 		// hand history over to PEV
 		log("calling PEV Module verbalizeHistory()");
-		return this.pevModule.verbalizeHistory(hlist, taskID);
+		return this.pevModule.verbalizeHistory(hlist, taskID, goalString);
 	}
 
   // Does this method need to be synchronized to handle multiple requests at the same time as 
