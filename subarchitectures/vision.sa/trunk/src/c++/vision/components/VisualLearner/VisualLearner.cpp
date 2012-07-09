@@ -1,6 +1,6 @@
 #include "VisualLearner.h"
 #include "VisualLearnerProxy.h"
-#include "AffordanceLearnerProxy.h"
+//#include "AffordanceLearnerProxy.h"
 
 #include "../../VisionUtils.h"
 
@@ -70,8 +70,10 @@ void VisualLearner::start()
   addChangeFilter(createGlobalTypeFilter<VisualLearningTask>(cdl::ADD),
       new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onAdd_LearningTask));
 
+#if 0
   addChangeFilter(createGlobalTypeFilter<AffordanceRecognitionTask>(cdl::ADD),
-      new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onAdd_AffordanceTask));
+     new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onAdd_AffordanceTask));
+#endif
 
 #ifdef FEAT_VISUALIZATION
   m_display.connectIceClient(*this);
@@ -151,6 +153,7 @@ void VisualLearner::onAdd_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
   };
 }
 
+#if 0
 void VisualLearner::onAdd_AffordanceTask(const cdl::WorkingMemoryChange & _wmc)
 {
   debug("::onAdd_AffordanceTask");
@@ -174,6 +177,7 @@ void VisualLearner::onAdd_AffordanceTask(const cdl::WorkingMemoryChange & _wmc)
     return;
   };
 }
+#endif
 
 void VisualLearner::onAdd_LearningTask(const cdl::WorkingMemoryChange & _wmc)
 {
@@ -214,7 +218,7 @@ void VisualLearner::runComponent()
 
     TWmAddressVector newRecogRqs;
     TWmAddressVector newLearnRqs;
-    TWmAddressVector newAffordanceRqs;
+    //TWmAddressVector newAffordanceRqs;
     {
       // SYNC: Lock the monitor
       IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_RrqMonitor);
@@ -227,8 +231,10 @@ void VisualLearner::runComponent()
       m_RecogTaskId_Queue.clear();
       newLearnRqs = m_LearnTaskId_Queue;
       m_LearnTaskId_Queue.clear();
+#if 0
       newAffordanceRqs = m_AffordanceTaskId_Queue;
       m_AffordanceTaskId_Queue.clear();
+#endif
       // SYNC: unlock the monitor on scope exit
     }
 
@@ -302,6 +308,7 @@ void VisualLearner::runComponent()
       }
     }
 
+#if 0
     if (newAffordanceRqs.size() > 0) {
       class CCmd:
         public cogx::VisionCommandNotifier<AffordanceRecognitionTask, AffordanceRecognitionTaskPtr>
@@ -333,6 +340,7 @@ void VisualLearner::runComponent()
         log("VL_AffordanceRecognition Task processed");
       }
     }
+#endif
 
   } // while isRunning
 }
@@ -383,6 +391,7 @@ bool VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
   //unlockEntry(_pProtoObj.address);
 }
 
+# if 0
 bool VisualLearner::recogniseAffordance(AffordanceRecognitionTaskPtr _pTask)
 {
   debug("::recogniseAffordance");
@@ -427,6 +436,7 @@ bool VisualLearner::recogniseAffordance(AffordanceRecognitionTaskPtr _pTask)
   //log("Added a new AttrObject.");
   //unlockEntry(_pProtoObj.address);
 }
+#endif
 
 bool VisualLearner::updateModel(VisualLearningTaskPtr _pTask)
 {
