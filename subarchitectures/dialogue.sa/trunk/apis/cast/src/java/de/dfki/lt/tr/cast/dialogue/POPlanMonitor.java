@@ -19,12 +19,16 @@ import java.util.HashSet;
 import autogen.Planner.POPlan;
 import autogen.Planner.PlanningTask;
 
+import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
+import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.IceXMLSerializer;
@@ -32,6 +36,8 @@ import de.dfki.lt.tr.cast.dialogue.planverb.PlanVerbalizer;
 import de.dfki.lt.tr.cast.dialogue.util.POPlanUtils;
 import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
 import de.dfki.lt.tr.dialogue.production.PlanVerbalizationRequest;
+import de.dfki.lt.tr.dialogue.slice.produce.PEVStatusType;
+import de.dfki.lt.tr.dialogue.slice.produce.PEVTaskStatus;
 import eu.cogx.beliefs.slice.GroundedBelief;
 
 public class POPlanMonitor extends ManagedComponent {
@@ -436,14 +442,23 @@ public class POPlanMonitor extends ManagedComponent {
 
     // If the PlanVerbalisationControllerGUI belonged to this component then we could
     // indicate in the GUI when a completed task was ready to verbalise (i.e. report generated)
-
+        
     if (suppress_verbalisation == false && report == null && finishedMap.containsKey(taskID)) {
 		  VerbalisationUtils.verbaliseString(this, "I will tell you what I did in a moment.");		
     }
 
     if (report == null) {		
       if (finishedMap.containsKey(taskID)) {     
+        WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(),
+            getSubarchitectureID());
+        PEVTaskStatus verbalisation_status = new PEVTaskStatus(taskID, PEVStatusType.INPROGRESS);
+        addPEVTaskStatusToWM(wma, verbalisation_status);
+        
         report = generateHistoryReport(taskID);
+        // TODO does not check for failure
+        verbalisation_status = new PEVTaskStatus(taskID, PEVStatusType.COMPLETED);
+        overwritePEVTaskStatus(wma, verbalisation_status);
+        
         // only store the report if the task has finished
         // might get a verbalisation request earlier
         PlanningTask planning_task = planningTaskMap.get(taskID);
@@ -475,6 +490,49 @@ public class POPlanMonitor extends ManagedComponent {
     }
 	}
 
+  private void overwritePEVTaskStatus(WorkingMemoryAddress wma, PEVTaskStatus verbalisation_status)
+  {  
+    try {
+      overwriteWorkingMemory(wma, verbalisation_status);
+    }
+    catch (DoesNotExistOnWMException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    catch (ConsistencyException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    catch (PermissionException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    catch (UnknownSubarchitectureException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    
+  }
+	
+  private void addPEVTaskStatusToWM(WorkingMemoryAddress wma, PEVTaskStatus verbalisation_status)
+  {
+    try {
+      addToWorkingMemory(wma, verbalisation_status);
+    }
+    catch (AlreadyExistsOnWMException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    catch (DoesNotExistOnWMException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    catch (UnknownSubarchitectureException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
+	
   private void deleteVerbalisationsFile() {
     try {
       File verbalisations_file = new File(fileName);
