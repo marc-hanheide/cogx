@@ -251,9 +251,9 @@ module discourse {
 // ===================================================================
 
 module produce { 
-  	enum PEVStatusType{ INPROGRESS, COMPLETED, FAILED };
+  enum PEVStatusType{ INPROGRESS, COMPLETED, FAILED };
 
-        struct PEVTaskStatus {
+  class PEVTaskStatus {
 	  	int taskID;
 		PEVStatusType status;
 	};
