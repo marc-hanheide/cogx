@@ -57,7 +57,7 @@ failure_cost = predicates.Function("failure-cost", [], builtin.t_number, builtin
 modal_predicates = [knowledge, indomain,\
                     direct_knowledge, i_indomain,\
                     commit, committed, attributed, neg_attributed, \
-                    update, update_fail, defined]
+                    update, update_fail, defined, hyp]
 # shared_knowledge, , ,\
 
 is_planning_agent = Predicate("is_planning_agent", [Parameter("?a", t_agent)], builtin=True)

@@ -22,7 +22,7 @@ belief_dict = None
 
 class SVarDistribution(tuple):
   def __new__(_class, feat, args, value):
-    return tuple.__new__(_class, [feat] + args + [value])
+    return tuple.__new__(_class, [feat] + list(args) + [value])
     
   feature = property(lambda self: self[0])
   args = property(lambda self: self[1:-1])
@@ -33,9 +33,24 @@ class SVarDistribution(tuple):
     return "(%s %s) = [%s]" % (self.feature, " ".join(a.name for a in
     self.args), valstr)
 
+class HypotheticalSVarDistribution(tuple):
+  def __new__(_class, feat, args, value):
+    assert len(value) == 1 and value[0][1] == 1.0
+    val = value[0][0]
+    return tuple.__new__(_class, [feat] + list(args) + [val] + [[(pddl.TRUE, 1.0)]])
+    
+  feature = property(lambda self: self[0])
+  args = property(lambda self: self[1:-2])
+  hyp_value = property(lambda self: self[-2])
+  values = property(lambda self: self[-1])
+
+  def __str__(self):
+    valstr = " ".join("%.2f: %s" % (v[1], v[0]) for v in self.values)
+    return "(hyp (%s %s) %s) = [%s]" % (self.feature, " ".join(a.name for a in self.args), self.hyp_value.name, valstr)
+  
 class AttributedSVarDistribution(SVarDistribution):
   def __new__(_class, agent, feat, args, value):
-    return tuple.__new__(_class, [agent, feat] + args + [value])
+    return tuple.__new__(_class, [agent, feat] + list(args) + [value])
 
   agent = property(lambda self: self[0])
   feature = property(lambda self: self[1])
@@ -188,6 +203,10 @@ def gen_fact_tuples(beliefs):
 
     elif bel.type == "relation":
       if isinstance(bel, cogxbm.HypotheticalBelief):
+        for fact in decode_relation(bel.content):
+          hypdist = HypotheticalSVarDistribution(fact.feature, fact.args, fact.values)
+          log.debug("hypothetical relation: %s = %s", map(str,fact), str(hypdist))
+          yield hypdist
         #TODO: which hypothetical relations so we want to keep?
         continue
       # print "   is relation"
@@ -204,6 +223,14 @@ def gen_fact_tuples(beliefs):
         factdict[str(feat)].append((val, prob))
 
       if attributed_object is not None and isinstance(bel, cogxbm.HypotheticalBelief):
+        log.debug("hypothetical belief %s about object: %s", bel.id, attributed_object.name)
+        for feat,vals in factdict.iteritems():
+          hypdist = HypotheticalSVarDistribution(feat, [attributed_object], vals)
+          for val, prob in vals:
+            log.debug("    (%s %s) = %s : %f", feat, attributed_object, val, prob)
+          log.debug("dist: %s", str(hypdist))
+          yield hypdist
+            
         #Don't put hypotheses about existing objects into the state
         continue
       elif attributed_object is not None:
@@ -216,7 +243,11 @@ def gen_fact_tuples(beliefs):
         obj = belief_to_object(bel)
         # print bel.id, type(bel), isinstance(bel, cogxbm.HypotheticalBelief)
         if isinstance(bel, cogxbm.HypotheticalBelief):
+          log.debug("used hypothetical object: %s", bel.id)
           yield SVarDistribution("is-virtual", [obj], [(pddl.TRUE, 1.0)])
+          hypdist = HypotheticalSVarDistribution("entity-exists",  [obj], [(pddl.TRUE, 1.0)])
+          log.debug("dist: %s", str(hypdist))
+          yield hypdist
         else:
           yield SVarDistribution("entity-exists",  [obj], [(pddl.TRUE, 1.0)])
 
@@ -271,44 +302,54 @@ def tuples2facts(fact_tuples):
       log.warning("Error looking up %s(%s), got %s", feature_label, ", ".join(map(str, ftup.args)), str(func))
       continue
 
+    log.debug("next: %s", str(ftup))
     if len(ftup.values) == 1 and ftup.values[0][1] == 1.0:
       if isinstance(ftup, AttributedSVarDistribution):
+        log.debug("attributed: %s", str(ftup))
         yield state.Fact(state.StateVariable(func, ftup.args,\
                                               modality=pddl.mapl.attributed, modal_args = [ftup.agent,ftup.values[0][0]]),pddl.TRUE)
+      elif isinstance(ftup, HypotheticalSVarDistribution):
+        log.debug("hypothetical fact: %s", str(ftup))
+        if ftup.hyp_value.is_instance_of(pddl.t_object):
+          yield state.Fact(state.StateVariable(func, ftup.args,\
+                                                 modality=pddl.mapl.hyp, modal_args = [ftup.hyp_value]),pddl.TRUE)
       else:
+        log.debug("certain fact: %s", str(ftup))
         yield state.Fact(state.StateVariable(func, ftup.args),ftup.values[0][0])
     elif len(ftup.values) == 1 and ftup.values[0][1] == 0.0 and isinstance(ftup, AttributedSVarDistribution):
+      log.debug("negative attribution: %s", str(ftup))
       yield state.Fact(state.StateVariable(func, ftup.args,\
                                               modality=pddl.mapl.neg_attributed, modal_args = [ftup.agent,ftup.values[0][0]]),pddl.TRUE)
     else:
+      log.debug("uncertain fact: %s", str(ftup))
       vdist = prob_state.ValueDistribution(dict(ftup.values))
       yield prob_state.ProbFact(state.StateVariable(func, ftup.args), vdist)
 
 def unify_objects(obj_descriptions):
   namedict = {}
+  def unify(arg):
+      if arg.name in namedict:
+        return namedict[arg.name]
+      else:
+        namedict[arg.name] = arg
+        return arg
+    
   for ftup in obj_descriptions:
     args = []
     for obj in ftup.args:
-      if obj.name in namedict:
-        args.append(namedict[obj.name])
-      else:
-        namedict[obj.name] = obj
-        args.append(obj)
+        args.append(unify(obj))
     values = []
     for obj, prob in ftup.values:
-      if obj.name in namedict:
-        values.append((namedict[obj.name], prob))
-      else:
-        namedict[obj.name] = obj
-        values.append((obj, prob))
+      obj = unify(obj)
+      values.append((obj, prob))
 
     if isinstance(ftup, AttributedSVarDistribution):
-      if ftup.agent in namedict:
-        agent = namedict[ftup.agent.name]
-      else:
-        namedict[ftup.agent.name] = ftup.agent
-        agent = ftup.agent
+      agent = unify(agent)
       yield AttributedSVarDistribution(agent, ftup.feature, args, values)
+    elif isinstance(ftup, HypotheticalSVarDistribution):
+      hyp_value = unify(ftup.hyp_value)
+      values= [(hyp_value, 1.0)]
+      yield HypotheticalSVarDistribution(ftup.feature, args, values)
     else:
       yield SVarDistribution(ftup.feature, args, values)
     

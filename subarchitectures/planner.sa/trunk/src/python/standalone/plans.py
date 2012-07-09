@@ -272,6 +272,11 @@ class MAPLPlan(networkx.MultiDiGraph):
             open |= (succ - closed)
         return result
 
+    def relevant_effects(self, node, link_type='depends'):
+        for succ, svar, val, typ in self.outgoing_links(node):
+            if svar is not None and val is not None and typ == link_type:
+                yield pddl.state.Fact(svar, val)
+
     def __str__(self):
         nodes = self.topological_sort()
         return "\n".join(map(str, nodes))

@@ -224,7 +224,7 @@ class CASTTask(object):
             self.slice_goals = state.goals
                                                 
             self.plan_history.append(plan)
-            self.plan_state_history.append((plan, None, state))
+            self.add_to_history(plan, None, state)
 
     def wait_co(self, cofn, timeout):
         self.waiting_cofn = cofn
@@ -292,6 +292,11 @@ class CASTTask(object):
             show_dot_script = abspath(join(self.component.get_path(), "show_dot.sh"))
             os.system("%s %s" % (show_dot_script, dot_fn))
 
+    def add_to_history(self, plan, poplan, state):
+        if not self.write_old_history:
+            return
+        self.plan_state_history.append((plan, poplan, state))
+
     def write_history(self):
         if not self.write_old_history:
             return
@@ -347,7 +352,7 @@ class CASTTask(object):
 
         if self.cp_task.get_plan() is None:
             self.plan_history.append(None)
-            self.plan_state_history.append((None, None, self.plan_state))
+            self.add_to_history(None, None, self.plan_state)
             self.write_history()
         else:
             new_po_plan = self.make_cast_poplan(self.cp_task.get_plan(), is_completed=False)
@@ -388,7 +393,7 @@ class CASTTask(object):
             if self.plan_state is not None:
                 self.plan_history.append(plan)
                 po_plan = self.make_cast_poplan(plan, is_completed=True)
-                self.plan_state_history.append((plan, po_plan, self.plan_state))
+                self.add_to_history(plan, po_plan, self.plan_state)
                 self.write_history()
                 self.component.deliver_po_plan(self, po_plan)
 
@@ -408,7 +413,7 @@ class CASTTask(object):
         if not self.failure_simulated:
             self.plan_history.append(plan)
             po_plan = self.make_cast_poplan(plan, is_completed=True)
-            self.plan_state_history.append((plan, po_plan, self.plan_state))
+            self.add_to_history(plan, po_plan, self.plan_state)
             self.update_info_status(TaskStateInfoEnum.EXPLANATIONS_PENDING) 
             self.write_history()
             self.component.deliver_po_plan(self, po_plan)
@@ -423,17 +428,26 @@ class CASTTask(object):
 
         def explanation_filter(facts):
             for f in facts:
-                if f.svar.modality == pddl.mapl.commit:
+                if f.svar.function.name.startswith("likely_"):
+                    new_name = f.svar.function.name[7:]
+                    new_f = self.domain.functions.get(new_name, f.svar.args)
+                    if new_f and new_f.type == pddl.t_number:
+                        yield pddl.state.Fact(pddl.state.StateVariable(new_f, f.svar.args), pddl.types.TypedNumber(0.9))
+                elif len(f.svar.args) > 1:
+                    pass
+                elif f.svar.modality == pddl.mapl.commit:
                     yield pddl.state.Fact(f.svar.nonmodal(), f.svar.modal_args[0])
                 elif f.svar.get_type().equal_or_subtype_of(pddl.t_object):
                     yield f
+                        
                 
 
         if self.expl_rules_fn and len(merged_plan) > 2:
             result, expl_plan = explanations.handle_failure(merged_plan, init_state.problem, init_state, final_state, self.expl_rules_fn, self.cp_task, self.component)
             if result:
-                self.update_info_status(TaskStateInfoEnum.EXPLANATIONS_FOUND) 
-                facts = list(explanation_filter(reduce(lambda x,y: x|y.effects, result, set())))
+                self.update_info_status(TaskStateInfoEnum.EXPLANATIONS_FOUND)
+                relevant_facts = [expl_plan.relevant_effects(n) for n in result]
+                facts = list(explanation_filter(reduce(lambda x,y: x.union(y), relevant_facts, set())))
                 log.debug("Raw explanations: %s", ", ".join(str(f) for f in facts))
                 beliefs = list(self.facts_to_belief(facts))
                 self.plan_log.append(planner_log.ExplanationEntry(facts))
@@ -788,7 +802,7 @@ class CASTTask(object):
                     self.plan_log.append(planner_log.PlanEntry(self.cp_task.get_plan()))
                     self.plan_history.append(plan)
                     po_plan = self.make_cast_poplan(plan, is_completed=True)
-                    self.plan_state_history.append((plan, po_plan, self.plan_state))
+                    self.add_to_history(plan, po_plan, self.plan_state)
                     self.write_history()
                     self.plan_state = self.state
                     
