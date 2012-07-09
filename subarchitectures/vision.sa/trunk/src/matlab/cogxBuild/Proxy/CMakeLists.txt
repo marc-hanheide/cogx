@@ -14,7 +14,7 @@ if (NOT BUILD_SA_VISION_VISLEARNER_FAKE)
       MatlabHelper.cpp
       Conversion.cpp
       VisualLearnerProxy.cpp
-      AffordanceLearnerProxy.cpp
+      #AffordanceLearnerProxy.cpp
       Enumerator.cpp
       )
    SET(HEADERS initlib.h RecogniserP.h)
