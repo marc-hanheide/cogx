@@ -5,7 +5,7 @@ bits=$(getconf LONG_BIT)
 if [ "$bits" == "32" ]; then
    bindir=glnx86
 elif [ "$bits" == "64" ]; then
-   bindir=glnax64
+   bindir=glnxa64
 else
    echo "UNKNOWN ARCHITECTURE"
    exit
@@ -15,15 +15,15 @@ bindir="${COGX_ROOT}/subarchitectures/vision.sa/prebuilt/VisualLearner/$bindir"
 ctfdir="${CMAKE_CURRENT_BINARY_DIR}/build"
 prxdir="${CMAKE_CURRENT_BINARY_DIR}/../Proxy"
 
-if [ -f $ctfdir/libVisualLearnerCtf.h -a -f $prxdir/libVisualLearnerProxy.so ]; then
+if [ -f $ctfdir/libVisualLearnerCtf.so -a -f $prxdir/libVisualLearnerProxy.so ]; then
    cp -u $ctfdir/libVisualLearnerCtf.h     $bindir/
    cp -u $ctfdir/libVisualLearnerCtf.so    $bindir/
    cp -u $ctfdir/readme.txt                $bindir/
    cp -u $prxdir/libVisualLearnerProxy.so  $bindir/
    if [ -f $ctfdir/libVisualLearnerCtf.ctf ]; then    
-      cp -u $ctfdir/libVisualLearnerCtf.so    $bindir/
-   else
-      rm  $bindir/libVisualLearnerCtf.so
+      cp -u $ctfdir/libVisualLearnerCtf.ctf    $bindir/
+   elif [ -f $bindir/libVisualLearnerCtf.ctf ]; then    
+      rm  $bindir/libVisualLearnerCtf.ctf
    fi
 else
    echo "SOME FILES DO NOT EXIST"

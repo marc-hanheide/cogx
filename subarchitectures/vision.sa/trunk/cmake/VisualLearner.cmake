@@ -44,7 +44,7 @@ if (BUILD_SA_VISION_VISLEARNER)
             )
 
          # Build the real proxy
-         IF (EXISTS ${VisualLearnerCtf_BINARY_DIR}/build/libVisualLearnerCtf.h)
+         #IF (EXISTS ${VisualLearnerCtf_BINARY_DIR}/build/libVisualLearnerCtf.h)
             add_subdirectory(src/matlab/cogxBuild/Proxy)
             set(VISUALLEARNER_LIBRARY_DIRS ${VISUALLEARNER_LIBRARY_DIRS} ${VisualLearnerProxy_BINARY_DIR})
             install(FILES
@@ -53,15 +53,16 @@ if (BUILD_SA_VISION_VISLEARNER)
                DESTINATION
                ${OUTPUT}/lib
                )
-         ELSE()
-            MESSAGE("   * You have to build libVisualLearnerCtf.so manually.")
-            MESSAGE("   * Use output/bin/buildvisuallearnerctf.sh")
-            MESSAGE("   * or ${VisualLearnerCtf_BINARY_DIR}/buildvisuallearnerctf.sh.")
-         ENDIF()
+         #ELSE()
+         #   MESSAGE("   * You have to build libVisualLearnerCtf.so manually.")
+         #   MESSAGE("   * Use output/bin/buildvisuallearnerctf.sh")
+         #   MESSAGE("   * or ${VisualLearnerCtf_BINARY_DIR}/buildvisuallearnerctf.sh.")
+         #ENDIF()
 
       else (BUILD_SA_VISION_VISLEARNER_CTF)
          add_subdirectory(prebuilt/VisualLearner)
          # VISUALLEARNER_LIBRARY_DIRS set in included CMakeLists
+         #message("   * ${VISUALLEARNER_LIBRARY_DIRS}")
       endif (BUILD_SA_VISION_VISLEARNER_CTF)
 
       set(VISUALLEARNER_LIBRARIES   ${LIB_VLPROXY_NAME} VisualLearnerCtf)
