@@ -740,9 +740,9 @@ void CScene2D::onChange_MergedBelief(const cdl::WorkingMemoryChange & _wmc)
          // Probabilities for labels are in prob, while the 'label' is a FloatFormula (?!)
          auto pval = dynamic_cast<beliefcore::logicalcontent::FloatFormula*>(itpair.val.get());
          if (pval) {
-            if (itdist.first == "color-prob") pvoProps->colorProb = itpair.prob;
-            else if (itdist.first == "shape-prob") pvoProps->shapeProb = itpair.prob;
-            else if (itdist.first == "objecttype-prob") pvoProps->identProb = itpair.prob;
+            if (itdist.first == "color-prob") pvoProps->colorProb = pval->val; // itpair.prob;
+            else if (itdist.first == "shape-prob") pvoProps->shapeProb = pval->val; // itpair.prob;
+            else if (itdist.first == "objecttype-prob") pvoProps->identProb = pval->val; // itpair.prob;
          }
       }
       //ostringstream ss;
