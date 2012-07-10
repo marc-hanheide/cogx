@@ -333,13 +333,13 @@ public class MotiveFilterManager extends ManagedComponent {
 					wmc = receiver.take();
 
 				if (wmc == null) {
-					getLogger().debug(
-							"time elapsed without event. check everything");
+					getLogger().trace(
+							"time elapsed without event. check everything", getLogAdditions());
 					checkAll();
 				} else {
-					getLogger().debug(
+					getLogger().trace(
 							"got an update for motive "
-									+ CASTUtils.toString(wmc));
+									+ CASTUtils.toString(wmc), getLogAdditions());
 					processChange(wmc);
 				}
 			} catch (CASTException e) {
