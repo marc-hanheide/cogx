@@ -479,6 +479,8 @@ enum VisionCommandStatus {
     // the object that this was created for
     cast::cdl::WorkingMemoryPointer target;
 
+    // an optional label for special-purpose view-cones (like left/right/forward marker)
+    string label;
   };
   sequence<ViewCone> ViewConeSeq;
 
