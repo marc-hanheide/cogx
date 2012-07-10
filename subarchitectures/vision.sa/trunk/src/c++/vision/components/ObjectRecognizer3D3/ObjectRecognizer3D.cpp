@@ -5,12 +5,17 @@
  */
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
+#include <opencv2/opencv.hpp>
 #include <v4r/PCLAddOns/PCLUtils.h>
 #include <v4r/PCLAddOns/PCLFunctions.h>
+#include <cogxmath.h>
 #include <VideoUtils.h>
 #include <VisionUtils.h>
 #include "ObjectRecognizer3D.h"
 
+// if defined, the identDistrib/identLabels of a VisualObject will contain the
+// unknown label (VisionData::IDENTITYxUNKNOWN = "not-learned" as first entry) as well
+//#define USE_UNKOWN_LABEL
 
 /**
  * The function called to create a new instance of our component.
@@ -97,7 +102,7 @@ static inline void ConvertSurfacePoints2PCLCloud(const vector<PointCloud::Surfac
  */
 static inline string GetBestLabel(VisualObject &obj)
 {
-  double maxProb = 0.;
+  double maxProb = -1.;
   string label = "";
   for(size_t i = 0; i < obj.identLabels.size(); i++)
   {
@@ -119,11 +124,26 @@ static inline void recalculateIdentGainAmbiguity(VisualObjectPtr &visObj)
   // the information gain if we know the label, just set to 1, cause we don't
   // have any alternative thing to do
   visObj->identGain = 1.;
+#ifdef USE_UNKOWN_LABEL
   // ambiguity in the distribution: we use the distribution's entropy
   visObj->identAmbiguity = 0.;
   for(size_t i = 0; i < visObj->identDistrib.size(); i++)
     if(fpclassify(visObj->identDistrib[i]) != FP_ZERO)
       visObj->identAmbiguity -= visObj->identDistrib[i]*::log(visObj->identDistrib[i]);
+#else
+  // ambiguity in the distribution: we use the distribution's entropy
+  visObj->identAmbiguity = 0.;
+  double sumProb = 0.;
+  for(size_t i = 0; i < visObj->identDistrib.size(); i++)
+    sumProb += visObj->identDistrib[i];
+  // the remaining probability is assigned to unknown
+  double unknownProb = 1. - sumProb;
+  for(size_t i = 0; i < visObj->identDistrib.size(); i++)
+    if(fpclassify(visObj->identDistrib[i]) != FP_ZERO)
+      visObj->identAmbiguity -= visObj->identDistrib[i]*::log(visObj->identDistrib[i]);
+  if(fpclassify(unknownProb) != FP_ZERO)
+    visObj->identAmbiguity -= unknownProb*::log(unknownProb);
+#endif
 }
 
 ObjectRecognizer3D::ObjectRecognizer3D()
@@ -146,9 +166,7 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config)
   istringstream modeliss;
 
   if((it = _config.find("--videoname")) != _config.end())
-  {
     videoServerName = it->second;
-  }
 
   if((it = _config.find("--camid")) != _config.end())
   {
@@ -156,27 +174,38 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config)
     str >> camId;
   }
 
+  if((it = _config.find("--databasepath")) != _config.end())
+    databasePath = it->second;
+
   if((it = _config.find("--labels")) != _config.end())
     labeliss.str(it->second);
-  else
-    throw runtime_error(exceptionMessage(__HERE__, "No labels given"));
 
-  if((it = _config.find("--models")) != _config.end())
-    modeliss.str(it->second);
-  else
-    throw runtime_error(exceptionMessage(__HERE__, "No models given"));
+  // make sure database path has a trailing '/'
+  if(!databasePath.empty())
+  {
+    if(*databasePath.rbegin() != '/')
+      databasePath += '/';
+  }
 
   // Load all given models. Note that further models can be learend at
   // run time.
   std::string label, modelfile;
   models.clear();
   P::CModelHandler cmhandler;
-  while(labeliss >> label && modeliss >> modelfile)
+  while(labeliss >> label)
   {
-    //objectWMIds[label] = "";
     P::ObjectModel::Ptr model(new P::ObjectModel());
-    cmhandler.Load(modelfile, model);
-    models[label] = model;
+    modelfile = databasePath + label + ".cm";
+    log("loading model '%s' ...", modelfile.c_str());
+    if(cmhandler.Load(modelfile, model))
+    {
+      models[label] = model;
+      log("... done");
+    }
+    else
+    {
+      log("... failed");
+    }
   }
   recogniser->clearRecogniser();
   for(map<string, P::ObjectModel::Ptr>::iterator it = models.begin(); it != models.end(); it++)
@@ -218,6 +247,8 @@ void ObjectRecognizer3D::start()
   m_display.connectIceClient(*this);
   m_display.setClientData(this);
   m_display.installEventReceiver();
+  m_display.addButton(getComponentID(), string("button.save"), string("Save Database"));
+  //m_display.addButton(getComponentID(), string("button.load"), string("Load Database"));
   m_display.addButton(getComponentID(), string("button.det.all"),
       string("Detect all"));
   for(map<string, P::ObjectModel::Ptr>::iterator it = models.begin(); it != models.end(); it++)
@@ -238,7 +269,15 @@ void ObjectRecognizer3D::CDisplayClient::handleEvent(const Visualization::TEvent
 {
   if(event.type == Visualization::evButtonClick)
   {
-    if(event.sourceId == "button.det.all")
+    if(event.sourceId == "button.save")
+    {
+      pRec->saveModelDatabase();
+    }
+    /*else if(event.sourceId == "button.load.all")
+    {
+      printf("NOTE: Loading at runtime not implemented! Specify objects in the cast command line.");
+    }*/
+    else if(event.sourceId == "button.det.all")
     {
       DetectionCommandPtr det_cmd = new DetectionCommand;
       det_cmd->labels.clear();
@@ -305,6 +344,59 @@ void ObjectRecognizer3D::CDisplayClient::handleEvent(const Visualization::TEvent
 }
 #endif
 
+void ObjectRecognizer3D::saveModelDatabase()
+{
+  P::CModelHandler cmhandler;
+  for(map<string, P::ObjectModel::Ptr>::iterator it = models.begin(); it != models.end(); it++)
+  {
+    string modelfile = databasePath + it->first + ".cm";
+    log("saving model '%s'", modelfile.c_str());
+    cmhandler.Save(modelfile, it->second);
+  }
+}
+
+/**
+ * Calculate actual recognition probability from confidence.
+ * Using learned observation functions from a small set of example objects.
+ * Note: actually these observation functions should be learned for each object
+ * or actually each view. But in approximation a more general obs.func. is OK.
+ */
+double ObjectRecognizer3D::recognitionConfidenceToProbability(double conf)
+{
+  // trained from dino
+  //const double p_mu = 0.142046, p_sig = 0.077907;
+  //const double n_mu = 0.030988, n_sig = 0.022120;
+  // trained from digestive
+  const double p_mu = 0.108980, p_sig = 0.064258;
+  const double n_mu = 0.016250, n_sig = 0.010887;
+  // object prior probability
+  const double p_o = 1.;
+  double prob = normpdf(conf, p_mu, p_sig) * p_o /
+         (normpdf(conf, p_mu, p_sig) + normpdf(conf, n_mu, n_sig));
+  log("conf %f to prob %f\n", conf, prob);
+  return prob;
+}
+
+void ObjectRecognizer3D::visualizeLearnedObject(Image &img, P::ObjectModel::Ptr obj)
+{
+}
+
+void ObjectRecognizer3D::visualizeRecognizedObject(cv::Mat &img,
+    const CameraParameters &cam, P::ObjectModel::Ptr obj, P::ObjectLocation &loc)
+{
+  if(loc.idxView < obj->views.size())
+  {
+    cv::Mat intrinsic(cv::Mat::zeros(3,3,CV_64F));
+    intrinsic.at<double>(0, 0) = cam.fx;
+    intrinsic.at<double>(0, 2) = cam.cx;
+    intrinsic.at<double>(1, 1) = cam.fy;
+    intrinsic.at<double>(1, 2) = cam.cy;
+    intrinsic.at<double>(2, 2) = 1.;
+    // last params: brighness and whether to draw keypoints
+    P::View::draw(*obj->views[loc.idxView], intrinsic, img, loc.pose, 2., false);
+  }
+}
+
 void ObjectRecognizer3D::setRecogniserCamereParameters(Image &image)
 {
   // TODO; set actual distortion
@@ -330,7 +422,7 @@ void ObjectRecognizer3D::recognize(const Image &image,
     // note that points are given in robot ego, need to be transformed into camera
     vector<PointCloud::SurfacePoint> camPoints(points.size());
     for(size_t i = 0; i < points.size(); i++)
-      camPoints[i].p = cogx::Math::transform(image.camPars.pose, points[i].p);
+      camPoints[i].p = cogx::Math::transformInverse(image.camPars.pose, points[i].p);
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     ConvertSurfacePoints2PCLCloud(camPoints, *pcl_cloud);
@@ -339,6 +431,17 @@ void ObjectRecognizer3D::recognize(const Image &image,
     {
       recogniser->recognise(cvImage, pcl_cloud, pcl::PointCloud<pcl::Normal>::Ptr(),
                             pcl::PointIndices::Ptr(), objects);
+#ifdef FEAT_VISUALIZATION
+      cvImage *= 0.5;
+      // visualize the most confident result, i.e. is the first in the sorted
+      // list of results. Note that we do not pay attention to the label here as
+      // in receiveRecognitionCommand.
+      if(objects.size() > 0)
+        visualizeRecognizedObject(cvImage, image.camPars, models[objects[0].idObject], objects[0]);
+      Image dispImage;
+      convertImageFromIpl(iplImage, dispImage);
+      m_display.setImage(getComponentID(), dispImage);
+#endif
     }
     else
     {
@@ -368,8 +471,7 @@ bool ObjectRecognizer3D::learn(const string &label, const Image &image,
     // note that points are given in robot ego, need to be transformed into camera
     vector<PointCloud::SurfacePoint> camPoints(points.size());
     for(size_t i = 0; i < points.size(); i++)
-      camPoints[i].p = cogx::Math::transform(image.camPars.pose, points[i].p);
-
+      camPoints[i].p = cogx::Math::transformInverse(image.camPars.pose, points[i].p);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     ConvertSurfacePoints2PCLCloud(camPoints, *pcl_cloud);
 
@@ -544,18 +646,20 @@ void ObjectRecognizer3D::receiveRecognitionCommand(const cdl::WorkingMemoryChang
         }
       }
     }
-    // read agagin to decrease likelihood of inconsitency
+    // read agagin to at least decrease likelihood of WM access inconsitency
     visObj = getMemoryEntry<VisualObject>(rec_cmd->visualObject->address);
     objectLoationToVisualObject(objects[best], visObj);
   }
   else
   {
-    // read agagin to decrease likelihood of inconsitency
+    // read agagin to at least decrease likelihood of WM access inconsitency
     visObj = getMemoryEntry<VisualObject>(rec_cmd->visualObject->address);
     visObj->identLabels.clear();
-    visObj->identLabels.push_back(VisionData::IDENTITYxUNKNOWN);
     visObj->identDistrib.clear();
-    visObj->identDistrib.push_back(1.);
+#ifdef USE_UNKOWN_LABEL
+    visObj->identLabels.push_back(VisionData::IDENTITYxUNKNOWN);
+    visObj->identDistrib.push_back(1.0);
+#endif
     recalculateIdentGainAmbiguity(visObj);
   }
   log("overwriting WM entry with address.id '%s'",
@@ -642,15 +746,17 @@ bool ObjectRecognizer3D::learnObjectView(cast::cdl::WorkingMemoryAddress
   if(succeed)
   {
     log("OK, learned a new view");
-    // read again to decrease likelihood of inconsitency
+    // read again to at least decrease likelihood of WM access inconsitency
     visObj = getMemoryEntry<VisualObject>(visObjAddr);
     visObj->identLabels.clear();
     visObj->identDistrib.clear();
-    // note: "unknown" must always be the first entry in the list
+#ifdef USE_UNKOWN_LABEL
     visObj->identLabels.push_back(VisionData::IDENTITYxUNKNOWN);
-    visObj->identDistrib.push_back(0.);
+    visObj->identDistrib.push_back(0.0);
+#endif
     visObj->identLabels.push_back(label);
-    visObj->identDistrib.push_back(1.);
+    visObj->identDistrib.push_back(1.0);
+    recalculateIdentGainAmbiguity(visObj);
     log("overwriting WM entry with address.id '%s'", visObjAddr.id.c_str());
     overwriteWorkingMemory(visObjAddr, visObj);
   }
@@ -668,18 +774,18 @@ bool ObjectRecognizer3D::learnObjectView(cast::cdl::WorkingMemoryAddress
 void ObjectRecognizer3D::objectLoationToVisualObject(P::ObjectLocation &objLoc,
     VisualObjectPtr &visObj)
 {
-  // create a very simple distribution: label and unknown
-  // note: "unknown" must always be the first entry in the list
+  double objProb = recognitionConfidenceToProbability(objLoc.conf);
   visObj->identLabels.clear();
-  visObj->identLabels.push_back(VisionData::IDENTITYxUNKNOWN);
-  visObj->identLabels.push_back(objLoc.idObject);
-  // note: distribution must of course sum to 1
   visObj->identDistrib.clear();
-  visObj->identDistrib.push_back(1. - objLoc.conf);
-  visObj->identDistrib.push_back(objLoc.conf);
+#ifdef USE_UNKOWN_LABEL
+  visObj->identLabels.push_back(VisionData::IDENTITYxUNKNOWN);
+  visObj->identDistrib.push_back(1.0 - objProb);
+#endif
+  visObj->identLabels.push_back(objLoc.idObject);
+  visObj->identDistrib.push_back(objProb);
   recalculateIdentGainAmbiguity(visObj);
   
-  /* TODO: overwrite
+  /* TODO: transform from camera to ego pose
   visObj->pose.pos.x = objLoc.pose.t.at<double>(0, 0);
   visObj->pose.pos.y = objLoc.pose.t.at<double>(1, 0);
   visObj->pose.pos.z = objLoc.pose.t.at<double>(2, 0);
