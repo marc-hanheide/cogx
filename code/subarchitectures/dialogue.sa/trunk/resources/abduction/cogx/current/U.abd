@@ -49,7 +49,7 @@ understand : is_reference(RefNom, ReferentAddr, EpSt) <-
 epst_variant(private(A), private(A)).
 epst_variant(attrib(A, B), attrib(A, B)).
 epst_variant(shared(A, B), shared(A, B)).
-epst_variant(shared(A, B), shared(B, A)).
+%epst_variant(shared(A, B), shared(B, A)).
 
 %-------------------------------------------------------------------------
 % TOPIC
