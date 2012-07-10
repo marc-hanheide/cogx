@@ -53,7 +53,7 @@
    )
 
    ;; === perceptual fluents for modelling dialogue ===
-  ;; (:percepts 
+  ;; (:percepts
   ;;  (polar-response ?svar - (function concept) ?val - (typeof ?svar) ?reply - polar_reply)
   ;;  (general-response ?svar - (function concept) ?reply - (typeof ?svar))
   ;;  )
@@ -102,7 +102,7 @@
    (place-exists ?p - place) - boolean
 
    ;; === placeholder properties ===
-;;LF leads_to_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(in_?block_?step:m-location ^ in ^ <Anchor>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))) 
+;;LF leads_to_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(in_?block_?step:m-location ^ in ^ <Anchor>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific)))
    (leads_to_room ?p - place ?c - category) - boolean
 
    ;; === person properties ===
@@ -119,7 +119,7 @@
    (relation ?o - visualobject) -  spatial_relation
 
    ;; === conegroup properties ===
-   ;; basic properties that determine what the conegroup was generated for 
+   ;; basic properties that determine what the conegroup was generated for
    ;; (e.g. cone group for cornflakes ON table_1)
    (cg-label ?c - conegroup) - label
    (cg-relation ?c - conegroup) - spatial_relation
@@ -252,7 +252,7 @@
 
   (:derived (not_fully_explored ?r - room)
             (exists (?p - place) (and (attached_to_room ?p ?r))))
-              
+
   (:derived (trans_related ?o - visualobject ?where - (either visualobject room))
             (or (poss (related-to ?o) ?where)
                 (exists (?o2 - visualobject) (and (poss (related-to ?o) ?o2)
@@ -263,7 +263,7 @@
             (exists (?c - conegroup) (and (= (cg-label ?c) ?l)
                                           (= (cg-related-to ?c) ?where)
                                           (= (cg-relation ?c) ?rel))))
-                                          
+
 
   ;; (:derived (obj-possibly-in-room ?o - visualobject ?r - room)
   ;;           (exists (?p - place) (and (= (in-room ?p) ?r)
@@ -283,7 +283,7 @@
 
 
   ;; rules that model the conditional probabilities from default sa
-  
+
 ;;LF obj_in_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(in_?block_?step:m-location ^ in ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)))
   ;; p(?label IN ?room | category(?room) = ?cat)
   (:dtrule obj_in_room
@@ -319,9 +319,9 @@
 
   ;; (assign (obj_in_room ?l ?r)
 
-  ;; use posterior information from conceptual.sa 
+  ;; use posterior information from conceptual.sa
   ;; force commitment to a room category to help the heuristic
-;;LF object_existence_room => @{event_?block_?step:event}(and ^ <First>(be_?block_?step_0:ascription ^ be ^ <Subject>(=var_?block_?step:thing) ^ <Cop-Restr>(=var_?block_?step:thing ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var))) ^ <Next>(be_?block_?step_1:ascription ^ be ^ <Subject>(room_?block_?step:e-place) ^ <Cop-Restr>(room_?block_?step:e-place ^ room ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^<Quantification>specific)))
+;;LF object_existence_room => @{event_?block_?step:event}(and ^ <First>(be_?block_?step_0:ascription ^ be ^ <Cop-Restr>(=var_?block_?step:thing ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var))) ^ <Next>(be_?block_?step_1:ascription ^ be ^ <Cop-Restr>(room_?block_?step:e-place ^ room ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:category ^ =var ^ <Delimitation>existential ^ <Num>sg ^<Quantification>specific)))
   (:dtrule object_existence_room
            :parameters (?l - label ?rel - spatial_relation ?where - room ?c - category)
            :precondition (and (= (category ?where) ?c)
@@ -386,8 +386,8 @@
            :effect (and (probabilistic 1.0 (and (assign (in-room ?p) ?r)
                                                 (assign (category ?r) ?c)))
                         (increase (total-cost) 10))
-           )                                                                                                                                              
-   
+           )
+
   ;; (:dtrule room_from_placeholder
   ;;          :parameters (?p - place ?r - room ?c - category)
   ;;          :precondition (and (= (placestatus ?p) placeholder)
@@ -457,7 +457,7 @@
    ;;                   :parameters (?to - place)
    ;;                   :variables (?from - place ?r - room)
    ;;                   :duration (= ?duration 8)
-   ;;                   :condition (and 
+   ;;                   :condition (and
    ;;                                   (over all (and (= (in-room ?from) ?r)
    ;;                                                  (or (= (in-room ?to) ?r)
    ;;                                                      (attached_to_room ?to ?r))))
@@ -483,7 +483,7 @@
             :effect (and (cones_created ?l in ?r)
                          (increase (total-cost) 5))
             )
-   
+
    ;; create cones for search in or on another object
    ;; precondition: robot is in the same room as the specified object
 
@@ -513,7 +513,7 @@
    ;;                          (trans_related ?o ?r)
    ;;                          (kval ?a (related-to ?o))
    ;;                          (= (label ?o) ?l))
-   ;;          :effect (and 
+   ;;          :effect (and
    ;;                   (assign (related-to ?o) ?a)
    ;;                   (assign (relation ?o) on)
    ;;                   (increase (total-cost) 10))
@@ -529,7 +529,7 @@
    ;;                          (= (related-to ?o) ?a)
    ;;                          (= (relation ?o) on)
    ;;                          (= (label ?o) ?l))
-   ;;          :effect (and 
+   ;;          :effect (and
    ;;                   (assign (related-to ?o) ?p)
    ;;                   ;; (assign (relation ?o) on)
    ;;                   (increase (total-cost) 10))
@@ -556,7 +556,7 @@
             :effect (and (increase (total-cost) (search_cost ?l in ?r)))
             :sense (= (related-to ?o) ?r)
             )
-                     
+
 
    ;; ;; Abstract search action for the CP planner
    ;; ;; Searches for an object IN another object
@@ -599,7 +599,7 @@
             :effect (and (increase (total-cost) (search_cost ?l ?rel ?o)))
             :sense (related-to ?o2)
             )
-                     
+
 
    ;; process one conegroup
    ;; TODO: how to model precondtitions for the robot's location
@@ -614,7 +614,7 @@
             :precondition (and (not (done))
                                (= (cg-place ?c) ?p)
                                (= (is-in ?a) ?p))
-            :effect (and 
+            :effect (and
                      (increase (total-cost) 15))
             )
 
@@ -626,7 +626,7 @@
              :precondition (and (= (label ?o) ?l)
                                 (= (cg-label ?c) ?l)
                                 (= (cg-related-to ?c) ?where))
-                                
+
              :effect (and (when (= (visible_from ?o) ?c)
                             (probabilistic 0.8 (observed (related-to ?o) ?where)))
                           (when (not (= (visible_from ?o) ?c))
@@ -640,7 +640,7 @@
    ;;           :parameters (?l - label ?r - room ?p - place ?o - visualobject)
    ;;           :execution (search_for_object_in_room ?a ?l ?r ?p ?o)
    ;;           :precondition (and (= (label ?o) ?l))
-                                
+
    ;;           :effect (and (when (= (related-to ?o) ?r)
    ;;                          (probabilistic 0.9 (observed (related-to ?o) ?r))))
    ;;           )
@@ -653,9 +653,9 @@
             :precondition (and (not (done))
                                ;; (not (any-engaged))
                                (not (= (unresponsive ?h) true))
-                               (= (is-in ?h) ?p)                               
+                               (= (is-in ?h) ?p)
                                (= (is-in ?a) ?p))
-            :effect (and 
+            :effect (and
                      (engaged ?h)
                      (increase (total-cost) 1)
                      (assign (failure-cost) 5000))
@@ -668,9 +668,9 @@
    ;;          :variables (?p - place)
    ;;          :precondition (and (not (done))
    ;;                             (any-engaged)
-   ;;                             (= (is-in ?h) ?p)                               
+   ;;                             (= (is-in ?h) ?p)
    ;;                             (= (is-in ?a) ?p))
-   ;;          :effect (and 
+   ;;          :effect (and
    ;;                   (not (any-engaged))
    ;;                   (increase (total-cost) 1))
    ;;          )
@@ -695,10 +695,10 @@
             :variables (?h - person ?p - place)
             :precondition (and (not (done))
                                (engaged ?h)
-                               (= (is-in ?h) ?p)                               
+                               (= (is-in ?h) ?p)
                                (= (is-in ?a) ?p)
                                (= (in-room ?p) ?r))
-            :effect (and 
+            :effect (and
                      (increase (total-cost) 5)
                      ;; (assign (failure-cost) 100)
                      )
@@ -711,7 +711,7 @@
              :precondition (and
                             (engaged ?h)
                             (= (is-in ?h) ?p))
-                                
+
              :effect (and (when (= (category ?r) ?c)
                             (probabilistic 0.95 (observed (identity ?r) ?c))))
              )
@@ -722,7 +722,7 @@
    ;;           :parameters (?h - person ?p - place)
    ;;           :execution (engage ?a ?h ?p)
    ;;           :precondition (and)
-                                
+
    ;;           :effect (and (when (or (not (= (is-in ?h) ?p))
    ;;                                  (= (unresponsive ?h) true))
    ;;                          (observed (unresponsive ?h) true)))
@@ -738,7 +738,7 @@
                             (= (in-room ?p) ?r)
                             (not (not_fully_explored ?r))
                             )
-            :effect (and 
+            :effect (and
                      (increase (total-cost) 10))
             )
 
@@ -756,7 +756,7 @@
                                (= (entity-exists ?what) true)
                                (can-relate ?a ?what ?h)
                                )
-            :effect (and 
+            :effect (and
                      (increase (total-cost) 10)
                      ;; (assign (failure-cost) 100)
                      )
