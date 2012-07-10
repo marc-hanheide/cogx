@@ -59,7 +59,7 @@
            <property name="sizeHint" stdset="0">
             <size>
              <width>20</width>
-             <height>4</height>
+             <height>0</height>
             </size>
            </property>
           </spacer>
@@ -123,6 +123,30 @@
           </widget>
          </item>
          <item>
+          <widget class="QComboBox" name="cbInstruction">
+           <item>
+            <property name="text">
+             <string>&lt;instruction&gt;</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Look forward!</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Look left!</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Look right!</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
           <spacer name="verticalSpacer_2">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -133,7 +157,7 @@
            <property name="sizeHint" stdset="0">
             <size>
              <width>20</width>
-             <height>4</height>
+             <height>0</height>
             </size>
            </property>
           </spacer>
@@ -265,7 +289,7 @@
            <property name="sizeHint" stdset="0">
             <size>
              <width>20</width>
-             <height>4</height>
+             <height>0</height>
             </size>
            </property>
           </spacer>
@@ -400,6 +424,7 @@
   <tabstop>txtHistory</tabstop>
   <tabstop>cbQuestion</tabstop>
   <tabstop>cbAssertion</tabstop>
+  <tabstop>cbInstruction</tabstop>
   <tabstop>btThe</tabstop>
   <tabstop>btObject</tabstop>
   <tabstop>btIt</tabstop>
