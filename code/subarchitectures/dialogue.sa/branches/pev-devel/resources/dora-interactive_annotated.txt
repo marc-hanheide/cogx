@@ -321,7 +321,7 @@
 
   ;; use posterior information from conceptual.sa 
   ;; force commitment to a room category to help the heuristic
-;;LF object_existence_room => @{event_?block_?step:event}(and ^ <First>(be_?block_?step_0:ascription ^ be ^ <Cop-Restr>(=var_?block_?step:thing ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var))) ^ <Next>(be_?block_?step_1:ascription ^ be ^ <Cop-Restr>(room_?block_?step:e-place ^ room ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:category ^ =var ^ <Delimitation>existential ^ <Num>sg ^<Quantification>specific)))
+;;LF object_existence_room => @{event_?block_?step:event}(and ^ <First>(be_?block_?step_0:ascription ^ be ^ <Subject>(=var_?block_?step:thing) ^ <Cop-Restr>(=var_?block_?step:thing ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var))) ^ <Next>(be_?block_?step_1:ascription ^ be ^ <Subject>(room_?block_?step:e-place) ^ <Cop-Restr>(room_?block_?step:e-place ^ room ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^<Quantification>specific)))
   (:dtrule object_existence_room
            :parameters (?l - label ?rel - spatial_relation ?where - room ?c - category)
            :precondition (and (= (category ?where) ?c)
