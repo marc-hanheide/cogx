@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<grammar root="root" version="1.0" xml:lang="en-us" xmlns="http://www.w3.org/2001/06/grammar" tag-format="semantics/1.0">
+
+	<rule id="root">
+		<one-of>
+			<item><ruleref uri="#ack" /></item>
+			<item><ruleref uri="#command" /></item>
+			<item><ruleref uri="#MUTE" /></item>
+		</one-of>
+	</rule>
+
+	<rule id="ack">
+		<one-of>
+			<item>affirmative</item>
+			<item>correct</item>
+			<item>negative</item>
+		</one-of>
+	</rule>
+
+	<rule id="command">
+		<ruleref uri="#robot" />
+		<one-of>
+			<item>
+				<ruleref uri="#could_you" />
+				<ruleref uri="#please" />
+				<ruleref uri="#MAIN_command" />
+			</item>
+			<item>
+				<ruleref uri="#now" />
+				<ruleref uri="#MAIN_command" />
+				<ruleref uri="#please" />
+			</item>
+		</one-of>
+	</rule>
+
+	<rule id="MAIN_command">
+		<one-of>
+			<item><ruleref uri="#command_move" /></item>
+			<item>return to <ruleref uri="#the" /> base</item>
+			<item><ruleref uri="#command_turn" /></item>
+			<item><ruleref uri="#command_stop" /></item>
+		</one-of>
+	</rule>
+
+	<rule id="MUTE">
+		<one-of>
+			<item>standby don't listen</item>
+			<item>continue</item>
+		</one-of>
+	</rule>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+	<rule id="command_move">
+		<one-of>
+			<item>
+				<one-of>
+					<item>move</item>
+					<item>go</item>
+					<item>drive</item>
+				</one-of>
+				<one-of>
+					<item><ruleref uri="#motion_direction" /></item>
+					<item><ruleref uri="#deixis" /></item>
+					<item><ruleref uri="#motion_ref" /></item>
+				</one-of>
+			</item>
+		</one-of>
+	</rule>
+
+	<rule id="command_turn">
+		<one-of>
+			<item>turn <ruleref uri="#turn_direction" /></item>
+<!--			<item>turn <ruleref uri="#deixis" /></item> -->
+		</one-of>
+	</rule>
+
+	<rule id="command_stop">
+		<one-of>
+			<item>stop</item>
+		</one-of>
+	</rule>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+	<rule id="to_the">
+		<item repeat="0-1">to the</item>
+	</rule>
+
+	<rule id="the">
+		<item repeat="0-1">the</item>
+	</rule>
+
+	<rule id="determiner">
+		<one-of>
+			<item>the</item>
+			<item>this</item>
+			<item>that</item>
+		</one-of>
+	</rule>
+
+	<rule id="robot">
+		<item repeat="0-1">robot</item>
+	</rule>
+
+	<rule id="could_you">
+		<item repeat="0-1">could you</item>
+	</rule>
+
+	<rule id="please">
+		<item repeat="0-1">please</item>
+	</rule>
+
+	<rule id="now">
+		<item repeat="0-1"><item repeat="0-1">and</item> now</item>
+	</rule>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+	<rule id="motion_direction">
+		<one-of>
+			<item>forward</item>
+			<item>straight</item>
+			<item>back</item>
+			<item>backwards</item>
+			<item><ruleref uri="#to_the" /> left</item>
+			<item><ruleref uri="#to_the" /> right</item>
+		</one-of>
+	</rule>
+
+	<rule id="deixis">
+		<one-of>
+			<item>here</item>
+			<item>there</item>
+			<item>over there</item>
+		</one-of>
+	</rule>
+
+	<rule id="motion_ref">
+		<one-of>
+			<item>to <ruleref uri="#determiner" /> car</item>
+		</one-of>
+	</rule>
+
+	<rule id="look_direction">
+		<one-of>
+			<item>up</item>
+			<item>down</item>
+			<item><ruleref uri="#to_the" /> left</item>
+			<item><ruleref uri="#to_the" /> right</item>
+		</one-of>
+	</rule>
+
+	<rule id="turn_direction">
+		<one-of>
+			<item>left</item>
+			<item>right</item>
+			<item>around</item>
+			<item>back</item>
+		</one-of>
+	</rule>
+
+</grammar>

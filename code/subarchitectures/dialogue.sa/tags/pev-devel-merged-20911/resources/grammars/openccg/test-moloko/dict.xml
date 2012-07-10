@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../dict.xsd" name="moloko">
+  <entry pos="COORD" stem="and__coord" pred="and">
+    <word form="and"/>
+    <member-of family="coord.noun.pl-result"/>
+    <member-of family="coord.noun"/>
+    <member-of family="coord.np.pl-result"/>
+    <member-of family="coord.np"/>
+    <member-of family="coord.prep"/>
+    <member-of family="coord.adj"/>
+  </entry>
+  <entry pos="MOD" stem="not__coord" pred="not">
+    <word form="not"/>
+    <member-of family="negation.adj"/>
+    <member-of family="negation.prep"/>
+    <member-of family="negation.adj2"/>
+  </entry>
+  <entry pos="N" stem="ball" pred="ball">
+    <word macros="@num.sg" form="ball"/>
+    <word macros="@num.pl" form="balls"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry pos="N" stem="mug" pred="mug">
+    <word macros="@num.sg" form="mug"/>
+    <word macros="@num.pl" form="mugs"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry pos="N" stem="table" pred="table">
+    <word macros="@num.sg" form="table"/>
+    <word macros="@num.pl" form="tables"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry pos="N" stem="I" pred="I">
+    <word macros="@num.sg @nom" form="I"/>
+    <word macros="@num.sg @acc" form="me"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry pos="N" stem="he" pred="he">
+    <word macros="@num.sg @nom" form="he"/>
+    <word macros="@num.sg @acc" form="him"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="to" pos="PREP" stem="on" pred="on">
+    <word form="on"/>
+    <member-of family="prep"/>
+  </entry>
+  <entry pos="PREP" stem="in" pred="in">
+    <word form="in"/>
+    <member-of family="prep"/>
+  </entry>
+  <entry class="from" pos="PREP" stem="from" pred="from">
+    <word form="from"/>
+    <member-of family="prep"/>
+  </entry>
+  <entry pos="PREP" stem="here" pred="here">
+    <word form="here"/>
+    <member-of family="pro-prep"/>
+  </entry>
+  <entry pos="PREP" stem="there" pred="there">
+    <word form="there"/>
+    <member-of family="pro-prep"/>
+  </entry>
+  <entry pos="MOD" stem="over" pred="over">
+    <word form="over"/>
+    <member-of family="mod-right.prep"/>
+  </entry>
+  <entry pos="MOD" stem="up" pred="up">
+    <word form="up"/>
+    <member-of family="mod-right.prep"/>
+  </entry>
+  <entry pos="ADJ" stem="big" pred="big">
+    <word form="big"/>
+    <member-of family="adj"/>
+  </entry>
+  <entry pos="ADJ" stem="blue" pred="blue">
+    <word form="blue"/>
+    <member-of family="adj"/>
+  </entry>
+  <entry pos="ADJ" stem="red" pred="red">
+    <word form="red"/>
+    <member-of family="adj"/>
+  </entry>
+  <entry pos="MOD" stem="really" pred="really">
+    <word form="really"/>
+    <member-of family="mod-right.adj"/>
+  </entry>
+  <entry pos="MOD" stem="very" pred="very">
+    <word form="very"/>
+    <member-of family="mod-right.adj"/>
+  </entry>
+  <entry pos="DET" stem="the" pred="the">
+    <word form="the"/>
+    <member-of family="det"/>
+  </entry>
+  <entry pos="DET" stem="that" pred="that">
+    <word form="that"/>
+    <member-of family="det"/>
+  </entry>
+  <entry pos="DET" stem="this" pred="this">
+    <word form="this"/>
+    <member-of family="det"/>
+  </entry>
+  <entry pos="DET" stem="five" pred="five">
+    <word form="five"/>
+    <member-of family="det"/>
+  </entry>
+  <entry pos="DET" stem="a" pred="a">
+    <word form="a"/>
+    <member-of family="det"/>
+  </entry>
+  <entry pos="MOD" stem="around" pred="around">
+    <word form="around"/>
+    <member-of family="mod-right.det"/>
+  </entry>
+  <entry pos="MOD" stem="nearly" pred="nearly">
+    <word form="nearly"/>
+    <member-of family="mod-right.det"/>
+  </entry>
+  <entry pos="V" stem="be" pred="be">
+    <word form="is"/>
+    <word form="am"/>
+    <member-of family="copular.np"/>
+    <member-of family="copular.pp"/>
+    <member-of family="copular.adj"/>
+  </entry>
+  <entry pos="V" stem="hit" pred="hit">
+    <word form="hit"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry pos="V" stem="put" pred="put">
+    <word form="put"/>
+    <member-of family="caused-motion.to"/>
+  </entry>
+  <entry pos="V" stem="move" pred="move">
+    <word form="move"/>
+    <member-of family="caused-motion.from.to"/>
+  </entry>
+  <entry pos="V" stem="made" pred="made">
+    <word form="made"/>
+    <member-of family="resultant"/>
+  </entry>
+  <macro name="@num.sg">
+    <fs val="sg" attr="num" id="30"/>
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="num">
+          <prop name="sg"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@num.pl">
+    <fs val="pl" attr="num" id="30"/>
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="num">
+          <prop name="pl"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@nom">
+    <fs val="nom" attr="case" id="30"/>
+  </macro>
+  <macro name="@acc">
+    <fs val="acc" attr="case" id="30"/>
+  </macro>
+</dictionary>

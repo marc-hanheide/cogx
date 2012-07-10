@@ -1,0 +1,18 @@
+// Inference rules
+// #include "cogx-domains.mln"
+
+//Rules
+
+// a proxy can be part of max one object
+objpart(p, o1) ^ objpart(p, o2) => o1 = o2.
+
+// each proxy has to be part of an object
+forall p exist o objpart(p, o).
+
+// an object cannot contain two or more object from one modality
+(p1 != p2) ^ proxyfeat(p1, f1) ^ proxyfeat(p2, f2) ^ modfeat(m, f1) ^ modfeat(m, f2) ^ objpart(p1, o) => !objpart(p2, o).
+
+// An object can contain max one feature from each feature group (concept)
+proxyfeat(p, f) ^ grpfeat(g, f) ^ f'!=f ^ grpfeat(g, f') => !proxyfeat(p, f').
+
+
