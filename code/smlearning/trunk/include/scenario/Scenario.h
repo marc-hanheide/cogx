@@ -139,7 +139,7 @@ protected:
 	/** Describe the experiment trajectory */
 	virtual void initMovement();
 	/** write data chunk (used in postprocess function) */
-	void writeChunk (LearningData::Chunk& chunk);
+	virtual void writeChunk (LearningData::Chunk& chunk);
 	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
 	/** calculate final pose according to the given direction angle */

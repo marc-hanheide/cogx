@@ -121,6 +121,8 @@ protected:
 	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
 	virtual void preprocess(golem::SecTmReal elapsedTime);
+	/** write data chunk (used in postprocess function) */
+	virtual void writeChunk (LearningData::Chunk& chunk);
 	/** Description */
 	TrackerScenario::Desc desc;
 	// /** Tracker thread */
@@ -162,8 +164,6 @@ protected:
 	virtual void calculateStartCoordinates ();
 	/** default object bounds */
 	golem::Bounds::SeqPtr objectLocalBounds;
-	/** current object pose */
-	golem::Mat34 objectPose;
 
 
 };
