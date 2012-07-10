@@ -49,7 +49,7 @@ private:
   string videoServerName;
   Video::VideoInterfacePrx videoServer;
   cv::Ptr<P::CModelThread> recogniser;
-  //map<string, string> objectWMIds;
+  string databasePath;
   map<string, P::ObjectModel::Ptr> models;
   int modelNameCnt;
 
@@ -62,7 +62,7 @@ private:
     void setClientData(ObjectRecognizer3D* _pRec) { pRec = _pRec; }
     void handleEvent(const Visualization::TEvent &event);
   };
-CDisplayClient m_display;
+  CDisplayClient m_display;
 #endif
   void setRecogniserCamereParameters(Image &image);
   cv::Mat generateMaskImage(VisualObjectPtr visObj,
@@ -79,6 +79,10 @@ CDisplayClient m_display;
   bool learnObjectView(cast::cdl::WorkingMemoryAddress &visObjAddr, string label);
   void objectLoationToVisualObject(P::ObjectLocation &objLoc,
       VisualObjectPtr &visObj);
+  double recognitionConfidenceToProbability(double conf);
+  void visualizeLearnedObject(Image &img, P::ObjectModel::Ptr obj);
+  void visualizeRecognizedObject(cv::Mat &img, const CameraParameters &cam,
+      P::ObjectModel::Ptr obj, P::ObjectLocation &loc);
 
 protected:
 
@@ -93,6 +97,7 @@ public:
   virtual ~ObjectRecognizer3D();
 
   virtual void receiveImages(const vector<Video::Image>& images) {}
+  void saveModelDatabase();
 };
 
 }
