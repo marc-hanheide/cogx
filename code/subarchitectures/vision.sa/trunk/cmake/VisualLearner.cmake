@@ -37,7 +37,11 @@ if (BUILD_SA_VISION_VISLEARNER)
          # can be built.
          #
          add_subdirectory(src/matlab/cogxBuild/prjdeploy2012a)
-         set(VISUALLEARNER_LIBRARY_DIRS ${VISUALLEARNER_LIBRARY_DIRS} ${VisualLearnerCtf_BINARY_DIR}/build)
+         set(VISUALLEARNER_LIBRARY_DIRS
+            ${VISUALLEARNER_LIBRARY_DIRS}
+            ${VisualLearnerCtf_BINARY_DIR}/build
+            ${VisualLearnerProxy_BINARY_DIR}
+            )
 
          # Build the real proxy
          IF (EXISTS ${VisualLearnerCtf_BINARY_DIR}/build/libVisualLearnerCtf.h)
