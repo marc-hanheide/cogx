@@ -29,7 +29,7 @@
    ;; derived predicates
 ;;LF attached_to_room => @{state_?block_?step:event}(context ^ <Subject>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Modifier>(next_?block_?step:m-location ^ next ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)))
    (attached_to_room ?p - place ?r - room)
-;;LF not_fully_explored => @{state_?block_?step:ascripton}(be ^ <Polarity>neg ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(explored_?block_?step:state ^ explored ^ <Modifier>(full_?block_?step:modifier ^ full))
+;;LF not_fully_explored => @{state_?block_?step:ascripton}(be ^ <Polarity>neg ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(explored_?block_?step:state ^ explored ^ <Modifier>(full_?block_?step:modifier ^ full)))
    (not_fully_explored ?r)
    (trans_related ?o - visualobject ?where - (either visualobject room))
    (cones_exist  ?l - label ?rel - spatial_relation ?where - (either visualobject room))
@@ -37,7 +37,7 @@
    ;; (obj-possibly-in-room ?o - visualobject ?r - room)
 
    ;; (any-engaged)
-;;LF engaged => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(engaged_?block_?step:state ^ engaged)
+;;LF engaged => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(engaged_?block_?step:state ^ engaged))
    (engaged ?p - person)
 
    ;;virtual predicates
@@ -53,7 +53,7 @@
    )
 
    ;; === perceptual fluents for modelling dialogue ===
-  ;; (:percepts 
+  ;; (:percepts
   ;;  (polar-response ?svar - (function concept) ?val - (typeof ?svar) ?reply - polar_reply)
   ;;  (general-response ?svar - (function concept) ?reply - (typeof ?svar))
   ;;  )
@@ -82,12 +82,12 @@
    ;; The result of applying the default knowledge.
    ;; E.g. category(r1) = kitchen AND (dora__in_room cornflakes kitchen) => (obj_exists cornflakes in kitchen)
    ;; Also see the rules below
-;;LF obj_exists => @{state_?block_?step:action-non-motion(find ^ <Mood>ind ^ <Tense>pres ^ <Voice>passive ^ <Actor>(context_?block_?step:entity ^ context) ^ <Modifier>(can_?block_?step:modal ^ can) ^ <Modifier>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)) ^ <Patient>(=var_?block_?step:thing ^ =var  ^ <Delimitation>variable ^ <Quantification>unspecific))
+;;LF obj_exists => @{state_?block_?step:event}(context ^ <Mood>ind ^ <Tense>pres ^ <Subject>(=var_?block_?step:thing ^ =var ^ <Delimitation>variable ^ <Quantification>unspecific) ^ <Modifier>(often_?block_?step:m-frequency ^ often) ^ <Modifier>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)))
    (obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room)) - boolean
    (p-obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room) ?c - category) - number
 
    ;; === room properties ===
-;;LF category => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))
+;;LF category => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))
    (category ?r - room) - category
    (identity ?r - room) - category
    (roomid ?r - room) - number
@@ -102,7 +102,7 @@
    (place-exists ?p - place) - boolean
 
    ;; === placeholder properties ===
-;;LF leads_to_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(in_?block_?step:m-location ^ in ^ <Anchor>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))) 
+;;LF leads_to_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(in_?block_?step:m-location ^ in ^ <Anchor>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific)))
    (leads_to_room ?p - place ?c - category) - boolean
 
    ;; === person properties ===
@@ -119,7 +119,7 @@
    (relation ?o - visualobject) -  spatial_relation
 
    ;; === conegroup properties ===
-   ;; basic properties that determine what the conegroup was generated for 
+   ;; basic properties that determine what the conegroup was generated for
    ;; (e.g. cone group for cornflakes ON table_1)
    (cg-label ?c - conegroup) - label
    (cg-relation ?c - conegroup) - spatial_relation
@@ -252,7 +252,7 @@
 
   (:derived (not_fully_explored ?r - room)
             (exists (?p - place) (and (attached_to_room ?p ?r))))
-              
+
   (:derived (trans_related ?o - visualobject ?where - (either visualobject room))
             (or (poss (related-to ?o) ?where)
                 (exists (?o2 - visualobject) (and (poss (related-to ?o) ?o2)
@@ -263,7 +263,7 @@
             (exists (?c - conegroup) (and (= (cg-label ?c) ?l)
                                           (= (cg-related-to ?c) ?where)
                                           (= (cg-relation ?c) ?rel))))
-                                          
+
 
   ;; (:derived (obj-possibly-in-room ?o - visualobject ?r - room)
   ;;           (exists (?p - place) (and (= (in-room ?p) ?r)
@@ -283,7 +283,7 @@
 
 
   ;; rules that model the conditional probabilities from default sa
-  
+
 ;;LF obj_in_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(in_?block_?step:m-location ^ in ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)))
   ;; p(?label IN ?room | category(?room) = ?cat)
   (:dtrule obj_in_room
@@ -319,9 +319,9 @@
 
   ;; (assign (obj_in_room ?l ?r)
 
-  ;; use posterior information from conceptual.sa 
+  ;; use posterior information from conceptual.sa
   ;; force commitment to a room category to help the heuristic
-;;LF object_existence_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var_?block_?step:thing ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)))
+;;LF object_existence_room => @{event_?block_?step:event}(and ^ <First>(be_?block_?step_0:ascription ^ be1 ^ <Cop-Restr>(=var_?block_?step:thing ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var))) ^ <Next>(be_?block_?step_1:ascription ^ be2 ^ <Cop-Restr>(room_?block_?step:e-place ^ room ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:category ^ =var ^ <Delimitation>existential ^ <Num>sg ^<Quantification>specific)))
   (:dtrule object_existence_room
            :parameters (?l - label ?rel - spatial_relation ?where - room ?c - category)
            :precondition (and (= (category ?where) ?c)
@@ -339,6 +339,7 @@
            )
 
   ;; p(?label IN ?room | category(?room) = ?cat)
+;;LF person_in_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(at_?block_?step:m-location ^ at ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)))
   (:dtrule person_in_room
            :parameters (?p - person ?pl - place ?r - room)
            :precondition (and (= (contains-a-person-prior ?r) true)
@@ -385,8 +386,8 @@
            :effect (and (probabilistic 1.0 (and (assign (in-room ?p) ?r)
                                                 (assign (category ?r) ?c)))
                         (increase (total-cost) 10))
-           )                                                                                                                                              
-   
+           )
+
   ;; (:dtrule room_from_placeholder
   ;;          :parameters (?p - place ?r - room ?c - category)
   ;;          :precondition (and (= (placestatus ?p) placeholder)
@@ -418,7 +419,7 @@
                         (increase (total-cost) 1))
            )
 
-;;LF move => @{step_?block_?step:action-motion}(move ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Modifier>(from_?block_?step:m-wherefrom ^ from ^ <Anchor>(?tid_?block_?step,?from:castreferent ^ ?tid_?block_?step,?from)) ^ <Modifier>(to_?block_?step:m-whereto ^ to ^ <Anchor>(?tid_?block_?step,?to:castreferent ^ ?tid_?block_?step,?to)))
+;;LF move => @{step_?block_?step:action-motion}(move ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Modifier>(from_?block_?step:m-dynamic ^ from ^ <Anchor>(?tid_?block_?step,?from:castreferent ^ ?tid_?block_?step,?from)) ^ <Modifier>(to_?block_?step:m-dynamic ^ to ^ <Anchor>(?tid_?block_?step,?to:castreferent ^ ?tid_?block_?step,?to)))
    (:action move
             :agent (?a - robot)
             :parameters (?to - place)
@@ -434,7 +435,7 @@
 
             )
 
-;;LF move_direct => @{step_?block_?step:action-motion}(go ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Modifier>(from_?block_?step:m-wherefrom ^ from ^ <Anchor>(?tid_?block_?step,?from:castreferent ^ ?tid_?block_?step,?from)) ^ <Modifier>(to_?block_?step:m-whereto ^ to ^ <Anchor>(?tid_?block_?step,?to:castreferent ^ ?tid_?block_?step,?to)) ^ <Modifier>(via_?block_?step:m-location ^ via ^ <Anchor>(?tid_?block_?step,?via:castreferent ^ ?tid_?block_?step,?via)))
+;;LF move_direct => @{step_?block_?step:action-motion}(go ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Modifier>(from_?block_?step:m-dynamic ^ from ^ <Anchor>(?tid_?block_?step,?from:castreferent ^ ?tid_?block_?step,?from)) ^ <Modifier>(to_?block_?step:m-dynamic ^ to ^ <Anchor>(?tid_?block_?step,?to:castreferent ^ ?tid_?block_?step,?to)) ^ <Modifier>(via_?block_?step:m-dynamic ^ via ^ <Anchor>(?tid_?block_?step,?via:castreferent ^ ?tid_?block_?step,?via)))
    (:action move_direct
             :agent (?a - robot)
             :parameters (?to - place)
@@ -456,7 +457,7 @@
    ;;                   :parameters (?to - place)
    ;;                   :variables (?from - place ?r - room)
    ;;                   :duration (= ?duration 8)
-   ;;                   :condition (and 
+   ;;                   :condition (and
    ;;                                   (over all (and (= (in-room ?from) ?r)
    ;;                                                  (or (= (in-room ?to) ?r)
    ;;                                                      (attached_to_room ?to ?r))))
@@ -482,7 +483,7 @@
             :effect (and (cones_created ?l in ?r)
                          (increase (total-cost) 5))
             )
-   
+
    ;; create cones for search in or on another object
    ;; precondition: robot is in the same room as the specified object
 
@@ -512,7 +513,7 @@
    ;;                          (trans_related ?o ?r)
    ;;                          (kval ?a (related-to ?o))
    ;;                          (= (label ?o) ?l))
-   ;;          :effect (and 
+   ;;          :effect (and
    ;;                   (assign (related-to ?o) ?a)
    ;;                   (assign (relation ?o) on)
    ;;                   (increase (total-cost) 10))
@@ -528,7 +529,7 @@
    ;;                          (= (related-to ?o) ?a)
    ;;                          (= (relation ?o) on)
    ;;                          (= (label ?o) ?l))
-   ;;          :effect (and 
+   ;;          :effect (and
    ;;                   (assign (related-to ?o) ?p)
    ;;                   ;; (assign (relation ?o) on)
    ;;                   (increase (total-cost) 10))
@@ -539,7 +540,7 @@
    ;; Searches for an object in the room
    ;; precondition: robot is in the specified room
 
-;;LF search_for_object_in_room => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?tid_?block_?step,?r:castreferent ^ ?tid_?block_?step,?r)) ^ <Modifier>(at_?block_?step:m-location ^ around ^ <Anchor>(?tid_?block_?step,?p:castreferent ^ ?tid_?block_?step,?p))))
+;;LF search_for_object_in_room => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?tid_?block_?step,?r:castreferent ^ ?tid_?block_?step,?r)) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?tid_?block_?step,?p:castreferent ^ ?tid_?block_?step,?p))))
    (:action search_for_object_in_room
             :agent (?a - robot)
             :parameters (?l - label ?r - room)
@@ -555,7 +556,7 @@
             :effect (and (increase (total-cost) (search_cost ?l in ?r)))
             :sense (= (related-to ?o) ?r)
             )
-                     
+
 
    ;; ;; Abstract search action for the CP planner
    ;; ;; Searches for an object IN another object
@@ -581,7 +582,7 @@
    ;; Searches for an object ON another object
    ;; precondition: robot is in the same room as the specified object
 
-;;LF search_for_object_at_object => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?l?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?tid_?block_?step,?p:castreferent ^ ?tid_?block_?step,?p)))
+;;LF search_for_object_at_object => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(?rel_?block_?step:m-location ^ ?rel ^ <Anchor>(?tid_?block_?step,?o2:castreferent ^ ?tid_?block_?step,?o2)))
    (:action search_for_object_at_object
             :agent (?a - robot)
             :parameters (?l - label ?o - visualobject ?rel - spatial_relation)
@@ -598,7 +599,7 @@
             :effect (and (increase (total-cost) (search_cost ?l ?rel ?o)))
             :sense (related-to ?o2)
             )
-                     
+
 
    ;; process one conegroup
    ;; TODO: how to model precondtitions for the robot's location
@@ -613,7 +614,7 @@
             :precondition (and (not (done))
                                (= (cg-place ?c) ?p)
                                (= (is-in ?a) ?p))
-            :effect (and 
+            :effect (and
                      (increase (total-cost) 15))
             )
 
@@ -625,7 +626,7 @@
              :precondition (and (= (label ?o) ?l)
                                 (= (cg-label ?c) ?l)
                                 (= (cg-related-to ?c) ?where))
-                                
+
              :effect (and (when (= (visible_from ?o) ?c)
                             (probabilistic 0.8 (observed (related-to ?o) ?where)))
                           (when (not (= (visible_from ?o) ?c))
@@ -639,12 +640,12 @@
    ;;           :parameters (?l - label ?r - room ?p - place ?o - visualobject)
    ;;           :execution (search_for_object_in_room ?a ?l ?r ?p ?o)
    ;;           :precondition (and (= (label ?o) ?l))
-                                
+
    ;;           :effect (and (when (= (related-to ?o) ?r)
    ;;                          (probabilistic 0.9 (observed (related-to ?o) ?r))))
    ;;           )
 
-;;LF engage => @{step_?block_?step:action-non-motion}(tell ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?tid_?block_?step,?h:castreferent ^ ?tid_?block_?step,?h) ^ <Modifier>(about_?block_?step:whatabout ^ about ^ <Anchor>(?tid_?block_?step,?p:castreferent ^ ?tid_?block_?step,?p)))
+;;LF engage => @{step_?block_?step:communication}(talk ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?tid_?block_?step,?h:person ^ context ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))
    (:action engage
             :agent (?a - robot)
             :parameters (?h - person)
@@ -652,9 +653,9 @@
             :precondition (and (not (done))
                                ;; (not (any-engaged))
                                (not (= (unresponsive ?h) true))
-                               (= (is-in ?h) ?p)                               
+                               (= (is-in ?h) ?p)
                                (= (is-in ?a) ?p))
-            :effect (and 
+            :effect (and
                      (engaged ?h)
                      (increase (total-cost) 1)
                      (assign (failure-cost) 5000))
@@ -667,9 +668,9 @@
    ;;          :variables (?p - place)
    ;;          :precondition (and (not (done))
    ;;                             (any-engaged)
-   ;;                             (= (is-in ?h) ?p)                               
+   ;;                             (= (is-in ?h) ?p)
    ;;                             (= (is-in ?a) ?p))
-   ;;          :effect (and 
+   ;;          :effect (and
    ;;                   (not (any-engaged))
    ;;                   (increase (total-cost) 1))
    ;;          )
@@ -687,17 +688,17 @@
    ;;          :sense (category ?r)
    ;;          )
 
-;;LF ask-for-category-polar => @{step_?block_?step:action-non-motion}(ask ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?tid_?block_?step,?h:castreferent ^ ?tid_?block_?step,?h) ^ <Event>(be_?block_?step:ascription ^ be ^ <Cop-Restr>(?tid_?block_?step,?r:castreferent ^ ?tid_?block_?step,?r) ^ <Cop-Scope>(?c_?block_?step:category ^ ?c ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific)))
+;;LF ask-for-category-polar => @{step_?block_?step:communication}(ask ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?tid_?block_?step,?h:castreferent ^ ?tid_?block_?step,?h) ^ <Event>(be_?block_?step:ascription ^ be ^ <Cop-Restr>(?tid_?block_?step,?r:castreferent ^ ?tid_?block_?step,?r) ^ <Cop-Scope>(?c_?block_?step:category ^ ?c ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific)))
    (:action ask-for-category-polar
             :agent (?a - robot)
             :parameters (?r - room ?c - category)
             :variables (?h - person ?p - place)
             :precondition (and (not (done))
                                (engaged ?h)
-                               (= (is-in ?h) ?p)                               
+                               (= (is-in ?h) ?p)
                                (= (is-in ?a) ?p)
                                (= (in-room ?p) ?r))
-            :effect (and 
+            :effect (and
                      (increase (total-cost) 5)
                      ;; (assign (failure-cost) 100)
                      )
@@ -710,7 +711,7 @@
              :precondition (and
                             (engaged ?h)
                             (= (is-in ?h) ?p))
-                                
+
              :effect (and (when (= (category ?r) ?c)
                             (probabilistic 0.95 (observed (identity ?r) ?c))))
              )
@@ -721,7 +722,7 @@
    ;;           :parameters (?h - person ?p - place)
    ;;           :execution (engage ?a ?h ?p)
    ;;           :precondition (and)
-                                
+
    ;;           :effect (and (when (or (not (= (is-in ?h) ?p))
    ;;                                  (= (unresponsive ?h) true))
    ;;                          (observed (unresponsive ?h) true)))
@@ -737,8 +738,28 @@
                             (= (in-room ?p) ?r)
                             (not (not_fully_explored ?r))
                             )
-            :effect (and 
+            :effect (and
                      (increase (total-cost) 10))
+            )
+
+;;LF ask-for-object-existence => @{step_?block_?step:communication}(ask ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(context_?block_?step:person ^ context ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(if_?block_?step:m-condition ^ if ^ <Event>(be_?block_?step:ascription ^ be ^ <Cop-Restr>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(?rel_?block_?step:m-location ^ ?rel ^ <Anchor>(?tid_?block_?step,?what:castreferent ^ ?what)))))
+   (:action ask-for-object-existence
+            :agent (?a - robot)
+            :parameters (?l - label ?o - visualobject ?rel - spatial_relation ?what - (either visualobject room))
+            :variables (?p - place ?h - person)
+            :precondition (and (not (done))
+                               (engaged ?h)
+                               (= (label ?o) ?l)
+                               (= (is-in ?h) ?p)
+                               (= (is-in ?a) ?p)
+                               (poss (related-to ?o) ?what)
+                               (= (entity-exists ?what) true)
+                               (can-relate ?a ?what ?h)
+                               )
+            :effect (and
+                     (increase (total-cost) 10)
+                     ;; (assign (failure-cost) 100)
+                     )
             )
 
    (:observe person

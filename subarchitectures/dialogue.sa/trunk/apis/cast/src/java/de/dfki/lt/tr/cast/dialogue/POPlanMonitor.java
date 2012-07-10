@@ -16,6 +16,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 
+import comadata.ComaReasonerInterfacePrx;
+
+import autogen.Planner.Goal;
 import autogen.Planner.POPlan;
 import autogen.Planner.PlanningTask;
 
@@ -56,6 +59,9 @@ public class POPlanMonitor extends ManagedComponent {
 	private boolean saveGBHistoryFile = false;
 
     private boolean suppressVerbalisationUntilRequested;
+    
+    public String m_comareasoner_component_name;
+	public ComaReasonerInterfacePrx m_comareasoner;
 	
 	protected void configure(Map<String, String> args) {
 		String pddldomain = "";
@@ -99,6 +105,11 @@ public class POPlanMonitor extends ManagedComponent {
 			saveGBHistoryFile = true;
 		} else {
 			saveGBHistoryFile = false;
+		}
+		if (args.containsKey("--reasoner-name")) {
+			m_comareasoner_component_name=args.get("--reasoner-name");
+		} else {
+			log("no --reasoner-name given!");
 		}
 
 		try {
@@ -181,6 +192,16 @@ public class POPlanMonitor extends ManagedComponent {
 				processDeletedGroundedBelief(_wmc);
 			}
 		});
+		
+		try {
+			if (m_comareasoner_component_name!=null) log("initiating connection to Ice server " + m_comareasoner_component_name);
+			if (m_comareasoner_component_name!=null) m_comareasoner = getIceServer(m_comareasoner_component_name, comadata.ComaReasonerInterface.class , comadata.ComaReasonerInterfacePrx.class);
+			if (m_comareasoner!=null) log("initiated comareasoner connection");
+			else throw new CASTException();
+		} catch (CASTException e) {
+			log("Connection to the coma reasoner Ice server at "+ m_comareasoner_component_name + " failed! Not using it. If you want to use it, specify the coma reasoner component name using --reasoner-name");
+			m_comareasoner = null;
+		}
 		
 	}
 	
@@ -426,10 +447,20 @@ public class POPlanMonitor extends ManagedComponent {
 			// check if we know about the given taskID -- necessary when listening to external PEV Request triggers that might be illegal
 			return "I am sorry. Task ID " + taskID + " is not known to me.";
 		}
-
+		
+		String goalString = "";
+		if (this.planningTaskMap.get(taskID).goals.length>0) {
+			goalString = this.planningTaskMap.get(taskID).goals[0].goalString;
+			for (Goal _currG : this.planningTaskMap.get(taskID).goals) {
+				if (_currG.importance < 0.0) {
+					goalString = _currG.goalString;
+				}
+			}
+		}
+		
 		// hand history over to PEV
 		log("calling PEV Module verbalizeHistory()");
-		return this.pevModule.verbalizeHistory(hlist, taskID);
+		return this.pevModule.verbalizeHistory(hlist, taskID, goalString);
 	}
 
   // Does this method need to be synchronized to handle multiple requests at the same time as 

@@ -752,5 +752,22 @@
                    )
 )
 
+   (:action ask-for-object-existence
+            :parameters (?a - robot ?l - label ?o - visualobject ?rel - spatial_relation ?what - (either visualobject room) ?p - place ?h - person)
+            :precondition (and (not (done))
+                               (engaged ?h)
+                               (= (label ?o) ?l)
+                               (= (is-in ?h) ?p)
+                               (= (is-in ?a) ?p)
+                               (poss (related-to ?o) ?what)
+                               (= (entity-exists ?what) true)
+                               (can-relate ?a ?what ?h)
+                               )
+            :effect (and 
+                     (increase (total-cost) 10)
+                     ;; (assign (failure-cost) 100)
+                     )
+            )
+
 )
 
