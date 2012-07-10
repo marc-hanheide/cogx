@@ -32,7 +32,7 @@ function DialogueInteraction(ui)
   //dump('edHuman', this.edHuman);
   //dump('txtHistory', this.txtHistory);
 
-  var cbs = [ 'cbQuestion', 'cbAssertion', 'cbColor', 'cbShape', 'cbType' ];
+  var cbs = [ 'cbQuestion', 'cbAssertion', 'cbInstruction', 'cbColor', 'cbShape', 'cbType' ];
   //dump('cbs', cbs);
   for ( i = 0; i < cbs.length; i++) {
     name = cbs[i];

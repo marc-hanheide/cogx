@@ -63,7 +63,7 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
            <property name="sizeHint" stdset="0">
             <size>
              <width>20</width>
-             <height>4</height>
+             <height>0</height>
             </size>
            </property>
           </spacer>
@@ -127,6 +127,30 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
           </widget>
          </item>
          <item>
+          <widget class="QComboBox" name="cbInstruction">
+           <item>
+            <property name="text">
+             <string>&lt;instruction&gt;</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Look forward!</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Look left!</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Look right!</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
           <spacer name="verticalSpacer_2">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -137,7 +161,7 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
            <property name="sizeHint" stdset="0">
             <size>
              <width>20</width>
-             <height>4</height>
+             <height>0</height>
             </size>
            </property>
           </spacer>
@@ -269,7 +293,7 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
            <property name="sizeHint" stdset="0">
             <size>
              <width>20</width>
-             <height>4</height>
+             <height>0</height>
             </size>
            </property>
           </spacer>
@@ -404,6 +428,7 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
   <tabstop>txtHistory</tabstop>
   <tabstop>cbQuestion</tabstop>
   <tabstop>cbAssertion</tabstop>
+  <tabstop>cbInstruction</tabstop>
   <tabstop>btThe</tabstop>
   <tabstop>btObject</tabstop>
   <tabstop>btIt</tabstop>
@@ -457,7 +482,7 @@ function DialogueInteraction(ui)
 
 
 
-  var cbs = [ 'cbQuestion', 'cbAssertion', 'cbColor', 'cbShape', 'cbType' ];
+  var cbs = [ 'cbQuestion', 'cbAssertion', 'cbInstruction', 'cbColor', 'cbShape', 'cbType' ];
 
   for ( i = 0; i < cbs.length; i++) {
     name = cbs[i];
