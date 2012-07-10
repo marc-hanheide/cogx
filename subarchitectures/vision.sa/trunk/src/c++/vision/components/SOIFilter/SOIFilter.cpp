@@ -10,6 +10,8 @@
 #include "TaskAnalyzePo.h"
 #include "WmUnlocker.h"
 
+#include "../../VisionObjects.h"
+
 #include <castutils/Timers.hpp>
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
@@ -652,6 +654,7 @@ void SOIFilter::onDelete_VisualObject(const cdl::WorkingMemoryChange & _wmc)
 
 void SOIFilter::onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc)
 {
+  log("Got robot pose");
   NavData::RobotPose2dPtr ppose =
     getMemoryEntry<NavData::RobotPose2d>(_wmc.address);
 
@@ -670,7 +673,12 @@ void SOIFilter::onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc)
       m_RobotPose.tilt = ptup.pose.tilt;
     }
   }
-  log("Got robot pose");
+
+  static bool bViewConesAdded = false;
+  if (! bViewConesAdded) {
+    addStaticViewcones();
+    bViewConesAdded = true;
+  }
 }
 
 void SOIFilter::onChange_CameraMotion(const cdl::WorkingMemoryChange & _wmc)
@@ -1016,6 +1024,37 @@ bool SOIFilter::movePtz(double pan, double tilt, double zoom)
         fabs(pan-m_RobotPose.pan), fabs(tilt-m_RobotPose.tilt), tm.elapsed());
   }
   return true;
+}
+
+void SOIFilter::addStaticViewcones()
+{
+  const double delta = 22 * 3.14 / 180;
+  ViewConePtr pvc = cogx::createViewCone();
+  pvc->anchor.x = m_RobotPose.x;
+  pvc->anchor.y = m_RobotPose.y;
+  pvc->anchor.z = m_RobotPose.theta;
+  pvc->x = 0;
+  pvc->y = 0;
+  pvc->tilt = -45 * 3.14 / 180;
+  cdl::WorkingMemoryAddress vcAddr;
+
+  // forward
+  pvc->label = "forward";
+  pvc->viewDirection = 0;
+  vcAddr = cast::makeWorkingMemoryAddress(newDataID(), getSubarchitectureID());
+  addToWorkingMemory(vcAddr, pvc);
+
+  // left
+  pvc->label = "left";
+  pvc->viewDirection = delta;
+  vcAddr = cast::makeWorkingMemoryAddress(newDataID(), getSubarchitectureID());
+  addToWorkingMemory(vcAddr, pvc);
+
+  // right
+  pvc->label = "right";
+  pvc->viewDirection = -delta;
+  vcAddr = cast::makeWorkingMemoryAddress(newDataID(), getSubarchitectureID());
+  addToWorkingMemory(vcAddr, pvc);
 }
 
 void SOIFilter::runComponent()

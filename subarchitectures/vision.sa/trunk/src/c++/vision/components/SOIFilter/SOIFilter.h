@@ -298,6 +298,7 @@ private:
   long getMillisToRetryEvent(long defaultMs);
   bool isRetryEvent(WmEvent* pEvent);
   bool doMovePtzCommand(double pan, double tilt, double zoom);
+  void addStaticViewcones();
 
 private:
   void onAdd_SOI(const cdl::WorkingMemoryChange & _wmc);
