@@ -51,13 +51,13 @@ void ArmActor::init(const golem::Context &context)
 	_home.pos = _desc.homePose;
 
 	// move the arm with global path planning and collision detection
-	_home.t = context.getTimer().elapsed() + getDeltaAsync() + SecTmReal(5.0);
+	_home.t = context.getTimer().elapsed() + getDeltaAsync() + SecTmReal(8.0);
 	// movement will last no shorter than 5 sec
 
 	_arm->getReacPlanner().send(_home, ReacPlanner::ACTION_GLOBAL);
 
 	// wait until the arm is ready to accept new commands, but no longer than 60 seconds
-	(void)_arm->getReacPlanner().waitForEnd(60000);
+	(void)_arm->getReacPlanner().waitForEnd();
 	
 	// Define the initial pose in the Cartesian workspace
 	//_orientationT.set(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
@@ -72,7 +72,7 @@ void ArmActor::init(const golem::Context &context)
 void ArmActor::moveArmToStartPose(const golem::Context &context)
 {
 
-	_initial.t = context.getTimer().elapsed() + getDeltaAsync() + SecTmReal(5.0);
+	_initial.t = context.getTimer().elapsed() + getDeltaAsync() + SecTmReal(10.0);
 	// movement will last no shorter than 5 sec
 	_arm->getReacPlanner().send(_initial, ReacPlanner::ACTION_GLOBAL);
 	// wait until the arm is ready to accept new commands, but no longer than 60 seconds
@@ -116,7 +116,7 @@ void ArmActor::moveFinger(golem::Context &context,golem::GenWorkspaceState& targ
 */
 void ArmActor::moveFingerToStartPose(golem::Context &context)
 {
-	_home.t = context.getTimer().elapsed() + getDeltaAsync() + SecTmReal(3.0);
+	_home.t = context.getTimer().elapsed() + getDeltaAsync() + SecTmReal(8.0);
 
 	//turn on collision detection
 	setCollisionDetection(true);

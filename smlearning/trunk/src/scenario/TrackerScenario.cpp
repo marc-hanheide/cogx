@@ -59,7 +59,10 @@ bool TrackerScenario::create(const TrackerScenario::Desc& desc) {
 
 	// _concreteActor = new Polyflap;
 	_concreteActor = new Box;
-	
+
+	learningData.setToDefault(desc.featLimits);
+	dataFileName = get_base_filename_from_time ();
+
 	return true;
 }
 
@@ -67,21 +70,48 @@ void TrackerScenario::preprocess (golem::SecTmReal elapsedTime)
 {
 }
 
+void TrackerScenario::writeChunk (LearningData::Chunk& chunk) {
+	//arm->getArm().lookupInp(chunk.action.armState, context.getTimer().elapsed()); //not present anymore
+	arm->getArm()->getArm().lookupState(chunk.action.armState, context.getTimer().elapsed()); //other possibility: lookupCommand
+	chunk.action.effectorPose = arm->getEffector()->getPose();
+	Mat34 refeffectorPose = arm->getArm()->getArm().getReferencePose();
+	chunk.action.effectorPose.multiply (chunk.action.effectorPose, arm->getArm()->getArm().getReferencePose());
+	chunk.action.effectorPose.R.toEuler (chunk.action.efRoll, chunk.action.efPitch, chunk.action.efYaw);
+	chunk.action.horizontalAngle = arm->getHorizontalAngle ();
+	chunk.action.pushDuration = arm->getPushDuration();
+	chunk.action.endEffectorPose = end;
+	chunk.action.endEffectorPose.R.toEuler (chunk.action.endEfRoll, chunk.action.endEfPitch, chunk.action.endEfYaw);
+
+	chunk.object.objectPose = TrackingToGolem (tracker_th->getPose ());
+	chunk.object.objectPose.R.toEuler (chunk.object.obRoll, chunk.object.obPitch, chunk.object.obYaw);
+	
+}
+
 void TrackerScenario::postprocess (golem::SecTmReal elapsedTime)
 {
 	if (_concreteActor == NULL)
 		return;
-	if (object != NULL)
+	if (bStart)
+	{
+		if (object == NULL)
+			return;
+
+		CriticalSectionWrapper csw (cs);
+		LearningData::Chunk chunk;
+		writeChunk (chunk);
+		learningData.currentChunkSeq.push_back (chunk);
+		if (!isnan(chunk.object.obRoll) && !isnan(chunk.object.obPitch) && !isnan(chunk.object.obYaw))
+			object->setPose (chunk.object.objectPose);
+	}
+
+	if (object != NULL && !bStart)
 	{
 		CriticalSectionWrapper csw (cs);
-		objectPose = TrackingToGolem (tracker_th->getPose ());
-		// object->setPose (_concreteActor->getPose ());
+		golem::Mat34 objectPose = TrackingToGolem (tracker_th->getPose ());
 		Real obRoll, obPitch, obYaw;
 		objectPose.R.toEuler (obRoll, obPitch, obYaw);
-		// cout << objectPose.p.v1 << ", " << objectPose.p.v2 << ", " << objectPose.p.v3 << ", " << obRoll << ", " << obPitch << ", " << obYaw << endl;
 		if (!isnan(obRoll) && !isnan(obPitch) && !isnan(obYaw))
 			object->setPose (objectPose);
-		// cout << object->getPose().p.v1 << ", " << object->getMyPose().p.v2 << ", " << object->getMyPose().p.v3 << endl;
 	}
 }
 
@@ -113,7 +143,7 @@ void TrackerScenario::closeGripper(Katana300Arm &arm) {
 
 void TrackerScenario::chooseAction ()
 {
-	arm->setPushDuration (5);
+	arm->setPushDuration (3);
 	arm->setHorizontalAngle (chooseAngle(60.0, 120.0));
 }
 
@@ -181,13 +211,15 @@ void TrackerScenario::run (int argc, char* argv[])
 	arm->getArm()->getArm().setGlobalPose (armPose);
 	
 	// Close Gripper
-	closeGripper(*pKatana300Arm);
+	if (arm->getArm()->getArm().getName().find ("simulator") == string::npos)
+		closeGripper(*pKatana300Arm);
 
 	// Wait for some time
-	PerfTimer::sleep(SecTmReal(5.0));
+	// PerfTimer::sleep(SecTmReal(5.0));
 	//set: random seed;init arm; get initial config
 	std::cout <<"_init "<<std::endl;
 	_init();
+	arm->moveFingerToStartPose(context);
 
 	// tracker_th->SetThreadType (ThreadTypeIntervalDriven,0);
         tracker_th->Event ();
@@ -200,6 +232,8 @@ void TrackerScenario::run (int argc, char* argv[])
 	
 	for (unsigned int i=0; i<2; i++)
 	{
+		//turn on collision detection
+		arm->setCollisionDetection(true);
 		// experiment main loops
 		std::cout <<"calculate starting coordinates "<<std::endl;
 		chooseAction ();
@@ -208,19 +242,33 @@ void TrackerScenario::run (int argc, char* argv[])
 		cout << Real(target.pos.p.v1) << " " << Real(target.pos.p.v2) << " " << Real(target.pos.p.v3) << endl;
 		//move the finger to the beginnnig of experiment trajectory
 		arm->sendPosition(context,target , ReacPlanner::ACTION_GLOBAL);
+		//create sequence for this loop run
+		learningData.currentChunkSeq.clear();
 		//compute direction and other features of trajectory
 		initMovement ();	
 		//move the finger along described experiment trajectory
 		arm->moveFinger(context,target, bStart,duration,end);
-		// wait for key
-		evContinue.wait ();
-		evContinue.set(false);
-
+		//write sequence into dataset
+		data.push_back(learningData.currentChunkSeq);
+		//turn off collision detection
+		arm->setCollisionDetection(false);
 		//move finger to initial position
-		arm->moveFingerToStartPose(context);				
+		arm->moveFingerToStartPose(context);
+		if (i!=2-1)
+		{
+		// wait for key
+			evContinue.wait ();
+			evContinue.set(false);
+		}
+		arm->moveFingerToStartPose(context);
+
 	}
 	evContinue.set(true);
-	arm->moveArmToStartPose(context); 	//move the arm to its initial position
+ 	//move the arm to its initial position
+	arm->moveArmToStartPose(context);
+	//write obtained data into a binary file
+	writeData ();
+
 	// tracker_th->Stop ();
 
 
@@ -245,6 +293,10 @@ void TrackerScenario::keyboardHandler(unsigned char key, int x, int y) {
 		context.getMessageStream()->write(Message::LEVEL_INFO, "RESUME\n");
 		evContinue.set(true);
 		break;
+	case 'd': case 'D':
+		context.getMessageStream()->write(Message::LEVEL_INFO, "DISCARDED\n");
+		data.erase (data.end() - 1);
+		evContinue.set(true);
 	}
 }
 
