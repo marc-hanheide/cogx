@@ -251,6 +251,12 @@ module discourse {
 // ===================================================================
 
 module produce { 
+  enum PEVStatusType{ INPROGRESS, COMPLETED, FAILED };
+
+  class PEVTaskStatus {
+	  	int taskID;
+		PEVStatusType status;
+	};
 
 	class CannedUtterance {
 		string content;
