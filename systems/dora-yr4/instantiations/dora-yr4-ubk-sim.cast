@@ -19,6 +19,7 @@ SETVAR feature_options=<multiline>
     planning_sa		# enable planning core
     debug			# enable more debug GUIs and WM loggers
     dialogue		# enable dialogue
+    hgv_verbalisation
     motivation		# enable motivation base
     !motivation_external	# enable motivation via external goal infusion
     motivation_explanation	# enable motivation via explanation
