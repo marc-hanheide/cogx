@@ -35,6 +35,7 @@ public class ProofSet {
                 for (Proof p : proofs) {
                     if (p.getCost() < minCost) {
                         minProof = p;
+                        minCost = p.getCost();
                     }
                 }
                 
