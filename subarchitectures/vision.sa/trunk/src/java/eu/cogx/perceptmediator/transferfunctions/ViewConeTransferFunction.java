@@ -16,6 +16,7 @@ import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
+import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.GroundedBelief;
@@ -79,6 +80,8 @@ public class ViewConeTransferFunction extends
 		result.put("dtheta", DoubleFormula.create(from.viewDirection)
 				.getAsFormula());
 		result.put("tilt", DoubleFormula.create(from.tilt).getAsFormula());
+
+                result.put("label", PropositionFormula.create(from.label).getAsFormula());
 
 		return result;
 	}
