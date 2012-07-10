@@ -265,18 +265,30 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 		try {
 			lockComponent();
 			getLogger().debug("lockSet(): component locked");
+
+			List<WorkingMemoryAddress> toRemove = new LinkedList<WorkingMemoryAddress>();
+
 			for (WorkingMemoryAddress wma : set.keySet()) {
 				debug("lockSet(): locking entry " + wma.id);
 				try {
 					lockEntry(wma, WorkingMemoryPermissions.LOCKEDOD);
 				} catch (DoesNotExistOnWMException e) {
 					getLogger()
-							.warn("cannot lock entry that already disappeared. will remove it from the set now.",
+							.warn("cannot lock entry that already disappeared. will remove it from the set.",
 									e);
-					set.remove(wma);
+					// previous code had:
+					// set.remove(wma);
+					// which generates a concurrent modification exception, so now we store the wmas to remove...
+					toRemove.add(wma);
 				}
 				debug("lockSet(): entry " + wma.id + " is locked");
 			}
+
+			// ... and remove them here
+			for (WorkingMemoryAddress wma : toRemove) {
+				set.remove(wma);
+			}
+
 		} finally {
 			unlockComponent();
 			debug("lockSet(): component unlocked");
@@ -293,9 +305,8 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 			try {
 				lockEntry(wma, WorkingMemoryPermissions.LOCKEDOD);
 			} catch (DoesNotExistOnWMException e) {
-				getLogger()
-						.warn("cannot lock entry that already disappeared. will remove it from the set now.",
-								e);
+				getLogger().warn("cannot lock entry that already disappeared.",
+						e);
 			}
 			debug("lockSingle(): entry " + wma.id + " is locked");
 		} finally {
