@@ -1,0 +1,19 @@
+//#include "../../cogx-domain.mln"
+
+//predicate declarations
+
+proxyfeat(proxy, feat)
+objpart(proxy, obj)
+grpfeat(group, feat)
+
+
+
+//formulas
+
+proxyfeat(p, +f)
+
+proxyfeat(p1, +f1) ^ objpart(p1, o) ^ proxyfeat(p2, +f2) => objpart(p2, o)
+
+proxyfeat(p1, +f1) ^ objpart(p1, o) ^ proxyfeat(p2, +f2) => !objpart(p2, o)
+
+

@@ -1,0 +1,47 @@
+#JSGF V1.0 ISO8859-1 en;
+
+grammar de.dfki.lt.tr.cogx.dialogue.george
+
+/**
+ *  Basic grammar for the CogX George scenario
+ */
+ 
+ public <basicDescr> 	= <basicAttrDescr> | <basicDeicticAttrDescr> ;
+ 
+ /**
+  *  Basic attributive description of a tabletop object 
+  *  
+  *  @example the ball is red / the ball has a red color 
+  *  @example the box  is elongated / the box has an elongated shape
+  *  @example the ball is big / the ball has a big size
+  */
+ 
+ public <basicAttrDescr> = the <smallObject> is <value> | 
+ 						   the <smallObject> has [ a | an ] <valueAndFeat> ;
+ 
+ public <smallObject>   = ball | box ;
+ 
+ public <value>	    	= <color> | <shape> | <size> ;
+ 
+ public <color> 		= red | blue | green | yellow | orange ; 
+ 
+ public <shape>			= elongated ;
+ 
+ public <size> 			= small | big ;
+ 
+ public <valueAndFeat> 	=  <color> color | 
+ 						   <size>  size  |
+ 						   <shape> shape ;
+ 						   
+/**
+ *  Basic deictic attributive description of a tabletop object
+ *
+ *  @example	this is a red ball / that is a red ball 
+ *  @example	this is an elongated box / that is an elongated box
+ *  @example	this is a big box / that is a big box
+ */
+ 
+ public <basicDeicticAttrDescr> = <deictic> is [a | an] <value> <smallObject>;
+ 
+ public <deictic> 		=  	this | that ;					    
+    
