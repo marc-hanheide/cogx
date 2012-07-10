@@ -8,11 +8,11 @@ public class ProofSet {
 
 	private final Logger logger;
 	private final ProofPruner pruner;
-	private final ArrayList<Proof> proofs;
+	private final HashSet<Proof> proofs;
 
 	private ProofSet(Logger logger, ProofPruner pruningMethod, Collection<Proof> proofs) {
 		this.logger = logger;
-		this.proofs = new ArrayList<Proof>(proofs);
+		this.proofs = new HashSet<Proof>(proofs);
 		this.pruner = pruningMethod;
 	}
 
