@@ -641,14 +641,14 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 	private static final String[] POTENTIAL_ACTION_EFFECTS = new String[] {
 			"global-color-question-answered", "global-shape-question-answered",
-			"global-type-question-answered",
+			"global-objecttype-question-answered",
 			"object-refering-color-question-answered",
 			"object-refering-shape-question-answered",
-			"object-refering-type-question-answered", "color-learned",
-			"shape-learned", "type-learned", "color-unlearned",
-			"shape-unlearned", "type-unlearned",
+			"object-refering-objecttype-question-answered", "color-learned",
+			"shape-learned", "objecttype-learned", "color-unlearned",
+			"shape-unlearned", "objecttype-unlearned",
 			"polar-color-question-answered", "polar-shape-question-answered",
-			"polar-type-question-answered" };
+			"polar-objecttype-question-answered" };
 
 	protected void removeActionEffects(
 			CASTIndependentFormulaDistributionsBelief<MergedBelief> gb) {
