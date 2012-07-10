@@ -10,6 +10,7 @@ import cast.PermissionException;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTUtils;
@@ -115,10 +116,8 @@ public class PossibleInterpretationsMotiveGenerator
 			markReferent(aboutBeliefAddress(iint));
 		}
 
-		// Monitor so motive is deleted if any objects change in visibility
-		// (including new appearances).
-		// This is not ideal, but it's the easiest, most reliable approach
-		monitorForObjectVisibility(motive);
+	
+		monitorForObjectVisibility(motive, _pii);
 
 		// if this is an attributed belief task, mark attributions in all
 		// referents too
@@ -136,10 +135,18 @@ public class PossibleInterpretationsMotiveGenerator
 		return motive;
 	}
 
-	private void monitorForObjectVisibility(TutorInitiativeMotive motive) {
-		addChangeFilter(
-				ChangeFilterFactory.createGlobalTypeFilter(VisualObject.class),
-				new VOBeliefMonitor(motive));
+	private void monitorForObjectVisibility(TutorInitiativeMotive motive, PossibleInterpretedIntentions _pii) {
+		
+		WorkingMemoryChangeReceiver receiver = new VOBeliefMonitor(motive);
+		
+		for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
+			InterpretedIntention iint = _pii.intentions.get(addr);
+			addChangeFilter(
+					ChangeFilterFactory.createAddressFilter(aboutBeliefAddress(iint)),
+					receiver);
+		}
+		
+		
 	}
 
 	private boolean neeedsDisambiguation(PossibleInterpretedIntentions _pii) {
