@@ -194,19 +194,13 @@ public class VisionActionInterface extends
 						.recurseAncestorsForType(getComponent(),
 								getAction().beliefAddress,
 								CASTUtils.typeName(VisualObject.class));
-				
+
 				cmd = new VisualLearningTask(visualObectPtr, beliefID.id,
 						m_concept, new String[] { getAction().value },
 						new double[] { m_weight },
 						VisionCommandStatus.VCREQUESTED);
 
-				// Hack by Alen - is this still needed in year 3?
-				// getComponent().addBooleanFeature(getAction().beliefAddress,
-				// m_concept + m_featurePostfix, true);
-
 				addThenCompleteOnOverwrite(cmd);
-
-				// getComponent().sleepComponent(10000);
 
 			} catch (CASTException e) {
 				getComponent().logException(e);
@@ -218,9 +212,6 @@ public class VisionActionInterface extends
 			try {
 				getComponent().addFeature(getAction().beliefAddress,
 						m_concept + m_featurePostfix, true);
-
-				// Hack by Alen
-				// getComponent().sleepComponent(10000);
 			} catch (CASTException e) {
 				logException(e);
 			}
@@ -279,7 +270,8 @@ public class VisionActionInterface extends
 			LearnInstructionExecutor<UnlearnIdentity> {
 
 		public UnlearnIdentityExecutor(ManagedComponent _component) {
-			super(_component, UnlearnIdentity.class, "objecttype", -1, "-unlearned");
+			super(_component, UnlearnIdentity.class, "objecttype", -1,
+					"-unlearned");
 		}
 	}
 
