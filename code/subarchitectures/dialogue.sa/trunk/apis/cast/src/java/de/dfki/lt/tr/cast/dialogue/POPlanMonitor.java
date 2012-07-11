@@ -41,6 +41,9 @@ import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
 import de.dfki.lt.tr.dialogue.production.PlanVerbalizationRequest;
 import de.dfki.lt.tr.dialogue.slice.produce.PEVStatusType;
 import de.dfki.lt.tr.dialogue.slice.produce.PEVTaskStatus;
+import de.dfki.lt.tr.planverb.generation.Message;
+import de.dfki.lt.tr.planverb.history.History;
+import de.dfki.lt.tr.planverb.planning.pddl.PDDLHistory;
 import eu.cogx.beliefs.slice.GroundedBelief;
 
 public class POPlanMonitor extends ManagedComponent {
@@ -433,7 +436,7 @@ public class POPlanMonitor extends ManagedComponent {
 	
 	
 	
-	private String generateHistoryReport(int taskID) {
+	private String generateHistoryReport(int taskID, WorkingMemoryAddress statusFlagWMA) {
 		log("************ generateHistoryReport(" + taskID + ") called ************");
 
 		// construct history in our POPlan representation (from planner.sa POPlan objects)
@@ -460,7 +463,14 @@ public class POPlanMonitor extends ManagedComponent {
 		
 		// hand history over to PEV
 		log("calling PEV Module verbalizeHistory()");
-		return this.pevModule.verbalizeHistory(hlist, taskID, goalString);
+		History h = new PDDLHistory(hlist, taskID, goalString);
+
+		List<Message> messages = this.pevModule.verbalizeHistoryStepOne(h);
+		
+		PEVTaskStatus verbalisation_status = new PEVTaskStatus(taskID, PEVStatusType.INPROGRESS);
+        overwritePEVTaskStatus(statusFlagWMA, verbalisation_status);
+        
+		return this.pevModule.verbalizeHistoryStepTwo(messages);
 	}
 
   // Does this method need to be synchronized to handle multiple requests at the same time as 
@@ -482,10 +492,10 @@ public class POPlanMonitor extends ManagedComponent {
       if (finishedMap.containsKey(taskID)) {     
         WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(),
             getSubarchitectureID());
-        PEVTaskStatus verbalisation_status = new PEVTaskStatus(taskID, PEVStatusType.INPROGRESS);
+        PEVTaskStatus verbalisation_status = new PEVTaskStatus(taskID, PEVStatusType.PREPARING);
         addPEVTaskStatusToWM(wma, verbalisation_status);
         
-        report = generateHistoryReport(taskID);
+        report = generateHistoryReport(taskID, wma);
         // TODO does not check for failure
         verbalisation_status = new PEVTaskStatus(taskID, PEVStatusType.COMPLETED);
         overwritePEVTaskStatus(wma, verbalisation_status);
@@ -590,16 +600,6 @@ public class POPlanMonitor extends ManagedComponent {
     }
   }
 	
-//	private void reportFinishedPOPlan(POPlan pp) {
-//		log("************ reportFinishedPOPlan() called ************");
-//		
-//		de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = POPlanUtils.convertPOPlan(pp);
-//		
-//		log("calling PEV Module verbalizePOPlan()");
-//		String report = this.pevModule.verbalizePOPlan(pevPOPlan);
-//		log("REPORTING FINISHED POPLAN: \n" + report);
-//		//VerbalisationUtils.verbaliseString(this, report);
-//	}
 	
 	private String poplanToString(POPlan _poPlan) {
 		return POPlanUtils.POPlanToString(_poPlan);

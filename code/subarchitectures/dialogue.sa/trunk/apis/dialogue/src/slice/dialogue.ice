@@ -251,7 +251,7 @@ module discourse {
 // ===================================================================
 
 module produce { 
-  enum PEVStatusType{ INPROGRESS, COMPLETED, FAILED };
+  enum PEVStatusType{ PREPARING, INPROGRESS, COMPLETED, FAILED };
 
   class PEVTaskStatus {
 	  	int taskID;
