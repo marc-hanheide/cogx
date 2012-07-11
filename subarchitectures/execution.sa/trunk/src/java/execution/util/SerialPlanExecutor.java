@@ -249,15 +249,15 @@ public class SerialPlanExecutor extends Thread {
 			
 			while (m_component.isRunning() && hasNotBeenStopped()) {
 
-				m_component.log("waiting for changes");
+				m_component.log("exection running");
 				
 				rate.sleep();
 
-				m_component.log("awake");
+//				m_component.log("awake");
 
 				m_component.lockComponent();
 				
-				m_component.log("component locked");
+				//m_component.log("component locked");
 				
 				while (m_component.isPaused()) {
 					m_component.log("we are paused... let's wait");
@@ -286,17 +286,17 @@ public class SerialPlanExecutor extends Thread {
 						
 					} else if (hasNotBeenStopped()) {
 						
-						m_component.log("still running");
+						//m_component.log("still running");
 						
 						// if one of the changes completed our action
 						if (!actionWrapper.isInProgress()) {
 						
-							m_component.log("action wrapper not in progress");
+							//m_component.log("action wrapper not in progress");
 							
 							// and we haven't told the planner its complete
 							if (!actionWrapper.haveSentCompletionSignal()) {
 
-								m_component.log("completion sent not sent, doing so");								
+								//m_component.log("completion sent not sent, doing so");								
 								
 								// update state on completion as appropriate,
 								// return
@@ -315,10 +315,10 @@ public class SerialPlanExecutor extends Thread {
 						}
 					}
 				}
-				m_component.log("loop");								
+				//m_component.log("loop");								
 			
 				m_component.unlockComponent();
-				m_component.log(" and unlocked");					
+				//m_component.log(" and unlocked");					
 				
 			}
 		} catch (CASTException e) {
