@@ -509,7 +509,8 @@ class CASTTask(object):
             else:
                 about_fact =  pddl.state.Fact(pddl.state.StateVariable(about_func, [o]), o)
                 obj_to_feature[o].add(about_fact)
-                
+
+        converted_facts = set()
 
         beliefs = []
         log.info("\nexplanations:")
@@ -525,6 +526,7 @@ class CASTTask(object):
                 bel.id = self.state.obj_to_castname[o]
             else:
                 bel.id = self.component.newAddress().id
+            converted_facts.update(vals)
             yield bel
             
         for o, vals in obj_to_relation.iteritems():
@@ -532,6 +534,9 @@ class CASTTask(object):
                 log.info("  %s: %s", str(o), ", ".join(str(f) for f in vals))
 
             for f in vals:
+                if f in converted_facts:
+                    continue
+                converted_facts.add(f)
                 bel = self.state.make_belief(self.state.make_features(f), HypotheticalBelief)
                 bel.id = self.component.newAddress().id
                 yield bel
