@@ -1,6 +1,8 @@
 package eu.cogx.goals.george;
 
-import VisionData.VisualObject;
+import java.util.LinkedList;
+import java.util.List;
+
 import motivation.slice.TutorInitiativeLearningMotive;
 import motivation.slice.TutorInitiativeMotive;
 import cast.AlreadyExistsOnWMException;
@@ -21,7 +23,6 @@ import de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
 import de.dfki.lt.tr.dialogue.intentions.RichIntention;
 import dialogue.execution.AbstractDialogueActionInterface;
-import eu.cogx.goals.george.AbstractInterpretedIntentionMotiveGenerator.VOBeliefMonitor;
 import execution.slice.Robot;
 
 /**
@@ -111,42 +112,38 @@ public class PossibleInterpretationsMotiveGenerator
 
 		// mark referents from /all/ interpretations.
 
+		List<WorkingMemoryAddress> potentialReferenceList = new LinkedList<WorkingMemoryAddress>();
 		for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
 			InterpretedIntention iint = _pii.intentions.get(addr);
-			markReferent(aboutBeliefAddress(iint));
+			potentialReferenceList.add(aboutBeliefAddress(iint));
 		}
-
-	
-		monitorForObjectVisibility(motive, _pii);
+		markReferent(motive, potentialReferenceList);
+		monitorForObjectVisibility(motive, potentialReferenceList);
 
 		// if this is an attributed belief task, mark attributions in all
 		// referents too
 		if (motive instanceof TutorInitiativeLearningMotive) {
 
 			TutorInitiativeLearningMotive tilm = (TutorInitiativeLearningMotive) motive;
-
-			for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
-				InterpretedIntention iint = _pii.intentions.get(addr);
-				addAttribution(aboutBeliefAddress(iint), tilm.assertedFeature,
-						tilm.assertedValue, tilm.assertedLearn);
+			for (WorkingMemoryAddress addr : potentialReferenceList) {
+				addAttribution(addr, tilm.assertedFeature, tilm.assertedValue,
+						tilm.assertedLearn);
 			}
 		}
 
 		return motive;
 	}
 
-	private void monitorForObjectVisibility(TutorInitiativeMotive motive, PossibleInterpretedIntentions _pii) {
-		
+	private void monitorForObjectVisibility(TutorInitiativeMotive motive,
+			List<WorkingMemoryAddress> _beliefAddresses) {
+
 		WorkingMemoryChangeReceiver receiver = new VOBeliefMonitor(motive);
-		
-		for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
-			InterpretedIntention iint = _pii.intentions.get(addr);
-			addChangeFilter(
-					ChangeFilterFactory.createAddressFilter(aboutBeliefAddress(iint)),
+
+		for (WorkingMemoryAddress addr : _beliefAddresses) {
+			addChangeFilter(ChangeFilterFactory.createAddressFilter(addr),
 					receiver);
 		}
-		
-		
+
 	}
 
 	private boolean neeedsDisambiguation(PossibleInterpretedIntentions _pii) {
@@ -234,7 +231,7 @@ public class PossibleInterpretationsMotiveGenerator
 		// clean up all beliefs involved in action
 		for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
 			InterpretedIntention iint = _pii.intentions.get(addr);
-			cleanBelief(aboutBeliefAddress(iint));
+			cleanBelief(this, aboutBeliefAddress(iint), _motive);
 		}
 
 		// now execute success effects on resolved intention

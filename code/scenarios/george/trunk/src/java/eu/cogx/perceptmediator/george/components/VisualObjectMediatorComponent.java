@@ -3,7 +3,6 @@ package eu.cogx.perceptmediator.george.components;
 
 import VisionData.VisualObject;
 import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.beliefs.slice.PrivateBelief;
 import eu.cogx.perceptmediator.PerceptBindingMediator;
 import eu.cogx.perceptmediator.components.abstr.PerceptMediatorComponent;
 import eu.cogx.perceptmediator.george.transferfunctions.VisualObjectTransferFunction;

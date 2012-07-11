@@ -19,7 +19,6 @@ import cast.core.CASTData;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.perceptmediator.george.transferfunctions.VisualObjectTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
@@ -63,14 +62,8 @@ public class VisualObjectMotiveGenerator extends
 
 		// if dialogue was involved, then the belief may have been marked as a
 		// referent. this needs cleaning up...
-
-		MergedBelief belief = getMemoryEntry(_motive.referenceEntry,
-				MergedBelief.class);
-		CASTIndependentFormulaDistributionsBelief<MergedBelief> gb = CASTIndependentFormulaDistributionsBelief
-				.create(MergedBelief.class, belief);
-		gb.getContent()
-				.remove(AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION);
-		overwriteWorkingMemory(_motive.referenceEntry, gb.get());
+		AbstractInterpretedIntentionMotiveGenerator.cleanBelief(this,
+				_motive.referenceEntry, _motive);
 
 	}
 
