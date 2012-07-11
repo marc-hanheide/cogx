@@ -168,10 +168,10 @@ class DTProblem(object):
         self.dtstate = DTState(self.state, self.pnodes, self.qgraph, self.domain)
         self.detstate = self.dtstate.detstate
             
-        selected, relevant = self.reduce_state(global_vars.config.dt.max_state_size)
+        selected, relevant_objects = self.reduce_state(global_vars.config.dt.max_state_size)
         self.selected_facts = set(selected)
-        used_objects = set()
-        for f in chain(selected, relevant):
+        used_objects = relevant_objects
+        for f in selected:
             used_objects.update(f.svar.args)
             used_objects.update(f.svar.modal_args)
             used_objects.add(f.value)
@@ -611,8 +611,8 @@ class DTProblem(object):
                 log.debug("no relaxed plan to observe %s:", str(f))
                 continue
             for rplan in rplans:
-                print rplan
-
+                log.debug("relaxed plan to observe %s:", str(f))
+                log.debug(str(rplan))
 
                 # print "Plan:\n",rplan
                 o_depends = [g for g in rplan.facts if self.dtstate.has_observations(g) and g != f]
@@ -723,11 +723,12 @@ class DTProblem(object):
                 log.debug("skipped")
             
         selected = assumptions + used + o_used
-        relevant_facts = set()
+        relevant_objects = set()
         for f in selected:
             if f in dependencies:
-                relevant_facts |= set(dependencies[f].facts)
-        return selected, relevant_facts
+                for a, args in dependencies[f]:
+                    relevant_objects.update(args)
+        return selected, relevant_objects
                     
 
     def compute_states(self, selected_facts, limit, order=None, filter_func=None):
@@ -1113,7 +1114,7 @@ class DefaultGoalFactory(GoalActionFactory):
         else:
             reward_factor = 0
             
-        reward = float(self.base_reward - 20) * reward_factor
+        reward = float(self.config.disconfirm_score) * reward_factor
         penalty = -reward * (1-p)/p
 
         return reward, penalty
