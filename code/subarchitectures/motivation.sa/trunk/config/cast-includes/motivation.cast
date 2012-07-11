@@ -1,5 +1,5 @@
 # motivation ##################################################################
 
 
-JAVA MG goal.scheduler motivation.components.managers.Scheduler --debug 
+JAVA MG goal.scheduler motivation.components.managers.Scheduler
 
