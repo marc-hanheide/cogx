@@ -70,10 +70,13 @@ class Problem(Scope):
                     continue
                 #print func.name, types.FunctionType(func.type).equal_or_subtype_of(type)
                 if types.FunctionType(func.type).equal_or_subtype_of(type):
-                    combinations = product(*map(lambda a: list(self.get_all_objects(a.type)), func.args))
-                    for c in combinations:
-                        #print FunctionTerm(func, c, self.problem)
-                        yield predicates.FunctionTerm(func, c, self)
+                    if not func.args:
+                        yield predicates.FunctionTerm(func, [], self)
+                    else:
+                        combinations = product(*map(lambda a: list(self.get_all_objects(a.type)), func.args))
+                        for c in combinations:
+                            #print FunctionTerm(func, c, self.problem)
+                            yield predicates.FunctionTerm(func, c, self)
         else:
             if isinstance(type, types.ProxyType):
                 type = type.effective_type()
