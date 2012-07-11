@@ -6,6 +6,7 @@ import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.slice.distribs.*;
 import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
@@ -152,6 +153,29 @@ public class VisualSalienceReferenceResolution
         return new Resolver();
     }
 
+    public static boolean isVisible(dBelief bel) {
+        if ("visualobject".equals(bel.type)) {
+            if (bel.content instanceof CondIndependentDistribs) {
+                CondIndependentDistribs d = (CondIndependentDistribs) bel.content;
+                ProbDistribution pd = d.distribs.get("presence");
+                if (pd != null && pd instanceof BasicProbDistribution) {
+                    BasicProbDistribution presd = (BasicProbDistribution) pd;
+                    if (presd.values instanceof FormulaValues) {
+                        FormulaValues fvs = (FormulaValues) presd.values;
+                        if (fvs.values.size() == 1) {
+                            FormulaProbPair fpp = fvs.values.get(0);
+                            if (fpp.val instanceof ElementaryFormula) {
+                                ElementaryFormula formula = (ElementaryFormula) fpp.val;
+                                return "visible".equals(formula.prop);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
     public static double getSalienceForBelief(dBelief bel) {
         if ("visualobject".equals(bel.type)) {
             if (bel.content instanceof CondIndependentDistribs) {
@@ -204,11 +228,14 @@ public class VisualSalienceReferenceResolution
             while (it.hasNext()) {
                 Map.Entry<WorkingMemoryAddress, MergedBelief> entry = it.next();
 
-                double sal = getSalienceForBelief(entry.getValue());
-                if (!Double.isNaN(sal)) {
-                    if (sal > latest) {
-                        latest = sal;
-                        latestAddr = entry.getKey();
+                dBelief bel = entry.getValue();
+                if (isVisible(bel)) {
+                    double sal = getSalienceForBelief(bel);
+                    if (!Double.isNaN(sal)) {
+                        if (sal > latest) {
+                            latest = sal;
+                            latestAddr = entry.getKey();
+                        }
                     }
                 }
             }
