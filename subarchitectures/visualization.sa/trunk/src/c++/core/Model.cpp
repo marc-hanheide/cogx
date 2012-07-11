@@ -31,14 +31,6 @@ CDisplayModel::CDisplayModel()
 
 CDisplayModel::~CDisplayModel()
 {
-   CDisplayView* pview;
-   FOR_EACH_V(pview, m_Views) if (pview) delete pview;
-   m_Views.clear();
-
-   CDisplayObject* pobj;
-   FOR_EACH_V(pobj, m_Objects) if (pobj) delete pobj;
-   m_Objects.clear();
-
    CGuiElement* pgel;
    FOR_EACH(pgel, m_GuiElements) if (pgel) delete pgel;
    m_GuiElements.clear();
@@ -53,11 +45,11 @@ void CDisplayModel::createView(const std::string& id, ERenderContext context,
 {
    CDisplayModelObserver *pobsrvr;
    TViewMap::iterator itview = m_Views.find(id);
-   CDisplayView *pview = (itview == m_Views.end()) ? nullptr : itview->second;
+   CDisplayViewPtr pview = (itview == m_Views.end()) ? nullptr : itview->second;
    
-   if (! pview) {
+   if (! pview.get()) {
       DMESSAGE("Creating new view: " << id << ": context " << context);
-      pview = new cogx::display::CDisplayView(this);
+      pview = CDisplayViewPtr(new cogx::display::CDisplayView(this));
       pview->m_id = id;
    }
    else {
@@ -73,17 +65,18 @@ void CDisplayModel::createView(const std::string& id, ERenderContext context,
    pview->m_bDefaultView = false;
    pview->m_preferredContext = context;
 
-   std::vector<std::string>::const_iterator it;
-   for (it = objects.begin(); it != objects.end(); it++) {
-      CDisplayObject *pObj = getObject(*it);
+   //std::vector<std::string>::const_iterator it;
+   //for (it = objects.begin(); it != objects.end(); it++) {
+   for (auto sId : objects) {
+      CDisplayObjectPtr pObj = getObject(sId);
       if (pObj) pview->addObject(pObj);
-      else pview->setSubscription(*it, true);
+      else pview->setSubscription(sId, true);
    }
 
    CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
    m_Views[pview->m_id] = pview;
    FOR_EACH(pobsrvr, modelObservers) {
-      if (pobsrvr) pobsrvr->onViewAdded(this, pview);
+      if (pobsrvr) pobsrvr->onViewAdded(this, pview.get());
    }
 }
 
@@ -91,7 +84,7 @@ void CDisplayModel::removeView(const std::string& id)
 {
    TViewMap::iterator itview = m_Views.find(id);
 
-   CDisplayView *pview = (itview == m_Views.end()) ? nullptr : itview->second;
+   CDisplayViewPtr pview = (itview == m_Views.end()) ? nullptr : itview->second;
    if (pview) {
       DMESSAGE("Removing view: " << id);
       CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
@@ -131,7 +124,7 @@ void CDisplayModel::enableDefaultView(const std::string& objectId, bool enable)
 
    // enable=false => Remove an existing default view
    TViewMap::iterator itview = m_Views.find(objectId);
-   CDisplayView *pview = (itview == m_Views.end()) ? nullptr : itview->second;
+   CDisplayViewPtr pview = (itview == m_Views.end()) ? nullptr : itview->second;
    if (pview && pview->m_bDefaultView) {
       DMESSAGE("Removing default view: " << pview->m_id);
       CDisplayModelObserver *pobsrvr;
@@ -140,23 +133,24 @@ void CDisplayModel::enableDefaultView(const std::string& objectId, bool enable)
       FOR_EACH(pobsrvr, modelObservers) {
          if (pobsrvr) pobsrvr->onViewRemoved(this, pview->m_id);
       }
-      delete pview;
+      // delete pview;
    }
 }
 
-CDisplayView* CDisplayModel::getView(const string& id)
+CDisplayViewPtr CDisplayModel::getView(const string& id)
 {
-   CDisplayView *pview;
+   CDisplayViewPtr pview;
    TViewMap::iterator itview = m_Views.find(id);
    pview = (itview == m_Views.end()) ? nullptr : itview->second;
    return pview;
 }
 
-bool CDisplayModel::isValidView(CDisplayView *pView)
+bool CDisplayModel::isValidView(CDisplayViewPtr pView)
 {
-   TViewMap::iterator it;
-   for (it = m_Views.begin(); it != m_Views.end(); it++) {
-      if (it->second == pView) return true;
+   // TViewMap::iterator it
+   //for (it = m_Views.begin(); it != m_Views.end(); it++) {
+   for(auto it : m_Views) {
+      if (it.second.get() == pView.get()) return true;
    }
    return false;
 }
@@ -171,22 +165,22 @@ CGuiDialog* CDisplayModel::getDialog(const string& id)
    return nullptr;
 }
 
-CPtrVector<CDisplayView> CDisplayModel::findViewsWithObject(const std::string &id)
+std::vector<CDisplayViewPtr> CDisplayModel::findViewsWithObject(const std::string &id)
 {
-   CPtrVector<CDisplayView> views;
-   CDisplayView *pview;
-   FOR_EACH_V(pview, m_Views) {
+   std::vector<CDisplayViewPtr> views;
+   for (auto iv : m_Views) {
+      CDisplayViewPtr& pview = iv.second;
       if (pview && pview->hasObject(id))
          views.push_back(pview);
    }
    return views;
 }
 
-CPtrVector<CDisplayView> CDisplayModel::findViewsWaitingFor(const std::string &objectId)
+std::vector<CDisplayViewPtr> CDisplayModel::findViewsWaitingFor(const std::string &objectId)
 {
-   CPtrVector<CDisplayView> views;
-   CDisplayView *pview;
-   FOR_EACH_V(pview, m_Views) {
+   std::vector<CDisplayViewPtr> views;
+   for (auto iv : m_Views) {
+      CDisplayViewPtr& pview = iv.second;
       if (!pview) continue;
       if (pview->hasObject(objectId)) continue;
       if (pview->waitsForObject(objectId))
@@ -195,29 +189,29 @@ CPtrVector<CDisplayView> CDisplayModel::findViewsWaitingFor(const std::string &o
    return views;
 }
 
-CDisplayObject* CDisplayModel::getObject(const std::string &id)
+CDisplayObjectPtr CDisplayModel::getObject(const std::string &id)
 {
    TObjectMap::iterator itobj = m_Objects.find(id);
-   CDisplayObject* pfound = (itobj == m_Objects.end()) ? nullptr : itobj->second;
+   CDisplayObjectPtr pfound = (itobj == m_Objects.end()) ? nullptr : itobj->second;
    return pfound;
 }
 
 CRasterImage* CDisplayModel::getImage(const std::string &id)
 {
    TObjectMap::iterator itobj = m_Objects.find(id);
-   CDisplayObject* pfound = (itobj == m_Objects.end()) ? nullptr : itobj->second;
+   CDisplayObjectPtr pfound = (itobj == m_Objects.end()) ? nullptr : itobj->second;
    if (pfound && pfound->isBitmap())
-      return (CRasterImage*) pfound;
+      return (CRasterImage*)(pfound.get()); // HACK: can't use dynamic_cast because CRasterImage is incomplete
    return nullptr;
 }
 
-void CDisplayModel::setObject(CDisplayObject *pObject)
+void CDisplayModel::setObject(CDisplayObjectPtr pObject)
 {
-   if (pObject == nullptr) return;
+   if (!pObject) return;
    DTRACE("CDisplayModel::setObject");
 
-   CDisplayView *pview;
-   CDisplayObject *pfound;
+   CDisplayObjectPtr pfound;
+   CDisplayViewPtr pview;
 
    TObjectMap::iterator itobj = m_Objects.find(pObject->m_id);
    pfound = (itobj == m_Objects.end()) ? nullptr : itobj->second;
@@ -228,15 +222,14 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       FOR_EACH_V(pview, m_Views) {
          pview->replaceObject(pfound->m_id, pObject);
       }
-      m_garbage.add(pfound);
    }
    else if (!pfound) {
       m_Objects[pObject->m_id] = pObject;
    }
 
-   CPtrVector<CDisplayView> views = findViewsWaitingFor(pObject->m_id);
-   FOR_EACH(pview, views) {
-      if (pview) pview->addObject(pObject);
+   std::vector<CDisplayViewPtr> views = findViewsWaitingFor(pObject->m_id);
+   for (auto pv : views) {
+      if (pv) pv->addObject(pObject);
    }
 
    views = findViewsWithObject(pObject->m_id);
@@ -258,7 +251,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       std::map<std::string, bool>::iterator it = m_DisabledDefaultViews.find(pObject->m_id);
       if (it == m_DisabledDefaultViews.end()) {
          DMESSAGE("Creating default view for: " << pObject->m_id);
-         pview = new cogx::display::CDisplayView(this);
+         pview = CDisplayViewPtr(new cogx::display::CDisplayView(this));
          pview->m_bDefaultView = true;
          pview->m_preferredContext = pObject->getPreferredContext();
 
@@ -269,7 +262,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
          CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
          m_Views[pview->m_id] = pview;
          FOR_EACH(pobsrvr, modelObservers) {
-            if (pobsrvr) pobsrvr->onViewAdded(this, pview);
+            if (pobsrvr) pobsrvr->onViewAdded(this, pview.get()); // XXX
          }
       }
    }
@@ -280,7 +273,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       FOR_EACH(pview, views) {
          CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
          FOR_EACH(pobsrvr, modelObservers) {
-            if (pobsrvr) pobsrvr->onViewChanged(this, pview);
+            if (pobsrvr) pobsrvr->onViewChanged(this, pview.get());
          }
       }
    }
@@ -290,17 +283,16 @@ void CDisplayModel::refreshObject(const std::string &id, bool bNotifyChanged)
 {
    //DTRACE("CDisplayModel::refreshObject");
    TObjectMap::iterator itobj = m_Objects.find(id);
-   CDisplayObject* pfound = (itobj == m_Objects.end()) ? nullptr : itobj->second;
+   CDisplayObjectPtr pfound = (itobj == m_Objects.end()) ? nullptr : itobj->second;
    if (pfound) {
-      CPtrVector<CDisplayView> views = findViewsWithObject(id);
-      CDisplayView *pview;
-      FOR_EACH(pview, views) {
+      std::vector<CDisplayViewPtr> views = findViewsWithObject(id);
+      for (auto pview : views) {
          pview->refreshObject(id);
          if (bNotifyChanged) {
             CDisplayModelObserver *pobsrvr;
             CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
             FOR_EACH(pobsrvr, modelObservers) {
-               if (pobsrvr) pobsrvr->onViewChanged(this, pview);
+               if (pobsrvr) pobsrvr->onViewChanged(this, pview.get());
             }
          }
       }
@@ -310,31 +302,28 @@ void CDisplayModel::refreshObject(const std::string &id, bool bNotifyChanged)
 void CDisplayModel::removeObject(const std::string &id)
 {
    DTRACE("CDisplayModel::removeObject");
-   CDisplayObject *pfound;
+   CDisplayObjectPtr pfound;
    TObjectMap::iterator itobj = m_Objects.find(id);
    pfound = (itobj == m_Objects.end()) ? nullptr : itobj->second;
    if (pfound != nullptr) {
       m_Objects.erase(m_Objects.find(pfound->m_id));
 
-      CPtrVector<CDisplayView> views = findViewsWithObject(id);
-      CDisplayView *pview;
-      FOR_EACH(pview, views) {
+      std::vector<CDisplayViewPtr> views = findViewsWithObject(id);
+      for (auto pview : views) {
          pview->removeObject(id);
          CDisplayModelObserver *pobsrvr;
          CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
          FOR_EACH(pobsrvr, modelObservers) {
-            if (pobsrvr) pobsrvr->onViewChanged(this, pview);
+            if (pobsrvr) pobsrvr->onViewChanged(this, pview.get());
          }
       }
-
-      m_garbage.add(pfound);
    }
 }
 
 void CDisplayModel::removePart(const std::string &id, const std::string& partId)
 {
    DTRACE("CDisplayModel::removePart");
-   CDisplayObject *pfound;
+   CDisplayObjectPtr pfound;
    TObjectMap::iterator itobj = m_Objects.find(id);
    pfound = (itobj == m_Objects.end()) ? nullptr : itobj->second;
    if (pfound != nullptr) {
@@ -342,21 +331,18 @@ void CDisplayModel::removePart(const std::string &id, const std::string& partId)
       //    1. remove part from object parts
       //    2. notify observers
       //    3. delete the part <- this one is now in 1 and could cause a segfault.
-      CPtrVector<CDisplayObjectPart> removed;
-      if (pfound->removePart(partId, removed)) {
-         CPtrVector<CDisplayView> views = findViewsWithObject(id);
-         CDisplayView *pview;
-         FOR_EACH(pview, views) {
+      if (pfound->removePart(partId)) {
+         std::vector<CDisplayViewPtr> views = findViewsWithObject(id);
+         for (auto pview : views) {
             pview->refreshObject(id);
 
             CDisplayModelObserver *pobsrvr;
             CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
             FOR_EACH(pobsrvr, modelObservers) {
-               if (pobsrvr) pobsrvr->onViewChanged(this, pview);
+               if (pobsrvr) pobsrvr->onViewChanged(this, pview.get());
             }
          }
       }
-      m_garbage.add(removed);
    }
 }
 
@@ -371,10 +357,9 @@ bool CDisplayModel::addGuiElement(CGuiElement* pGuiElement)
    m_GuiElements.push_back(pGuiElement);
 
    // Make sure there is a view with pgel->m_viewId
-   CDisplayView *pview;
    bool found = false;
-   for (auto it = m_Views.begin(); it != m_Views.end(); it++) {
-      pview = it->second;
+   for (auto iv : m_Views) {
+      CDisplayViewPtr& pview = iv.second;
       if (!pview) continue;
       if (pview->m_id == pGuiElement->m_viewId) {
          found = true;
@@ -382,14 +367,14 @@ bool CDisplayModel::addGuiElement(CGuiElement* pGuiElement)
       }
    }
    if (! found) {
-     pview = new cogx::display::CDisplayView(this);
+     CDisplayViewPtr pview(new cogx::display::CDisplayView(this));
      pview->m_id = pGuiElement->m_viewId;
      m_Views[pview->m_id] = pview;
 
      CDisplayModelObserver *pobsrvr;
      CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
      FOR_EACH(pobsrvr, modelObservers) {
-        if (pobsrvr) pobsrvr->onViewAdded(this, pview);
+        if (pobsrvr) pobsrvr->onViewAdded(this, pview.get());
      }
    }
    return true;
@@ -481,12 +466,12 @@ ERenderContext CDisplayObject::getPreferredContext()
    return ContextGraphics;
 }
 
-int CDisplayObject::getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask)
+int CDisplayObject::getHtmlChunks(std::vector<CHtmlChunkPtr>& forms, int typeMask)
 {
    return 0;
 }
 
-void CDisplayObject::getParts(CPtrVector<CDisplayObjectPart>& objects, bool bOrdered)
+void CDisplayObject::getParts(std::vector<CDisplayObjectPartPtr>& objects, bool bOrdered)
 {
 }
 

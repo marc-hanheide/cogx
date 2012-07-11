@@ -42,11 +42,16 @@ class CGarbage;
 // Used in some functions instead of CDisplayObjectPart for convenience.
 class CHtmlChunk;
 
+typedef std::shared_ptr<CDisplayObjectPart> CDisplayObjectPartPtr;
+typedef std::shared_ptr<CDisplayObject> CDisplayObjectPtr;
+typedef std::shared_ptr<CDisplayView> CDisplayViewPtr;
+typedef std::shared_ptr<CHtmlChunk> CHtmlChunkPtr;
+
 typedef enum { Context2D=1, ContextGL=2, ContextHtml=3, ContextGraphics=4 } ERenderContext;
 
-typedef std::map<std::string, CDisplayObject*> TObjectMap;
+typedef std::map<std::string, CDisplayObjectPtr> TObjectMap;
 typedef TObjectMap::iterator TObjectMapIterator;
-typedef std::map<std::string, CDisplayView*> TViewMap;
+typedef std::map<std::string, CDisplayViewPtr> TViewMap;
 typedef TViewMap::iterator TViewMapIterator;
 
 class CDisplayModelObserver
@@ -70,7 +75,7 @@ public:
    virtual void getControlStateAsync(cogx::display::CGuiElement *pElement) = 0;
 
    // Issue a request to retreive the values of a form from the (remote) owner.
-   virtual void getFormStateAsync(CHtmlChunk* pForm) = 0;
+   virtual void getFormStateAsync(const CHtmlChunkPtr& pForm) = 0;
 
    // This function should go in sth. like CPersistentStorage interface
    // but since ATM we will only be using it in one place (one provider,
@@ -82,6 +87,7 @@ public:
    virtual std::string getPersistentStorageName() = 0;
 };
 
+#if 0
 // A temporary fix for crashes when objects are deleted during redraw.
 class CGarbage
 {
@@ -116,12 +122,13 @@ public:
       if (pPart) m_parts.push_back(pPart);
    }
 };
+#endif
 
 // Holder for all data that can be displayed.
 class CDisplayModel
 {
 private:
-   CGarbage m_garbage;
+   //CGarbage m_garbage;
    TObjectMap m_Objects;
    CPtrVector<CGuiElement> m_GuiElements;
    CPtrVector<CGuiDialog> m_GuiDialogs;
@@ -134,15 +141,15 @@ public: // XXX Qt needs to know about the views.
 public:
    CDisplayModel();
    virtual ~CDisplayModel();
-   void setObject(CDisplayObject *pObject);
+   void setObject(CDisplayObjectPtr pObject);
    void refreshObject(const std::string &id, bool bNotifyChanged=false);
    void removeObject(const std::string &id);
    void removePart(const std::string &id, const std::string& partId);
-   CDisplayObject* getObject(const std::string &id);
+   CDisplayObjectPtr getObject(const std::string &id);
    CRasterImage* getImage(const std::string &id);
-   CDisplayView* getView(const std::string &id);
+   CDisplayViewPtr getView(const std::string &id);
    CGuiDialog* getDialog(const std::string &id);
-   bool isValidView(CDisplayView *pView);
+   bool isValidView(CDisplayViewPtr pView);
    void createView(const std::string& id, ERenderContext context, const std::vector<std::string>& objects);
    void removeView(const std::string& id);
    void removeAllViews();
@@ -163,8 +170,8 @@ public:
    CObserverList<CDisplayModelObserver> modelObservers;
 
 private:
-   CPtrVector<CDisplayView> findViewsWithObject(const std::string &id);
-   CPtrVector<CDisplayView> findViewsWaitingFor(const std::string &objectId);
+   std::vector<CDisplayViewPtr> findViewsWithObject(const std::string &id);
+   std::vector<CDisplayViewPtr> findViewsWaitingFor(const std::string &objectId);
 };
 
 class CDisplayObjectPart
@@ -213,15 +220,15 @@ public:
    virtual void setPose3D(const std::string& partId, const std::vector<double>& positioXYZ,
          const std::vector<double>& rotationQaternionXYZW);
 
-   virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
-   virtual void getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered=false);
+   virtual int getHtmlChunks(std::vector<CHtmlChunkPtr>& forms, int typeMask);
+   virtual void getParts(std::vector<CDisplayObjectPartPtr>& parts, bool bOrdered=false);
    virtual int getCameras(CPtrVector<CDisplayCamera>& cameras)
    {
       return 0;
    }
 
    // Returns true if the part existed and was successfully removed.
-   virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts) = 0;
+   virtual bool removePart(const std::string& partId) = 0;
 };
 
 // The state can't be stored with CDisplayObject because an object may be
@@ -327,15 +334,15 @@ public:
    ERenderContext m_preferredContext;
    CDisplayView(CDisplayModel *pModel);
    virtual ~CDisplayView();
-   void addObject(CDisplayObject *pObject);
+   void addObject(CDisplayObjectPtr pObject);
    void setSubscription(const std::string& id, bool active=true);
-   void replaceObject(const std::string& id, CDisplayObject *pNew);
+   void replaceObject(const std::string& id, CDisplayObjectPtr pNew);
    void refreshObject(const std::string& id);
    void removeObject(const std::string& id);
    void removeAllObjects();
    bool hasObject(const std::string &id);
    bool waitsForObject(const std::string &id);
-   void getObjects(CPtrVector<CDisplayObject>& objects, bool bOrdered=false);
+   void getObjects(std::vector<CDisplayObjectPtr>& objects, bool bOrdered=false);
    CViewedObjectState* getObjectState(const std::string& id);
 
    virtual void drawGL(CGlTextWriter* pTextWriter=0);
@@ -345,7 +352,7 @@ public:
    virtual void drawHtml(QStringList &head, QStringList &body);
 
    // TODO: should getHtmlChunks observe CViewedObjectState.m_bVisible?
-   virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
+   virtual int getHtmlChunks(std::vector<CHtmlChunkPtr>& forms, int typeMask);
    
    int getCameras(CPtrVector<CDisplayCamera>& cameras);
 

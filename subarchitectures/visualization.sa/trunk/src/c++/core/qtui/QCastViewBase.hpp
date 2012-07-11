@@ -26,8 +26,8 @@ class QCastViewBase: public cogx::display::CDisplayModelObserver
 {
 public:
    virtual void setModel(cogx::display::CDisplayModel* pDisplayModel) {}
-   virtual void setView(cogx::display::CDisplayView* pDisplayView) = 0;
-   virtual cogx::display::CDisplayView* getView() = 0;
+   virtual void setView(const cogx::display::CDisplayViewPtr& pDisplayView) = 0;
+   virtual cogx::display::CDisplayViewPtr getView() = 0;
    virtual operator QWidget&() = 0;
 
    // Remember the current view position as an array of doubles (eg. transform).

@@ -121,15 +121,15 @@ private slots:
    void onSaveHtmlViews();
 
 private:
-   cogx::display::CDisplayView* getView();
-   void updateCustomUi(cogx::display::CDisplayView *pView);
-   void retrieveControlData(cogx::display::CDisplayView *pView);
+   cogx::display::CDisplayViewPtr getView();
+   void updateCustomUi(const cogx::display::CDisplayViewPtr& pView);
+   void retrieveControlData(const cogx::display::CDisplayViewPtr& pView);
    void updateViewList();
    void updateViewMenu();
    void updateToolBars();
    void updateControlState();
    void syncViewListItem();
-   void updateObjectList(cogx::display::CDisplayView *pView);
+   void updateObjectList(const cogx::display::CDisplayViewPtr& pView);
    QWidgetList getCastFrames();
    void saveHtmlViews(QString directoryName);
 
@@ -138,7 +138,7 @@ private:
    void onViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
    void onDialogAdded(cogx::display::CDisplayModel *pModel, cogx::display::CGuiDialog *pDialog);
-   void setView(cogx::display::CDisplayView *pView);
+   void setView(const cogx::display::CDisplayViewPtr& pView);
    void setChildMode(QCastMainFrame* pCreator = nullptr);
    void closeEvent(QCloseEvent *event);
    QCastMainFrame* createChildWindow();

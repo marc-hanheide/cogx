@@ -18,7 +18,9 @@
 
 #include "QCastViewBase.hpp"
 #include "HtmlElements.hpp"
+#include "client/CMilliTimer.hpp"
 #include <QWebView>
+#include <QTimer>
 #include <iostream>
 
 class QCastViewHtml: public QWebView, public QCastViewBase
@@ -26,15 +28,20 @@ class QCastViewHtml: public QWebView, public QCastViewBase
    Q_OBJECT
 private:
    cogx::display::CDisplayModel* pModel;
-   cogx::display::CDisplayView* pView;
+   cogx::display::CDisplayViewPtr pView;
    bool m_bModified;
    bool m_bHasForms;
    bool m_bBlockUpdates;
    QString m_jsFormCap;
    static QString m_jQuery;
    QString jsObjectName;
-   CPtrVector<cogx::display::CHtmlChunk> m_Chunks; // activehtml and form chunks (js interaction)
+   std::vector<cogx::display::CHtmlChunkPtr> m_Chunks; // activehtml and form chunks (js interaction)
    QString m_TextToFind;
+
+   // Measure the time between consecutive updates
+   cogx::display::CMilliTimer m_tmLastUpdate;
+   // Schedule an update
+   QTimer m_updateTriggerTimer;
 
 public:
    QCastViewHtml( QWidget* parent = nullptr, Qt::WindowFlags flags = 0 );
@@ -43,8 +50,8 @@ public:
 public:
    // QCastViewBase
    void setModel(cogx::display::CDisplayModel* pDisplayModel); /*override*/
-   void setView(cogx::display::CDisplayView* pDisplayView); /*override*/
-   cogx::display::CDisplayView* getView() { return pView; } /*override*/
+   void setView(const cogx::display::CDisplayViewPtr& pDisplayView); /*override*/
+   cogx::display::CDisplayViewPtr getView() { return pView; } /*override*/
    operator QWidget&() { return *this; } /*override*/
    void getToolbars(CPtrVector<QToolBar>& toolbars);
  
@@ -58,6 +65,7 @@ signals:
    void updateContent();
 
 private slots:
+   void tryUpdateContent();
    void doUpdateContent();
    void createJsObjects();
    void finishLoading(bool);

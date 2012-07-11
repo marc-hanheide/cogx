@@ -162,7 +162,7 @@ private:
 
    // CControlDataProxy
    void getControlStateAsync(cogx::display::CGuiElement *pElement); /*override*/
-   void getFormStateAsync(CHtmlChunk* pForm); /*override*/
+   void getFormStateAsync(const CHtmlChunkPtr& pForm); /*override*/
    std::string getPersistentStorageName(); /*override*/
 };
 

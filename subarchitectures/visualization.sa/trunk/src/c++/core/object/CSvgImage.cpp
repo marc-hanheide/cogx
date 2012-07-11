@@ -37,31 +37,27 @@ CSvgImage::CSvgImage()
 
 CSvgImage::~CSvgImage()
 {
-   SPart* pPart;
-   FOR_EACH(pPart, m_Parts) {
-      if (pPart) delete pPart;
-   }
-   m_Parts.erase(m_Parts.begin(), m_Parts.end());
 }
 
-CSvgImage::SPart* CSvgImage::findPart(const std::string& partId)
+CSvgImage::SPartPtr CSvgImage::findPart(const std::string& partId)
 {
-   SPart* pPart;
    CDisplayObject::ReadLock lock(*this);
-   FOR_EACH(pPart, m_Parts) {
-      if (pPart && pPart->m_id == partId) return pPart;
+   auto ipart = m_Parts.find(partId);
+   if (ipart != m_Parts.end()) {
+      return ipart->second;
    }
    return nullptr;
 }
 
 bool CSvgImage::setPart(const std::string& partId, const std::string& xmlData)
 {
-   SPart* pPart = findPart(partId);
+   SPartPtr pPart = findPart(partId);
    bool exists = pPart != nullptr;
+
    CDisplayObject::WriteLock lock(*this);
    if (! exists) {
-      pPart = new SPart(partId);
-      m_Parts.push_back(pPart);
+      pPart = SPartPtr(new SPart(partId));
+      m_Parts[partId] = pPart;
    }
    if (pPart) {
       pPart->setData(xmlData);
@@ -69,29 +65,22 @@ bool CSvgImage::setPart(const std::string& partId, const std::string& xmlData)
    return !exists;
 }
 
-bool CSvgImage::removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts)
+bool CSvgImage::removePart(const std::string& partId)
 {
-   bool removed = false;
-   for (auto itpart = m_Parts.begin(); itpart != m_Parts.end(); itpart++) {
-      SPart* pPart = *itpart;
-      if (! pPart) continue;
-      if (pPart->m_id == partId) {
-         CDisplayObject::WriteLock lock(*this);
-         m_Parts.erase(itpart);
-         parts.push_back(pPart);
-         removed = true;
-         break;
-      }
+   SPartPtr ipart = findPart(partId);
+   if (!ipart) {
+      return false;
    }
-   return removed;
+
+   CDisplayObject::WriteLock lock(*this);
+   m_Parts.erase(partId);
+   return true;
 }
 
-void CSvgImage::getParts(CPtrVector<CDisplayObjectPart>& objects, bool bOrdered)
+void CSvgImage::getParts(std::vector<CDisplayObjectPartPtr>& objects, bool bOrdered)
 {
-   // TODO: bOrdered
-   for (auto itpart = m_Parts.begin(); itpart != m_Parts.end(); itpart++) {
-      SPart* pPart = *itpart;
-      if (pPart) objects.push_back(pPart);
+   for (auto ipart : m_Parts) {
+      objects.push_back(ipart.second);
    }
 }
 
@@ -100,11 +89,11 @@ void CSvgImage::setTransform2D(const std::string& partId, const std::vector<doub
    DTRACE("CSvgImage::setTransform2D");
    assert (matrix.size() == 9 || matrix.size() == 0);
 
-   SPart* pPart = findPart(partId);
+   SPartPtr pPart = findPart(partId);
    CDisplayObject::WriteLock lock(*this);
    if (! pPart) {
-      pPart = new SPart(partId);
-      m_Parts.push_back(pPart);
+      pPart = SPartPtr (new SPart(partId));
+      m_Parts[partId] = pPart;
    }
    if (pPart) {
       if (matrix.size() != 9) pPart->setIdentity();
@@ -129,9 +118,9 @@ void CSvgImage_Render2D::draw(CDisplayView *pView, CDisplayObject *pObject, void
    QPainter *pPainter = (QPainter*) pContext;
    CViewedObjectState *pState = pView->getObjectState(pImage->m_id);
 
-   CSvgImage::SPart* pPart;
    CDisplayObject::ReadLock lock(*pObject);
-   FOR_EACH(pPart, pImage->m_Parts) {
+   for (auto ipart : pImage->m_Parts) {
+      CSvgImage::SPartPtr& pPart = ipart.second;
       if (! pPart) continue;
       if (! pState->m_childState[pPart->m_id].m_bVisible) continue;
       if (pPart->data.size() < 16) continue;
@@ -168,9 +157,9 @@ void CSvgImage_RenderScene::draw(CDisplayView *pView, CDisplayObject *pObject, v
    QGraphicsScene *pScene = pGroup->scene();
    CViewedObjectState *pState = pView->getObjectState(pImage->m_id);
 
-   CSvgImage::SPart* pPart;
    CDisplayObject::ReadLock lock(*pObject);
-   FOR_EACH(pPart, pImage->m_Parts) {
+   for (auto ipart : pImage->m_Parts) {
+      CSvgImage::SPartPtr& pPart = ipart.second;
       if (! pPart) continue;
       if (! pState->m_childState[pPart->m_id].m_bVisible) continue;
       if (pPart->data.size() < 16) continue;
@@ -222,8 +211,8 @@ void CSvgImage_RenderHtml::draw(CDisplayView *pView, const std::string& info,
 
    if (info == "body") {
       CDisplayObject::ReadLock lock(*pObject);
-      CSvgImage::SPart* pPart;
-      FOR_EACH(pPart, pImage->m_Parts) {
+      for (auto ipart : pImage->m_Parts) {
+         CSvgImage::SPartPtr& pPart = ipart.second;
          if (! pPart) continue;
          if (! pState->m_childState[pPart->m_id].m_bVisible) continue;
          if (pPart->data.size() < 16) continue;

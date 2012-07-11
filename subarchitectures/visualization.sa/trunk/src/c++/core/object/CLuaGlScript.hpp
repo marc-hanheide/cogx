@@ -28,6 +28,7 @@ class CLuaGlScript: public CDisplayObject
    friend class CLuaGlScript_RenderGL;
    static std::auto_ptr<CRenderer> renderGL;
 
+public:
    class CScript: public CDisplayObjectPart
    {
    private:
@@ -41,25 +42,22 @@ class CLuaGlScript: public CDisplayObject
       int loadScript(const char* pscript); 
       int exec(CGlTextWriter *pWriter);
    };
+   typedef std::shared_ptr<CScript> CScriptPtr;
 
 public:
-   std::map<std::string, CScript*> m_Scripts;
+   std::map<std::string, CScriptPtr> m_Scripts;
    CPtrVector<CDisplayCamera> m_Cameras;
 
 public:
    CLuaGlScript();
    ~CLuaGlScript();
    void loadScript(const std::string& partId, const std::string& script);
-   bool removePart(const std::string& partId);
+   bool removePart(const std::string& partId); /* override */
    virtual ERenderContext getPreferredContext(); /*override*/
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
    virtual void setPose3D(const std::string& partId, const std::vector<double>& position,
          const std::vector<double>& rotation); /*override*/
-   virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts) /*override*/
-   {
-      return false;
-   }
-   void getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered=false); /*override*/
+   void getParts(std::vector<CDisplayObjectPartPtr>& parts, bool bOrdered=false); /*override*/
 
 public:
    virtual int getCameras(CPtrVector<CDisplayCamera>& cameras); /*override*/

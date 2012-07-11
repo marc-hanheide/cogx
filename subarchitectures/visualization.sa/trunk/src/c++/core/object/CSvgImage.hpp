@@ -23,15 +23,7 @@ namespace cogx { namespace display {
 
 class CSvgImage: public CDisplayObject
 {
-private:
-   friend class CSvgImage_Render2D;
-   static std::auto_ptr<CRenderer> render2D;
-   friend class CSvgImage_RenderScene;
-   static std::auto_ptr<CRenderer> renderScene;
-   friend class CSvgImage_RenderHtml;
-   static std::auto_ptr<CRenderer> renderHtml;
-// public:
-   // A SVG image may have multiple parts: data + transformation
+public:
    class SPart: public CDisplayObjectPart
    {
       QSvgRenderer* _psvgdoc;
@@ -62,7 +54,20 @@ private:
          data = xmlData;
       }
    };
-   std::vector<SPart*> m_Parts;
+   typedef std::shared_ptr<SPart> SPartPtr;
+
+private:
+   std::map<std::string, SPartPtr> m_Parts;
+
+private:
+   friend class CSvgImage_Render2D;
+   static std::auto_ptr<CRenderer> render2D;
+   friend class CSvgImage_RenderScene;
+   static std::auto_ptr<CRenderer> renderScene;
+   friend class CSvgImage_RenderHtml;
+   static std::auto_ptr<CRenderer> renderHtml;
+// public:
+   // A SVG image may have multiple parts: data + transformation
 
 public:
    CSvgImage();
@@ -72,7 +77,7 @@ public:
    // Returns true if this is a new part;
    bool setPart(const std::string& partId, const std::string& xmlData);
 
-   virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts); /*override*/
+   virtual bool removePart(const std::string& partId); /*override*/
    virtual void setTransform2D(const std::string& partId, const std::vector<double> &transform); /*override*/
 
    virtual ERenderContext getPreferredContext()
@@ -80,10 +85,10 @@ public:
       return ContextGraphics;
    }
 
-   virtual void getParts(CPtrVector<CDisplayObjectPart>& objects, bool bOrdered=false); /*override*/
+   virtual void getParts(std::vector<CDisplayObjectPartPtr>& objects, bool bOrdered=false); /*override*/
 
 private:
-   SPart* findPart(const std::string& partId);
+   SPartPtr findPart(const std::string& partId);
 };
 
 class CSvgImage_Render2D: public CRenderer

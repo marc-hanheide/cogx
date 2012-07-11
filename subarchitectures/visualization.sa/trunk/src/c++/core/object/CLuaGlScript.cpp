@@ -208,30 +208,24 @@ CLuaGlScript::CLuaGlScript()
 CLuaGlScript::~CLuaGlScript()
 {
    CScript* pModel;
-   //IceUtil::RWRecMutex::WLock lock(_objectMutex);
-   CDisplayObject::WriteLock lock(*this);
-   FOR_EACH_V(pModel, m_Scripts) {
-      if (pModel) delete pModel;
-   }
-   m_Scripts.erase(m_Scripts.begin(), m_Scripts.end());
 
+   CDisplayObject::WriteLock lock(*this);
    m_Cameras.delete_all();
 }
 
 void CLuaGlScript::loadScript(const std::string& partId, const std::string& script)
 {
-   CScript* pModel = nullptr;
-   // IceUtil::RWRecMutex::WLock lock(_objectMutex);
+   CScriptPtr pModel;
    CDisplayObject::WriteLock lock(*this);
-   // if (m_Scripts.find(partId)->second != NULL) {
+
    auto itExtng = m_Scripts.find(partId);
    if (itExtng != m_Scripts.end()) {
       pModel = m_Scripts[partId];
       //printf("Replacing existing script\n");
    }
 
-   if (pModel == nullptr) {
-      pModel = new CScript(this);
+   if (!pModel) {
+      pModel = CScriptPtr(new CScript(this));
       pModel->m_id = partId;
       m_Scripts[partId] = pModel;
    }
@@ -249,26 +243,19 @@ void CLuaGlScript::loadScript(const std::string& partId, const std::string& scri
 bool CLuaGlScript::removePart(const std::string& partId)
 {
    auto it = m_Scripts.find(partId);
-   bool removed = false;
-   //if (it->second != NULL) {
    if (it != m_Scripts.end()) {
-      // IceUtil::RWRecMutex::WLock lock(_objectMutex);
       CDisplayObject::WriteLock lock(*this);
-      CScript* pModel = m_Scripts[partId];
       m_Scripts.erase(it);
-      if (pModel) {
-         delete pModel;
-	 removed = true;
-      }
+      return true;
    }
-   return removed;
+   return false;
 }
 
-void CLuaGlScript::getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered)
+void CLuaGlScript::getParts(std::vector<CDisplayObjectPartPtr>& parts, bool bOrdered)
 {
-   CLuaGlScript::CScript* pPart;
-   //CDisplayObject::ReadLock lock(this);
-   FOR_EACH_V(pPart, m_Scripts) {
+   CDisplayObject::ReadLock lock(*this);
+   for (auto iscript : m_Scripts) {
+      CScriptPtr& pPart = iscript.second;
       if (!pPart) continue;
       parts.push_back(pPart);
    }
@@ -351,11 +338,11 @@ void CLuaGlScript_RenderGL::draw(CDisplayView *pView, CDisplayObject *pObject, v
 
    CViewedObjectState *pState = pView->getObjectState(pObject->m_id);
 
-   CLuaGlScript::CScript* pPart;
    // Prevent script modification while executing
-   //IceUtil::RWRecMutex::RLock lock(pObject->_objectMutex);
    CDisplayObject::ReadLock lock(*pObject);
-   FOR_EACH_V(pPart, pModel->m_Scripts) {
+
+   for (auto iscript : pModel->m_Scripts) {
+      CLuaGlScript::CScriptPtr& pPart = iscript.second;
       if (!pPart) continue;
       if (!pState->m_childState[pPart->m_id].m_bVisible) continue;
       glPushMatrix();

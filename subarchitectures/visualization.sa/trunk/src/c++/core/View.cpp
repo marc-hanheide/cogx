@@ -51,7 +51,7 @@ bool CDisplayView::waitsForObject(const std::string &id)
    return m_SubscribedObjects.count(id) ? true : false;
 }
 
-void CDisplayView::addObject(CDisplayObject *pObject)
+void CDisplayView::addObject(CDisplayObjectPtr pObject)
 {
    if (! pObject) return;
    DMESSAGE(m_id << ": Adding object: " << pObject->m_id);
@@ -132,7 +132,7 @@ void CDisplayView::removeAllObjects()
    }
 }
 
-void CDisplayView::replaceObject(const std::string& id, CDisplayObject *pNew)
+void CDisplayView::replaceObject(const std::string& id, CDisplayObjectPtr pNew)
 {
    DTRACE("CDisplayObject::replaceObject " << id);
    bool canAdd = false;
@@ -199,21 +199,22 @@ void CDisplayView::onGuiElement_OwnerDataChanged(CGuiElement *pElement, const st
    }
 }
 
-void CDisplayView::getObjects(CPtrVector<CDisplayObject>& objects, bool bOrdered)
+void CDisplayView::getObjects(std::vector<CDisplayObjectPtr>& objects, bool bOrdered)
 {
-   CDisplayObject *pObject;
    if (bOrdered) {
-      for (auto itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
-         auto itobj = m_Objects.find(*itorder);
+      //for (auto itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
+      for (auto sId : m_ObjectOrder) {
+         auto itobj = m_Objects.find(sId);
          if (itobj == m_Objects.end()) continue;
-         pObject = itobj->second;
+         CDisplayObjectPtr& pObject = itobj->second;
          if (!pObject) continue;
          objects.push_back(pObject);
       }
    }
    else {
-      FOR_EACH_V(pObject, m_Objects) {
-         if (pObject) objects.push_back(pObject);
+      //FOR_EACH_V(pObject, m_Objects) {
+      for (auto iv : m_Objects) {
+         if (iv.second) objects.push_back(iv.second);
       }
    }
 }
@@ -244,16 +245,14 @@ CViewedObjectState* CDisplayView::getObjectState(const std::string& id)
 // TODO: drawing order may need to be defined if the objects are not displayed side by side
 void CDisplayView::draw2D(QPainter &painter)
 {
-   CDisplayObject *pObject;
-   CRenderer *pRender;
-   //FOR_EACH_V(pObject, m_Objects) {
-   for (auto itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
-      auto itobj = m_Objects.find(*itorder);
+   for (auto sId : m_ObjectOrder) {
+      auto itobj = m_Objects.find(sId);
       if (itobj == m_Objects.end()) continue;
-      pObject = itobj->second;
+      CDisplayObjectPtr& pObject = itobj->second;
       if (!pObject) continue;
       if (!m_ObjectState.m_childState[pObject->m_id].m_bVisible) continue;
-      pRender = pObject->getRenderer(Context2D);
+
+      CRenderer* pRender = pObject->getRenderer(Context2D);
       if (pRender) {
          painter.save();
          if (m_Trafos.count(pObject->m_id)) {
@@ -265,7 +264,7 @@ void CDisplayView::draw2D(QPainter &painter)
                  trmatrix[6], trmatrix[7], trmatrix[8]);
             painter.setWorldTransform(trans, true);
          }
-         pRender->draw(this, pObject, &painter);
+         pRender->draw(this, pObject.get(), &painter); // XXX
          painter.restore();
       }
    }
@@ -275,17 +274,15 @@ void CDisplayView::draw2D(QPainter &painter)
 void CDisplayView::drawScene(QGraphicsScene &scene)
 {
    DTRACE("CDisplayView::drawScene " << m_ObjectOrder.size());
-   CDisplayObject *pObject;
-   CRenderer *pRender;
-   //FOR_EACH_V(pObject, m_Objects) {
-   for (auto itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
-      DMESSAGE(*itorder);
-      auto itobj = m_Objects.find(*itorder);
+   for (auto sId : m_ObjectOrder) {
+      DMESSAGE(sId);
+      auto itobj = m_Objects.find(sId);
       if (itobj == m_Objects.end()) continue;
-      pObject = itobj->second;
+      CDisplayObjectPtr& pObject = itobj->second;
       if (!pObject) continue;
       if (!m_ObjectState.m_childState[pObject->m_id].m_bVisible) continue;
-      pRender = pObject->getRenderer(ContextGraphics);
+
+      CRenderer* pRender = pObject->getRenderer(ContextGraphics);
       if (pRender) {
          QGraphicsItemGroup* pGroup = scene.createItemGroup(QList<QGraphicsItem*>());
          if (m_Trafos.count(pObject->m_id)) {
@@ -297,7 +294,7 @@ void CDisplayView::drawScene(QGraphicsScene &scene)
                  trmatrix[6], trmatrix[7], trmatrix[8]);
             pGroup->setTransform(trans);
          }
-         pRender->draw(this, pObject, pGroup);
+         pRender->draw(this, pObject.get(), pGroup); // XXX
       }
    }
 }
@@ -307,51 +304,46 @@ void CDisplayView::drawScene(QGraphicsScene &scene)
 //    - multiple scenes side by side (different viewports); how would zoom work here?
 void CDisplayView::drawGL(CGlTextWriter* pTextWriter)
 {
-   CDisplayObject *pObject;
-   CRenderer *pRender;
-   //FOR_EACH_V(pObject, m_Objects) {
-   for (auto itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
-      auto itobj = m_Objects.find(*itorder);
+   for (auto sId : m_ObjectOrder) {
+      auto itobj = m_Objects.find(sId);
       if (itobj == m_Objects.end()) continue;
-      pObject = itobj->second;
+      CDisplayObjectPtr& pObject = itobj->second;
       if (!pObject) continue;
       if (!m_ObjectState.m_childState[pObject->m_id].m_bVisible) continue;
-      pRender = pObject->getRenderer(ContextGL);
+
+      CRenderer* pRender = pObject->getRenderer(ContextGL);
       if (pRender) {
-         pRender->draw(this, pObject, pTextWriter);
+         pRender->draw(this, pObject.get(), pTextWriter); // XXX
       }
    }
 }
 
 void CDisplayView::drawHtml(QStringList &head, QStringList &body)
 {
-   CDisplayObject *pObject;
-   CRenderer *pRender;
-   //FOR_EACH_V(pObject, m_Objects) {
-   for (auto itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
-      auto itobj = m_Objects.find(*itorder);
+   for (auto sId : m_ObjectOrder) {
+      auto itobj = m_Objects.find(sId);
       if (itobj == m_Objects.end()) continue;
-      pObject = itobj->second;
+      CDisplayObjectPtr& pObject = itobj->second;
       if (!pObject) continue;
       if (!m_ObjectState.m_childState[pObject->m_id].m_bVisible) continue;
-      pRender = pObject->getRenderer(ContextHtml);
+
+      CRenderer* pRender = pObject->getRenderer(ContextHtml);
       if (pRender) {
-         pRender->draw(this, "head", pObject, &head);
-         pRender->draw(this, "body", pObject, &body);
+         pRender->draw(this, "head", pObject.get(), &head); // XXX
+         pRender->draw(this, "body", pObject.get(), &body); // XXX
       }
    }
 }
 
-int CDisplayView::getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask)
+int CDisplayView::getHtmlChunks(std::vector<CHtmlChunkPtr>& forms, int typeMask)
 {
    int count = 0;
-   CDisplayObject *pObject;
-   // FOR_EACH_V(pObject, objects) {
-   for (auto itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
-      auto itobj = m_Objects.find(*itorder);
+   for (auto sId : m_ObjectOrder) {
+      auto itobj = m_Objects.find(sId);
       if (itobj == m_Objects.end()) continue;
-      pObject = itobj->second;
+      CDisplayObjectPtr& pObject = itobj->second;
       if (!pObject) continue;
+
       // TODO: ??? getHtmlChunks: if (!m_ObjectState[pObject->m_id].m_bVisible) continue;
       count += pObject->getHtmlChunks(forms, typeMask);
    }

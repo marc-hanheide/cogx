@@ -9,6 +9,7 @@
 #include <VideoUtils.h>
 #include <convenience.hpp>
 #include "TestComponent.hpp"
+#include "CMilliTimer.hpp"
 
 /**
  * The function called to create a new instance of our component.
@@ -104,9 +105,9 @@ void VideoViewer::start()
       "</td></tr></table>"
       );
 
-  m_display.addDialog("Calculator 1", res_calculator_ui, res_calculator_js, "Calculator");
-  m_display.addDialog("Calculator 2", res_calculator_ui, res_calculator_js, "Calculator calc");
-  m_display.addDialog("dialog.interaction", res_chat_ui, "", "");
+  //m_display.addDialog("Calculator 1", res_calculator_ui, res_calculator_js, "Calculator");
+  //m_display.addDialog("Calculator 2", res_calculator_ui, res_calculator_js, "Calculator calc");
+  //m_display.addDialog("dialog.interaction", res_chat_ui, "", "");
 #else
   cvNamedWindow(getComponentID().c_str(), 1);
 #endif
@@ -667,50 +668,60 @@ void VideoViewer::runComponent()
     str << "end\n";
     m_display.setLuaGlObject("Robot.3D.scene", "", str.str());
   }
+
+  cogx::display::CMilliTimer tmMove;
+  cogx::display::CMilliTimer tmAddRemove;
+  tmMove.restart();
+  tmAddRemove.restart();
+  long objId = 0;
+  long remId = 0;
+
   while(isRunning())
   {
-    // needed to make the window appear
-    // (an odd behaviour of OpenCV windows!)
+    sleepComponent(1);
 #ifdef FEAT_VISUALIZATION
-    sleepComponent(100);
-    std::stringstream str;
-    count++;
-    if (count > 100) count = 0;
-    if (count % 2 == 0) {
-      int dir = rand() % 4;
-      switch (dir) {
-        case 0: str << "move(1,0)" << endl; break;
-        case 1: str << "move(0,1)" << endl; break;
-        case 2: str << "move(-1,0)" << endl; break;
-        case 3: str << "move(0,-1)" << endl; break;
+   
+    if (tmMove.elapsed() > 100) {
+      tmMove.restart();
+      std::stringstream str;
+      count++;
+      if (count > 100) count = 0;
+      if (count % 2 == 0) {
+        int dir = rand() % 4;
+        switch (dir) {
+          case 0: str << "move(1,0)" << endl; break;
+          case 1: str << "move(0,1)" << endl; break;
+          case 2: str << "move(-1,0)" << endl; break;
+          case 3: str << "move(0,-1)" << endl; break;
+        }
+      }
+      boxrot = (boxrot + 1) % 36;
+      str << "boxTurn=" << (boxrot * 10) << endl << "DispList:setDirty('pusher.box.rotation')" << endl;
+      if (str.tellp() > 0) {
+        m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", str.str());
       }
     }
-    boxrot = (boxrot + 1) % 36;
-    str << "boxTurn=" << (boxrot * 10) << endl << "DispList:setDirty('pusher.box.rotation')" << endl;
-    if (str.tellp() > 0) {
-      m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", str.str());
-    }
-#else
-    int key = cvWaitKey(100);
-    switch(key)
-    {
-      case 's':  // start/stop getting images
-        if(receiving)
-        {
-          videoServer->stopReceiveImages(getComponentID().c_str());
-          println("stopped receving images");
+
+    if (tmAddRemove.elapsed() >= 2) {
+      tmAddRemove.restart();
+
+      if (rand() % 10 < 9) {
+        ++objId;
+        ostringstream id;
+        ostringstream html;
+        id << objId;
+        html << "This is line #" << objId;
+        m_display.setHtml("AddRemove", id.str(), html.str());
+      }
+
+      if (rand() % 10 < 3) {
+        while (objId - remId > 100) {
+          ostringstream id;
+          ++remId;
+          id << remId;
+          m_display.removePart("AddRemove", id.str());
         }
-        else
-        {
-          vector<int> camIds;
-          camIds.push_back(camId);
-          videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
-          println("started receving images");
-        }
-        receiving = !receiving;
-        break;
-      default:
-        break;
+      }
     }
 #endif // FEAT_VISUALIZATION
   }

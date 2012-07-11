@@ -26,7 +26,7 @@ class QCastViewScene: public QGraphicsView, public QCastViewBase
    Q_OBJECT
 private:
    // cogx::display::CDisplayModel* pModel;
-   cogx::display::CDisplayView* pView;
+   cogx::display::CDisplayViewPtr pView;
 
    // XXX: scale and offset should be stored in pView or in a map<pview,viewState>
    QGraphicsScene* m_pScene;
@@ -39,8 +39,8 @@ public:
 
 public:
    // QCastViewBase
-   void setView(cogx::display::CDisplayView* pDisplayView); /*override*/
-   cogx::display::CDisplayView* getView() { return pView; } /*override*/
+   void setView(const cogx::display::CDisplayViewPtr& pDisplayView); /*override*/
+   cogx::display::CDisplayViewPtr getView() { return pView; } /*override*/
    operator QWidget&() { return *this; } /*override*/
    // CDisplayModelObserver
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView); /*override*/
@@ -48,7 +48,7 @@ public:
    void setViewPosition(const std::vector<double>& matrix); /*override*/
 
 protected:
-   void rebuildScene(cogx::display::CDisplayView* pDisplayView);
+   void rebuildScene(const cogx::display::CDisplayViewPtr& pDisplayView);
 
 private slots:
    void requestFullRedraw();
