@@ -19,7 +19,12 @@ import cast.cdl.WorkingMemoryChange;
  */
 public class DelayFilter implements MotiveFilter {
 
+	// delay prior to activation of given class
 	protected final HashMap<Class<? extends Motive>, Integer> m_delayMap;
+
+	// window of activation after a prior activation of the given class
+	protected final HashMap<Class<? extends Motive>, Integer> m_postDelayWindowMap;
+
 	protected final HashMap<Class<? extends Motive>, Long> m_activeDelays;
 	protected final HashMap<Class<? extends Motive>, Long> m_postDelays;
 	protected MotiveFilterManager m_component;
@@ -28,6 +33,7 @@ public class DelayFilter implements MotiveFilter {
 		m_delayMap = new HashMap<Class<? extends Motive>, Integer>();
 		m_activeDelays = new HashMap<Class<? extends Motive>, Long>();
 		m_postDelays = new HashMap<Class<? extends Motive>, Long>();
+		m_postDelayWindowMap = new HashMap<Class<? extends Motive>, Integer>();
 	}
 
 	@Override
@@ -70,8 +76,8 @@ public class DelayFilter implements MotiveFilter {
 				if (priority == MotivePriority.UNSURFACE) {
 					m_component.log("delaying surfacing of "
 							+ motive.getClass() + " for " + delay + "ms");
-					m_activeDelays.put(motive.getClass(), System.currentTimeMillis()
-							+ delay);
+					m_activeDelays.put(motive.getClass(),
+							System.currentTimeMillis() + delay);
 				}
 
 			}
@@ -82,10 +88,19 @@ public class DelayFilter implements MotiveFilter {
 				priority = MotivePriority.NORMAL;
 				m_activeDelays.remove(motive.getClass());
 				m_postDelays.put(motive.getClass(), System.currentTimeMillis()
-						+ delay);
+						+ getPostDelayWindow(motive.getClass()));
 			}
 		}
 		return priority;
+	}
+
+	private int getPostDelayWindow(Class<? extends Motive> _mtvCls) {
+		Integer window = m_postDelayWindowMap.get(_mtvCls);
+		if (window == null) {
+			return 0;
+		} else {
+			return window;
+		}
 	}
 
 	@Override
@@ -99,9 +114,14 @@ public class DelayFilter implements MotiveFilter {
 
 	@Override
 	public void configure(Map<String, String> arg0) {
-		int postDialogueDelay = 20000;
+		int postDialogueDelay = 10000;
+
 		m_delayMap.put(LearnObjectFeatureMotive.class, postDialogueDelay);
+		m_postDelayWindowMap.put(LearnObjectFeatureMotive.class,
+				postDialogueDelay);
+
 		m_delayMap.put(RobotNonSituatedMotive.class, postDialogueDelay);
+
 	}
 
 }
