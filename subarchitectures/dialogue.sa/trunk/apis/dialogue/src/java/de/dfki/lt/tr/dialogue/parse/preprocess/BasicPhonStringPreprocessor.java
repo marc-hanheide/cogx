@@ -24,8 +24,13 @@ public class BasicPhonStringPreprocessor implements PhonStringPreprocessor {
 					passed.add("entrance");
 				}
 				else {
-					mainBody = true;
-					passed.add(words[i]);
+                                        if (words[i].equals("also")) {
+                                            // leave it out
+                                        }
+                                        else {
+                                            mainBody = true;
+                                            passed.add(words[i]);
+                                        }
 				}
 			}
 		}
