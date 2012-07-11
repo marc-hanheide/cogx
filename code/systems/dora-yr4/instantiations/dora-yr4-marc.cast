@@ -14,12 +14,12 @@ VARDEFAULT feature_options=<multiline>
 # enable execution framework to let the planner trigger actions
     execution		
 # enable conceptual framework
-	conceptual
+	!conceptual
 # enable default		
 	default
 	coma			
 # enable place categorisation
-    categorisation	
+    !categorisation	
 # use visaul categorisation
     !categorisation-visual 
 # if enabled, place properties will be saved and loaded
@@ -49,7 +49,9 @@ VARDEFAULT feature_options=<multiline>
 
 SETVAR display_doors=
 
-SETVAR patrol_config=--targets "5 10 6 0" --deadline 20
+SETVAR patrol_config=--targets "0 7 17 24 17 7" --deadline 30
+
+SETVAR cons_rules=NOTEXISTS
 
 SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
 #SETVAR no_placeholders=--no-placeholders
