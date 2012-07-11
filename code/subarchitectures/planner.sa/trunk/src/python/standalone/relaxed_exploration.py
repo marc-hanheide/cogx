@@ -1067,10 +1067,11 @@ def explore_deps(actions, start, stat, domain, start_actions=[], prob_state=None
         next = reached_by[fact]
         action = (next.action, next.args)
         # print "action:", next.action.name
-        actions.add(action)
+        actions.add(next)
         deps = next.preconds - facts
         goal |= deps
-        action_deps[action] = set((r.action, r.args) for r in (reached_by[f] for f in next.all_preconds if f in reached_by))
+        # print "dep for %s: " % str(fact), [str(reached_by[f]) for f in next.all_preconds if f in reached_by]
+        action_deps[next] = set(reached_by[f] for f in next.all_preconds if f in reached_by)
         # print next, map(str, next.all_preconds)
         facts |= next.all_preconds
 
@@ -1085,9 +1086,12 @@ def explore_deps(actions, start, stat, domain, start_actions=[], prob_state=None
     # for a, args in actions:
     #     log.debug("(%s %s)", a.name, " ".join(str(ar) for ar in args))
     def collect_subplan(action):
+        # print "subplan: ", action
         plan = [(action.action, action.args)]
         facts = action.all_preconds
+        print "action %s", action, map(str, action.all_preconds)
         for a in action_deps.get(action, []):
+            # print "  dep: ", a
             subplan, subfacts = collect_subplan(a)
             plan = subplan + plan
             facts |= subfacts
