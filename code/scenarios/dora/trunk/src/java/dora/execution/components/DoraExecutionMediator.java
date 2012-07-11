@@ -251,7 +251,7 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			
 			AskForBKLabelInCategory act = newActionInstance(AskForBKLabelInCategory.class);
 			act.label = stringFromElementaryFormula(label);
-			act.category = stringFromElementaryFormula(label);
+			act.category = stringFromElementaryFormula(category);
 
 			return act;
 		} else if (_plannedAction.name.equals("ask-for-bk-inobject")) {
