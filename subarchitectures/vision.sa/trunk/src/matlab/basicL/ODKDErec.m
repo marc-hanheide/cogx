@@ -16,3 +16,4 @@ for sc=1:numSC
 %    make_A_decision( dec,  rslt.P ) ;
 end
 
+pcx{1}
