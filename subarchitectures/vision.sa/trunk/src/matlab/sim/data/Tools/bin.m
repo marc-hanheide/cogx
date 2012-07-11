@@ -5,4 +5,4 @@ if nargin<2
    maxb=double(max(b0(:)));
    thr=minb+2*(maxb-minb)/3;
 end;
-b=b0>thr;
+b=b0>=thr;
