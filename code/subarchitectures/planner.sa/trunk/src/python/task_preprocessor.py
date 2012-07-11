@@ -302,26 +302,26 @@ def tuples2facts(fact_tuples):
       log.warning("Error looking up %s(%s), got %s", feature_label, ", ".join(map(str, ftup.args)), str(func))
       continue
 
-    log.debug("next: %s", str(ftup))
+    log.trace("next: %s", str(ftup))
     if len(ftup.values) == 1 and ftup.values[0][1] == 1.0:
       if isinstance(ftup, AttributedSVarDistribution):
-        log.debug("attributed: %s", str(ftup))
+        log.trace("attributed: %s", str(ftup))
         yield state.Fact(state.StateVariable(func, ftup.args,\
                                               modality=pddl.mapl.attributed, modal_args = [ftup.agent,ftup.values[0][0]]),pddl.TRUE)
       elif isinstance(ftup, HypotheticalSVarDistribution):
-        log.debug("hypothetical fact: %s", str(ftup))
+        log.trace("hypothetical fact: %s", str(ftup))
         if ftup.hyp_value.is_instance_of(pddl.t_object):
           yield state.Fact(state.StateVariable(func, ftup.args,\
                                                  modality=pddl.mapl.hyp, modal_args = [ftup.hyp_value]),pddl.TRUE)
       else:
-        log.debug("certain fact: %s", str(ftup))
+        log.trace("certain fact: %s", str(ftup))
         yield state.Fact(state.StateVariable(func, ftup.args),ftup.values[0][0])
     elif len(ftup.values) == 1 and ftup.values[0][1] == 0.0 and isinstance(ftup, AttributedSVarDistribution):
-      log.debug("negative attribution: %s", str(ftup))
+      log.trace("negative attribution: %s", str(ftup))
       yield state.Fact(state.StateVariable(func, ftup.args,\
                                               modality=pddl.mapl.neg_attributed, modal_args = [ftup.agent,ftup.values[0][0]]),pddl.TRUE)
     else:
-      log.debug("uncertain fact: %s", str(ftup))
+      log.trace("uncertain fact: %s", str(ftup))
       vdist = prob_state.ValueDistribution(dict(ftup.values))
       yield prob_state.ProbFact(state.StateVariable(func, ftup.args), vdist)
 
