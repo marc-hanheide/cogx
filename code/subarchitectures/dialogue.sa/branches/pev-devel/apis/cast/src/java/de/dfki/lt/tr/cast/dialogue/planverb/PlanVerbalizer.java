@@ -274,9 +274,11 @@ public class PlanVerbalizer {
 	public String verbalizeHistoryStepTwo(List<Message> finalMessages) {	
 		log("verbalizeHistory 3: realising messages via openccg...");
 		String rawText = realizeMessages(finalMessages);
-		log("verbalizeHistory 4: aggregating realised text string...");
+		log("verbalizeHistory 4: saving raw text to file...");
+		writeTextToFile(rawText, "PEV-rawtext.xml");
+		log("verbalizeHistory 5: aggregating realised text string...");
 		String outText = PEVUtils.aggregateStrings(rawText);
-		log("verbalizeHistory 5: returning generated text...");
+		log("verbalizeHistory 6: returning generated text...");
 		return outText;
 	}
 	
@@ -510,6 +512,37 @@ public class PlanVerbalizer {
 		return new LinkedList<Message>();
 	}
 
+	
+	/**
+	 * Write the text (String object) to the given file
+	 */
+	private void writeTextToFile(String text, String filename) {
+		log("Writing TextToFile ...");
+
+		File file;
+		file = new File(filename);
+
+		try {
+			String msgListXMLString = IceXMLSerializer.toXMLString(text);
+
+			Writer out = new OutputStreamWriter(new FileOutputStream(file));
+			try {
+				out.write(msgListXMLString);
+				log("successfully saved text to " + filename);
+			}
+			finally {
+				out.close();
+			}			
+		} catch (FileNotFoundException e) {
+			logException(e);
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			logException(e);
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Write the List<Message> object to the given file
 	 */
