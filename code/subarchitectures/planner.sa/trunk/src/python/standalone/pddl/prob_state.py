@@ -434,12 +434,13 @@ class ProbabilisticState(State):
                 if total_p >= upper_threshold or p < lower_bound:
                     exclude_domains[svar].append(v)
                     continue
-                total_p += p
                 if v == UNKNOWN:
                     exclude_domains.setdefault(svar,[])
                 elif p >= upper_threshold:
+                    total_p += p
                     s[svar] = v
                 else:
+                    total_p += p
                     domains[svar].append((p, v))
                 
 #         for fact, prob in self.iterfacts(only_nonzero=False):
