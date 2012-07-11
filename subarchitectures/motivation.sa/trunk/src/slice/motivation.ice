@@ -128,6 +128,7 @@ module motivation {
     };
     
     class TutorInitiativeQuestionMotive extends TutorInitiativeMotive {
+      string questionedFeature;
     };
     
     

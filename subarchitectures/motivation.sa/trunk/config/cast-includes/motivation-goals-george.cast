@@ -8,6 +8,7 @@ JAVA MG gg.ms 	   	eu.cogx.goals.george.ModelStatusMotiveGenerator
 # JAVA MG gg.la 		eu.cogx.goals.george.LookAroundMotiveGenerator --log
 
 # Choose automatic or manual filtering
+#VARDEFAULT MotiveFileManagerGoalFilter=automatic
 VARDEFAULT MotiveFileManagerGoalFilter=manual
 
 IFEQ(%(MotiveFileManagerGoalFilter), manual)
