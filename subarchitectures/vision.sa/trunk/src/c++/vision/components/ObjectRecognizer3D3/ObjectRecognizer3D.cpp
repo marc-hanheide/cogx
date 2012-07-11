@@ -163,7 +163,6 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config)
 {
   map<string,string>::const_iterator it;
   istringstream labeliss;
-  istringstream modeliss;
 
   if((it = _config.find("--videoname")) != _config.end())
     videoServerName = it->second;
@@ -260,9 +259,11 @@ void ObjectRecognizer3D::start()
       string("Recognize Obj in WM"));
   m_display.addButton(getComponentID(), string("button.learn"),
       string("Learn Obj in WM"));
+  ostringstream ss;
+  ss <<  "function render()\nend\n";
+  m_display.setLuaGlObject("Recognizer3D.Models", guiid("Models"), ss.str());
 #endif
 }
-
 
 #ifdef FEAT_VISUALIZATION
 void ObjectRecognizer3D::CDisplayClient::handleEvent(const Visualization::TEvent &event)
@@ -377,8 +378,25 @@ double ObjectRecognizer3D::recognitionConfidenceToProbability(double conf)
   return prob;
 }
 
-void ObjectRecognizer3D::visualizeLearnedObject(Image &img, P::ObjectModel::Ptr obj)
+void ObjectRecognizer3D::visualizeLearnedObject(cv::Mat &img, 
+    const CameraParameters &cam, P::ObjectModel::Ptr obj)
 {
+  double cx = cam.cx/2.;
+  double cy = cam.cy/2.;
+  cv::Mat intrinsic(cv::Mat::zeros(3,3,CV_64F));
+  intrinsic.at<double>(0, 0) = 2.*cam.fx;
+  intrinsic.at<double>(1, 1) = 2.*cam.fy;
+  intrinsic.at<double>(2, 2) = 1.;
+  for(size_t i = 0; i < obj->views.size(); i++)
+  {
+    int row = i / 3;
+    int col = i % 3;
+    intrinsic.at<double>(0, 2) = cx*(1. + (double)col);
+    intrinsic.at<double>(1, 2) = cy*(1. + (double)row);
+    // last params: brighness and whether to draw keypoints
+    P::View::draw(*obj->views[i], intrinsic, img, Eigen::Matrix4f::Identity(),
+        1., true);
+  }
 }
 
 void ObjectRecognizer3D::visualizeRecognizedObject(cv::Mat &img,
@@ -506,14 +524,26 @@ bool ObjectRecognizer3D::learn(const string &label, const Image &image,
     log("learned object '%s': status %d", label.c_str(), status);
     // (0..not_learned, 1..tracked, 2..recognised, 3..learned)
     if(status == 3)
+    {
       succeed = true;
 
-    // the recogniser needs to be cleared and all currentl known models added again
-    recogniser->clearRecogniser();
-    for(map<string, P::ObjectModel::Ptr>::iterator it = models.begin(); it != models.end(); it++)
-      recogniser->addModelRecogniser(it->second);
-    if(models.size() > 0)
-      recogniser->initFlannRecogniser();
+      // the recogniser needs to be cleared and all currentl known models added again
+      recogniser->clearRecogniser();
+      for(map<string, P::ObjectModel::Ptr>::iterator it = models.begin(); it != models.end(); it++)
+        recogniser->addModelRecogniser(it->second);
+      if(models.size() > 0)
+        recogniser->initFlannRecogniser();
+
+#ifdef FEAT_VISUALIZATION
+      /*cvImage = cvScalar(0);
+      // visualize the learned views
+      visualizeLearnedObject(cvImage, image.camPars, model);
+      Image dispImage;
+      convertImageFromIpl(iplImage, dispImage);
+      m_display.setImage(getComponentID(), dispImage);*/
+      drawModels();
+#endif
+    }
   }
   catch(runtime_error &e)
   {
@@ -831,3 +861,93 @@ cv::Mat ObjectRecognizer3D::generateMaskImage(VisualObjectPtr visObj,
   }
   return mask;
 }
+
+#ifdef FEAT_VISUALIZATION
+static void drawCube(std::ostringstream &str, double size)
+{
+  double s = size/2.;
+  str << "glBegin(GL_LINE_LOOP)\n";
+  str << "v(" << -s << "," << -s << "," << s << ")\n";
+  str << "v(" << s << "," << -s << "," << s << ")\n";
+  str << "v(" << s << "," << s << "," << s << ")\n";
+  str << "v(" << -s << "," << s << "," << s << ")\n";
+  str << "glEnd()\n";
+  str << "glBegin(GL_LINE_LOOP)\n";
+  str << "v(" << -s << "," << -s << "," << -s << ")\n";
+  str << "v(" << s << "," << -s << "," << -s << ")\n";
+  str << "v(" << s << "," << s << "," << -s << ")\n";
+  str << "v(" << -s << "," << s << "," << -s << ")\n";
+  str << "glEnd()\n";
+}
+
+void ObjectRecognizer3D::drawModels()
+{
+#define FCHN(x) (float)x/255.0
+  double modelSeparation = 1.0;
+  double viewSeparation = 0.5;
+  std::ostringstream str;
+
+  str.unsetf(ios::floatfield); // unset floatfield
+  str.precision(3); // set the _maximum_ precision
+  str << "function render()\n";
+  str << "glPointSize(2)\n";
+  str << "v=glVertex\nc=glColor\n";
+  
+  // coordinate cross
+  str << "glBegin(GL_LINES)\n";
+  str << "c(255,0,0)\n";
+  str << "v(" << 0 << "," << 0 << "," << 0 << ")\n";
+  str << "v(" << 0.2 << "," << 0 << "," << 0 << ")\n";
+  str << "c(0,255,0)\n";
+  str << "v(" << 0 << "," << 0 << "," << 0 << ")\n";
+  str << "v(" << 0 << "," << 0.2 << "," << 0 << ")\n";
+  str << "c(0,0,255)\n";
+  str << "v(" << 0 << "," << 0 << "," << 0 << ")\n";
+  str << "v(" << 0 << "," << 0 << "," << 0.2 << ")\n";
+  str << "glEnd()\n";
+
+  // models
+  int modelCnt = 0;
+  for(map<string, P::ObjectModel::Ptr>::iterator it = models.begin(); it !=
+      models.end(); it++, modelCnt++)
+  {
+    double dy = modelSeparation*(double)modelCnt;
+    str << "showLabel(0, " << dy << ", " << viewSeparation*0.75 <<", '" << it->second->id << "', 12);\n";
+    for(size_t i = 0; i < it->second->views.size(); i++)
+    {
+      double dx = viewSeparation*(double)i;
+
+      str << "glPushMatrix()\n";
+      str << "glTranslate(" << dx << "," << dy << "," << 0 << ")\n";
+
+      // draw a green cube around each view
+      str << "c(0,255,0)\n";
+      drawCube(str, viewSeparation);
+      str << "glBegin(GL_POINTS)\n";
+
+      pcl::PointCloud<pcl::PointXYZRGB> &cloud = *it->second->views[i]->cloud;
+      for(size_t j = 0; j < cloud.points.size(); j++)
+      {
+        pcl::PointXYZRGB &p = cloud.points[j];
+        str << "c(" << FCHN(p.r) << "," << FCHN(p.g) << "," << FCHN(p.b) << ")\n";
+        str << "v(" << p.x << "," << p.y << "," << p.z << ")\n";
+      }
+      str << "glEnd()\n";
+      str << "glPopMatrix()\n";
+    }
+  }
+  str << "end\n";
+  m_display.setLuaGlObject("Recognizer3D.Models", guiid("Models"), str.str());
+#undef FCHN
+}
+#endif
+
+void ObjectRecognizer3D::runComponent()
+{
+	while(isRunning())
+  {
+    drawModels();
+    sleep(2);
+  }
+}
+
