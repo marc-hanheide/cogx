@@ -748,7 +748,7 @@ IFOPTALL(%(feature_options), planning_sa)
         ENDIF
         IFOPTALL(%(feature_options), motivation_explanation)
             ### creates goals from hypothesis about visualobjects
-            JAVA MG goal.hyp-generator motivation.components.generators.VisualObjectHypothesisGoalGenerator
+			JAVA MG goal.hyp-generator motivation.components.generators.HypothesisVerificationGoalGenerator
         ENDIF
         ### this instantiates the scheduler (or manager) layer of the motivation architecture
         ### here: it's a simple scheduler which will just plan for all the goals present at once and will NOT look for opportunities,
