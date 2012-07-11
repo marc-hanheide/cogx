@@ -28,7 +28,6 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
@@ -357,6 +356,8 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 				.newMotive(TutorInitiativeQuestionMotive.class, null,
 						getCASTTime());
 
+		motive.questionedFeature = _feature;
+		
 		String goalString = conjoinGoalStrings(new String[] {
 				getAdditionalGoals(),
 				getPolarQuestionGoalString(_feature, _hypothesis,
@@ -385,7 +386,9 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		TutorInitiativeQuestionMotive motive = VisualObjectMotiveGenerator
 				.newMotive(TutorInitiativeQuestionMotive.class, null,
 						getCASTTime());
-
+		
+		motive.questionedFeature = _feature;
+		
 		String goalString = conjoinGoalStrings(new String[] {
 				getAdditionalGoals(),
 				getOpenQuestionGoalString(_feature, _beliefAddress) });
@@ -722,29 +725,32 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 	}
 
-	private static final String[] POTENTIAL_ACTION_EFFECTS = new String[] {
-			"global-color-question-answered", "global-shape-question-answered",
-			"global-objecttype-question-answered",
-			"object-refering-color-question-answered",
-			"object-refering-shape-question-answered",
-			"object-refering-objecttype-question-answered", "color-learned",
-			"shape-learned", "objecttype-learned", "color-unlearned",
-			"shape-unlearned", "objecttype-unlearned",
-			"polar-color-question-answered", "polar-shape-question-answered",
-			"polar-objecttype-question-answered" };
-
-	protected static void removeActionEffects(ManagedComponent _component,
-			CASTIndependentFormulaDistributionsBelief<MergedBelief> gb) {
-
-		for (String potentialEffect : POTENTIAL_ACTION_EFFECTS) {
-			FormulaDistribution removed = gb.getContent().remove(
-					potentialEffect);
-			if (removed != null) {
-				_component
-						.log("removed effect from belief: " + potentialEffect);
-			}
-		}
-	}
+//	private static final String[] POTENTIAL_ACTION_EFFECTS = new String[] {
+//			"global-color-question-answered", "global-shape-question-answered",
+//			"global-objecttype-question-answered",
+//			"object-refering-color-question-answered",
+//			"object-refering-shape-question-answered",
+//			"object-refering-objecttype-question-answered",
+//			"polar-color-question-answered", "polar-shape-question-answered",
+//			"polar-objecttype-question-answered"
+//
+//	// , "color-learned",
+//	// "shape-learned", "objecttype-learned", "color-unlearned",
+//	// "shape-unlearned", "objecttype-unlearned",
+//	};
+//
+//	protected static void removeActionEffects(ManagedComponent _component,
+//			CASTIndependentFormulaDistributionsBelief<MergedBelief> gb) {
+//
+//		for (String potentialEffect : POTENTIAL_ACTION_EFFECTS) {
+//			FormulaDistribution removed = gb.getContent().remove(
+//					potentialEffect);
+//			if (removed != null) {
+//				_component
+//						.log("removed effect from belief: " + potentialEffect);
+//			}
+//		}
+//	}
 
 	/**
 	 * Clean up the given belief assuming that this motive has completed
@@ -776,7 +782,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 					(InterpretedIntentionMotive) _completedMotive);
 		}
 		// remove potential results of learning and dialogue
-		removeActionEffects(_component, gb);
+//		removeActionEffects(_component, gb);
 
 		_component.overwriteWorkingMemory(_beliefAddr, gb.get());
 	}

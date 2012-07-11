@@ -3,6 +3,8 @@ package eu.cogx.goals.george;
 import java.util.ArrayList;
 import java.util.List;
 
+import vision.execution.george.VisionActionInterface;
+
 import motivation.components.generators.AbstractBeliefMotiveGenerator;
 import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.Motive;
@@ -34,7 +36,7 @@ public class VisualObjectMotiveGenerator extends
 	private static final int MAX_PLANNING_TIME = 30;
 
 	// TODO share these correctly with other components
-	public static final String LEARNT_POSTFIX_KEY = "-learned";
+	public static final String LEARNT_POSTFIX_KEY = VisionActionInterface.LEARNED_FEATURE_POSTFIX;
 
 	public static final String COLOUR_KEY = "color";
 	public static final String COLOUR_LEARNT_KEY = COLOUR_KEY
@@ -62,6 +64,8 @@ public class VisualObjectMotiveGenerator extends
 
 		// if dialogue was involved, then the belief may have been marked as a
 		// referent. this needs cleaning up...
+		
+		println("why on earth am I getting called?!");
 		AbstractInterpretedIntentionMotiveGenerator.cleanBelief(this,
 				_motive.referenceEntry, _motive);
 
