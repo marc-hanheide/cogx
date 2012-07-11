@@ -36,7 +36,7 @@ public class StopWatch {
 		infoLoggerInstance.info(text);
 	}
 	
-	public synchronized void toc(String text) {
+	public synchronized long toc(String text) {
 		if (!running)
 			throw (new IllegalStateException("StopWatch not running!"));
 		count++;
@@ -45,6 +45,7 @@ public class StopWatch {
 //		cumSquaredTime += lastSpan * lastSpan;
 		loggerInstance.info(text + ": " + (Long.toString(lastSpan)));
 		running = false;
+		return lastSpan;
 	}
 
 //	public void stats() {
