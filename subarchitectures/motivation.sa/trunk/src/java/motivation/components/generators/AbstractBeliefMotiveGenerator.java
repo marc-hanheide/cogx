@@ -15,7 +15,10 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 	}
 
 	protected boolean processEntry(T _entry) {
-		return _entry.type.equals(beliefType);
+		if (beliefType.length()==0)
+			return true;
+		else
+			return _entry.type.equals(beliefType);
 	}
 	
 }
