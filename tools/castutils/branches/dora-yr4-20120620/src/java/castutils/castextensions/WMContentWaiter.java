@@ -28,7 +28,8 @@ import castutils.castextensions.WMView.ChangeHandler;
 public class WMContentWaiter<T extends Ice.ObjectImpl> implements
 		ChangeHandler<T> {
 
-    static final int BELIEF_TIMEOUT = 10000; // G Horn changed this from 2000 on advice from Marc
+    static final int BELIEF_TIMEOUT = 20000; // G Horn changed this from 2000 on advice from Marc
+    										 // and Marc changed it to 20000, because it was too low for map loading :-(
 
 	/**
 	 * an interface realizing a matching function used for the
