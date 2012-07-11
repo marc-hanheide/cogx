@@ -58,14 +58,14 @@ end
 RECrgb=cat(3,RECrgb1,RECrgb2,RECrgb3);
 
 dfigure(4.3,1.2,['VStest - Test colours; V=',num2str(V)]);
-resizefigs(gcf,4.5,1.2);
+resizeFigs(gcf,4.5,1.2);
 Test.rgba=subplot(1,3,1);
-showimg(RGB);
+showImg(RGB);
 xlabel('Hu');ylabel('Sa');title('Input');
 subplot(1,3,2);
-showimg(RECrgb);
+showImg(RECrgb);
 xlabel('Hu');ylabel('Sa');title('Recognized');
 subplot(1,3,3);
-showimg(PR);
+showImg(PR);
 colormap gray;
 xlabel('Hu');ylabel('Sa');title('AP');
