@@ -115,6 +115,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;                   INIT RULES                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
   (:init-rule set-polar-question-color-threshold
     :parameters (?r - Robot)
     :precondition (= (polar-question-color-threshold ?r) UNKNOWN)
@@ -876,7 +877,10 @@
       (and
         (is-object-in-question ?v)
         (< (objecttype-prob ?v) (believe-in-objecttype-threshold ?r))
-        (= (objecttype ?v) ?t)
+        (or
+          (= (objecttype ?v) ?t)
+          (= ?t UNKNOWN_IDENT)
+        )
       )
     :effect
       (and
