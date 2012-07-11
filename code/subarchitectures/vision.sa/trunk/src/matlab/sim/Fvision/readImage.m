@@ -6,8 +6,20 @@ function [x,b,pt3d]=readImage(idx)
 
 global Dirs Data
 %IDIR=[Dirs.data 'shapes/'];
-x0=imread([Dirs.data Data.imgName num2str(idx,['%0' num2str(Data.numDigit) 'd']) Data.imgFormat]);
-b0=imread([Dirs.data Data.mskName num2str(idx,['%0' num2str(Data.numDigit) 'd']) Data.imgFormat]);
+
+imgOK=0;
+while ~imgOK
+    x0=imread([Dirs.data Data.imgName num2str(idx,['%0' num2str(Data.numDigit) 'd']) Data.imgFormat]);
+    b0=imread([Dirs.data Data.mskName num2str(idx,['%0' num2str(Data.numDigit) 'd']) Data.imgFormat]);
+    sx=size(x0);
+    sb=size(b0);
+    raz=prod(sx(1:2))-prod(sb);
+    if raz==0
+        imgOK=1;
+    else idx=idx+1;
+    end
+end
+
 try
     pt3d = load([Dirs.data Data.ptsName num2str(idx,['%0' num2str(Data.numDigit) 'd']) Data.ptsFormat]) ;
     if size(pt3d,2)>3
