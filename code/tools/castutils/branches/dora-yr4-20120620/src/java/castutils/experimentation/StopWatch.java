@@ -24,8 +24,8 @@ public class StopWatch {
 		running = true;
 	}
 
-	public void toc() {
-		toc("");
+	public long toc() {
+		return toc("");
 	}
 
 	public synchronized boolean isRunning() {
