@@ -63,6 +63,7 @@ private:
     void handleEvent(const Visualization::TEvent &event);
   };
   CDisplayClient m_display;
+  std::string guiid(const std::string &myid) { return myid + "_" + getComponentID(); }
 #endif
   void setRecogniserCamereParameters(Image &image);
   cv::Mat generateMaskImage(VisualObjectPtr visObj,
@@ -80,9 +81,11 @@ private:
   void objectLoationToVisualObject(P::ObjectLocation &objLoc,
       VisualObjectPtr &visObj);
   double recognitionConfidenceToProbability(double conf);
-  void visualizeLearnedObject(Image &img, P::ObjectModel::Ptr obj);
+  void visualizeLearnedObject(cv::Mat &img, 
+      const CameraParameters &cam, P::ObjectModel::Ptr obj);
   void visualizeRecognizedObject(cv::Mat &img, const CameraParameters &cam,
       P::ObjectModel::Ptr obj, P::ObjectLocation &loc);
+  void drawModels();
 
 protected:
 
@@ -95,6 +98,7 @@ protected:
 public:
   ObjectRecognizer3D();
   virtual ~ObjectRecognizer3D();
+  virtual void runComponent();
 
   virtual void receiveImages(const vector<Video::Image>& images) {}
   void saveModelDatabase();
