@@ -1139,7 +1139,7 @@
     :precondition
       (and
         (not (= (presence ?v) REMOVED))
-        (not (= (attributed-color ?v) (color ?v)))
+        ;;(not (= (attributed-color ?v) (color ?v)))
         (not (= ?c UNKNOWN_COLOR))
         (exists (?p - ProtoObject)
           (and 
@@ -1162,7 +1162,7 @@
     :precondition 
       (and
         (not (= (presence ?v) REMOVED))
-        (not (= (attributed-shape ?v) (shape ?v)))
+        ;;(not (= (attributed-shape ?v) (shape ?v)))
         (not (= ?s UNKNOWN_SHAPE))
         (exists (?p - ProtoObject) 
           (and 
