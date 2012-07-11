@@ -64,6 +64,7 @@ import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
 import de.dfki.lt.tr.dialogue.util.NominalRemapper;
+import de.dfki.lt.tr.dialogue.util.VerbalisationUtils;
 import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
 import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
 import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
@@ -264,6 +265,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 				}
 				else {
 					getLogger().warn("didn't get any interpretations at all!");
+                                        VerbalisationUtils.verbaliseString(committer, "sorry I did not understand what you meant");
 				}
 			}
 
