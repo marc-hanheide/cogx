@@ -53,7 +53,7 @@ public class VisualObjectTransferFunction extends
 		ff.val = (float) from.salience;
 		fpair.val = ff;
 		fpair.prob = 1;
-		
+
 		result.put("salience", fpair);
 
 		// The status of the VO: unknow, visible, was_visible, removed
@@ -75,9 +75,9 @@ public class VisualObjectTransferFunction extends
 		}
 		fpair.val = ef;
 		fpair.prob = 1;
-		
+
 		result.put(PRESENCE_KEY, fpair);
-					
+
 		// logger.info("added salience");
 
 		fillConcept("color", result, from.colorLabels, from.colorDistrib);
@@ -86,12 +86,20 @@ public class VisualObjectTransferFunction extends
 
 		fillConcept("shape", result, from.shapeLabels, from.shapeDistrib);
 
-		fillConcept("objecttype", result, from.identLabels, from.identDistrib);
+		if (from.identLabels.length == 0) {
+			// HACK to allow questions to be answered with no recognition result
+			fillConcept("objecttype", result, new String[] { "box" },
+					new double[] { 0.01 });
+		} else {
+			fillConcept("objecttype", result, from.identLabels,
+					from.identDistrib);
+		}
 		return result;
 	}
 
-	private void fillConcept(String concept, Map<String, FormulaProbPair> result,
-			String[] labels, double[] distrib) {
+	private void fillConcept(String concept,
+			Map<String, FormulaProbPair> result, String[] labels,
+			double[] distrib) {
 
 		if (labels.length > 0) {
 
@@ -107,16 +115,16 @@ public class VisualObjectTransferFunction extends
 				}
 				// HACK - END
 			}
-			
-			FormulaProbPair fpair = new  FormulaProbPair();
+
+			FormulaProbPair fpair = new FormulaProbPair();
 			FloatFormula ff = new FloatFormula();
 			ff.val = (float) maxLabelProb;
 			fpair.val = ff;
 			fpair.prob = 1;
 
 			result.put(concept + "-prob", fpair);
-			
-			fpair = new  FormulaProbPair();
+
+			fpair = new FormulaProbPair();
 			ElementaryFormula ef = new ElementaryFormula();
 			ef.prop = labels[maxIndex];
 			fpair.val = ef;

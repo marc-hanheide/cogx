@@ -210,11 +210,20 @@ public class VisionActionInterface extends
 		@Override
 		protected void actionComplete() {
 			try {
+
+				println("adding feature to belief");
 				getComponent().addFeature(getAction().beliefAddress,
 						m_concept + m_featurePostfix, true);
+				println("added");
+				// Thread.sleep(500000);
+
 			} catch (CASTException e) {
 				logException(e);
 			}
+			// catch (InterruptedException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// }
 
 		}
 	}
