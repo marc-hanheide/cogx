@@ -7,6 +7,7 @@ Main class for storing MAPL plans. Such plans
 
 """
 
+import contextlib
 from string import Template
 from collections import defaultdict
 import copy, itertools
@@ -103,8 +104,10 @@ class GoalAction(DummyAction):
         self.name = "goal"
         self.replan = None
         self.precondition = goal
+
+    @contextlib.contextmanager
     def instantiate(self, x, y):
-        pass
+        yield self
     def uninstantiate(self):
         pass
     def __str__(self):

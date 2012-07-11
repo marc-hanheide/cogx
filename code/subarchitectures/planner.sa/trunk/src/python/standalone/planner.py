@@ -105,28 +105,43 @@ class Planner(object):
                 
 
     def check_node(self, pnode, state, replan=False):
+        log.debug("checking node: %s", str(pnode))
         conds = []
         if replan:
             read = pnode.replanconds
             universal = pnode.replan_universal
+            log.trace("adding replan condition: %s", pnode.action.replan.pddl_str() if pnode.action.replan else "None")
+            log.trace("  read: %s", map(str, read))
+            log.trace("  univ: %s", map(str, universal))
             conds.append(pnode.action.replan)
         else:
             read = pnode.preconds|pnode.replanconds
             universal = pnode.preconds_universal|pnode.replan_universal
+            log.trace("adding precondition: %s", pnode.action.precondition.pddl_str() if pnode.action.precondition else "None")
+            log.trace("  read: %s / %s", map(str, pnode.preconds), map(str, pnode.replanconds))
+            log.trace("  univ: %s / %s", map(str, pnode.preconds_universal), map(str, pnode.replan_universal))
             conds.append(pnode.action.precondition)
-        for cnode in pnode.enabled_ceffs:
-            # print "cconds:", map(str, cconds)
-            read |= cnode.preconds
-            universal |= cnode.preconds_universal
-            conds.append(cnode.pddl_condition) #FIXME: proabably not correct yet
+            for cnode in pnode.enabled_ceffs:
+                # print "cconds:", map(str, cconds)
+                read |= cnode.preconds
+                universal |= cnode.preconds_universal
+                log.trace("adding conditional effect: %s", cnode.pddl_condition.pddl_str())
+                log.trace("  read: %s", map(str, cnode.preconds))
+                log.trace("  univ: %s", map(str, cnode.preconds_universal))
+                conds.append(cnode.pddl_condition) #FIXME: proabably not correct yet
 
         negated_axioms = any(val == pddl.FALSE for svar, val in read if svar.function in state.problem.domain.derived or svar.modality in state.problem.domain.derived)
+        log.trace("need negated axioms: %d", negated_axioms)
         # print map(str, state.problem.domain.derived)
         # print negated_axioms
 
         if not universal and not negated_axioms:
+            log.trace("quickcheck:")
+            for f in read:
+                log.trace("    %s => %s", str(f), str(state[f.svar]))
             #no universal preconditions => quickcheck
             if all(f in state for f in read):
+                log.trace("quickcheck successful")
                 return True
             
         def has_preferences(cond, results):
@@ -141,14 +156,23 @@ class Planner(object):
         action = pnode.action
         if conds:
             cond = pddl.Conjunction.join(conds)
+            log.trace("checking condition: %s", cond.pddl_str())
             try:
                 state.clear_axiom_cache()
                 with action.instantiate(pnode.full_args, state.problem):
-                    extstate = state.get_extended_state(state.get_relevant_vars(cond))
+                    relvars = state.get_relevant_vars(cond)
+                    log.trace("relevant vars: %s", map(str, relvars))
+                    extstate = state.get_extended_state(svars=relvars)
                     return extstate.is_satisfied(cond)
-            except:
+            except KeyError:
+                log.info("could not instantiate action '%s'. An object probably vanished from state.", pnode)
                 return False
-        
+            except:
+                import traceback
+                log.error("unexpected exception occurred when instantiating action '%s'", pnode)
+                log.error(traceback.format_exc())
+                return False
+
         return True
 
     def update_plan(self, plan, mapltask):
@@ -160,6 +184,10 @@ class Planner(object):
             else:
                 try:
                     pnode.action = mapltask.domain.get_action(pnode.action.name)
+                    for ceff in pnode.enabled_ceffs:
+                        ceff.pddl_condition = ceff.pddl_condition.copy(new_scope=pnode.action)
+                        ceff.pddl_effect = ceff.pddl_effect.copy(new_scope=pnode.action)
+
                 except:
                     log.info("problem getting action description for %s", str(pnode))
                     return False
