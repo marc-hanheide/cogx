@@ -32,7 +32,7 @@ if(HAS_LIBPLOT)
    set(LIBPLOT_LIBS plotter)
 endif(HAS_LIBPLOT)
 
-set(SOURCES TestComponent.cpp)
+set(SOURCES TestComponent.cpp CMilliTimer.cpp)
 
 add_definitions(-DFEAT_VISUALIZATION)
 include_directories( .

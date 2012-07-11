@@ -36,13 +36,15 @@ QCastView::~QCastView()
    pView = nullptr;
 }
 
-void QCastView::setView(cogx::display::CDisplayView* pDisplayView)
+void QCastView::setView(const cogx::display::CDisplayViewPtr& pDisplayView)
 {
-   if (pView != nullptr) {
+   if (pView == pDisplayView) return;
+
+   if (pView) {
       pView->viewObservers.removeObserver(this);
    }
    pView = pDisplayView;
-   if (pView != nullptr) {
+   if (pView) {
       pView->viewObservers.addObserver(this);
    }
    update();
@@ -100,6 +102,6 @@ void QCastView::wheelEvent(QWheelEvent *e)
 
 void QCastView::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
-   if (pView == this->pView) update();
+   if (pView == this->pView.get()) update();
 }
 

@@ -43,11 +43,16 @@ QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
    m_bHasForms = false;
    m_bBlockUpdates = false;
    jsObjectName = QString::fromStdString(cxd::CHtmlChunk::JavascriptObjectName);
+   m_updateTriggerTimer.setSingleShot(true);
 
    // The signal is queued an processed when Qt is idle.
    // We emit the signal in paintEvent so that the HTML content is recreated
    // only if it has to be shown.
    connect(this, SIGNAL(updateContent()),
+         this, SLOT(tryUpdateContent()),
+         Qt::QueuedConnection);
+
+   connect(&m_updateTriggerTimer, SIGNAL(timeout()),
          this, SLOT(doUpdateContent()),
          Qt::QueuedConnection);
 
@@ -83,6 +88,8 @@ QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
    actFindAgain->setText(QKeySequence(tr("Edit|Find again on page...")));
    connect(actFindAgain, SIGNAL(triggered()), this, SLOT(onFindAgainOnPage()));
    addAction(actFindAgain);
+
+   m_tmLastUpdate.restart();
 }
 
 QCastViewHtml::~QCastViewHtml()
@@ -112,10 +119,9 @@ void QCastViewHtml::createJsObjects()
            Qt::QueuedConnection);
    }
 
-   cxd::CHtmlChunk* pChunk;
-   FOR_EACH(pChunk, m_Chunks) {
+   for (auto pChunk : m_Chunks) {
       if (! pChunk ) continue;
-      pObj->registerChunk(pChunk);
+      pObj->registerChunk(pChunk.get()); // XXX
    }
    pFrame->addToJavaScriptWindowObject(jsObjectName, pObj);
 }
@@ -131,8 +137,7 @@ void QCastViewHtml::finishLoading(bool)
       if (pPage) pFrame = pPage->currentFrame();
       if (!pFrame) return;
 
-      cxd::CHtmlChunk* pForm;
-      FOR_EACH(pForm, m_Chunks) {
+      for (auto pForm : m_Chunks) {
          if (! pForm || pForm->type() != cxd::CHtmlChunk::form) continue;
          QString js = QString("CogxJsFillForm('#%1');").arg(QString::fromStdString(pForm->htmlid()));
          pFrame->evaluateJavaScript(js);
@@ -188,17 +193,20 @@ void QCastViewHtml::setModel(cogx::display::CDisplayModel* pDisplayModel)
    pModel = pDisplayModel;
 }
 
-void QCastViewHtml::setView(cogx::display::CDisplayView* pDisplayView)
+void QCastViewHtml::setView(const cogx::display::CDisplayViewPtr& pDisplayView)
 {
-   if (pView != nullptr) {
+   if (pView == pDisplayView) return;
+
+   if (pView) {
       pView->viewObservers.removeObserver(this);
    }
    pView = pDisplayView;
    if (pView != nullptr) {
       pView->viewObservers.addObserver(this);
    }
+
    m_bModified = true;
-   update();
+   emit updateContent();
 }
 
 // TODO: reload the document! but not in paintEvent -- it causes a SIGBUS
@@ -206,29 +214,54 @@ void QCastViewHtml::setView(cogx::display::CDisplayView* pDisplayView)
 
 void QCastViewHtml::paintEvent(QPaintEvent* event)
 {
-   if (m_bModified && !m_bBlockUpdates) {
-      m_bModified = false;
-      emit updateContent(); // Queued update
-      return;
-   }
+   //if (m_bModified && !m_bBlockUpdates) {
+   //   m_bModified = false;
+   //   emit updateContent(); // Queued update
+   //   return;
+   //}
    QWebView::paintEvent(event);
 }
 
+// Update the content if enough time has passed, otherwise start the timer.
+void QCastViewHtml::tryUpdateContent()
+{
+   if (m_updateTriggerTimer.isActive()) {
+      return;
+   }
+   long toWait = 200 - m_tmLastUpdate.elapsed();
+   if (toWait > 0) {
+      m_updateTriggerTimer.start(toWait + 5);
+      return;
+   }
+
+   doUpdateContent();
+}
+
+// The order of events should go like this:
+// 1. onViewChanged -> emit updateContent()
+// 2. this should trigger tryUpdateContent()
+// 3. if enough time has passed:
+//    -> doUpdateContent()
+// 4. otherwise:
+//    -> m_updateTriggerTimer.start()
+// 5. m_updateTriggerTimer -> emit timeout()
+//    -> doUpdateContent()
 void QCastViewHtml::doUpdateContent()
 {
    DTRACE("QCastViewHtml::doUpdateContent");
+   m_tmLastUpdate.restart();
+
    if (m_bBlockUpdates) {
       DTRACE("blocked");
       return;
    }
    m_Chunks.clear();
-   // TODO: BUG!!! We are accessing chunks, but they are not locked! They could be deleted in the model!
    // TODO: should getHtmlChunks observe CViewedObjectState.m_bVisible?
    pView->getHtmlChunks(m_Chunks, cxd::CHtmlChunk::form | cxd::CHtmlChunk::activehtml);
 
-   cxd::CHtmlChunk* pChunk;
+   m_bModified = false;
    m_bHasForms = false;
-   FOR_EACH(pChunk, m_Chunks) {
+   for (auto pChunk : m_Chunks) {
       if (pChunk && pChunk->type() == cxd::CHtmlChunk::form) {
          m_bHasForms = true;
          break;
@@ -284,9 +317,9 @@ void QCastViewHtml::doUpdateContent()
 
 void QCastViewHtml::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
-   if (pView == this->pView) {
+   if (pView == this->pView.get()) {
       m_bModified = true;
-      update();
+      emit updateContent();
    }
 }
 

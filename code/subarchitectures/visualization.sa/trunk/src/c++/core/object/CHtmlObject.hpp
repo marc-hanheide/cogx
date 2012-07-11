@@ -27,8 +27,8 @@ class CHtmlObject: public CDisplayObject
    static std::auto_ptr<CRenderer> renderHtml;
 
 private:
-   std::map<std::string, CHtmlChunk*> m_Parts;
-   std::map<std::string, CHtmlChunk*> m_HeadParts;
+   std::map<std::string, CHtmlChunkPtr> m_HeadParts;
+   std::map<std::string, CHtmlChunkPtr> m_Parts;
 
 public:
    CHtmlObject();
@@ -36,14 +36,14 @@ public:
    bool isBitmap(); /*override*/
    virtual ERenderContext getPreferredContext(); /*override*/
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
-   virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& chunks, int typeMask); /*override*/
+   virtual int getHtmlChunks(std::vector<CHtmlChunkPtr>& chunks, int typeMask); /*override*/
    void setHtml(const std::string& partId, const std::string& text);
-   CHtmlChunk* setActiveHtml(const Ice::Identity& ident, const std::string& partId, const std::string& text);
-   CHtmlChunk* setForm(const Ice::Identity& ident, const std::string& partId, const std::string& text);
+   CHtmlChunkPtr setActiveHtml(const Ice::Identity& ident, const std::string& partId, const std::string& text);
+   CHtmlChunkPtr setForm(const Ice::Identity& ident, const std::string& partId, const std::string& text);
    void setHead(const std::string& partId, const std::string& text);
-   CHtmlChunk* getPart(const std::string& partId);
-   virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts); /*override*/
-   void getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered=false); /*override*/
+   CHtmlChunkPtr getPart(const std::string& partId);
+   virtual bool removePart(const std::string& partId); /*override*/
+   void getParts(std::vector<CDisplayObjectPartPtr>& parts, bool bOrdered=false); /*override*/
 };
 
 class CHtmlObject_RenderHtml: public CRenderer

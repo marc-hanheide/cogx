@@ -24,7 +24,7 @@ class QCustomToolBar: public QToolBar, public cogx::display::CDisplayModelObserv
 {
    Q_OBJECT
 private:
-   cogx::display::CDisplayView* m_pView;
+   cogx::display::CDisplayViewPtr m_pView;
 
 private:
    int m_controlCount;
@@ -35,11 +35,11 @@ public:
    ~QCustomToolBar();
 
    // @returns the nubmer of created custom UI elements.
-   int updateUi(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
+   int updateUi(cogx::display::CDisplayModel *pModel, const cogx::display::CDisplayViewPtr& pView);
    int controlCount() {
       return m_controlCount;
    }
-   bool hasView(cogx::display::CDisplayView *pView) {
+   bool hasView(const cogx::display::CDisplayViewPtr& pView) {
       return pView == m_pView;
    }
 

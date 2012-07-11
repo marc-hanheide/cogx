@@ -296,7 +296,7 @@ void CDisplayServer::setRawImage(const std::string& id, int width, int height,
       // XXX crashes: painter.drawText(1, 20, QString("Invalid image format."));
    }
 
-   if (pImage != pExisting) m_Model.setObject(pImage);
+   if (pImage != pExisting) m_Model.setObject(CDisplayObjectPtr(pImage));
    else m_Model.refreshObject(id);
 }
 
@@ -312,7 +312,7 @@ void CDisplayServer::setCompressedImage(const std::string& id, const std::vector
    pImage->m_pImage = new QImage();
    bool ok = pImage->m_pImage->loadFromData(&data[0], data.size(), format.c_str());
 
-   if (ok) m_Model.setObject(pImage);
+   if (ok) m_Model.setObject(CDisplayObjectPtr(pImage));
    else if(pExisting) m_Model.removeObject(id);
 }
 
@@ -330,9 +330,9 @@ void CDisplayServer::setObject(const std::string& id, const std::string& partId,
    //}
 
    CSvgImage *pImage = nullptr;
-   CDisplayObject *pExisting = m_Model.getObject(id);
+   CDisplayObjectPtr pExisting = m_Model.getObject(id);
    if (pExisting) {
-      pImage = dynamic_cast<CSvgImage*>(pExisting);
+      pImage = dynamic_cast<CSvgImage*>(pExisting.get());
       if (! pImage) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
@@ -348,7 +348,7 @@ void CDisplayServer::setObject(const std::string& id, const std::string& partId,
       pImage = new CSvgImage();
       pImage->m_id = id;
       pImage->setPart(partId, xmlData);
-      m_Model.setObject(pImage);
+      m_Model.setObject(CDisplayObjectPtr(pImage));
    }
 }
 
@@ -399,9 +399,9 @@ void CDisplayServer::setLuaGlObject(const std::string& id, const std::string& pa
    //DTRACE("CDisplayServer::setLuaGlObject");
 
    CLuaGlScript *pModel = nullptr;
-   CDisplayObject *pExisting = m_Model.getObject(id);
+   CDisplayObjectPtr pExisting = m_Model.getObject(id);
    if (pExisting) {
-      pModel = dynamic_cast<CLuaGlScript*>(pExisting);
+      pModel = dynamic_cast<CLuaGlScript*>(pExisting.get());
       if (! pModel) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
@@ -418,7 +418,7 @@ void CDisplayServer::setLuaGlObject(const std::string& id, const std::string& pa
       pModel = new CLuaGlScript();
       pModel->m_id = id;
       pModel->loadScript(partId, script);
-      m_Model.setObject(pModel);
+      m_Model.setObject(CDisplayObjectPtr(pModel));
    }
 #endif
 }
@@ -429,9 +429,9 @@ void CDisplayServer::setHtml(const std::string& id, const std::string& partId, c
    // DTRACE("CDisplayServer::setHtml");
 
    CHtmlObject *pObject = nullptr;
-   CDisplayObject *pExisting = m_Model.getObject(id);
+   CDisplayObjectPtr pExisting = m_Model.getObject(id);
    if (pExisting) {
-      pObject = dynamic_cast<CHtmlObject*>(pExisting);
+      pObject = dynamic_cast<CHtmlObject*>(pExisting.get());
       if (! pObject) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
@@ -447,7 +447,7 @@ void CDisplayServer::setHtml(const std::string& id, const std::string& partId, c
       pObject = new CHtmlObject();
       pObject->m_id = id;
       pObject->setHtml(partId, htmlData);
-      m_Model.setObject(pObject);
+      m_Model.setObject(CDisplayObjectPtr(pObject));
    }
 #endif
 }
@@ -458,9 +458,9 @@ void CDisplayServer::setHtmlHead(const std::string& id, const std::string& partI
    DTRACE("CDisplayServer::setHtmlHead");
 
    CHtmlObject *pObject = nullptr;
-   CDisplayObject *pExisting = m_Model.getObject(id);
+   CDisplayObjectPtr pExisting = m_Model.getObject(id);
    if (pExisting) {
-      pObject = dynamic_cast<CHtmlObject*>(pExisting);
+      pObject = dynamic_cast<CHtmlObject*>(pExisting.get());
       if (! pObject) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
@@ -476,7 +476,7 @@ void CDisplayServer::setHtmlHead(const std::string& id, const std::string& partI
       pObject = new CHtmlObject();
       pObject->m_id = id;
       pObject->setHead(partId, htmlData);
-      m_Model.setObject(pObject);
+      m_Model.setObject(CDisplayObjectPtr(pObject));
    }
 #endif
 }
@@ -488,9 +488,9 @@ void CDisplayServer::setHtmlForm(const Ice::Identity& ident, const std::string& 
    DTRACE("CDisplayServer::setHtmlForm");
    
    CHtmlObject *pObject = nullptr;
-   CDisplayObject *pExisting = m_Model.getObject(id);
+   CDisplayObjectPtr pExisting = m_Model.getObject(id);
    if (pExisting) {
-      pObject = dynamic_cast<CHtmlObject*>(pExisting);
+      pObject = dynamic_cast<CHtmlObject*>(pExisting.get());
       if (! pObject) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
@@ -499,17 +499,16 @@ void CDisplayServer::setHtmlForm(const Ice::Identity& ident, const std::string& 
    }
 
    if (pObject) {
-      CHtmlChunk* pForm = nullptr;
-      pForm = pObject->setForm(ident, partId, htmlData);
+      CHtmlChunkPtr pForm = pObject->setForm(ident, partId, htmlData);
       if (pForm) pForm->Observers.addObserver(this);
       m_Model.refreshObject(id);
    }
    else {
       pObject = new CHtmlObject();
       pObject->m_id = id;
-      CHtmlChunk* pForm = pObject->setForm(ident, partId, htmlData);
+      CHtmlChunkPtr pForm = pObject->setForm(ident, partId, htmlData);
       if (pForm) pForm->Observers.addObserver(this);
-      m_Model.setObject(pObject);
+      m_Model.setObject(CDisplayObjectPtr(pObject));
    }
 #endif
 }
@@ -521,9 +520,9 @@ void CDisplayServer::setActiveHtml(const Ice::Identity& ident, const std::string
    DTRACE("CDisplayServer::setActiveHtml");
 
    CHtmlObject *pObject = nullptr;
-   CDisplayObject *pExisting = m_Model.getObject(id);
+   CDisplayObjectPtr pExisting = m_Model.getObject(id);
    if (pExisting) {
-      pObject = dynamic_cast<CHtmlObject*>(pExisting);
+      pObject = dynamic_cast<CHtmlObject*>(pExisting.get());
       if (! pObject) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
@@ -533,16 +532,16 @@ void CDisplayServer::setActiveHtml(const Ice::Identity& ident, const std::string
 
    if (pObject) {
       //if (htmlData.size() < 1) pObject->removePart(partId); --> use RemovePart for this
-      CHtmlChunk* pChunk = pObject->setActiveHtml(ident, partId, htmlData);
+      CHtmlChunkPtr pChunk = pObject->setActiveHtml(ident, partId, htmlData);
       if (pChunk) pChunk->Observers.addObserver(this);
       m_Model.refreshObject(id);
    }
    else {
       pObject = new CHtmlObject();
       pObject->m_id = id;
-      CHtmlChunk* pChunk = pObject->setActiveHtml(ident, partId, htmlData);
+      CHtmlChunkPtr pChunk = pObject->setActiveHtml(ident, partId, htmlData);
       if (pChunk) pChunk->Observers.addObserver(this);
-      m_Model.setObject(pObject);
+      m_Model.setObject(CDisplayObjectPtr(pObject));
    }
 #endif
 }
@@ -553,13 +552,13 @@ void CDisplayServer::setHtmlFormData(const std::string& id, const std::string& p
 #ifdef V11N_OBJECT_HTML
    DTRACE("CDisplayServer::setHtmlFormData");
 
-   CDisplayObject *pExisting = m_Model.getObject(id);
+   CDisplayObjectPtr pExisting = m_Model.getObject(id);
    if (!pExisting) return;
 
-   CHtmlObject *pModel = dynamic_cast<CHtmlObject*>(pExisting);
+   CHtmlObject *pModel = dynamic_cast<CHtmlObject*>(pExisting.get());
    if (! pModel) return;
 
-   CHtmlChunk* pForm = pModel->getPart(partId);
+   CHtmlChunkPtr pForm = pModel->getPart(partId);
    if (! pForm) return;
    if (pForm->type() != CHtmlChunk::form) return;
 
@@ -571,7 +570,7 @@ void CDisplayServer::setObjectTransform2D(const std::string& id, const std::stri
       const std::vector<double>& transform)
 {
    // DTRACE("CDisplayServer::setTransform2D");
-   CDisplayObject *pExisting = m_Model.getObject(id);
+   CDisplayObjectPtr pExisting = m_Model.getObject(id);
    if (!pExisting) return;
 
    //{ // XXX FAKE, Testing
@@ -588,7 +587,7 @@ void CDisplayServer::setObjectTransform2D(const std::string& id, const std::stri
 void CDisplayServer::setObjectPose3D(const std::string& id, const std::string& partId,
       double x, double y, double z, const Visualization::Quaternion& rotation)
 {
-   CDisplayObject *pExisting = m_Model.getObject(id);
+   CDisplayObjectPtr pExisting = m_Model.getObject(id);
    if (!pExisting) return;
 
    std::vector<double> pos, rot;
@@ -925,7 +924,7 @@ public:
    }
 };
 
-void CDisplayServer::getFormStateAsync(CHtmlChunk* pForm)
+void CDisplayServer::getFormStateAsync(const CHtmlChunkPtr& pForm)
 {
    DTRACE("CDisplayServer::getFormStateAsync");
    if (! hIceDisplayServer.get()) return;

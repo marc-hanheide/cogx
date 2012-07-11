@@ -60,7 +60,7 @@ void QViewContainer::initFrom(QViewContainer* pContainer)
 void QViewContainer::saveViewInfo()
 {
    if (! m_pDisplay) return;
-   cogx::display::CDisplayView* pView = m_pDisplay->getView();
+   cogx::display::CDisplayViewPtr pView = m_pDisplay->getView();
    if (pView) {
       std::vector<double> data;
       m_pDisplay->getViewPosition(data);
@@ -84,7 +84,7 @@ void QViewContainer::removeUi()
      if (!pobj) continue;
      QCastViewBase* pViewWin = dynamic_cast<QCastViewBase*>(pobj);
      if (pViewWin != nullptr) {
-        cogx::display::CDisplayView* pView = pViewWin->getView();
+        cogx::display::CDisplayViewPtr pView = pViewWin->getView();
         if (pView) {
            pView->viewObservers.removeObserver(pViewWin);
            std::vector<double> data;
@@ -99,7 +99,7 @@ void QViewContainer::removeUi()
    m_pDisplay = nullptr;
 }
 
-void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display::CDisplayView* pView)
+void QViewContainer::setView(cogx::display::CDisplayModel* pModel, const cogx::display::CDisplayViewPtr& pView)
 {
    DTRACE("QViewContainer::setView, mainthread:" << (QObject().thread() == qApp->thread()));
    if (! pView) {
@@ -161,7 +161,7 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
    }
 }
 
-cogx::display::CDisplayView* QViewContainer::getActiveView()
+cogx::display::CDisplayViewPtr QViewContainer::getActiveView()
 {
    if (! m_pDisplay) return nullptr;
    return m_pDisplay->getView();

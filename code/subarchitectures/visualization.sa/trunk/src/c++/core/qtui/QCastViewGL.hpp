@@ -25,7 +25,7 @@ class QCastViewGL: public QGLWidget, public QCastViewBase
 {
    Q_OBJECT
 private:
-   cogx::display::CDisplayView* pView;
+   cogx::display::CDisplayViewPtr pView;
    QPoint m_lastPos;
    float xRot;
    float yRot;
@@ -69,8 +69,8 @@ public:
 
 public:
    // QCastViewBase
-   void setView(cogx::display::CDisplayView* pDisplayView); /*override*/
-   cogx::display::CDisplayView* getView() { return pView; } /*override*/
+   void setView(const cogx::display::CDisplayViewPtr& pDisplayView); /*override*/
+   cogx::display::CDisplayViewPtr getView() { return pView; } /*override*/
    operator QWidget&() { return *this; } /*override*/
    void getViewPosition(std::vector<double>& matrix); /*override*/
    void setViewPosition(const std::vector<double>& matrix); /*override*/

@@ -49,15 +49,15 @@ QCastViewScene::~QCastViewScene()
    pView = nullptr;
 }
 
-void QCastViewScene::setView(cogx::display::CDisplayView* pDisplayView)
+void QCastViewScene::setView(const cogx::display::CDisplayViewPtr& pDisplayView)
 {
    if (pView == pDisplayView) return;
 
-   if (pView != nullptr) {
+   if (pView) {
       pView->viewObservers.removeObserver(this);
    }
    pView = pDisplayView;
-   if (pView != nullptr) {
+   if (pView) {
       pView->viewObservers.addObserver(this);
    }
    emit signalViewChanged();
@@ -99,7 +99,7 @@ void QCastViewScene::setViewPosition(const std::vector<double>& matrix)
 void QCastViewScene::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
    DTRACE("QCastViewScene::onViewChanged");
-   if (pView == this->pView) {
+   if (pView == this->pView.get()) {
       emit signalViewChanged();
    }
 }
@@ -112,7 +112,7 @@ void QCastViewScene::requestFullRedraw()
    if (m_pScene) m_pScene->update();
 }
 
-void QCastViewScene::rebuildScene(cogx::display::CDisplayView* pDisplayView)
+void QCastViewScene::rebuildScene(const cogx::display::CDisplayViewPtr& pDisplayView)
 {
    DTRACE("QCastViewScene::rebuildScene");
    m_bNeedsRebuild = false;

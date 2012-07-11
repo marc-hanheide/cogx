@@ -122,7 +122,7 @@ void QCastFrameManager::saveWindowList(QString listName)
    int i = 0;
    foreach(QCastMainFrame* pFrame, frames) {
       i++;
-      cogx::display::CDisplayView *pView = pFrame->ui.drawingArea->getActiveView();
+      cogx::display::CDisplayViewPtr pView = pFrame->ui.drawingArea->getActiveView();
       settings.beginGroup(QString("frame%1").arg(i));
       settings.setValue("main", pFrame->m_isMainWindow);
       if (pView)
@@ -311,7 +311,7 @@ void QCastFrameManager::createMissingWindows(QCastMainFrame* pFrame, cogx::displ
       auto it = pModel->m_Views.find(pinfo->viewid.toStdString());
       if (it == pModel->m_Views.end()) continue;
 
-      cogx::display::CDisplayView *pView = it->second;
+      cogx::display::CDisplayViewPtr pView = it->second;
       QCastMainFrame* pchild = nullptr;
       if (pinfo->main && pFrame->m_isMainWindow) {
          pchild = pFrame;
@@ -534,7 +534,7 @@ void QCastMainFrame::updateViewList()
 void QCastMainFrame::syncViewListItem()
 {
    //if (! ui.listWidget->isVisible()) return;
-   cogx::display::CDisplayView *pView = ui.drawingArea->getActiveView();
+   cogx::display::CDisplayViewPtr pView = ui.drawingArea->getActiveView();
    if (pView == nullptr) {
       ui.listWidget->setCurrentItem(nullptr);
       return;
@@ -573,7 +573,7 @@ void QCastMainFrame::updateViewMenu()
 }
 
 // Brute-force update: remove everything and re-add
-void QCastMainFrame::updateObjectList(cogx::display::CDisplayView *pView)
+void QCastMainFrame::updateObjectList(const cogx::display::CDisplayViewPtr& pView)
 {
    QAbstractItemModel* pModel = ui.treeObjects->model();
    if (pModel) {
@@ -584,21 +584,21 @@ void QCastMainFrame::updateObjectList(cogx::display::CDisplayView *pView)
 
    // We block the singals so that itemChanged()..onTreeItemChanged() is not called.
    ui.treeObjects->blockSignals(true);
-   CPtrVector<cogx::display::CDisplayObject> objects;
+   std::vector<cogx::display::CDisplayObjectPtr> objects;
    pView->getObjects(objects);
-   cogx::display::CDisplayObject *pObject;
    QStringList ss;
-   FOR_EACH(pObject, objects) {
+   //cogx::display::CDisplayObject *pObject;
+   //FOR_EACH(pObject, objects) {
+   for (auto pObject : objects) {
       ss.clear();
       ss << QString::fromStdString(pObject->m_id);
       QTreeWidgetItem* pItem = new QTreeWidgetItem(ui.treeObjects, ss);
       cogx::display::CViewedObjectState* pState = pView->getObjectState(pObject->m_id);
       pItem->setCheckState(0, pState->m_bVisible ? Qt::Checked : Qt::Unchecked);
 
-      cogx::display::CDisplayObjectPart *pPart;
-      CPtrVector<cogx::display::CDisplayObjectPart> parts;
+      std::vector<cogx::display::CDisplayObjectPartPtr> parts;
       pObject->getParts(parts);
-      FOR_EACH(pPart, parts) {
+      for(auto pPart : parts) {
          ss.clear();
          ss << QString::fromStdString(pPart->m_id);
          QTreeWidgetItem *pChild = new QTreeWidgetItem(pItem, ss);
@@ -624,7 +624,7 @@ void QCastMainFrame::onTreeItemChanged(QTreeWidgetItem* pItem, int column)
 {
    DTRACE("onTreeItemChanged");
    if (column != 0) return;
-   cogx::display::CDisplayView* pView = getView();
+   cogx::display::CDisplayViewPtr pView = getView();
    if (!pView) return;
 
    bool bVisible = (pItem->checkState(column) == Qt::Checked);
@@ -677,7 +677,7 @@ void QCastMainFrame::updateToolBars()
    }
 }
 
-void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
+void QCastMainFrame::updateCustomUi(const cogx::display::CDisplayViewPtr& pView)
 {
    DTRACE("QCastMainFrame::updateCustomUi");
    DVERIFYGUITHREAD("Custom GUI", this);
@@ -851,10 +851,13 @@ void QCastMainFrame::loadStartupLayout()
 }
 
 
-void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
+void QCastMainFrame::setView(const cogx::display::CDisplayViewPtr& _pView)
 {
    DTRACE("QCastMainFrame::setView " << pView);
    if (! m_pModel) return;
+
+   cogx::display::CDisplayViewPtr pView = _pView;
+
    if (pView && ! m_pModel->isValidView(pView)) {
       DMESSAGE("Invalid view, set to NULL");
       pView = nullptr;
@@ -880,7 +883,7 @@ void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
    syncViewListItem();
 }
 
-void QCastMainFrame::retrieveControlData(cogx::display::CDisplayView *pView)
+void QCastMainFrame::retrieveControlData(const cogx::display::CDisplayViewPtr& pView)
 {
    // retrieve data for custom widgets from remote display clients
    if (!m_pControlDataProxy || !pView) return;
@@ -893,17 +896,16 @@ void QCastMainFrame::retrieveControlData(cogx::display::CDisplayView *pView)
       m_pControlDataProxy->getControlStateAsync(pgel);
    }
 
-   CPtrVector<cogx::display::CHtmlChunk> forms;
+   std::vector<cogx::display::CHtmlChunkPtr> forms;
    // TODO: should getHtmlChunks observe CViewedObjectState.m_bVisible?
    pView->getHtmlChunks(forms, cogx::display::CHtmlChunk::form);
-   cogx::display::CHtmlChunk* pForm;
-   FOR_EACH(pForm, forms) {
+   for (auto pForm : forms) {
       if (!pForm) continue;
       m_pControlDataProxy->getFormStateAsync(pForm);
    }
 }
 
-cogx::display::CDisplayView* QCastMainFrame::getView()
+cogx::display::CDisplayViewPtr QCastMainFrame::getView()
 {
    if (ui.drawingArea)
       return ui.drawingArea->getActiveView();
@@ -923,7 +925,7 @@ void QCastMainFrame::onViewActivated(QListWidgetItem *pSelected)
    DTRACE("QCastMainFrame::onViewActivated");
    if (! pSelected) return;
    if (! m_pModel) return;
-   cogx::display::CDisplayView *pView;
+   cogx::display::CDisplayViewPtr pView;
    DMESSAGE(pSelected->text().toStdString());
    pView = m_pModel->getView(pSelected->text().toStdString());
    setView(pView);
@@ -935,7 +937,7 @@ void QCastMainFrame::onViewActivatedAction()
    if (! m_pModel) return;
    QAction* pSelected = dynamic_cast<QAction*>(sender());
    if (! pSelected) return;
-   cogx::display::CDisplayView *pView;
+   cogx::display::CDisplayViewPtr pView;
    DMESSAGE(pSelected->text().toStdString());
    pView = m_pModel->getView(pSelected->text().toStdString());
    setView(pView);
@@ -963,7 +965,7 @@ void QCastMainFrame::doViewAdded(cogx::display::CDisplayModel *pModel, cogx::dis
 void QCastMainFrame::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
    DTRACE("QCastMainFrame::onViewChanged " << (pView ? pView->m_id : "NULL"));
-   if (pView == getView()) {
+   if (pView == getView().get()) {
       DMESSAGE("emitting signalViewChanged");
       emit signalViewChanged(pModel, pView); // connection to doViewChanged has to be of type 'queued' or 'auto'
    }
@@ -972,8 +974,9 @@ void QCastMainFrame::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::d
 void QCastMainFrame::doViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
    DTRACE("QCastMainFrame::doViewChanged");
-   if (pView == getView())
-      updateObjectList(pView);
+   cogx::display::CDisplayViewPtr pMyView = getView();
+   if (pView == pMyView.get())
+      updateObjectList(pMyView);
 }
 
 void QCastMainFrame::onDialogAdded(cogx::display::CDisplayModel *pModel, cogx::display::CGuiDialog *pDialog)

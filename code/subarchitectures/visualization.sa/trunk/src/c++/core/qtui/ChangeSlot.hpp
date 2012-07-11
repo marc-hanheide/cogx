@@ -40,11 +40,11 @@ class CChangeSlot: public QObject,
 {
    Q_OBJECT
 private:
-   cogx::display::CDisplayView *m_pView;
+   cogx::display::CDisplayViewPtr m_pView;
    cogx::display::CGuiElement *m_pGuiElement;
 
 public:
-   CChangeSlot(cogx::display::CGuiElement* pGuiElement, cogx::display::CDisplayView* pView, QObject* parent)
+   CChangeSlot(cogx::display::CGuiElement* pGuiElement, const cogx::display::CDisplayViewPtr& pView, QObject* parent)
       : QObject(parent)
    {
       m_pGuiElement = pGuiElement;
@@ -62,7 +62,7 @@ public:
               // else: fall-through
             default:
               DMESSAGE("CChangeSlot: Add obsevers for " << pGuiElement->m_id);
-              if (m_pView) m_pGuiElement->Observers += m_pView;
+              if (m_pView) m_pGuiElement->Observers += m_pView.get();
               m_pGuiElement->Observers += this;
               break;
         }
@@ -72,7 +72,7 @@ public:
    ~CChangeSlot() {
       DMESSAGE("~Destroying CChangeSlot");
       if (m_pGuiElement) {
-         if (m_pView) m_pGuiElement->Observers -= m_pView;
+         if (m_pView) m_pGuiElement->Observers -= m_pView.get();
          m_pGuiElement->Observers -= this;
       }
    }

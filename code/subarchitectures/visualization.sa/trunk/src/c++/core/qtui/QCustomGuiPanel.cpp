@@ -50,7 +50,7 @@ void QCustomGuiPanel::onModel_UiDataChanged(cogx::display::CDisplayModel *pModel
       cogx::display::CDisplayView *pSourceView,
       cogx::display::CGuiElement *pElement, const std::string& newValue)
 {
-   if (pSourceView == m_pView) return;
+   if (pSourceView == m_pView.get()) return;
    if (pElement == nullptr) return;
    DTRACE("QCustomGuiPanel::onModel_UiDataChanged " << newValue);
 
@@ -101,7 +101,7 @@ void QCustomGuiPanel::removeUi()
    m_controlCount = 0;
 }
 
-int QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
+int QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, const cogx::display::CDisplayViewPtr& pView)
 {
    DTRACE("QCustomGuiPanel::updateUi");
    if (m_pView) m_pView->viewObservers -= this;

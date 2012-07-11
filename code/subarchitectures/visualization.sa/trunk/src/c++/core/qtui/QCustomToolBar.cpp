@@ -51,7 +51,7 @@ void QCustomToolBar::onModel_UiDataChanged(cogx::display::CDisplayModel *pModel,
       cogx::display::CDisplayView *pSourceView,
       cogx::display::CGuiElement *pElement, const std::string& newValue)
 {
-   if (pSourceView == m_pView) return;
+   if (pSourceView == m_pView.get()) return;
    if (pElement == nullptr) return;
    DTRACE("QCustomToolBar::onModel_UiDataChanged " << newValue);
 
@@ -94,7 +94,7 @@ void QCustomToolBar::removeUi()
    blockSignals(sigBlocked);
 }
 
-int QCustomToolBar::updateUi(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
+int QCustomToolBar::updateUi(cogx::display::CDisplayModel *pModel, const cogx::display::CDisplayViewPtr& pView)
 {
    DTRACE("QCustomToolBar::updateUi");
    if (m_pView) m_pView->viewObservers -= this;

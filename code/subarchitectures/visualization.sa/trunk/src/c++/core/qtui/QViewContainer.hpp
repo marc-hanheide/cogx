@@ -43,8 +43,8 @@ public:
    void saveViewInfo();
 
    // TODO: multiple views in a grid? -> setView(index, pView)
-   void setView(cogx::display::CDisplayModel* pModel, cogx::display::CDisplayView* pView);
-   cogx::display::CDisplayView* getActiveView();
+   void setView(cogx::display::CDisplayModel* pModel, const cogx::display::CDisplayViewPtr& pView);
+   cogx::display::CDisplayViewPtr getActiveView();
    QCastViewBase* getDisplayWidget() { return m_pDisplay; }
 
 private:

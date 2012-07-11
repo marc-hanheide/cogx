@@ -163,6 +163,9 @@ set(SERVER_CPP
    ${WEBKIT_EXPERIMENT_SRC}
    ${TOMGINE_SRC}
    ${OGRE3D_SRC}
+
+   # shared code
+   client/CMilliTimer.cpp
    )
 set(GUI_CPP
    qtui/QCastApplication.cpp

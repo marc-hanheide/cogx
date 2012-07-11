@@ -62,13 +62,15 @@ QCastViewGL::~QCastViewGL()
    pView = nullptr;
 }
 
-void QCastViewGL::setView(cogx::display::CDisplayView* pDisplayView)
+void QCastViewGL::setView(const cogx::display::CDisplayViewPtr& pDisplayView)
 {
-   if (pView != nullptr) {
+   if (pView == pDisplayView) return;
+
+   if (pView) {
       pView->viewObservers.removeObserver(this);
    }
    pView = pDisplayView;
-   if (pView != nullptr) {
+   if (pView) {
       pView->viewObservers.addObserver(this);
    }
 
@@ -126,7 +128,7 @@ void QCastViewGL::setViewPosition(const std::vector<double>& matrix)
 
 void QCastViewGL::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
-   if (pView == this->pView) update();
+   if (pView == this->pView.get()) update();
 }
 
 void QCastViewGL::onCameraItemChanged(int index)
