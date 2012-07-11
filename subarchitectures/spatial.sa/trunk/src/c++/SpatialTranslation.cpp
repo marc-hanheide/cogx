@@ -54,6 +54,7 @@ SpatialTranslation::SpatialTranslation() {
 
   m_navGraphChanged = true;
 
+  m_waitForMapLoad = false;
 }
 
 // ----------------------------------------------------------------------------
@@ -106,6 +107,10 @@ void SpatialTranslation::start() {
             &SpatialTranslation::owtNavGraph));
   }
 
+  addChangeFilter(createLocalTypeFilter<SpatialData::MapLoadStatus> (cdl::ADD),
+      new MemberFunctionChangeReceiver<SpatialTranslation> (this,
+	 &SpatialTranslation::newMapLoadStatus));
+
   m_placeInterface = FrontierInterface::PlaceInterfacePrx(getIceServer<
       FrontierInterface::PlaceInterface> ("place.manager"));
 
@@ -124,7 +129,12 @@ void SpatialTranslation::stop() {
 void SpatialTranslation::runComponent() {
 
   sleepComponent( m_StartupDelay);
+
   if (m_issueVisualExplorationActions) {
+    // TODO: protect this against race condition (MapLoadStruct arriving too late)
+    while (m_waitForMapLoad == true) {
+      sleepComponent(500);
+    }
     Rendezvous rv(*this);
     issueVisualExplorationCommand(rv);
     rv.wait();
@@ -152,7 +162,7 @@ void SpatialTranslation::runComponent() {
       }
     }
 
-    log("Got the data needed to start, now wating for task");
+    log("Got the data needed to start, now waiting for task");
 
     m_Tasks.lock();
     while (isRunning() && m_Tasks.size() == 0) {
@@ -601,7 +611,7 @@ void SpatialTranslation::cancelCurrentTask(bool stop_robot, string navCtrlCmdId)
 
 void SpatialTranslation::newNavCommand(const cdl::WorkingMemoryChange & objID) {
 
-  log("New NavCommand got");
+  log("New NavCommand received");
 
   shared_ptr<CASTData<SpatialData::NavCommand> > oobj = getWorkingMemoryEntry<
       SpatialData::NavCommand> (objID.address);
@@ -610,6 +620,30 @@ void SpatialTranslation::newNavCommand(const cdl::WorkingMemoryChange & objID) {
     string navId = objID.address.id;
     // this adds the task and signals the m_MutexCond
     addTaskToQueue(navId, oobj->getData());
+  }
+}
+
+void SpatialTranslation::newMapLoadStatus(const cdl::WorkingMemoryChange & objID) {
+
+  log("Map Load Status struct detected");
+
+  try {
+    SpatialData::MapLoadStatusPtr status = getMemoryEntry<SpatialData::MapLoadStatus>
+      (objID.address);
+    if (!status->placesWritten) {
+      m_waitForMapLoad = true;
+      log("Places pending; wait before allowing initial placeholder generation");
+    }
+    else {
+      if (m_waitForMapLoad == true) {
+	m_waitForMapLoad = false;
+	log("Places loaded, permit placeholder generation");
+      }
+    }
+  }
+  catch (DoesNotExistOnWMException)
+  {
+
   }
 }
 
