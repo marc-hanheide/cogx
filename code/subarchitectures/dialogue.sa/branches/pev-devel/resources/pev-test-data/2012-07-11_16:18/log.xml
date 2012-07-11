@@ -1,0 +1,1316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log4j:logsequence xmlns:log4j="http://jakarta.apache.org/log4j/" user="user" time="15:55:27">
+
+<log4j:event logger="cast.server.java.ComponentServer" timestamp="1342014937561" level="INFO" thread="main">
+<log4j:message><![CDATA[Java server: "2.1.17 beta (Free The Pterodactyl 3)"]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342014950002" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[will recognise: magazine as blobs of color 255, 0, 0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342014950014" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[will recognise: table as blobs of color 0, 255, 0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342014950015" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[will recognise: chocolate_chips as blobs of color 0, 0, 255]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342014950016" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[will recognise: sugar as blobs of color 255, 0, 255]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.recognizer.people" timestamp="1342014950260" level="INFO" thread="Ice.ThreadPool.Server-0">
+<log4j:message><![CDATA[will recognise: person as blobs of color 255, 255, 0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.asr-loquendo" timestamp="1342014950686" level="ERROR" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[failed to connect to the ASR server]]></log4j:message>
+<log4j:throwable><![CDATA[Ice.ConnectionRefusedException
+    error = 0
+	at IceInternal.ConnectRequestHandler.getConnection(ConnectRequestHandler.java:240)
+	at IceInternal.ConnectRequestHandler.sendRequest(ConnectRequestHandler.java:138)
+	at IceInternal.Outgoing.invoke(Outgoing.java:66)
+	at Ice._ObjectDelM.ice_isA(_ObjectDelM.java:30)
+	at Ice.ObjectPrxHelperBase.ice_isA(ObjectPrxHelperBase.java:111)
+	at Ice.ObjectPrxHelperBase.ice_isA(ObjectPrxHelperBase.java:77)
+	at de.dfki.lt.tr.dialogue.asr.loquendo.ServerPrxHelper.checkedCast(ServerPrxHelper.java:1133)
+	at de.dfki.lt.tr.dialogue.asr.LoquendoClient.<init>(LoquendoClient.java:69)
+	at de.dfki.lt.tr.cast.dialogue.LoquendoASR.onConfigure(LoquendoASR.java:70)
+	at de.dfki.lt.tr.cast.dialogue.AbstractDialogueComponent.configure(AbstractDialogueComponent.java:34)
+	at cast.core.CASTComponent.configure(Unknown Source)
+	at cast.interfaces._ManagedComponentTie.configure(Unknown Source)
+	at cast.interfaces._CASTComponentDisp.___configure(Unknown Source)
+	at cast.interfaces._ManagedComponentDisp.__dispatch(Unknown Source)
+	at IceInternal.Incoming.invoke(Incoming.java:159)
+	at Ice.ConnectionI.invokeAll(ConnectionI.java:2357)
+	at Ice.ConnectionI.dispatch(ConnectionI.java:1208)
+	at Ice.ConnectionI.message(ConnectionI.java:1163)
+	at IceInternal.ThreadPool.run(ThreadPool.java:302)
+	at IceInternal.ThreadPool.access$300(ThreadPool.java:12)
+	at IceInternal.ThreadPool$EventHandlerThread.run(ThreadPool.java:643)
+	at java.lang.Thread.run(Thread.java:679)
+Caused by: java.net.ConnectException: Connection refused
+	at sun.nio.ch.SocketChannelImpl.checkConnect(Native Method)
+	at sun.nio.ch.SocketChannelImpl.finishConnect(SocketChannelImpl.java:592)
+	at IceInternal.Network.doFinishConnect(Network.java:325)
+	at IceInternal.TcpTransceiver.initialize(TcpTransceiver.java:33)
+	at Ice.ConnectionI.initialize(ConnectionI.java:1831)
+	at Ice.ConnectionI.message(ConnectionI.java:1038)
+	... 4 more
+]]></log4j:throwable>
+</log4j:event>
+
+<log4j:event logger="dialogue.int-recognizer" timestamp="1342014950840" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[will be looking for abducer rulefiles in `/home/hendrik/cogx/dora-yr4/subarchitectures/dialogue.sa/resources/abduction/cogx/current']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.int-realizer" timestamp="1342014950856" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[will be looking for abducer rulefiles in `/home/hendrik/cogx/dora-yr4/subarchitectures/dialogue.sa/resources/abduction/cogx/current']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="de.dfki.lt.crowl.Crowl" timestamp="1342014956408" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[Jena[MICRO, subarchitectures/coma.sa/ontologies/dora.rules, subarchitectures/coma.sa/ontologies/jenaabox.rules] load and prepare took 1.072s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="de.dfki.lt.crowl.Crowl" timestamp="1342014956410" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[fixpoint in 0.002s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="coma.pm-coma" timestamp="1342014956498" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[using ComaRoomTransferFunction as transfer function.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.SpatialPropertyRemover" timestamp="1342014961524" level="INFO" thread="Ice.ThreadPool.Server-0">
+<log4j:message><![CDATA[SpatialPropertyRemover starts listening for places]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.asr-loquendo" timestamp="1342014969380" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[no client found, going to die]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="planner.sa.exec-monitor" timestamp="1342014971420" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[DisplayClient(java) connected to standalone server on '192.168.48.149'.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.plannertasksdisplay" timestamp="1342014972687" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[DisplayClient(java) connected to standalone server on '192.168.48.149'.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.goaldisplay" timestamp="1342014972757" level="INFO" thread="Ice.ThreadPool.Server-0">
+<log4j:message><![CDATA[DisplayClient(java) connected to standalone server on '192.168.48.149'.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342014972768" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[add type 'SpatialData.NodeHypothesis']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342014972777" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[add type 'execution.slice.Action']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342014972784" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[add type 'SpatialData.ViewPoint']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342014972792" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[add type 'SpatialProperties.PlaceProperty']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342014972812" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[add type 'autogen.Planner.PlanningTask']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342014972820" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[add type 'SpatialData.ProcessConeGroup']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342014972842" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[add type 'eu.cogx.beliefs.slice.GroundedBelief']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342014972851" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[add type 'autogen.Planner.Action']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342014972859" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[add type 'comadata.ComaRoom']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342014972867" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[add type 'eu.cogx.beliefs.slice.HypotheticalBelief']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342014972883" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[add type 'SpatialData.RelationalViewPointGenerationCommand']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342014972897" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[add type 'SpatialData.ObjectSearchResult']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342014973313" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[ready to go]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.ptzJavaServer" timestamp="1342014973810" level="INFO" thread="ptzJavaServer-runComponent">
+<log4j:message><![CDATA[go through a sequence of commands to help with a pan-tilt player bug, that seems to choke when the pan-tilt is not at 0.0 at start up]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.diag-exe" timestamp="1342014974094" level="INFO" thread="diag-exe-runComponent">
+<log4j:message><![CDATA[disabled ASR processing... robot is deaf now]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.motivedisplay" timestamp="1342014974242" level="INFO" thread="motivedisplay-runComponent">
+<log4j:message><![CDATA[DisplayClient(java) connected to standalone server on '192.168.48.149'.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.standby-manager" timestamp="1342014974433" level="INFO" thread="standby-manager-runComponent">
+<log4j:message><![CDATA[StandbyMode ADD -> turning on local standby mode]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342014975882" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>my_name_is_dora.)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342014979701" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_discovered_a_new_room)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015022269" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC manual.planning ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] ADD]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015022270" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015022296" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[0/PENDING/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015022302" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015022302" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015022303" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015022328" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>Got_a_new_task)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015023263" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015023264" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015023264" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015023451" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015023451" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015023451" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015026469" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015026469" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015026470" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015026539" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015026540" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015026541" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6: 71]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015026568" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>Starting_plan_execution.)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015026855" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015032513" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_explored_place_hypothesis_1)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015041312" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015041312" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="WMLogger.execution.slice.Action" timestamp="1342015041452" level="WARN" thread="wmlogger-receiver">
+<log4j:message><![CDATA[CASTException caught: ]]></log4j:message>
+<log4j:throwable><![CDATA[cast.DoesNotExistOnWMException
+    message = "Entry does not exist: 0:01"
+    wma.id = "0:01"
+    wma.subarchitecture = "planner.sa"
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:57)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:532)
+	at java.lang.Class.newInstance0(Class.java:372)
+	at java.lang.Class.newInstance(Class.java:325)
+	at IceInternal.BasicStream$DynamicUserExceptionFactory.createAndThrow(BasicStream.java:2142)
+	at IceInternal.BasicStream.throwException(BasicStream.java:1564)
+	at IceInternal.Outgoing.throwUserException(Outgoing.java:443)
+	at cast.interfaces._WorkingMemoryDelM.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getBaseMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at castutils.experimentation.WMLogger$LoggingChangeReceiver.workingMemoryChanged(WMLogger.java:116)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.forwardToSubclass(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.runQueue(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.run(Unknown Source)
+	at java.lang.Thread.run(Thread.java:679)
+]]></log4j:throwable>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015043359" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015043372" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015043372" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015043523" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015043524" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015043524" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015044692" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015044692" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015044692" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015049303" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015049303" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015049303" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015049427" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015049427" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015049427" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/8: 124]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015049457" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015059818" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_explored_place_hypothesis_2)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015070219" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015070219" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015071358" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015071359" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015071359" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/8]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015071420" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015071421" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015071422" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/8]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015073781" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015073782" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015073782" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/8]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015078401" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015078401" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015078401" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/8]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015078445" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015078445" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015078446" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/8: 44]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015078575" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015086673" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_explored_place_hypothesis_3)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015094455" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015094458" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015095151" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015095151" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015095152" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/8]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015095388" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015095389" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015095389" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/8]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015095397" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015095398" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015095398" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/7: 8]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015095539" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015112591" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_explored_place_hypothesis_6)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="planner.sa.exec-monitor" timestamp="1342015123728" level="ERROR" thread="exec-monitor-receiver">
+<log4j:message><![CDATA[]]></log4j:message>
+<log4j:throwable><![CDATA[cast.DoesNotExistOnWMException
+    message = "Entry does not exist: 3:01"
+    wma.id = "3:01"
+    wma.subarchitecture = "planner.sa"
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:57)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:532)
+	at java.lang.Class.newInstance0(Class.java:372)
+	at java.lang.Class.newInstance(Class.java:325)
+	at IceInternal.BasicStream$DynamicUserExceptionFactory.createAndThrow(BasicStream.java:2142)
+	at IceInternal.BasicStream.throwException(BasicStream.java:1564)
+	at IceInternal.Outgoing.throwUserException(Outgoing.java:443)
+	at cast.interfaces._WorkingMemoryDelM.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getBaseMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at dora.execution.components.ExecutionMonitor.processExecutionAction(ExecutionMonitor.java:60)
+	at dora.execution.components.ExecutionMonitor$2.workingMemoryChanged(ExecutionMonitor.java:46)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.forwardToSubclass(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.runQueue(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.run(Unknown Source)
+	at java.lang.Thread.run(Thread.java:679)
+]]></log4j:throwable>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015123997" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015124010" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015125240" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015125240" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015125240" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/7]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015125531" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015125531" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015125531" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/7]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015125561" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015125561" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015125561" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6: 29]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015125777" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015155834" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015155842" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015157787" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015157788" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015157788" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015161531" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015161532" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015161532" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015161609" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015161609" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015161609" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/7: 77]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015161738" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015171988" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_explored_place_hypothesis_4)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015188488" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015188489" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015189643" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015189643" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015189644" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/7]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015194408" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015194416" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015194416" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/7]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015194450" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015194459" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015194459" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6: 42]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015194521" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015206953" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_explored_place_hypothesis_7)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015221377" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015221377" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015222718" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015222719" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015222719" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015222883" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015222884" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015222884" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015222917" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015222918" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015222918" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/5: 34]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015222996" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015262021" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015262021" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015262835" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015262835" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015262836" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/5]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015266024" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015266025" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015266025" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/5]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015266082" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015266082" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015266083" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/5: 58]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015266108" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015305236" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015305238" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015306030" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015306031" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015306031" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/5]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015306182" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015306183" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015306183" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/5]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015306248" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015306249" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015306249" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/4: 63]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015306268" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015332737" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015332737" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015333515" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015333516" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015333516" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/4]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015333582" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015333583" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015333584" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/4]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015338984" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015338984" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015338985" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/4]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015339037" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015339037" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015339037" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/4: 52]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015339211" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015349977" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_explored_place_hypothesis_8)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015350063" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>Ah_ha._Looks_like_there_is_a_door_here)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015367503" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015367504" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015368278" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015368278" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015368278" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/4]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015371517" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015371517" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015371518" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/4]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015371567" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015371567" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015371567" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/3: 49]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015371620" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015406298" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015406299" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015407183" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015407183" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015407183" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/3]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015410718" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015410719" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015410719" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/3]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015410777" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015410778" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015410778" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/2: 58]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015410834" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.CreateRelationalConesForModel]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015410846" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>creating_view_cones_for_magazine_in_room_0)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="WMLogger.execution.slice.Action" timestamp="1342015422673" level="WARN" thread="wmlogger-receiver">
+<log4j:message><![CDATA[CASTException caught: ]]></log4j:message>
+<log4j:throwable><![CDATA[cast.DoesNotExistOnWMException
+    message = "Entry does not exist: C:01"
+    wma.id = "C:01"
+    wma.subarchitecture = "planner.sa"
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:57)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:532)
+	at java.lang.Class.newInstance0(Class.java:372)
+	at java.lang.Class.newInstance(Class.java:325)
+	at IceInternal.BasicStream$DynamicUserExceptionFactory.createAndThrow(BasicStream.java:2142)
+	at IceInternal.BasicStream.throwException(BasicStream.java:1564)
+	at IceInternal.Outgoing.throwUserException(Outgoing.java:443)
+	at cast.interfaces._WorkingMemoryDelM.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getBaseMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at castutils.experimentation.WMLogger$LoggingChangeReceiver.workingMemoryChanged(WMLogger.java:116)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.forwardToSubclass(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.runQueue(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.run(Unknown Source)
+	at java.lang.Thread.run(Thread.java:679)
+]]></log4j:throwable>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015422807" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015422808" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015423926" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015423937" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015423944" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/2]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015430690" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015430691" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015430691" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/2]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015436761" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015436761" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015436762" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1: 6071]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015436802" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015436802" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015436814" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015458682" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015458682" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015459457" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015459457" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015459465" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015459694" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015459704" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015459705" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015459738" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015459739" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015459739" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1: 34]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015459964" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>searching_in_a_view_cone)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342015460103" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.ProcessConeGroupAction]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015468949" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>looking_for_object_magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342015470001" level="INFO" thread="blobdetector-receiver">
+<log4j:message><![CDATA[is [ColorRGB 255,0,0] equal to [ColorRGB 255,0,0]?]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342015470002" level="INFO" thread="blobdetector-receiver">
+<log4j:message><![CDATA[  YES, found an object]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015470572" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>That_looks_like_magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015474961" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>looking_for_object_magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342015475618" level="INFO" thread="blobdetector-receiver">
+<log4j:message><![CDATA[is [ColorRGB 255,0,0] equal to [ColorRGB 255,0,0]?]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342015475618" level="INFO" thread="blobdetector-receiver">
+<log4j:message><![CDATA[  YES, found an object]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015475637" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>That_looks_like_magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015477988" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>looking_for_object_magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342015478603" level="INFO" thread="blobdetector-receiver">
+<log4j:message><![CDATA[is [ColorRGB 255,0,0] equal to [ColorRGB 255,0,0]?]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342015478603" level="INFO" thread="blobdetector-receiver">
+<log4j:message><![CDATA[  YES, found an object]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015478659" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>That_looks_like_magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015483020" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>looking_for_object_magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015483683" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>There_is_no_magazine_here)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015489067" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>looking_for_object_magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015489872" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>There_is_no_magazine_here)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015494718" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015494719" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015495950" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015495950" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015495950" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015496661" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015496662" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015496662" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015496747" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015496747" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015496748" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015496877" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015496877" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015496878" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015499421" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015499421" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015499422" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015499544" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015499544" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015499544" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/1/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015503115" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015503115" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015503116" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/1/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015508003" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015508004" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342015508004" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1: 4888]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015508050" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342015508051" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.SerialPlanstExecuter" timestamp="1342015508074" level="INFO" thread="Thread-28">
+<log4j:message><![CDATA[execution complete: [WMA id = 0:y : sa = planner.sa]: 481459]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342015508650" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d:dvp}(<CannedText>I_finished_my_task_successfully.)]]></log4j:message>
+</log4j:event>
+
