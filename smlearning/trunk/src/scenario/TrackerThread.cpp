@@ -51,10 +51,9 @@ TrackerThread::~TrackerThread()
 {
 
 	m_mutex.Lock ();
-	// {
-	// 	golem::CriticalSectionWrapper csw (cs);
-		_quit = true;
- 	// }
+	if (_img)
+		cvReleaseImage (&_img);
+	_quit = true;
 	m_mutex.Unlock ();
 	// m_evData.Set ();
 	m_running.Wait ();
@@ -111,13 +110,13 @@ BOOL TrackerThread::OnTask()
 
 	GetTrackingParameter(trackParams, tracker_ini_file.c_str());
 	// pThreadCamera = new CCameraThread(0, trackParams.camPar.width, trackParams.camPar.height);
-	// pThreadCamera = new CCameraThread(0, cam_width, cam_height);
-	// pThreadCamera->SetThreadType(ThreadTypeIntervalDriven,0);
+	pThreadCamera = new CCameraThread(0, cam_width, cam_height);
+	pThreadCamera->SetThreadType(ThreadTypeIntervalDriven,0);
 
 	// Initialize camera capture using opencv
-	g_Resources->InitCapture(float(cam_width), float(cam_height));
-	_img = g_Resources->GetNewImage();
-	// _img = cvCreateImage( cvSize(cam_width, cam_height), 8, 3 );
+	// g_Resources->InitCapture(float(cam_width), float(cam_height));
+	// _img = g_Resources->GetNewImage();
+	_img = cvCreateImage( cvSize(cam_width, cam_height), 8, 3 );
 
 	
 	// glWindow.reset(new blortGLWindow::GLWindow(cam_width,cam_height,"Tracking"));
@@ -155,8 +154,8 @@ BOOL TrackerThread::OnTask()
 		// grab new image from camera
 		// m_mutex.Lock ();
 
-		_img = g_Resources->GetNewImage();
-		// pThreadCamera->GetImage(_img);
+		// _img = g_Resources->GetNewImage();
+		pThreadCamera->GetImage(_img);
 		
 		// Image processing
 		//m_tracker->image_processing_occluder((unsigned char*)img->imageData, model_occ, p_occ);
@@ -174,8 +173,8 @@ BOOL TrackerThread::OnTask()
 		// Draw result
 	        m_tracker->drawImage(0);
 		m_tracker->drawResult(2.0f);
-		// m_tracker->drawCoordinateSystem(0.2f, 2.0f);
-		m_tracker->drawCoordinates ();
+		m_tracker->drawCoordinateSystem(0.1f, 2.0f);
+		// m_tracker->drawCoordinates ();
 		
 		m_tracker->getModelMovementState(m_track_id, _movement);
 		m_tracker->getModelQualityState(m_track_id, _quality);
@@ -218,8 +217,8 @@ BOOL TrackerThread::OnTask()
 		delete m_tracker;
 	if (glWindow)
 		delete glWindow;
-	if (_img)
-		cvReleaseImage (&_img);
+	if (pThreadCamera)
+		delete pThreadCamera;
 	m_running.Unlock ();
 	return TRUE;
 
@@ -237,6 +236,11 @@ TomGine::tgPose TrackerThread::getPose(/*mat3& matrix, vec3& vector*/)
 	return m_track_pose;
 		// _new_position=false;
 	// }
+}
+
+bool TrackerThread::running ()
+{
+	return !_quit;
 }
 
 }; // namespace smlearning 

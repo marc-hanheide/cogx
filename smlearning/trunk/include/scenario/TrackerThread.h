@@ -31,7 +31,7 @@
 #include <smltools/tracker_tools.h>
 
 // #include <Golem/Sys/Thread.h>
-// #include <ThreadObject/CameraThread.h>
+#include <ThreadObject/CameraThread.h>
 // #include <Tracker/Tracker.h>
 #include <TomGine/tgTimer.h>
 #include <TomGine/tgFont.h>
@@ -78,6 +78,8 @@ public:
 	// void start ();
 	// returns the current object position by reference
 	TomGine::tgPose getPose();
+	// returns true if tracker is running
+	bool running ();
 protected:
 	//golem::Thread thread;
 	//golem::CriticalSection cs;
@@ -110,7 +112,7 @@ protected:
 	/** Tracker parameters */
 	Tracking::Tracker::Parameter trackParams;
 	/** Camera thread */
-	// CCameraThread* pThreadCamera;
+	CCameraThread* pThreadCamera;
 	/** Model id */
 	int m_trackpred_id, m_ground_id, m_track_id;
 	/** is the current state of the object movement (fast / slow / still ) */

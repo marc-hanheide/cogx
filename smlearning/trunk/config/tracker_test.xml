@@ -43,11 +43,11 @@
 	<minZ>-0.01</minZ>
 	<minPushDuration>3.0</minPushDuration>
 	<maxPushDuration>5.0</maxPushDuration>
-	<minDuration>10.0</minDuration>
+	<minDuration>5.0</minDuration>
 	<minValLabel>-1.0</minValLabel>
 	<maxValLabel>1.0</maxValLabel>
 	<startPosition>
-		<x>0.005</x>
+		<x>0.006</x>
 		<y>0.265</y>
 		<z>0.037</z>
 	</startPosition>
@@ -63,11 +63,11 @@
 		<width>0.002</width>
 	</ObjectDimensions>
 	<over>0.017</over>
-	<dist>0.05</dist>
+	<dist>0.07</dist>
 	<side>0.6</side>
 	<center>0.0</center>
 	<top>0.02</top>
-	<distance>0.2</distance>
+	<distance>0.15</distance>
 </ObjectInteraction>
 
 <loop>
