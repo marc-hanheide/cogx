@@ -11,6 +11,8 @@ FILES="robotpose.ccf
        place_properties.bin
        Connectivities.txt"
 
+mkdir -p local-saved-map/
+
 for f in $FILES ; do
-	cp $f local-saved-map/
+	cp -f $f local-saved-map/
 done
