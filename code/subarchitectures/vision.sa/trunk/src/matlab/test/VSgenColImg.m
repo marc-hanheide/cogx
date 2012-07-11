@@ -1,22 +1,27 @@
-function VSnextImg
+function VSgenColImg
 
 global Figs
 global Data;
 global Params ;
-global Test;
 
-Test.genColImg=0;
-Data.curridximg
-if Params.deterministic == 0
-    Data.currImg=ceil(rand*Data.numImgs);
-else       
-    if isfield(Data,'allindexes') && ~isempty(Data.allindexes)
-        Data.curridximg = Data.curridximg + 1 
-        Data.currImg = Data.allindexes(Data.curridximg) ;
-    end         
-end
- Data.curridximg
-[x,b,pt3d]=readImage(Data.currImg);
+wh=11;
+
+global Test
+%rgb=impixel(rgba);rgb
+[i j]=getpts(Test.rgba);
+pt=round([i,j])
+rgb=squeeze(Test.RGB(pt(2),pt(1),:))
+
+x=cat(3,repmat(rgb(1),wh,wh),repmat(rgb(2),wh,wh),repmat(rgb(3),wh,wh));
+b=ones(wh,wh);
+pt3d=[0 0 0; 1 0 0; 0 1 0; 1 1 0];
+
+Test.x=x;
+Test.b=b;
+Test.pt3d=pt3d;
+
+
+%[x,b,pt3d]=readImage(Data.currImg);
 N_max = min([100, size(x,1)]) ;
 
 imshow(x,'Parent',Figs.vsHs.axCimgH)
@@ -37,8 +42,9 @@ end
 
  msg = sprintf('Img %d has been read from the disk!',Data.currImg) ; disp(msg) ;
 
+Test.genColImg=1;
 ATinterface;
- 
+
 rotate3d(Figs.vsHs.axCpts3dH,'on') ;
 % 
   

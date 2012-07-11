@@ -1,4 +1,4 @@
-function VSnextImg
+function VSprevImg
 
 global Figs
 global Data;
@@ -6,16 +6,16 @@ global Params ;
 global Test;
 
 Test.genColImg=0;
-Data.curridximg
+
 if Params.deterministic == 0
     Data.currImg=ceil(rand*Data.numImgs);
 else       
     if isfield(Data,'allindexes') && ~isempty(Data.allindexes)
-        Data.curridximg = Data.curridximg + 1 
+        Data.curridximg = Data.curridximg - 1 ;
         Data.currImg = Data.allindexes(Data.curridximg) ;
     end         
 end
- Data.curridximg
+ 
 [x,b,pt3d]=readImage(Data.currImg);
 N_max = min([100, size(x,1)]) ;
 

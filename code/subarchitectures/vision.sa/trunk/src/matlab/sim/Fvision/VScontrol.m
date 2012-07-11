@@ -22,18 +22,18 @@ function varargout = VScontrol(varargin)
 
 % Edit the above text to modify the response to help VScontrol
 
-% Last Modified by GUIDE v2.5 30-Oct-2009 01:57:53
+% Last Modified by GUIDE v2.5 11-Jul-2012 12:03:18
 
 % Begin initialization code - DO NOT EDIT
 
 global Data ;
 
-Data.currImg = 1 ; 
-Data.curridximg = 1 ; 
-if isfield(Data,'allindexes') && ~isempty(Data.allindexes)
-    Data.curridximg = 1 ;
-    Data.currImg = Data.allindexes(Data.curridximg) ; 
-end 
+% Data.currImg = 1 ; 
+% Data.curridximg = 1 ; 
+% if isfield(Data,'allindexes') && ~isempty(Data.allindexes)
+%     Data.curridximg = 1 ;
+%     Data.currImg = Data.allindexes(Data.curridximg) ; 
+% end 
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -163,3 +163,13 @@ for i = 1 : 220
     drawnow ;
     pause(0.01) ;
 end
+
+
+
+
+% --- Executes on button press in pb_prev.
+function pb_prev_Callback(hObject, eventdata, handles)
+% hObject    handle to pb_prev (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+VSprevImg;

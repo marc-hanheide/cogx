@@ -172,6 +172,8 @@ if loadpredefinedorder == 1
     catch
         warning('Images indexes failed to load!') ;
     end
+else
+    Data.allindexes=randperm(Data.numImgs);
 end
 
 %GT data
