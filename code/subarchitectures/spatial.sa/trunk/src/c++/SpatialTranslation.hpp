@@ -63,6 +63,7 @@ private:
   void newNavCommand(const cast::cdl::WorkingMemoryChange &objID);
   void newNavGraph(const cast::cdl::WorkingMemoryChange &objID);
   void owtNavGraph(const cast::cdl::WorkingMemoryChange &objID);
+  void newMapLoadStatus(const cast::cdl::WorkingMemoryChange & objID);
 
 private:
   int m_StartupDelay;
@@ -73,6 +74,8 @@ private:
   // This says if have been there changes on the nav graph since then
   bool m_navGraphChanged;
   bool m_bNoNavGraph;
+
+  bool m_waitForMapLoad;
 
   // Set to true for GOTOPLACE that refer to Placeholders
   bool m_isExplorationAction;
