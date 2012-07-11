@@ -278,7 +278,8 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 									e);
 					// previous code had:
 					// set.remove(wma);
-					// which generates a concurrent modification exception, so now we store the wmas to remove...
+					// which generates a concurrent modification exception, so
+					// now we store the wmas to remove...
 					toRemove.add(wma);
 				}
 				debug("lockSet(): entry " + wma.id + " is locked");
@@ -438,26 +439,31 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 
 		for (Entry<WorkingMemoryAddress, Motive> m : copySet) {
 			Motive motive = m.getValue();
-			if (motive.status == MotiveStatus.COMPLETED) // skip it
-				continue;
-			if (PlannerFacade.get(this).isGoalAchieved(motive.goal.goalString)) {
+
+			if (motive.status == MotiveStatus.ACTIVE) {
+
 				WorkingMemoryAddress wma = m.getKey();
 
 				try {
-					log("flag achieved goal " + motive.goal.goalString);
 					lockEntry(wma, WorkingMemoryPermissions.LOCKEDOD);
 					motive = getMemoryEntry(wma, Motive.class);
-					motive.status = MotiveStatus.COMPLETED;
+					if (PlannerFacade.get(this).isGoalAchieved(
+							motive.goal.goalString)) {
+						log("flag achieved goal " + motive.goal.goalString);
+						motive.status = MotiveStatus.COMPLETED;
+					} else {
+						motive.status = MotiveStatus.SURFACED;
+					}
 					overwriteWorkingMemory(m.getKey(), motive);
 				} catch (CASTException e) {
 					getLogger().warn(
-							"CASTException when flagging goal as achieved: "
+							"CASTException when deactivating goal: "
 									+ e.message);
 				} finally {
-					if (this.holdsLock(wma.id, wma.subarchitecture))
+					if (this.holdsLock(wma.id, wma.subarchitecture)) {
 						unlockEntry(wma);
+					}
 				}
-
 			}
 		}
 	}

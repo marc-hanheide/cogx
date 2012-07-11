@@ -4,10 +4,7 @@
 package motivation.components.managers;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
@@ -16,7 +13,6 @@ import autogen.Planner.PlanningTask;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
-import eu.cogx.planner.facade.PlannerFacade;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
@@ -48,12 +44,13 @@ public class Scheduler extends AbstractScheduler {
 				if (executionFuture != null
 						&& (executionFuture.isDone() || executionFuture
 								.isCancelled())) {
-					
-					log("execution has finished... de-activate goals!");
-					setStatus(activeGoals, MotiveStatus.SURFACED);
-					sleepComponent(1000);
-					
-					log("flag achieved goals");
+
+					log("execution has finished... de-activating goals!");
+
+					// now done in flagAchievedGoals
+					// setStatus(activeGoals, MotiveStatus.SURFACED);
+					// sleepComponent(1000);
+
 					flagAchievedGoals();
 
 					executionFuture = null;
@@ -67,7 +64,7 @@ public class Scheduler extends AbstractScheduler {
 				// executionFuture.cancel(true);
 				// executionFuture = null;
 				// }
-				
+
 				if (executionFuture == null) {
 
 					// we are currently not executing
@@ -106,7 +103,8 @@ public class Scheduler extends AbstractScheduler {
 						}
 
 						setStatus(possibleGoals, MotiveStatus.ACTIVE);
-						log("start extecuting for " + possibleGoals.size()
+
+						log("start executing for " + possibleGoals.size()
 								+ " possible goals");
 						executionFuture = executor
 								.execute(plan.getEvent().address);
