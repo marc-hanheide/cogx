@@ -63,6 +63,12 @@ bool TrackerScenario::create(const TrackerScenario::Desc& desc) {
 	learningData.setToDefault(desc.featLimits);
 	dataFileName = get_base_filename_from_time ();
 
+	// // temporal code
+	// if (!learningData.read_dataset ("1207112255", data, learningData.featLimits))
+	// 	cout << "Error reading file" << endl;
+	// dataFileName = "1207112255";
+	// data.erase (data.end() - 1);
+
 	return true;
 }
 
@@ -91,6 +97,9 @@ void TrackerScenario::postprocess (golem::SecTmReal elapsedTime)
 {
 	if (_concreteActor == NULL)
 		return;
+	if (!tracker_th->running ())
+		return;
+
 	if (bStart)
 	{
 		if (object == NULL)
@@ -229,8 +238,9 @@ void TrackerScenario::run (int argc, char* argv[])
 	arm->setCollisionDetection(true);
 	object = dynamic_cast<ActorObject*>(scene.createObject(desc.descActorObject));
 	object->setShape(scene,_concreteActor,true);
+	int max_iterations = 10;
 	
-	for (unsigned int i=0; i<2; i++)
+	for (iteration=0; iteration<max_iterations; iteration++)
 	{
 		//turn on collision detection
 		arm->setCollisionDetection(true);
@@ -254,13 +264,14 @@ void TrackerScenario::run (int argc, char* argv[])
 		arm->setCollisionDetection(false);
 		//move finger to initial position
 		arm->moveFingerToStartPose(context);
-		if (i!=2-1)
+		if (iteration!=max_iterations-1)
 		{
 		// wait for key
 			evContinue.wait ();
 			evContinue.set(false);
 		}
 		arm->moveFingerToStartPose(context);
+		cout << "Iteration " << iteration << " finished." << endl; 
 
 	}
 	evContinue.set(true);
@@ -268,8 +279,9 @@ void TrackerScenario::run (int argc, char* argv[])
 	arm->moveArmToStartPose(context);
 	//write obtained data into a binary file
 	writeData ();
+	// Wait for some time
+	PerfTimer::sleep(SecTmReal(5.0));
 
-	// tracker_th->Stop ();
 
 
 }
@@ -279,6 +291,7 @@ void TrackerScenario::finish() {
 	// delete m_tracker;
 	// glWindow.release();
 	//capture->finish();
+	tracker_th->Stop ();
 	delete tracker_th;
 	removeObject();						
 }
@@ -293,9 +306,11 @@ void TrackerScenario::keyboardHandler(unsigned char key, int x, int y) {
 		context.getMessageStream()->write(Message::LEVEL_INFO, "RESUME\n");
 		evContinue.set(true);
 		break;
-	case 'd': case 'D':
+	case 'u': case 'U':
 		context.getMessageStream()->write(Message::LEVEL_INFO, "DISCARDED\n");
-		data.erase (data.end() - 1);
+		if (data.size() > 0)
+			data.erase (data.end() - 1);
+		iteration--;
 		evContinue.set(true);
 	}
 }

@@ -164,6 +164,8 @@ protected:
 	virtual void calculateStartCoordinates ();
 	/** default object bounds */
 	golem::Bounds::SeqPtr objectLocalBounds;
+	/** current iteration */
+	int iteration;
 
 
 };

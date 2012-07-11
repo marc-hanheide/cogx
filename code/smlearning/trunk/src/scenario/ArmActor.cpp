@@ -51,7 +51,7 @@ void ArmActor::init(const golem::Context &context)
 	_home.pos = _desc.homePose;
 
 	// move the arm with global path planning and collision detection
-	_home.t = context.getTimer().elapsed() + getDeltaAsync() + SecTmReal(8.0);
+	_home.t = context.getTimer().elapsed() + getDeltaAsync() + SecTmReal(5.0);
 	// movement will last no shorter than 5 sec
 
 	_arm->getReacPlanner().send(_home, ReacPlanner::ACTION_GLOBAL);
@@ -72,7 +72,7 @@ void ArmActor::init(const golem::Context &context)
 void ArmActor::moveArmToStartPose(const golem::Context &context)
 {
 
-	_initial.t = context.getTimer().elapsed() + getDeltaAsync() + SecTmReal(10.0);
+	_initial.t = context.getTimer().elapsed() + getDeltaAsync() + SecTmReal(5.0);
 	// movement will last no shorter than 5 sec
 	_arm->getReacPlanner().send(_initial, ReacPlanner::ACTION_GLOBAL);
 	// wait until the arm is ready to accept new commands, but no longer than 60 seconds
@@ -116,7 +116,7 @@ void ArmActor::moveFinger(golem::Context &context,golem::GenWorkspaceState& targ
 */
 void ArmActor::moveFingerToStartPose(golem::Context &context)
 {
-	_home.t = context.getTimer().elapsed() + getDeltaAsync() + SecTmReal(8.0);
+	_home.t = context.getTimer().elapsed() + getDeltaAsync() + SecTmReal(5.0);
 
 	//turn on collision detection
 	setCollisionDetection(true);
