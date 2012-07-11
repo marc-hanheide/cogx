@@ -3,9 +3,7 @@ package de.dfki.lt.tr.cast.dialogue.planverb;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -14,7 +12,6 @@ import java.util.regex.Pattern;
 
 import castutils.castextensions.IceXMLSerializer;
 
-import de.dfki.lt.tr.planverb.generation.Message;
 import de.dfki.tarot.cogx.CogXJavaHelpers;
 import de.dfki.tarot.cogx.FeatureReplacer;
 import de.dfki.tarot.nlp.lf.BasicLogicalForm;
