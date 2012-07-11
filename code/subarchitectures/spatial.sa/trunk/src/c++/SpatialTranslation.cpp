@@ -111,6 +111,10 @@ void SpatialTranslation::start() {
       new MemberFunctionChangeReceiver<SpatialTranslation> (this,
 	 &SpatialTranslation::newMapLoadStatus));
 
+  addChangeFilter(createLocalTypeFilter<SpatialData::MapLoadStatus> (cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<SpatialTranslation> (this,
+	 &SpatialTranslation::newMapLoadStatus));
+
   m_placeInterface = FrontierInterface::PlaceInterfacePrx(getIceServer<
       FrontierInterface::PlaceInterface> ("place.manager"));
 
