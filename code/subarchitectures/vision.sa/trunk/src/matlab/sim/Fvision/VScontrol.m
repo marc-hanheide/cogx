@@ -22,7 +22,7 @@ function varargout = VScontrol(varargin)
 
 % Edit the above text to modify the response to help VScontrol
 
-% Last Modified by GUIDE v2.5 11-Jul-2012 12:03:18
+% Last Modified by GUIDE v2.5 11-Jul-2012 17:47:18
 
 % Begin initialization code - DO NOT EDIT
 
@@ -173,3 +173,11 @@ function pb_prev_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 VSprevImg;
+
+
+% --- Executes on button press in pb_test.
+function pb_test_Callback(hObject, eventdata, handles)
+% hObject    handle to pb_test (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+VStest;

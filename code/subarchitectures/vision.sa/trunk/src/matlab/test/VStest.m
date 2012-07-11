@@ -22,7 +22,7 @@ function varargout = VStest(varargin)
 
 % Edit the above text to modify the response to help VStest
 
-% Last Modified by GUIDE v2.5 11-Jul-2012 10:56:47
+% Last Modified by GUIDE v2.5 11-Jul-2012 17:45:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -79,7 +79,9 @@ function pb_testCol_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 H=str2num(get(handles.ed_V,'String'))
-VStestColors(H);
+%VStestColors(H);
+st=str2num(get(handles.ed_st,'String'));
+VStestColorsHS(H,st);
 
 % --- Executes on button press in pbGenColImg.
 function pbGenColImg_Callback(hObject, eventdata, handles)
@@ -103,6 +105,39 @@ function ed_V_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function ed_V_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to ed_V (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pb_testHL.
+function pb_testHL_Callback(hObject, eventdata, handles)
+% hObject    handle to pb_testHL (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+S=str2num(get(handles.ed_V,'String'));
+st=str2num(get(handles.ed_st,'String'));
+VStestColorsHL(S,st);
+
+
+
+function ed_st_Callback(hObject, eventdata, handles)
+% hObject    handle to ed_st (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of ed_st as text
+%        str2double(get(hObject,'String')) returns contents of ed_st as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function ed_st_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ed_st (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

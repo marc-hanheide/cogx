@@ -11,7 +11,7 @@ function [F,rgb3d]=extAPfeatures(X,B,FV,pts3d)
 %features' variantS
 
 if nargin < 3
-   FV=5;%4;
+   FV=6;%5;%4;
 end;   
 
 if nargin==1
@@ -28,6 +28,7 @@ switch FV
     case 3, Fnames=['Hu';'Sa';'In';'S1';'S2';'S3';'S4'];
     case 4, Fnames=['Hu';'Sa';'In';'S1';'S2';'S3';'S4';'S5'];
     case 5, Fnames=['Hu';'Sa';'In';'S1';'S2';'S3'];
+    case 6, Fnames=['Hu';'Sa';'Li';'S1';'S2';'S3'];
 end
 
 
@@ -40,7 +41,7 @@ else
 %figure;imshow(B);
 
 
-   [IH,IW,foo,N]=size(X);
+   [IH,IW,~,N]=size(X);
    numF=size(Fnames,1);
    F=zeros(numF,N);
 
@@ -50,7 +51,11 @@ else
       b=b1/max(double(b1(:)));
 
       %GET APPEARANCE FEATURES
-      HSV=rgb2hsv(x);
+      if FV<=5
+          HSV=rgb2hsv(x);
+      else
+          HSV=rgb2hsl(double(x/255));
+      end
       %HSV(HSV(:,:,1)>.8)=0; %red color...
 %!!DS!!REMOVED THIS HACK!!!      idxs=find(HSV(:,:,1)>.8);HSV(idxs)=1-HSV(idxs); %red color...
       
