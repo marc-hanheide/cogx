@@ -30,19 +30,20 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.BeliefAncestorMatchingF
 public class ViewConeTransferFunction extends
 		DependentDiscreteTransferFunction<ViewCone, GroundedBelief> {
 
+	public static final String LABEL_KEY = "label";
 	static Logger logger = Logger.getLogger(ViewConeTransferFunction.class);
 
-//	private final WMView<ViewCone> m_allCones;
+	// private final WMView<ViewCone> m_allCones;
 
 	public ViewConeTransferFunction(ManagedComponent component,
 			WMView<GroundedBelief> allBeliefs) {
 		super(component, allBeliefs, logger, GroundedBelief.class);
-//		m_allCones = WMView.create(component, ViewCone.class);
-//		try {
-//			m_allCones.start();
-//		} catch (UnknownSubarchitectureException e) {
-//			logger.error("Can't start WMView", e);
-//		}
+		// m_allCones = WMView.create(component, ViewCone.class);
+		// try {
+		// m_allCones.start();
+		// } catch (UnknownSubarchitectureException e) {
+		// logger.error("Can't start WMView", e);
+		// }
 	}
 
 	@Override
@@ -81,7 +82,10 @@ public class ViewConeTransferFunction extends
 				.getAsFormula());
 		result.put("tilt", DoubleFormula.create(from.tilt).getAsFormula());
 
-                result.put("label", PropositionFormula.create(from.label).getAsFormula());
+		if (from.label.length() > 0) {
+			result.put(LABEL_KEY, PropositionFormula.create(from.label)
+					.getAsFormula());
+		}
 
 		return result;
 	}
