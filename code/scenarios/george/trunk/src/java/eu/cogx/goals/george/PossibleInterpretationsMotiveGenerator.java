@@ -3,6 +3,7 @@ package eu.cogx.goals.george;
 import java.util.LinkedList;
 import java.util.List;
 
+import motivation.slice.ObjectReferencingIntentionMotive;
 import motivation.slice.TutorInitiativeLearningMotive;
 import motivation.slice.TutorInitiativeMotive;
 import cast.AlreadyExistsOnWMException;
@@ -69,18 +70,21 @@ public class PossibleInterpretationsMotiveGenerator
 					.getMostConfidentIntention(_pii);
 
 			// filter out answers and maybe other types later?
-			if (!mostConfidentIntention.stringContent.get("subtype").contains(
-					"answer")) {
 
+			String subtype = mostConfidentIntention.stringContent
+					.get("subtype");
+
+			String clss = mostConfidentIntention.stringContent.get("class");
+
+			if ((subtype != null && !subtype.contains("answer"))
+					|| (clss != null && clss.equals("complex-action"))) {
 				if (neeedsDisambiguation(_pii)) {
 					println("generating motive to disambiguate");
 					motive = generateDisambiguationMotive(_piiAddr, _pii);
 				} else {
-
 					println("unpacking most confident of "
 							+ _pii.intentions.size()
 							+ " possible interpretations");
-
 					IntentionUnpacker.unpackMostConfidentIntention(this, _pii);
 				}
 			}
@@ -110,27 +114,29 @@ public class PossibleInterpretationsMotiveGenerator
 		TutorInitiativeMotive motive = generateMotiveFromIntention(_piiAddr,
 				mostConfidentIntention, true);
 
-		// mark referents from /all/ interpretations.
+		if (motive instanceof ObjectReferencingIntentionMotive) {
+			// mark referents from /all/ interpretations.
 
-		List<WorkingMemoryAddress> potentialReferenceList = new LinkedList<WorkingMemoryAddress>();
-		for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
-			InterpretedIntention iint = _pii.intentions.get(addr);
-			potentialReferenceList.add(aboutBeliefAddress(iint));
-		}
-		markReferent(motive, potentialReferenceList);
-		monitorForObjectVisibility(motive, potentialReferenceList);
+			List<WorkingMemoryAddress> potentialReferenceList = new LinkedList<WorkingMemoryAddress>();
+			for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
+				InterpretedIntention iint = _pii.intentions.get(addr);
+				potentialReferenceList.add(aboutBeliefAddress(iint));
+			}
+			markReferent((ObjectReferencingIntentionMotive) motive,
+					potentialReferenceList);
+			monitorForObjectVisibility(motive, potentialReferenceList);
 
-		// if this is an attributed belief task, mark attributions in all
-		// referents too
-		if (motive instanceof TutorInitiativeLearningMotive) {
+			// if this is an attributed belief task, mark attributions in all
+			// referents too
+			if (motive instanceof TutorInitiativeLearningMotive) {
 
-			TutorInitiativeLearningMotive tilm = (TutorInitiativeLearningMotive) motive;
-			for (WorkingMemoryAddress addr : potentialReferenceList) {
-				addAttribution(addr, tilm.assertedFeature, tilm.assertedValue,
-						tilm.assertedLearn);
+				TutorInitiativeLearningMotive tilm = (TutorInitiativeLearningMotive) motive;
+				for (WorkingMemoryAddress addr : potentialReferenceList) {
+					addAttribution(addr, tilm.assertedFeature,
+							tilm.assertedValue, tilm.assertedLearn);
+				}
 			}
 		}
-
 		return motive;
 	}
 

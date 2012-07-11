@@ -1,13 +1,15 @@
 package eu.cogx.goals.george;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 import motivation.components.generators.AbstractWMEntryMotiveGenerator;
-import motivation.slice.InterpretedIntentionMotive;
+import motivation.slice.ComplexActionCommandMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
+import motivation.slice.ObjectReferencingIntentionMotive;
 import motivation.slice.TutorInitiativeLearningMotive;
 import motivation.slice.TutorInitiativeMotive;
 import motivation.slice.TutorInitiativeQuestionMotive;
@@ -28,6 +30,7 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
@@ -38,6 +41,7 @@ import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
 import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
+import eu.cogx.perceptmediator.transferfunctions.ViewConeTransferFunction;
 import execution.slice.Robot;
 
 public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.Object>
@@ -164,6 +168,8 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 	protected String getAdditionalGoals() throws DoesNotExistOnWMException,
 			UnknownSubarchitectureException {
+
+		// TODO Cache this
 
 		println("fetching robot belief from " + getRobotBeliefAddr());
 		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
@@ -322,10 +328,19 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 		TutorInitiativeMotive motive = null;
 		String type = _intention.stringContent.get("type");
-		if (type.equals("assertion")) {
-			motive = newAssertionIntention(_intention, _ambiguous);
-		} else if (type.equals("question")) {
-			motive = newQuestionIntention(_intention, _ambiguous);
+
+		if (type != null) {
+			if (type.equals("assertion")) {
+				motive = newAssertionIntention(_intention, _ambiguous);
+			} else if (type.equals("question")) {
+				motive = newQuestionIntention(_intention, _ambiguous);
+			} else if (type.equals("look-direction")) {
+				motive = newLookMotive(_intention);
+
+			} else {
+				getLogger().warn("unknown intention type: " + type,
+						getLogAdditions());
+			}
 		}
 
 		if (motive != null) {
@@ -337,6 +352,93 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			logIntention(_intention);
 		}
 		return motive;
+	}
+
+	private TutorInitiativeMotive newLookMotive(InterpretedIntention _intention)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
+			PermissionException, ConsistencyException {
+
+		log("AbstractInterpretedIntentionMotiveGenerator.newComplexAction()");
+
+		assert (_intention.stringContent.get("type").equals("look-direction"));
+
+		ComplexActionCommandMotive motive = null;
+
+		String direction = _intention.stringContent.get("direction");
+
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> coneBelief = getBeliefForLabelledCone(direction);
+
+		if (coneBelief != null) {
+			motive = VisualObjectMotiveGenerator.newMotive(
+					ComplexActionCommandMotive.class, null, getCASTTime());
+
+			String goalString = conjoinGoalStrings(new String[] {
+					getAdditionalGoals(),
+					VisualObjectMotiveGenerator.beliefPredicateGoal(
+							LookAroundMotiveGenerator.LOOKED_AT, coneBelief) });
+
+			motive.goal = new Goal(100f, -1, goalString, false);
+
+			log("goal is " + motive.goal.goalString + " with inf-gain "
+					+ motive.informationGain);
+
+			// clean out previous look effect
+			BeliefUtils.addFeature(coneBelief,
+					LookAroundMotiveGenerator.LOOKED_AT, false);
+			overwriteWorkingMemory(coneBelief.getId(), "binder",
+					coneBelief.get());
+
+		}
+		return motive;
+	}
+
+	private HashMap<String, CASTIndependentFormulaDistributionsBelief<MergedBelief>> m_labelledConeBeliefs;
+
+	private CASTIndependentFormulaDistributionsBelief<MergedBelief> getBeliefForLabelledCone(
+			String direction) throws UnknownSubarchitectureException,
+			DoesNotExistOnWMException, ConsistencyException {
+
+		// one time init overhead
+		if (m_labelledConeBeliefs == null) {
+
+			m_labelledConeBeliefs = new HashMap<String, CASTIndependentFormulaDistributionsBelief<MergedBelief>>();
+
+			LinkedList<MergedBelief> mbs = new LinkedList<MergedBelief>();
+			// TODO fix hard coding
+			getMemoryEntries(MergedBelief.class, mbs, "binder");
+
+			for (MergedBelief mb : mbs) {
+				if (mb.type.equals("viewcone")) {
+					CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
+							.create(MergedBelief.class, mb);
+
+					FormulaDistribution fd = belief.getContent().get(
+							ViewConeTransferFunction.LABEL_KEY);
+					if (fd != null) {
+						String label = fd.getDistribution().getMostLikely()
+								.getProposition();
+						m_labelledConeBeliefs.put(label, belief);
+						log("stored labelled cone: " + label);
+					}
+				}
+			}
+
+		}
+
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = m_labelledConeBeliefs
+				.get(direction);
+		WorkingMemoryAddress belAddr = new WorkingMemoryAddress(belief.getId(),
+				"binder");
+
+		// version check
+		if (!haveLatestVersion(belAddr.id, belAddr.subarchitecture)) {
+			belief = CASTIndependentFormulaDistributionsBelief.create(
+					MergedBelief.class,
+					getMemoryEntry(belAddr, MergedBelief.class));
+			m_labelledConeBeliefs.put(direction, belief);
+		}
+
+		return belief;
 	}
 
 	private TutorInitiativeQuestionMotive polarQuestion(String _feature,
@@ -357,7 +459,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 						getCASTTime());
 
 		motive.questionedFeature = _feature;
-		
+
 		String goalString = conjoinGoalStrings(new String[] {
 				getAdditionalGoals(),
 				getPolarQuestionGoalString(_feature, _hypothesis,
@@ -386,9 +488,9 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		TutorInitiativeQuestionMotive motive = VisualObjectMotiveGenerator
 				.newMotive(TutorInitiativeQuestionMotive.class, null,
 						getCASTTime());
-		
+
 		motive.questionedFeature = _feature;
-		
+
 		String goalString = conjoinGoalStrings(new String[] {
 				getAdditionalGoals(),
 				getOpenQuestionGoalString(_feature, _beliefAddress) });
@@ -587,7 +689,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	 * @throws PermissionException
 	 * @throws UnknownSubarchitectureException
 	 */
-	protected void markReferent(TutorInitiativeMotive motive,
+	protected void markReferent(ObjectReferencingIntentionMotive motive,
 			List<WorkingMemoryAddress> _beliefAddresses)
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException, UnknownSubarchitectureException {
@@ -646,9 +748,9 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	// return existingMotive;
 	// }
 
-	protected static List<InterpretedIntentionMotive> getAllInterpretedIntentionMotives(
+	protected static List<ObjectReferencingIntentionMotive> getAllInterpretedIntentionMotives(
 			ManagedComponent _component) throws UnknownSubarchitectureException {
-		List<InterpretedIntentionMotive> _entries = new LinkedList<InterpretedIntentionMotive>();
+		List<ObjectReferencingIntentionMotive> _entries = new LinkedList<ObjectReferencingIntentionMotive>();
 
 		// LearnObjectFeatureMotive, TutorInitiativeLearningMotive,
 		// TutorInitiativeQuestionMotive
@@ -690,15 +792,15 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	protected static void unmarkReferent(ManagedComponent _component,
 			WorkingMemoryAddress _beliefAddr,
 			CASTIndependentFormulaDistributionsBelief<MergedBelief> _gb,
-			InterpretedIntentionMotive _completedMotive) {
+			ObjectReferencingIntentionMotive _completedMotive) {
 
 		try {
 
 			// get all motives that could involve references to objects
-			List<InterpretedIntentionMotive> _entries = getAllInterpretedIntentionMotives(_component);
+			List<ObjectReferencingIntentionMotive> _entries = getAllInterpretedIntentionMotives(_component);
 
 			boolean safeToUnmark = true;
-			for (InterpretedIntentionMotive motive : _entries) {
+			for (ObjectReferencingIntentionMotive motive : _entries) {
 
 				if (motive.status != MotiveStatus.COMPLETED
 						&& motive.thisEntry.equals(_completedMotive.thisEntry)
@@ -725,32 +827,32 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 	}
 
-//	private static final String[] POTENTIAL_ACTION_EFFECTS = new String[] {
-//			"global-color-question-answered", "global-shape-question-answered",
-//			"global-objecttype-question-answered",
-//			"object-refering-color-question-answered",
-//			"object-refering-shape-question-answered",
-//			"object-refering-objecttype-question-answered",
-//			"polar-color-question-answered", "polar-shape-question-answered",
-//			"polar-objecttype-question-answered"
-//
-//	// , "color-learned",
-//	// "shape-learned", "objecttype-learned", "color-unlearned",
-//	// "shape-unlearned", "objecttype-unlearned",
-//	};
-//
-//	protected static void removeActionEffects(ManagedComponent _component,
-//			CASTIndependentFormulaDistributionsBelief<MergedBelief> gb) {
-//
-//		for (String potentialEffect : POTENTIAL_ACTION_EFFECTS) {
-//			FormulaDistribution removed = gb.getContent().remove(
-//					potentialEffect);
-//			if (removed != null) {
-//				_component
-//						.log("removed effect from belief: " + potentialEffect);
-//			}
-//		}
-//	}
+	// private static final String[] POTENTIAL_ACTION_EFFECTS = new String[] {
+	// "global-color-question-answered", "global-shape-question-answered",
+	// "global-objecttype-question-answered",
+	// "object-refering-color-question-answered",
+	// "object-refering-shape-question-answered",
+	// "object-refering-objecttype-question-answered",
+	// "polar-color-question-answered", "polar-shape-question-answered",
+	// "polar-objecttype-question-answered"
+	//
+	// // , "color-learned",
+	// // "shape-learned", "objecttype-learned", "color-unlearned",
+	// // "shape-unlearned", "objecttype-unlearned",
+	// };
+	//
+	// protected static void removeActionEffects(ManagedComponent _component,
+	// CASTIndependentFormulaDistributionsBelief<MergedBelief> gb) {
+	//
+	// for (String potentialEffect : POTENTIAL_ACTION_EFFECTS) {
+	// FormulaDistribution removed = gb.getContent().remove(
+	// potentialEffect);
+	// if (removed != null) {
+	// _component
+	// .log("removed effect from belief: " + potentialEffect);
+	// }
+	// }
+	// }
 
 	/**
 	 * Clean up the given belief assuming that this motive has completed
@@ -776,13 +878,13 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		CASTIndependentFormulaDistributionsBelief<MergedBelief> gb = CASTIndependentFormulaDistributionsBelief
 				.create(MergedBelief.class, belief);
 
-		if (_completedMotive instanceof InterpretedIntentionMotive) {
+		if (_completedMotive instanceof ObjectReferencingIntentionMotive) {
 			// remove marking for reference
 			unmarkReferent(_component, _beliefAddr, gb,
-					(InterpretedIntentionMotive) _completedMotive);
+					(ObjectReferencingIntentionMotive) _completedMotive);
 		}
 		// remove potential results of learning and dialogue
-//		removeActionEffects(_component, gb);
+		// removeActionEffects(_component, gb);
 
 		_component.overwriteWorkingMemory(_beliefAddr, gb.get());
 	}

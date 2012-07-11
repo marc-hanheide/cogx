@@ -33,6 +33,7 @@ import cast.core.CASTUtils;
 import cogx.Math.Vector3;
 import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
+import eu.cogx.goals.george.LookAroundMotiveGenerator;
 import execution.components.AbstractActionInterface;
 import execution.slice.Robot;
 import execution.slice.TriBool;
@@ -131,7 +132,7 @@ public class VisionActionInterface extends
 
 					// record that we have looked at it
 					((VisionActionInterface) getComponent()).addFeature(
-							getAction().beliefAddress, "looked-at", true);
+							getAction().beliefAddress, LookAroundMotiveGenerator.LOOKED_AT, true);
 
 					return TriBool.TRITRUE;
 				} else {

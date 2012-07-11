@@ -30,6 +30,8 @@ public class LookAroundMotiveGenerator extends
 
 	// TODO hardcoded vision.sa
 
+	public static final String LOOKED_AT = "looked-at";
+
 	private static final String VISION_SA = "vision.sa";
 
 	// number of millis to wait with nothing going on before looking around.
@@ -176,7 +178,7 @@ public class LookAroundMotiveGenerator extends
 		LookAtViewConeMotive result = null;
 
 		if (m_myCones.contains(coneAddr)
-				&& !belief.getContent().containsKey("looked-at")) {
+				&& !belief.getContent().containsKey(LOOKED_AT)) {
 
 			log("ViewCone  has not been looked at, so generating motive.");
 
@@ -193,7 +195,7 @@ public class LookAroundMotiveGenerator extends
 			result.status = MotiveStatus.UNSURFACED;
 
 			result.goal = new Goal(100f, -1,
-					"(looked-at '" + belief.getId() + "')", false);
+					"(" + LOOKED_AT + "'" + belief.getId() + "')", false);
 
 			log("goal is " + result.goal.goalString + " with inf-gain "
 					+ result.informationGain);
@@ -208,7 +210,7 @@ public class LookAroundMotiveGenerator extends
 		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(MergedBelief.class, _newEntry);
 
-		if (!belief.getContent().containsKey("looked-at")) {
+		if (!belief.getContent().containsKey(LOOKED_AT)) {
 			log("ViewCone belief is still not looked at, so leaving motive unchanged.");
 			return _existingMotive;
 		} else {

@@ -3,11 +3,12 @@ package eu.cogx.goals.george;
 import java.util.LinkedList;
 import java.util.List;
 
-import vision.execution.george.VisionActionInterface;
-
+import motivation.slice.ComplexActionCommandMotive;
+import motivation.slice.ObjectReferencingIntentionMotive;
 import motivation.slice.TutorInitiativeLearningMotive;
 import motivation.slice.TutorInitiativeMotive;
 import motivation.slice.TutorInitiativeQuestionMotive;
+import vision.execution.george.VisionActionInterface;
 import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
@@ -45,12 +46,14 @@ public class InterpretedIntentionMotiveGenerator extends
 		try {
 			motive = generateMotiveFromIntention(_addr, _intention, false);
 			// mark referents of chosen intention
-			if (motive != null) {
+			if (motive != null
+					&& motive instanceof ObjectReferencingIntentionMotive) {
 				List<WorkingMemoryAddress> referenceList = new LinkedList<WorkingMemoryAddress>();
 				WorkingMemoryAddress reference = aboutBeliefAddress(_intention);
 				referenceList.add(reference);
-				markReferent(motive, referenceList);
-				
+				markReferent((ObjectReferencingIntentionMotive) motive,
+						referenceList);
+
 				if (motive instanceof TutorInitiativeLearningMotive) {
 					TutorInitiativeLearningMotive tilm = (TutorInitiativeLearningMotive) motive;
 					removeLearningEffect(reference, tilm.assertedFeature,
@@ -175,32 +178,35 @@ public class InterpretedIntentionMotiveGenerator extends
 	@Override
 	protected void motiveWasCompleted(TutorInitiativeMotive _motive) {
 		println("Got back a deleted motive. Treating this as success.");
-		try {
-			// the intention that generated the motive
-			InterpretedIntention ii = getMemoryEntry(_motive.referenceEntry,
-					InterpretedIntention.class);
 
-			cleanBelief(this, aboutBeliefAddress(ii), _motive);
+		if (!(_motive instanceof ComplexActionCommandMotive)) {
+			try {
+				// the intention that generated the motive
+				InterpretedIntention ii = getMemoryEntry(
+						_motive.referenceEntry, InterpretedIntention.class);
 
-			// and signal intention success
+				cleanBelief(this, aboutBeliefAddress(ii), _motive);
 
-			// go through all types we know how to decode... can it be more
-			// elegant than this?
-			RichIntention decoded = AbstractDialogueActionInterface
-					.extractRichIntention(ii);
+				// and signal intention success
 
-			if (decoded == null) {
-				getLogger().warn("Unable to decode intention",
-						getLogAdditions());
-				logIntention(ii);
-			} else {
-				CASTEffect successEffect = decoded.getOnSuccessEffect();
-				successEffect.makeItSo(this);
-				log("executed success effect");
+				// go through all types we know how to decode... can it be more
+				// elegant than this?
+				RichIntention decoded = AbstractDialogueActionInterface
+						.extractRichIntention(ii);
+
+				if (decoded == null) {
+					getLogger().warn("Unable to decode intention",
+							getLogAdditions());
+					logIntention(ii);
+				} else {
+					CASTEffect successEffect = decoded.getOnSuccessEffect();
+					successEffect.makeItSo(this);
+					log("executed success effect");
+				}
+
+			} catch (SubarchitectureComponentException e) {
+				logException(e);
 			}
-
-		} catch (SubarchitectureComponentException e) {
-			logException(e);
 		}
 
 	}
