@@ -37,8 +37,10 @@ public class StopWatch {
 	}
 	
 	public synchronized long toc(String text) {
-		if (!running)
-			throw (new IllegalStateException("StopWatch not running!"));
+		if (!running) {
+			infoLoggerInstance.warn("StopWatch not running, returning 0 (which will mess up your measurement)!");
+			return 0;
+		}
 		count++;
 		lastSpan = System.currentTimeMillis() - lastTic;
 //		cumulatedTime += lastSpan;
