@@ -205,7 +205,7 @@ def gen_fact_tuples(beliefs):
       if isinstance(bel, cogxbm.HypotheticalBelief):
         for fact in decode_relation(bel.content):
           hypdist = HypotheticalSVarDistribution(fact.feature, fact.args, fact.values)
-          log.debug("hypothetical relation: %s = %s", map(str,fact), str(hypdist))
+          log.trace("hypothetical relation: %s = %s", map(str,fact), str(hypdist))
           yield hypdist
         #TODO: which hypothetical relations so we want to keep?
         continue
@@ -223,12 +223,12 @@ def gen_fact_tuples(beliefs):
         factdict[str(feat)].append((val, prob))
 
       if attributed_object is not None and isinstance(bel, cogxbm.HypotheticalBelief):
-        log.debug("hypothetical belief %s about object: %s", bel.id, attributed_object.name)
+        log.trace("hypothetical belief %s about object: %s", bel.id, attributed_object.name)
         for feat,vals in factdict.iteritems():
           hypdist = HypotheticalSVarDistribution(feat, [attributed_object], vals)
           for val, prob in vals:
-            log.debug("    (%s %s) = %s : %f", feat, attributed_object, val, prob)
-          log.debug("dist: %s", str(hypdist))
+            log.trace("    (%s %s) = %s : %f", feat, attributed_object, val, prob)
+          log.trace("dist: %s", str(hypdist))
           yield hypdist
             
         #Don't put hypotheses about existing objects into the state
@@ -243,10 +243,10 @@ def gen_fact_tuples(beliefs):
         obj = belief_to_object(bel)
         # print bel.id, type(bel), isinstance(bel, cogxbm.HypotheticalBelief)
         if isinstance(bel, cogxbm.HypotheticalBelief):
-          log.debug("used hypothetical object: %s", bel.id)
+          log.trace("used hypothetical object: %s", bel.id)
           yield SVarDistribution("is-virtual", [obj], [(pddl.TRUE, 1.0)])
           hypdist = HypotheticalSVarDistribution("entity-exists",  [obj], [(pddl.TRUE, 1.0)])
-          log.debug("dist: %s", str(hypdist))
+          log.trace("dist: %s", str(hypdist))
           yield hypdist
         else:
           yield SVarDistribution("entity-exists",  [obj], [(pddl.TRUE, 1.0)])
