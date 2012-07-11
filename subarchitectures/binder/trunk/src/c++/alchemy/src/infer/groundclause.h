@@ -85,7 +85,7 @@ typedef IntBoolPair::iterator IntBoolPairItr;
 
 // Constants
 //const double HARD_GROUNDCLAUSE_WT = DBL_MAX;
-const double HARD_GROUNDCLAUSE_WT = 33;
+const double HARD_GROUNDCLAUSE_WT = 10;
 const bool gcdebug = false;
 
 // Forward declarations
