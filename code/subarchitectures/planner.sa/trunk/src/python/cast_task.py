@@ -1024,6 +1024,7 @@ class CASTTask(object):
 
         diffstate = compute_state_updates(self.cp_task.get_state(), finished_actions, failed_actions)
         for fact in diffstate.iterfacts():
+            log.debug("applying update: %s", str(fact))
             self.cp_task.get_state().set(fact)
         #TODO: create new state?
         beliefs = self.state.update_beliefs(diffstate)
