@@ -1,9 +1,16 @@
 package de.dfki.lt.tr.cast.dialogue.planverb;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import castutils.castextensions.IceXMLSerializer;
 
 import de.dfki.tarot.cogx.CogXJavaHelpers;
 import de.dfki.tarot.cogx.FeatureReplacer;
@@ -163,19 +170,57 @@ public class PEVUtils {
 		return output + sentences[sentences.length-1] + ".";
 	}
 	
-	public static void main(String[] args) {
-		String testLF = "@{step_6_1:cognition}(assume ^ <ExecutionStatus>SUCCEEDED ^ <Actor>(\"1_6_1,0:C@spatial.sa\":castreferent ^ \"1_6_1,0:C@spatial.sa\") ^ <Event>(event_6_1:event ^ and ^ <First>(be_6_1_0:ascription ^ be1 ^ <Cop-Restr>(magazine_6_1:thing ^ magazine ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(in_6_1:m-location ^ in ^ <Anchor>(\"1_6_1,0:81@coma\":castreferent ^ \"1_6_1,0:81@coma\"))) ^ <Next>(be_6_1_1:ascription ^ be2 ^ <Cop-Scope>(meetingroom_6_1:category ^ meetingroom ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Restr>(room_6_1:e-place ^ room ^ <Num>sg ^ <Delimitation>unique ^ <Proximity>proximal ^ <Quantification>specific))) ^ <Subject>(\"1_6_1,0:C@spatial.sa\":castreferent))";
-		BasicLogicalForm blf;
+	
+	/**
+	 * Read the raw text as XML-based String object from the given file
+	 * 
+	 * @param rawTextFile
+	 * 				the file to read from
+	 */
+	public static String readRawTextFromFile(File rawTextFile) {
+		
 		try {
-			blf = BasicLogicalForm.checkedFromString(testLF);
-			System.out.println(preProcessLexiconSubstitution(blf, new HashMap<String, String>()).toString().replaceAll("\\^", "\\^ \n"));
+			StringBuilder text = new StringBuilder();
+		    String NL = System.getProperty("line.separator");
+		    Scanner scanner = new Scanner(new FileInputStream(rawTextFile));
+		    try {
+		      while (scanner.hasNextLine()){
+		        text.append(scanner.nextLine() + NL);
+		      }
+		    }
+		    finally{
+		      scanner.close();
+		    }
+		    String rawText = IceXMLSerializer.fromXMLString(text.toString(), String.class);
+		    return rawText;
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
 
-		} catch (BuildException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	
+	
+	public static void main(String[] args) {
+		if (args.length==1) {
+			String rawText = readRawTextFromFile(new File(args[0]));
+			System.out.println("RAW TEXT: \n"+ rawText);
+			System.out.println("AGGREGATED TEXT: \n" + aggregateStrings(rawText));
+		} else if (args.length==0) {
+			String testLF = "@{step_6_1:cognition}(assume ^ <ExecutionStatus>SUCCEEDED ^ <Actor>(\"1_6_1,0:C@spatial.sa\":castreferent ^ \"1_6_1,0:C@spatial.sa\") ^ <Event>(event_6_1:event ^ and ^ <First>(be_6_1_0:ascription ^ be1 ^ <Cop-Restr>(magazine_6_1:thing ^ magazine ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(in_6_1:m-location ^ in ^ <Anchor>(\"1_6_1,0:81@coma\":castreferent ^ \"1_6_1,0:81@coma\"))) ^ <Next>(be_6_1_1:ascription ^ be2 ^ <Cop-Scope>(meetingroom_6_1:category ^ meetingroom ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Restr>(room_6_1:e-place ^ room ^ <Num>sg ^ <Delimitation>unique ^ <Proximity>proximal ^ <Quantification>specific))) ^ <Subject>(\"1_6_1,0:C@spatial.sa\":castreferent))";
+			BasicLogicalForm blf;
+			try {
+				blf = BasicLogicalForm.checkedFromString(testLF);
+				System.out.println(preProcessLexiconSubstitution(blf, new HashMap<String, String>()).toString().replaceAll("\\^", "\\^ \n"));
+
+			} catch (BuildException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 	}

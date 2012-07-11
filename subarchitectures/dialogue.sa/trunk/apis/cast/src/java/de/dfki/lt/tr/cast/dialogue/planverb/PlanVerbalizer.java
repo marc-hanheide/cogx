@@ -3,9 +3,13 @@ package de.dfki.lt.tr.cast.dialogue.planverb;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -57,6 +61,8 @@ public class PlanVerbalizer {
 	
 	final protected WMView<GroundedBelief> view = WMView.create(this.m_castComponent, GroundedBelief.class);
 	
+	private final boolean m_fullConstructor; 
+	
 
 	/**
 	 * Creates and initializes a new PlanVerbalizer object.
@@ -86,6 +92,7 @@ public class PlanVerbalizer {
 		PDDLDomainModel domainModel = new PDDLDomainModel(adf, pddf);
 		m_contentDeterminator = new PDDLContentDeterminator(domainModel);
 
+		m_fullConstructor = true;
 	
 		try {
 			m_realiser = new RealisationClient(hostname, port);
@@ -145,7 +152,8 @@ public class PlanVerbalizer {
 		PDDLDomainModel domainModel = new PDDLDomainModel(adf, pddf);
 		m_contentDeterminator = new PDDLContentDeterminator(domainModel);
 
-	
+		m_fullConstructor = true;
+		
 		try {
 			m_realiser = new RealisationClient(hostname, port);
 		} catch (UnknownHostException e) {
@@ -167,6 +175,42 @@ public class PlanVerbalizer {
 		log("finished PlanVerbalizer constructor");
 	}
 	
+	/**
+	 * This constructor can be used for a standalone verbalization of already determined and finalized messages
+	 * (i.e. when reading them from file) via
+	 * verbalizeMessageFile(File msgListFile)
+	 *  
+	 * @param grammarFile
+	 * @param ngramFile
+	 * @param hostname
+	 * @param port
+	 * @throws IOException
+	 */
+	public PlanVerbalizer(String grammarFile, String ngramFile, String hostname, Integer port) throws IOException  {
+		m_fullConstructor = false;
+		m_contentDeterminator = null;
+		
+		try {
+			m_realiser = new RealisationClient(hostname, port);
+		} catch (UnknownHostException e) {
+			logException(e);
+			log("trying to use object-based tarot realiser instead of the realiserver.");
+			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
+			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
+			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
+		} catch (IOException e) {
+			logException(e);
+			log("trying to use object-based tarot realiser instead of the realiserver.");
+			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
+			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
+			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
+		}
+
+		// initialize lexicon substitutions for the time being...
+		initLexicalSubstitutions();
+		log("finished PlanVerbalizer constructor");
+	}
+
 
 	
 	/**
@@ -184,59 +228,107 @@ public class PlanVerbalizer {
 		m_postLexicalSub.put("did not", "could not successfully");
 	}
 	
-	
-	/**
-	 * Wrapper for verbalizeHistory(History h)
-	 * 
-	 * @param hlist
-	 * @param planningTaskID
-	 * @param task
-	 * @return
-	 */
-	public String verbalizeHistory(final List<POPlan> hlist, int planningTaskID, String task) {
-		log("entering verbalizeHistory()");
-		History h = new PDDLHistory(hlist, planningTaskID, task);
-		return verbalizeHistory(h);
-	}
-	
 	/**
 	 * This is the core method for realizing a report of a given history.
+	 * Will call verbalizeHistoryStepOne and verbalizeHistoryStepTwo in row.
 	 * 
 	 * @param h
 	 * @return
 	 */
 	public String verbalizeHistory(History h) {
-	  log("entering verbalizeHistory()");
-		
-		List<Message> messages = m_contentDeterminator.determineMessages(h);	
-		log("contentDeterminator returned " + messages.size() + " messages for the full History.");
-
-		return PEVUtils.aggregateStrings(realizeMessages(messages));
+		if (!m_fullConstructor) return "verbalizeHistory only possible with situated context and event models (GBeliefs!)";
+		return verbalizeHistoryStepTwo(verbalizeHistoryStepOne(h));
 	}
-
-
+	
 	
 	/**
-	 * method to realize a list of Messages 
-	 * (incl ProtoLFMessages and StringMessages) into a surface text.
+	 * Step one of verbalization includes
+	 * determine messages
+	 * process and finalize messages
+	 * write message list to file
 	 * 
-	 * @param messages
+	 * @param h
 	 * @return
 	 */
-	private String realizeMessages(List<Message> messages) {
-		StringBuilder output_sb = new StringBuilder();
+	public List<Message> verbalizeHistoryStepOne(History h) {
+		if (!m_fullConstructor) {
+			log("verbalizeHistory only possible with situated context and event models (GBeliefs!)");
+			return null;
+		}
 
-		// realize each message
-		for (Message msg : messages) {
+		log("verbalizeHistory 1: determining and finalizing messages...");
+		List<Message> finalMessages = processAndFinalizeMessages(determineMessages(h));
+		log("verbalizeHistory 2: saving messages to file...");
+		writeMessagesToFile(finalMessages);
+		return finalMessages;
+	}
+		
+	/**
+	 * Step two of verbalization includes
+	 * realize messages (through openccg)
+	 * aggregate text
+	 * 
+	 * @param finalMessages
+	 * @return
+	 */
+	public String verbalizeHistoryStepTwo(List<Message> finalMessages) {	
+		log("verbalizeHistory 3: realising messages via openccg...");
+		String rawText = realizeMessages(finalMessages);
+		log("verbalizeHistory 4: saving raw text to file...");
+		writeTextToFile(rawText, "PEV-rawtext.xml");
+		log("verbalizeHistory 5: aggregating realised text string...");
+		String outText = PEVUtils.aggregateStrings(rawText);
+		log("verbalizeHistory 6: returning generated text...");
+		return outText;
+	}
+	
+	
+	
+	/**
+	 * Verbalizing messages that were saved to file.
+	 * This replaces step one of verbalization,
+	 * and calls step two of verbalization only.
+	 * 
+	 * @param f
+	 * @return
+	 */
+	public String verbalizeMessageFile(File msgListFile) {
+		List<Message> finalMessages = readMessageListFromFile(msgListFile);
+		return verbalizeHistoryStepTwo(finalMessages);
+	}
+	
+	/**
+	 * Determines the messages for a given history.
+	 * 
+	 * @param h -- history data structure
+	 * @return
+	 */
+	private List<Message> determineMessages(History h) {
+		List<Message> messages = m_contentDeterminator.determineMessages(h);	
+		log("contentDeterminator returned " + messages.size() + " messages for the History.");
+		return messages;
+	}
+	
+	
+	/**
+	 * Method to finalize protoLF Messages into situated, complete LFs.
+	 * This is basically the context-situated part of the NLG chain. 
+	 * 
+	 * @param protoMessages
+	 * @return
+	 */
+	private List<Message> processAndFinalizeMessages(List<Message> protoMessages) {
+		LinkedList<Message> finalMessages = new LinkedList<Message>();
+		for (Message msg : protoMessages) {
 			StringBuilder log_sb = new StringBuilder();
 			if (msg instanceof ProtoLFMessage) {
 				log_sb.append("Current Message is a ProtoLFMessage:\n" + ((ProtoLFMessage) msg).getProtoLF());
 				BasicLogicalForm protoLF = ((ProtoLFMessage) msg).getProtoLF();
-				if (protoLF.toString().contains("assume") && protoLF.toString().contains("that")) {
-					log_sb.append("\n Error: I got as 'assume that' protoLF -- ignoring it!");
-					log(log_sb.toString());
-					return "";
-				}
+//				if (protoLF.toString().contains("assume") && protoLF.toString().contains("that")) {
+//					log_sb.append("\n Error: I got as 'assume that' protoLF -- ignoring it!");
+//					log(log_sb.toString());
+//					return "";
+//				}
 				log("Current Message is a ProtoLFMessage:\n" + ((ProtoLFMessage) msg).getProtoLF());
 
 				// fixing malformed WMAs before GRE
@@ -248,7 +340,6 @@ public class PlanVerbalizer {
 				} catch (ParseException e) {
 					logException(e);
 				}
-				
 				
 				// do GRE 
 				GBeliefGRE greModule = new GBeliefGRE(this);
@@ -268,7 +359,36 @@ public class PlanVerbalizer {
 				// make missing parts consistent (e.g. subj agreement)
 				BasicLogicalForm finalLF = PEVUtils.finalizeProtoLF(protoLF);
 				log_sb.append("\n finalizeProtoLF() yielded: \n" + finalLF.toString());
+				
+				Message finalPLFMsg = new ProtoLFMessage(finalLF);
+				finalMessages.add(finalPLFMsg);
 
+			} else if (msg instanceof StringMessage) {
+				finalMessages.add(msg);
+			}
+	    	log("**** " + log_sb.toString());
+        }
+    	return finalMessages;
+	}
+	
+	
+	/**
+	 * method to realize a list of Messages 
+	 * (incl ProtoLFMessages and StringMessages) into a surface text.
+	 * 
+	 * @param messages
+	 * @return
+	 */
+	private String realizeMessages(List<Message> messages) {
+		StringBuilder output_sb = new StringBuilder();
+
+		// realize each message
+		for (Message msg : messages) {
+			StringBuilder log_sb = new StringBuilder();
+			if (msg instanceof ProtoLFMessage) {
+
+				BasicLogicalForm finalLF = ((ProtoLFMessage) msg).getProtoLF();
+				
 				// surface realization
 				// perform lexical re-substitution after realization, before appending to the verbal report
 				String realization = m_realiser.realiseLF(finalLF);
@@ -359,6 +479,102 @@ public class PlanVerbalizer {
 		}
 	}
 	
+	
+	/**
+	 * Read the GBeliefMemory object from the given file
+	 * 
+	 * @param gbmemoryFile
+	 * 				the file to read from
+	 */
+	private List<Message> readMessageListFromFile(File msgListFile) {
+		
+		try {
+			StringBuilder text = new StringBuilder();
+		    String NL = System.getProperty("line.separator");
+		    Scanner scanner = new Scanner(new FileInputStream(msgListFile));
+		    try {
+		      while (scanner.hasNextLine()){
+		        text.append(scanner.nextLine() + NL);
+		      }
+		    }
+		    finally{
+		      scanner.close();
+		    }
+		    List<Message> msgList = IceXMLSerializer.fromXMLString(text.toString(), List.class);
+		    return msgList;
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		 catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new LinkedList<Message>();
+	}
+
+	
+	/**
+	 * Write the text (String object) to the given file
+	 */
+	private void writeTextToFile(String text, String filename) {
+		log("Writing TextToFile ...");
+
+		File file;
+		file = new File(filename);
+
+		try {
+			String msgListXMLString = IceXMLSerializer.toXMLString(text);
+
+			Writer out = new OutputStreamWriter(new FileOutputStream(file));
+			try {
+				out.write(msgListXMLString);
+				log("successfully saved text to " + filename);
+			}
+			finally {
+				out.close();
+			}			
+		} catch (FileNotFoundException e) {
+			logException(e);
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			logException(e);
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Write the List<Message> object to the given file
+	 */
+	private void writeMessagesToFile(List<Message> messages) {
+		log("Writing MessagesToFile ...");
+
+		File file;
+		file = new File("PlanVerbMessages.xml");
+
+		try {
+			String msgListXMLString = IceXMLSerializer.toXMLString(messages);
+
+			Writer out = new OutputStreamWriter(new FileOutputStream(file));
+			try {
+				out.write(msgListXMLString);
+				log("successfully saved PlanVerbMessages.xml");
+			}
+			finally {
+				out.close();
+			}			
+		} catch (FileNotFoundException e) {
+			logException(e);
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			logException(e);
+			e.printStackTrace();
+		}
+	}
+
+	
+	
 	/**
 	 * tries to use the CAST logger
 	 * if unavailable, uses std out
@@ -379,36 +595,6 @@ public class PlanVerbalizer {
 	protected void logException(Throwable e) {
 		if (m_castComponent!=null) m_castComponent.logException(e);
 		else System.out.println(e.getLocalizedMessage());
-	}
-	
-	
-	/**
-	 * main method for running stand-alone PEV
-	 * subarchitectures/dialogue.sa/resources/dora-interactive_annotated.txt subarchitectures/dialogue.sa/resources/domain2test.pddl subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt localhost 4321 subarchitectures/dialogue.sa/resources/pev-test-data/2012-07-02_16:02/GBeliefHistory.xml subarchitectures/dialogue.sa/resources/pev-test-data/2012-07-02_16:02/history-1.pddl 1 
-	 * other runs: 
-	 * 2012-07-02_16:02 
-	 * 2012-07-03_15:14 
-	 * 2012-07-09_13:35 
-	 * 2012-07-09_14:24 
-	 * 2012-07-09_16:20 (has histories 1 and 3)
-	 * 
-	 * @param args, see above
-	 */
-	public static void main(String[] args) {
-		File f = new File(args[7]);
-		PlanVerbalizer test;
-		try {
-			test = new PlanVerbalizer(args[0], args[1], args[2], args[3], args[4], Integer.parseInt(args[5]), args[6]);
-			test.debug_lf_out = true;
-			System.out.println(test.verbalizeHistory(new PDDLHistory(f, Integer.parseInt(args[8]))));
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 	}
 
 }
