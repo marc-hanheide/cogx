@@ -463,7 +463,7 @@ public class POPlanMonitor extends ManagedComponent {
 		
 		// hand history over to PEV
 		log("calling PEV Module verbalizeHistory()");
-		History h = new PDDLHistory(hlist, taskID, goalString);
+		PDDLHistory h = new PDDLHistory(hlist, taskID, goalString);
 
 		List<Message> messages = this.pevModule.verbalizeHistoryStepOne(h);
 		

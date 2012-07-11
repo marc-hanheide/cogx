@@ -12,9 +12,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
@@ -34,9 +31,7 @@ import de.dfki.lt.tr.planverb.generation.RhetoricalMarkerMessage;
 import de.dfki.lt.tr.planverb.generation.StringMessage;
 import de.dfki.lt.tr.planverb.planning.pddl.PDDLContentDeterminator;
 import de.dfki.lt.tr.planverb.planning.pddl.PDDLDomainModel;
-import de.dfki.lt.tr.planverb.planning.pddl.POPlan;
 import de.dfki.lt.tr.planverb.planning.pddl.PDDLHistory;
-import de.dfki.lt.tr.planverb.history.History;
 import de.dfki.tarot.cogx.WMAddress;
 import de.dfki.tarot.nlp.lf.BasicLogicalForm;
 import de.dfki.tarot.util.BuildException;
@@ -50,7 +45,7 @@ public class PlanVerbalizer {
 	protected ManagedComponent m_castComponent;
 	
 	private HashMap<String, String> m_preLexicalSub  = new HashMap<String, String>();
-	private HashMap<String, String> m_postLexicalSub = new HashMap<String, String>();
+//	private HashMap<String, String> m_postLexicalSub = new HashMap<String, String>();
 	
 	private final static String DEFAULTNGRAMFILE   = "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt";
 	private final static String DEFAULTGRAMMARFILE = "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml";
@@ -222,10 +217,6 @@ public class PlanVerbalizer {
 		m_preLexicalSub.put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
 		m_preLexicalSub.put("m-cause", "m-condition");
 		m_preLexicalSub.put(":category ^ meetingroom", ":e-place ^ meetingroom");
-		
-		m_postLexicalSub.put("cones", "viewcones");
-		m_postLexicalSub.put("did not search for", "didn't find");
-		m_postLexicalSub.put("did not", "could not successfully");
 	}
 	
 	/**
@@ -235,7 +226,7 @@ public class PlanVerbalizer {
 	 * @param h
 	 * @return
 	 */
-	public String verbalizeHistory(History h) {
+	public String verbalizeHistory(PDDLHistory h) {
 		if (!m_fullConstructor) return "verbalizeHistory only possible with situated context and event models (GBeliefs!)";
 		return verbalizeHistoryStepTwo(verbalizeHistoryStepOne(h));
 	}
@@ -250,7 +241,7 @@ public class PlanVerbalizer {
 	 * @param h
 	 * @return
 	 */
-	public List<Message> verbalizeHistoryStepOne(History h) {
+	public List<Message> verbalizeHistoryStepOne(PDDLHistory h) {
 		if (!m_fullConstructor) {
 			log("verbalizeHistory only possible with situated context and event models (GBeliefs!)");
 			return null;
@@ -259,7 +250,7 @@ public class PlanVerbalizer {
 		log("verbalizeHistory 1: determining and finalizing messages...");
 		List<Message> finalMessages = processAndFinalizeMessages(determineMessages(h));
 		log("verbalizeHistory 2: saving messages to file...");
-		writeMessagesToFile(finalMessages);
+		writeMessagesToFile(finalMessages, h.getTID());
 		return finalMessages;
 	}
 		
@@ -303,7 +294,7 @@ public class PlanVerbalizer {
 	 * @param h -- history data structure
 	 * @return
 	 */
-	private List<Message> determineMessages(History h) {
+	private List<Message> determineMessages(PDDLHistory h) {
 		List<Message> messages = m_contentDeterminator.determineMessages(h);	
 		log("contentDeterminator returned " + messages.size() + " messages for the History.");
 		return messages;
@@ -395,9 +386,7 @@ public class PlanVerbalizer {
 				log_sb.append("\n realizeLF() yielded: \n" + realization);
 
 				if (!realization.equals("")) {
-					String outputText = PEVUtils.postProcessLexiconSubstitution(realization, m_postLexicalSub);
-					log_sb.append("\n appending postProcessLexiconSubstitution() final output text: \n" + outputText);
-					output_sb.append(outputText + "\n");
+					output_sb.append(realization + "\n");
 				} else {
 					if (debug_lf_out) {
 						log_sb.append("\n appending original LF to output text.");
@@ -546,11 +535,11 @@ public class PlanVerbalizer {
 	/**
 	 * Write the List<Message> object to the given file
 	 */
-	private void writeMessagesToFile(List<Message> messages) {
+	private void writeMessagesToFile(List<Message> messages, int taskID) {
 		log("Writing MessagesToFile ...");
 
-		File file;
-		file = new File("PlanVerbMessages.xml");
+		String fileName = "PlanVerbMessages-" + taskID + ".xml";
+		File file = new File(fileName);
 
 		try {
 			String msgListXMLString = IceXMLSerializer.toXMLString(messages);
@@ -558,7 +547,7 @@ public class PlanVerbalizer {
 			Writer out = new OutputStreamWriter(new FileOutputStream(file));
 			try {
 				out.write(msgListXMLString);
-				log("successfully saved PlanVerbMessages.xml");
+				log("successfully saved " + fileName);
 			}
 			finally {
 				out.close();
