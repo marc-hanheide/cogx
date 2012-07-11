@@ -1,9 +1,13 @@
 package eu.cogx.goals.george;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import motivation.components.generators.AbstractWMEntryMotiveGenerator;
+import motivation.slice.InterpretedIntentionMotive;
+import motivation.slice.Motive;
+import motivation.slice.MotiveStatus;
 import motivation.slice.TutorInitiativeLearningMotive;
 import motivation.slice.TutorInitiativeMotive;
 import motivation.slice.TutorInitiativeQuestionMotive;
@@ -16,6 +20,7 @@ import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
+import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
@@ -73,7 +78,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			}
 		}
 	}
-	
+
 	public AbstractInterpretedIntentionMotiveGenerator(Class<T> _entryCls) {
 		super(TutorInitiativeMotive.class, _entryCls);
 		monitorMotivesForDeletion(true);
@@ -326,7 +331,8 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 		if (motive != null) {
 			motive.referenceEntry = _addr;
-			motive.thisEntry = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
+			motive.thisEntry = new WorkingMemoryAddress(newDataID(),
+					getSubarchitectureID());
 		} else {
 			log("unknown InterpretedIntention type");
 			logIntention(_intention);
@@ -570,32 +576,43 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	 * 
 	 * TODO handle multiple intentions/ambiguous referents
 	 * 
+	 * @param motive
+	 * 
 	 * @param _beliefAddr
 	 * @throws DoesNotExistOnWMException
 	 * @throws ConsistencyException
 	 * @throws PermissionException
 	 * @throws UnknownSubarchitectureException
 	 */
-	protected void markReferent(WorkingMemoryAddress _beliefAddr)
+	protected void markReferent(TutorInitiativeMotive motive,
+			List<WorkingMemoryAddress> _beliefAddresses)
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException, UnknownSubarchitectureException {
-		log("marking referent");
+
 		// addBooleanFeature(
 		// _beliefAddr,
 		// AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION,
 		// true);
 
-		BeliefUtils
-				.addFeature(
-						this,
-						_beliefAddr,
-						dBelief.class,
-						AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION,
-						Boolean.TRUE);
+		for (WorkingMemoryAddress beliefAddr : _beliefAddresses) {
+			log("marking referent: " + CASTUtils.toString(beliefAddr));
+			BeliefUtils
+					.addFeature(
+							this,
+							beliefAddr,
+							dBelief.class,
+							AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION,
+							Boolean.TRUE);
+		}
+
+		motive.potentiallyReferencedObjectBeliefs = _beliefAddresses;
 
 		// planning won't work without this in place anyway, but it probably
 		// isn't required on faster machines
-		sleepComponent(500);
+		// sleepComponent(500);
+		// UPDATE: as this writes directly to the merged belief, then I don't
+		// think the sleep is necessary any longer
+
 	}
 
 	protected void addAttribution(WorkingMemoryAddress _beliefAddr,
@@ -626,16 +643,82 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	// return existingMotive;
 	// }
 
+	protected static List<InterpretedIntentionMotive> getAllInterpretedIntentionMotives(
+			ManagedComponent _component) throws UnknownSubarchitectureException {
+		List<InterpretedIntentionMotive> _entries = new LinkedList<InterpretedIntentionMotive>();
+
+		// LearnObjectFeatureMotive, TutorInitiativeLearningMotive,
+		// TutorInitiativeQuestionMotive
+
+		// TODO Make CAST support type hierarchy reads
+
+		// {
+		// List<LearnObjectFeatureMotive> lofms = new
+		// LinkedList<LearnObjectFeatureMotive>();
+		// _component.getMemoryEntries(LearnObjectFeatureMotive.class, lofms);
+		// _entries.addAll(lofms);
+		// }
+
+		{
+			List<TutorInitiativeLearningMotive> tilms = new LinkedList<TutorInitiativeLearningMotive>();
+			_component.getMemoryEntries(TutorInitiativeLearningMotive.class,
+					tilms);
+			_entries.addAll(tilms);
+		}
+		{
+			List<TutorInitiativeQuestionMotive> tiqms = new LinkedList<TutorInitiativeQuestionMotive>();
+			_component.getMemoryEntries(TutorInitiativeQuestionMotive.class,
+					tiqms);
+			_entries.addAll(tiqms);
+		}
+
+		return _entries;
+	}
+
 	/**
-	 * Removes reference flag from belief. Does not update on WM.
+	 * Removes reference flag from belief if it is not also referenced by other
+	 * surfaced or active motives. Does not update on WM.
+	 * 
+	 * @param _beliefAddr
 	 * 
 	 * @param _gb
+	 * @param _completedMotive
 	 */
-	protected void unmarkReferent(
-			CASTIndependentFormulaDistributionsBelief<MergedBelief> _gb) {
+	protected static void unmarkReferent(ManagedComponent _component,
+			WorkingMemoryAddress _beliefAddr,
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> _gb,
+			InterpretedIntentionMotive _completedMotive) {
 
-		_gb.getContent()
-				.remove(AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION);
+		try {
+
+			// get all motives that could involve references to objects
+			List<InterpretedIntentionMotive> _entries = getAllInterpretedIntentionMotives(_component);
+
+			boolean safeToUnmark = true;
+			for (InterpretedIntentionMotive motive : _entries) {
+
+				if (motive.status != MotiveStatus.COMPLETED
+						&& motive.thisEntry.equals(_completedMotive.thisEntry)
+						&& motive.potentiallyReferencedObjectBeliefs
+								.contains(_beliefAddr)) {
+					_component.println("motive at "
+							+ CASTUtils.toString(motive.thisEntry)
+							+ " references belief to be unmarked");
+					safeToUnmark = false;
+					break;
+				}
+			}
+
+			if (safeToUnmark) {
+				_component.println("unmarking referent: "
+						+ CASTUtils.toString(_beliefAddr));
+				_gb.getContent()
+						.remove(AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION);
+
+			}
+		} catch (UnknownSubarchitectureException e) {
+			_component.logException("Problem reading motives from WM", e);
+		}
 
 	}
 
@@ -650,35 +733,52 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			"polar-color-question-answered", "polar-shape-question-answered",
 			"polar-objecttype-question-answered" };
 
-	protected void removeActionEffects(
+	protected static void removeActionEffects(ManagedComponent _component,
 			CASTIndependentFormulaDistributionsBelief<MergedBelief> gb) {
 
 		for (String potentialEffect : POTENTIAL_ACTION_EFFECTS) {
 			FormulaDistribution removed = gb.getContent().remove(
 					potentialEffect);
 			if (removed != null) {
-				log("removed effect from belief: " + potentialEffect);
+				_component
+						.log("removed effect from belief: " + potentialEffect);
 			}
 		}
 	}
 
-	protected void cleanBelief(WorkingMemoryAddress _beliefAddr)
+	/**
+	 * Clean up the given belief assuming that this motive has completed
+	 * execution.
+	 * 
+	 * 
+	 * @param _component
+	 * @param _beliefAddr
+	 * @throws DoesNotExistOnWMException
+	 * @throws UnknownSubarchitectureException
+	 * @throws ConsistencyException
+	 * @throws PermissionException
+	 */
+	public static void cleanBelief(ManagedComponent _component,
+			WorkingMemoryAddress _beliefAddr, Motive _completedMotive)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
 			ConsistencyException, PermissionException {
 
-		MergedBelief belief = getMemoryEntry(_beliefAddr, MergedBelief.class);
+		_component.log("cleaning belief: " + CASTUtils.toString(_beliefAddr));
+
+		MergedBelief belief = _component.getMemoryEntry(_beliefAddr,
+				MergedBelief.class);
 		CASTIndependentFormulaDistributionsBelief<MergedBelief> gb = CASTIndependentFormulaDistributionsBelief
 				.create(MergedBelief.class, belief);
 
-		// remove marking for reference
-		unmarkReferent(gb);
+		if (_completedMotive instanceof InterpretedIntentionMotive) {
+			// remove marking for reference
+			unmarkReferent(_component, _beliefAddr, gb,
+					(InterpretedIntentionMotive) _completedMotive);
+		}
 		// remove potential results of learning and dialogue
-		removeActionEffects(gb);
+		removeActionEffects(_component, gb);
 
-		overwriteWorkingMemory(_beliefAddr, gb.get());
+		_component.overwriteWorkingMemory(_beliefAddr, gb.get());
 	}
-	
-	
-	
-	
+
 }

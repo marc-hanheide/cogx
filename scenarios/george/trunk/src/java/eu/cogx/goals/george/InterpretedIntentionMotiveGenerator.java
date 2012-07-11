@@ -1,20 +1,18 @@
 package eu.cogx.goals.george;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import motivation.slice.TutorInitiativeMotive;
 import cast.CASTException;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
-import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
-import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
 import de.dfki.lt.tr.dialogue.intentions.RichIntention;
 import dialogue.execution.AbstractDialogueActionInterface;
-import eu.cogx.beliefs.slice.MergedBelief;
 
 public class InterpretedIntentionMotiveGenerator extends
 		AbstractInterpretedIntentionMotiveGenerator<InterpretedIntention> {
@@ -38,7 +36,9 @@ public class InterpretedIntentionMotiveGenerator extends
 			motive = generateMotiveFromIntention(_addr, _intention, false);
 			// mark referents of chosen intention
 			if (motive != null) {
-				markReferent(aboutBeliefAddress(_intention));
+				List<WorkingMemoryAddress> referenceList = new LinkedList<WorkingMemoryAddress>();
+				referenceList.add(aboutBeliefAddress(_intention));
+				markReferent(motive, referenceList);
 				monitorForObjectVisibility(_intention, motive);
 			}
 		} catch (CASTException e) {
@@ -48,8 +48,6 @@ public class InterpretedIntentionMotiveGenerator extends
 		}
 		return motive;
 	}
-
-	
 
 	private void monitorForObjectVisibility(InterpretedIntention _intention,
 			TutorInitiativeMotive motive) {
@@ -99,7 +97,7 @@ public class InterpretedIntentionMotiveGenerator extends
 			InterpretedIntention ii = getMemoryEntry(_motive.referenceEntry,
 					InterpretedIntention.class);
 
-			cleanBelief(aboutBeliefAddress(ii));
+			cleanBelief(this, aboutBeliefAddress(ii), _motive);
 
 			// and signal intention success
 
