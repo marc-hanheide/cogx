@@ -15,16 +15,19 @@ import cast.cdl.WorkingMemoryChange;
 import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
+import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
+import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleTransferFunction;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 
 /**
  * @author marc, nah
  * 
  */
 public class VisualObjectTransferFunction extends
-		SimpleDiscreteTransferFunction<VisualObject, GroundedBelief> {
+		SimpleTransferFunction<VisualObject, GroundedBelief> {
 
 	public static final String PRESENCE_VISIBLE = "visible";
 	public static final String PRESENCE_UNKNOWN = "unknown_presence";
@@ -40,35 +43,41 @@ public class VisualObjectTransferFunction extends
 	}
 
 	@Override
-	protected Map<String, Formula> getFeatureValueMapping(
+	protected Map<String, FormulaProbPair> getFeatureValueMapping(
 			WorkingMemoryChange wmc, VisualObject from)
 			throws InterruptedException, BeliefException {
-		Map<String, Formula> result = new HashMap<String, Formula>();
+		Map<String, FormulaProbPair> result = new HashMap<String, FormulaProbPair>();
 
-		result.put("salience", DoubleFormula.create(from.salience)
-				.getAsFormula());
+		FormulaProbPair fpair = new FormulaProbPair();
+		FloatFormula ff = new FloatFormula();
+		ff.val = (float) from.salience;
+		fpair.val = ff;
+		fpair.prob = 1;
+		
+		result.put("salience", fpair);
 
 		// The status of the VO: unknow, visible, was_visible, removed
+		fpair = new FormulaProbPair();
+		ElementaryFormula ef = new ElementaryFormula();
 		switch (from.presence) {
 		case VopVISIBLE:
-			result.put(PRESENCE_KEY, PropositionFormula
-					.create(PRESENCE_VISIBLE).getAsFormula());
+			ef.prop = PRESENCE_VISIBLE;
 			break;
 		case VopWasVISIBLE:
-			result.put(PRESENCE_KEY,
-					PropositionFormula.create(PRESENCE_WAS_VISIBLE)
-							.getAsFormula());
+			ef.prop = PRESENCE_WAS_VISIBLE;
 			break;
 		case VopREMOVED:
-			result.put(PRESENCE_KEY, PropositionFormula
-					.create(PRESENCE_REMOVED).getAsFormula());
+			ef.prop = PRESENCE_REMOVED;
 			break;
 		default:
-			result.put(PRESENCE_KEY, PropositionFormula
-					.create(PRESENCE_UNKNOWN).getAsFormula());
+			ef.prop = PRESENCE_UNKNOWN;
 			break;
 		}
-
+		fpair.val = ef;
+		fpair.prob = 1;
+		
+		result.put(PRESENCE_KEY, fpair);
+					
 		// logger.info("added salience");
 
 		fillConcept("color", result, from.colorLabels, from.colorDistrib);
@@ -81,7 +90,7 @@ public class VisualObjectTransferFunction extends
 		return result;
 	}
 
-	private void fillConcept(String concept, Map<String, Formula> result,
+	private void fillConcept(String concept, Map<String, FormulaProbPair> result,
 			String[] labels, double[] distrib) {
 
 		if (labels.length > 0) {
@@ -98,12 +107,22 @@ public class VisualObjectTransferFunction extends
 				}
 				// HACK - END
 			}
+			
+			FormulaProbPair fpair = new  FormulaProbPair();
+			FloatFormula ff = new FloatFormula();
+			ff.val = (float) maxLabelProb;
+			fpair.val = ff;
+			fpair.prob = 1;
 
-			result.put(concept + "-prob", DoubleFormula.create(maxLabelProb)
-					.getAsFormula());
+			result.put(concept + "-prob", fpair);
+			
+			fpair = new  FormulaProbPair();
+			ElementaryFormula ef = new ElementaryFormula();
+			ef.prop = labels[maxIndex];
+			fpair.val = ef;
+			fpair.prob = (float) maxLabelProb;
 
-			result.put(concept, PropositionFormula.create(labels[maxIndex])
-					.getAsFormula());
+			result.put(concept, fpair);
 		}
 	}
 }
