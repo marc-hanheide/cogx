@@ -6,7 +6,7 @@ global Params ;
 global Test;
 
 Test.genColImg=0;
-Data.curridximg
+
 if Params.deterministic == 0
     Data.currImg=ceil(rand*Data.numImgs);
 else       
@@ -15,7 +15,7 @@ else
         Data.currImg = Data.allindexes(Data.curridximg) ;
     end         
 end
- Data.curridximg
+ 
 [x,b,pt3d]=readImage(Data.currImg);
 N_max = min([100, size(x,1)]) ;
 
