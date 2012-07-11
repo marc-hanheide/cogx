@@ -16,7 +16,7 @@ interval_real 10
 window
 (
 	#This is the size the simulation window will be in pixels
-	size [316.000 718.000]
+	size [316.000 706.000]
 	#This is how many metres of the simulated environment each pixel shows
 	scale 22.000
 	center [18.572 -0.300]
@@ -31,7 +31,7 @@ floorplan
 
 p3dx_with_urg_and_blobfinder (
 	name "dora"
-	pose [16.527 -2.664 0 -90.000]
+	pose [17.027 -0.800 0 -90.000]
 	color "red"
 )
 
