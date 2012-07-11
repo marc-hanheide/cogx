@@ -750,6 +750,11 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 				UnknownSubarchitectureException, ConsistencyException,
 				PermissionException {
 
+			// we are not touching the list of beliefs in the motive here
+			// because it doesn't really alter system behaviour if this list is
+			// changed during execution by the motive that will ultimately clean
+			// it at the end
+
 			println("removing reference marker from belief at "
 					+ CASTUtils.toString(_refGroundBelAddr));
 
@@ -1117,7 +1122,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 		// HACK - this is the more efficient place to do this
 		belief.getContent().remove("attributed-color");
 		belief.getContent().remove("attributed-shape");
-		belief.getContent().remove("attributed-type");
+		belief.getContent().remove("attributed-objecttype");
 		// END HACK
 
 		boolean result = false;
