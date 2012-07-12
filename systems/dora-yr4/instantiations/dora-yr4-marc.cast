@@ -8,7 +8,7 @@ VARDEFAULT feature_options=<multiline>
 # use peekabot
     peekabot
 # enable manual GUIs for navigation, PTZ, planning, etc.		
-	man_ctrl
+	!man_ctrl
 # enable AVS view cone planning and relation manager
     !avs			
 # enable execution framework to let the planner trigger actions
@@ -49,7 +49,7 @@ VARDEFAULT feature_options=<multiline>
 
 SETVAR display_doors=
 
-SETVAR patrol_config=--targets "0 7 17 24 17 7" --deadline 30
+SETVAR patrol_config=--targets "0 7 17 24 17" --deadline 30
 
 SETVAR cons_rules=NOTEXISTS
 
