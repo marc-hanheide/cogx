@@ -4,6 +4,8 @@ import pddl
 from pddl import state
 import plans
 
+write_dot = False
+
 def merge_plans(_plans, init_state, final_state):
     domain = init_state.problem.domain
     
@@ -154,9 +156,10 @@ def merge_plans(_plans, init_state, final_state):
     for i, p in enumerate(_plans):
         if not isinstance(p, plans.MAPLPlan):
             continue
-        G = p.to_dot()
-        G.layout(prog='dot')
-        G.draw("plan%d.pdf" % i)
+        if write_dot:
+            G = p.to_dot()
+            G.layout(prog='dot')
+            G.draw("plan%d.pdf" % i)
 
         last_plan = p
         topo_plan = p.topological_sort()
@@ -355,9 +358,10 @@ def merge_plans(_plans, init_state, final_state):
         for svar, val in new_n.effects:
             written[svar] = (new_n, val)
 
-    G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
-    G.layout(prog='dot')
-    G.draw("plan.pdf")
+    if write_dot:
+        G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
+        G.layout(prog='dot')
+        G.draw("plan.pdf")
 
     redundant = set()
     r_plan = plan.topological_sort()
@@ -376,7 +380,8 @@ def merge_plans(_plans, init_state, final_state):
 
     final_plan_actions = set(get_node(n) for n in last_plan.nodes_iter()) if last_plan else set()
 
-    merged_plan_to_dot(plan, "plan")
+    if write_dot:
+        merged_plan_to_dot(plan, "plan")
 
     for o in used_objects:
         if o not in init_problem:
