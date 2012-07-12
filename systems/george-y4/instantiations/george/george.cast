@@ -260,7 +260,8 @@ IFOPTALL(%(feature_options), visualization)
        CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" --videoname "videoserver" --camid "%(main_camera_id)"
    ENDIF
 
-   CPP MG dialogue.v11n DialogInteraction
+   VARDEFAULT dialogue_v11n_presets=%(CURRENT_DIR)/dialogPresets.txt
+   CPP MG dialogue.v11n DialogInteraction --presets "%(dialogue_v11n_presets)"
    CPP MG INFO.trace GeorgeEventTrace
 
 
