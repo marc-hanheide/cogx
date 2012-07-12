@@ -81,11 +81,14 @@ void CDialogInteraction::start()
 #endif
 }
 
-// TODO: check the actual frequency of the loop; use rad/sec for motion tolerance (instead of rad)
 void CDialogInteraction::runComponent()
 {
   const int intervalMs = 100;  // desired time between checks
   castutils::CCastPaceMaker<CDialogInteraction> pace(*this, intervalMs, 2);
+
+#ifdef FEAT_VISUALIZATION
+  display().execInDialog(display().mDialogId, "dlgctrl.clearSpokenText();");
+#endif
 
   while (isRunning()) {
     pace.sync();
@@ -135,31 +138,6 @@ void CDialogInteraction::sayText(const std::string& text)
 }
 
 #ifdef FEAT_VISUALIZATION
-
-#if 0
-void CDialogInteraction::sendPtuStateToDialog(bool bMoving)
-{
-  display().execInDialog(display().mDialogId,
-      bMoving
-      ? "ptuctrl.setPtzIsMoving(true);"
-      : "ptuctrl.setPtzIsMoving(false);");
-}
-
-void CDialogInteraction::sendPtuPositionToDialog(bool bForce)
-{
-  //log("PtuCtrl: sendStateToDialog");
-  PTZReading ptup = getPose();
-  std::ostringstream ss;
-  ss << "ptuctrl.setPtzPosition(" 
-     << ptup.pose.pan * 180 / M_PI << ", "
-     << ptup.pose.tilt * 180 / M_PI << ", "
-     << ptup.pose.zoom << ", "
-     << (bForce ? "true" : "false")
-     << ")";
-  //log(ss.str());
-  display().execInDialog(display().mDialogId, ss.str());
-}
-#endif
 
 CDialogInteraction::CDisplayClient::CDisplayClient(CDialogInteraction* pDlgInt)
   : mpDlgInt(pDlgInt)

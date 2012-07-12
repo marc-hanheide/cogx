@@ -543,6 +543,11 @@ DialogueInteraction.prototype.addSpokenText = function(text)
   this.txtHistory.appendPlainText(text);
 }
 
+DialogueInteraction.prototype.clearSpokenText = function()
+{
+  this.txtHistory.clear();
+}
+
 
 )--"; // res_dialogue_js
 // --------------------------------------------------
