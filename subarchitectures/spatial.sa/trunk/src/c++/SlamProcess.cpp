@@ -466,7 +466,7 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan) {
 
   } else {
 
-    updateRobotPoseInWM(cureScan.getTime());
+    //updateRobotPoseInWM(cureScan.getTime());
 
     //    debug("No update, since not moving");
 
