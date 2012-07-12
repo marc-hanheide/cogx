@@ -130,7 +130,7 @@ checkInitVal('Disp.mTD', '[Dirs.disp ''mTD.html'']');
 
 %Default internal parameters
 checkInitVal('Params.THRs', '[.7 .5 .1]');
-checkInitVal('Params.FV', '5');
+checkInitVal('Params.FV', '6');
 checkInitVal('Params.MINCONF', '3');
 
 %Default conceptual mapping data
@@ -175,6 +175,7 @@ if loadpredefinedorder == 1
 else
     Data.allindexes=randperm(Data.numImgs);
 end
+Data.curridximg=1;
 
 %GT data
 Data.Cgt=[];

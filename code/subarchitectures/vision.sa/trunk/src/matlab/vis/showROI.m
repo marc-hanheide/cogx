@@ -41,13 +41,15 @@ if nargin>0
    
    if ~isempty(pts3d)
        if size(pts3d,2) < 6
-           ptcol = repmat(hsv2rgb(f(1:3)')*255, size(pts3d,1),1) ;
+%           ptcol = repmat(hsv2rgb(f(1:3)')*255, size(pts3d,1),1) ;
+           ptcol = repmat(hsl2rgb(f(1:3)')*255, size(pts3d,1),1) ;
        else
            % ptcol = pts3d(:,4:6) ;
            ptcol = pts3d(:,[6,5,4]) ;
        end
        if uselocalcolorifok == 1
-            ptcol = repmat( hsv2rgb(f(1:3)')*255, size(pts3d,1), 1 ) ;
+           %ptcol = repmat( hsv2rgb(f(1:3)')*255, size(pts3d,1), 1 ) ;
+           ptcol = repmat(hsl2rgb(f(1:3)')*255, size(pts3d,1),1) ;
        end
 %%TODEBUG       
 showSurfaceFromPoints( pts3d(:,1:3), ptcol, Figs.LRguiR.LRaxPts3d ) ;

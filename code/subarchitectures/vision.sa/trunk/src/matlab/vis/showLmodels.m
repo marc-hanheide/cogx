@@ -1,4 +1,4 @@
-function showLmodels(mC,Fnames,Cnames,sphw,fig)
+    function showLmodels(mC,Fnames,Cnames,sphw,fig)
 %showLmodels(mC,Fnames,Cnames,sphw,hp)
 %Show learned models
 

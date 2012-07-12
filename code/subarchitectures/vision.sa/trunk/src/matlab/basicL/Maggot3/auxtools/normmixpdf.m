@@ -35,15 +35,15 @@ p_tmp = zeros(1,numData) ;
 for i = 1 : numComps
 % %     model.Cov{i} = model.Cov{i}*1.5^2
     if haveCached == 0
-%         try
+        try
             iS = chol(inv(model.Cov{i})) ;
-%         catch
-%             warning('Matrix not scaled properly for cholesky decomposition! attempting to rectify...') ;
-%             [U,S,V] = svd(model.Cov{i}) ;
-%             model.Cov{i} = U*S*U' ;
-%             S = chol(inv(model.Cov{i})) ;
-%         end
-%         iS = inv(chol(model.Cov{i}))' ;
+        catch
+            warning('Matrix not scaled properly for cholesky decomposition! attempting to rectify...') ;
+            [U,S,V] = svd(model.Cov{i}) ;
+            model.Cov{i} = U*S*U' ;
+            S = chol(inv(model.Cov{i})) ;
+        end
+        iS = inv(chol(model.Cov{i}))' ;
         logdetiS = sum(log(diag(iS))) ;
 %         S = chol(model.Cov{i}) ;
 %         logdetiS = -sum(log(diag(S)));

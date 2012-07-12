@@ -7,7 +7,8 @@ global mC
 save(fname,'mC');
 disp(['AV models saved in ' fname ' .']);
 %[numLAV,confs]=checkAV(mC)
-[nlc,nec,LC,EC,confs]=numConcepts(mC);
-fprintf('nlc=%d nec=%d   confs=', nlc, nec);disp(confs);
+%[nlc,nec,LC,EC,confs]=numConcepts(mC);
+%fprintf('nlc=%d nec=%d   confs=', nlc, nec);disp(confs);
+getc(mC,'info')
 
 

@@ -11,7 +11,10 @@ if Params.deterministic == 0
     Data.currImg=ceil(rand*Data.numImgs);
 else       
     if isfield(Data,'allindexes') && ~isempty(Data.allindexes)
-        Data.curridximg = Data.curridximg + 1 
+        Data.curridximg = Data.curridximg + 1; 
+        if Data.curridximg>Data.numImgs
+            Data.curridximg=1;
+        end
         Data.currImg = Data.allindexes(Data.curridximg) ;
     end         
 end
@@ -27,7 +30,8 @@ if ~isempty(pt3d)
     axes(Figs.vsHs.axCpts3dH) ; hold off ;
     f=extAPfeatures(x,b,Params.FV);
   
-    cll = repmat( hsv2rgb(f(1:3)')*255, size(pt3d,1), 1 ) ;
+    %cll = repmat( hsv2rgb(f(1:3)')*255, size(pt3d,1), 1 ) ;
+    cll = repmat( hsl2rgb(f(1:3)')*255, size(pt3d,1), 1 ) ;
     idx = round(linspace(1,size(pt3d,1),N_max)) ;
     pt3d = pt3d(idx,:) ;
     cll = cll(idx,:) ;

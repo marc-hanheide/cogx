@@ -22,7 +22,7 @@ function varargout = VStest(varargin)
 
 % Edit the above text to modify the response to help VStest
 
-% Last Modified by GUIDE v2.5 11-Jul-2012 17:45:14
+% Last Modified by GUIDE v2.5 12-Jul-2012 01:06:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -78,7 +78,7 @@ function pb_testCol_Callback(hObject, eventdata, handles)
 % hObject    handle to pb_testCol (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-H=str2num(get(handles.ed_V,'String'))
+H=str2num(get(handles.ed_V,'String'));
 %VStestColors(H);
 st=str2num(get(handles.ed_st,'String'));
 VStestColorsHS(H,st);
@@ -146,3 +146,57 @@ function ed_st_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in pb_loadmC.
+function pb_loadmC_Callback(hObject, eventdata, handles)
+% hObject    handle to pb_loadmC (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global Dirs;
+fname=[Dirs.models get(handles.ed_fname,'String')];
+LRloadAVmodels(fname);
+
+
+% --- Executes on button press in pb_savemC.
+function pb_savemC_Callback(hObject, eventdata, handles)
+% hObject    handle to pb_savemC (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global Dirs;
+fname=[Dirs.models get(handles.ed_fname,'String')];
+LRsaveAVmodels(fname);
+
+
+
+function ed_fname_Callback(hObject, eventdata, handles)
+% hObject    handle to ed_fname (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of ed_fname as text
+%        str2double(get(hObject,'String')) returns contents of ed_fname as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function ed_fname_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ed_fname (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pb_showModels.
+function pb_showModels_Callback(hObject, eventdata, handles)
+% hObject    handle to pb_showModels (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global mC;
+fig=dfigure(5,2,'Models');
+resizeFigs(fig,5,2);
+drawAllClasses(mC,fig);
