@@ -623,6 +623,10 @@ void SpatialControl::configure(const map<string, string>& _config) {
 
     connectPeekabot();
   }
+  m_monitorSlamAge = true;
+  if (_config.find("--no-slam-age-warning") != _config.end()) {
+    m_monitorSlamAge = false;
+  }
 
   m_bNoNavGraph = false;
   if (_config.find("--no-graph") != _config.end()) {
@@ -2123,7 +2127,7 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom) {
 
     diff = (newTime.s - m_lastSLAMPoseTime.s) * 1000000l + (newTime.us
         - m_lastSLAMPoseTime.us);
-    if (diff > 1800000) {
+    if (diff > 1800000 && m_monitorSlamAge) {
       wrn("WARNING: SpatialControl::updateCtrl - SLAM pose age: %f s",
           ((double) diff) * 1e-6);
     } else {
