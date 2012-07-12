@@ -144,7 +144,11 @@ void QCastDialogProxy::setComboBoxItems(QString cbObjectName, QScriptValue strin
    //QComboBox* pcb = dynamic_cast<QComboBox*>(cbObject.toQObject());
 
    QComboBox* pcb = wdialog->findChild<QComboBox*>(cbObjectName);
-   if (pcb) {
+   if (!pcb) {
+      printf("\n *** No such Combo Box: '%s'\n", cbObjectName.toStdString().c_str());
+      fflush(stdout);
+   }
+   else {
       pcb->blockSignals(true);
       pcb->clear();
       QVariant qitems = stringItems.toVariant();
