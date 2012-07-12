@@ -88,7 +88,7 @@ public class MotiveFactory {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
 		return new HypothesisVerificationMotive(created, created, src, null,
 				MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0.0f,
-				0.0, 0, new Goal(-1, -1, "", false), 10, Integer.MAX_VALUE);
+				0.0, 0, new Goal(-1, -1, "", false), 3600, Integer.MAX_VALUE);
 	}
 
 }
