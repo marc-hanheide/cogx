@@ -42,7 +42,6 @@ import de.dfki.lt.tr.dialogue.production.PlanVerbalizationRequest;
 import de.dfki.lt.tr.dialogue.slice.produce.PEVStatusType;
 import de.dfki.lt.tr.dialogue.slice.produce.PEVTaskStatus;
 import de.dfki.lt.tr.planverb.generation.Message;
-import de.dfki.lt.tr.planverb.history.History;
 import de.dfki.lt.tr.planverb.planning.pddl.PDDLHistory;
 import eu.cogx.beliefs.slice.GroundedBelief;
 
@@ -463,7 +462,7 @@ public class POPlanMonitor extends ManagedComponent {
 		
 		// hand history over to PEV
 		log("calling PEV Module verbalizeHistory()");
-		History h = new PDDLHistory(hlist, taskID, goalString);
+		PDDLHistory h = new PDDLHistory(hlist, taskID, goalString);
 
 		List<Message> messages = this.pevModule.verbalizeHistoryStepOne(h);
 		

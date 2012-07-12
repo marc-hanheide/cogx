@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -51,23 +52,6 @@ public class PEVUtils {
 		
 		if (!changed) return blf;
 		else return BasicLogicalForm.checkedFromString(lfString);
-	}
-	
-	/**
-	 * This method performs the lexical substitution post-processing step.
-	 * 
-	 * @param lfString
-	 * @return a String in which temporary replacement words are again substituted with the original out-of-vocabulary words
-	 */
-	public static String postProcessLexiconSubstitution(String lfString, Map<String,String> postLexicalSub) {
-
-		for (String tmpWord : postLexicalSub.keySet()) {
-			if (lfString.contains(tmpWord)) {
-				lfString = lfString.replace(tmpWord, postLexicalSub.get(tmpWord));
-			}
-		}
-		
-		return lfString;
 	}
 	
 	/**
@@ -142,6 +126,36 @@ public class PEVUtils {
 		else return BasicLogicalForm.checkedFromString(lfString);
 	}   
     
+	
+	/**
+	 * This method performs the lexical substitution post-processing step.
+	 * 
+	 * @param lfString
+	 * @return a String in which temporary replacement words are again substituted with the original out-of-vocabulary words
+	 */
+	public static String postProcessLexiconSubstitution(String lfString) {
+		Map<String,String> postLexicalSub = new HashMap<String, String>();
+		postLexicalSub.put(" cones", " viewcones");
+		postLexicalSub.put("did not search for", "didn't find");
+		postLexicalSub.put("did not", "could not successfully");
+		postLexicalSub.put("in order to I went", "in order to go");
+		postLexicalSub.put("in order to I moved", "in order to move");
+		postLexicalSub.put("in order to I created", "in order to create");
+		postLexicalSub.put("in order to I assumed", "in order to assume");
+		postLexicalSub.put("in order to I searched", "in order to search");
+		postLexicalSub.put("in order to I looked", "in order to look");
+		postLexicalSub.put("in order to I talked", "in order to talk");
+		
+		for (String tmpWord : postLexicalSub.keySet()) {
+			if (lfString.contains(tmpWord)) {
+				lfString = lfString.replace(tmpWord, postLexicalSub.get(tmpWord));
+			}
+		}
+		
+		return lfString;
+	}
+	
+	
 	/**
 	 * Shallow aggregation of surface text
 	 * string-based.
@@ -150,8 +164,11 @@ public class PEVUtils {
 	 * @return aggregated text as single String
 	 */
 	public static String aggregateStrings(String text) {
+		// perform lexical substitution and spatial modifier summarization
 		String[] sentences = text.split("\n");
 		for (int i=0; i < sentences.length -1 ; i++) {
+			sentences[i] = postProcessLexiconSubstitution(sentences[i]);
+			
 			Pattern pattern = Pattern.compile("(in the room )([a-z]+)( at the place )([a-z]+)");
 			Matcher matcher = pattern.matcher(sentences[i]);
 			while (matcher.find()) {
@@ -160,14 +177,64 @@ public class PEVUtils {
 			}
 		}
 		
-		String output = "";
+		boolean summarizePENDINGmotion = true;
+		text = "";
 		for (int i=0; i < sentences.length -1; i++) {
-			output+=sentences[i];
-			if (!sentences[i+1].startsWith("because") && !sentences[i+1].startsWith("and") && !sentences[i+1].startsWith("but")) output += ".\n";
-			else output += " ";
+
+			// ignore pending move actions!
+			if (summarizePENDINGmotion) {
+				if (sentences[i].contains("want") && !sentences[i].contains("because") && (sentences[i].contains("go") || sentences[i].contains("move"))) {
+					text+="!! "+sentences[i]; // ignore pending!
+				}
+				else text +=sentences[i];
+			} else text +=sentences[i];
+
+			// join causally linked sentences/clauses
+			if (!sentences[i+1].startsWith("because") 
+					&& !sentences[i+1].startsWith("and") 
+					&& !sentences[i+1].startsWith("but")
+					&& !sentences[i+1].startsWith("in order to")
+					) text += ".\n";
+			else text += " ";
+		}
+		text = text + sentences[sentences.length-1] + ".";
+		
+		// some more aggressive RegEx based aggregation
+		ArrayList<String> matchPatterns = new ArrayList<String>();
+		ArrayList<String> replacePatterns = new ArrayList<String>();
+
+		matchPatterns.add("(to the )(place|placeholder) ([a-z]+)( )([ a-z0-9]*?)(because I wanted to )(go|move) ([ a-z0-9]*?)(to the )(place|placeholder)( [a-z]+)([ a-z]+)");
+		replacePatterns.add("$1$2 $3$4$5$6reach $10$11");
+
+		matchPatterns.add("(!![ a-zA-Z0-9]+\\.\n)+");
+		replacePatterns.add("my plan was to visit several other places, after which ");
+		
+		String[] mPats = matchPatterns.toArray(new String[matchPatterns.size()]);
+		String[] rPats = replacePatterns.toArray(new String[replacePatterns.size()]);
+		
+		for (int i=0; i<mPats.length; i++) {
+			text = text.replaceAll(mPats[i], rPats[i]);			
 		}
 		
-		return output + sentences[sentences.length-1] + ".";
+		// now skip repetetive assumptions
+		sentences = text.split("\n");
+		text = "";
+		String lastAssumption = "";
+		for (String sentence : sentences) {
+			if (sentence.contains("assume")) {
+				String matchPattern = "([ a-zA-Z]+?)(assume)(d | )([ a-zA-Z0-9]+)(\\.)";
+				String replacePattern = "$4";
+				String currentAssumption = sentence.replaceAll(matchPattern, replacePattern);
+//				System.err.println(lastAssumption + " - " + currentAssumption);
+				if (currentAssumption.equals(lastAssumption)) {
+//					text += "SKIPPED " + sentence;
+					continue;
+				} 
+				lastAssumption = currentAssumption;
+			}
+			text += sentence + "\n";
+		}
+		return text;
 	}
 	
 	
