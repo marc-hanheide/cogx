@@ -109,26 +109,34 @@ module motivation {
     };
     
   
-    class InterpretedIntentionMotive extends Motive {
+
+    class TutorInitiativeMotive extends Motive {
+    };
+
+    class ObjectReferencingIntentionMotive extends TutorInitiativeMotive {
       // A list of objects that may be referenced in the motive ("may, because of the possible intention goals")
       WMASeq potentiallyReferencedObjectBeliefs;
     };
 
-    class TutorInitiativeMotive extends InterpretedIntentionMotive {
-    };
+    
     
     class HypothesisVerificationMotive extends Motive {
       
     };
     
-    class TutorInitiativeLearningMotive extends TutorInitiativeMotive {
+    class TutorInitiativeLearningMotive extends ObjectReferencingIntentionMotive {
       string assertedFeature;
       string assertedValue;	
       bool assertedLearn;		
     };
     
-    class TutorInitiativeQuestionMotive extends TutorInitiativeMotive {
+    class TutorInitiativeQuestionMotive extends ObjectReferencingIntentionMotive {
       string questionedFeature;
+    };
+
+    
+    // look somewhere
+    class ComplexActionCommandMotive extends TutorInitiativeMotive {
     };
     
     
