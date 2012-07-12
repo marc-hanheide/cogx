@@ -44,8 +44,8 @@ TaskStateInfoEnum = Enum("INITIALISED",
 #WAITING_FOR_ACTION maps to SUCCEEDED
 status_dict = {TaskStateEnum.INITIALISED : Planner.Completion.PENDING, \
                    TaskStateEnum.PROCESSING : Planner.Completion.INPROGRESS, \
-                   TaskStateEnum.WAITING_FOR_ACTION : Planner.Completion.SUCCEEDED, \
-                   TaskStateEnum.WAITING_FOR_BELIEF : Planner.Completion.INPROGRESS, \
+                   TaskStateEnum.WAITING_FOR_ACTION : Planner.Completion.PENDING, \
+                   TaskStateEnum.WAITING_FOR_BELIEF : Planner.Completion.PENDING, \
                    TaskStateEnum.WAITING_FOR_DT : Planner.Completion.INPROGRESS, \
                    TaskStateEnum.FAILED : Planner.Completion.FAILED, \
                    TaskStateEnum.COMPLETED : Planner.Completion.SUCCEEDED }
