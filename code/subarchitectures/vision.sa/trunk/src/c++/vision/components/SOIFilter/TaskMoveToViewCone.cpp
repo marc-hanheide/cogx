@@ -83,28 +83,36 @@ void WmTaskExecutor_MoveToViewCone::lookAround(WmEvent *pEvent)
   println("LookAroundCommand %s", pEvent->wmc.address.id.c_str());
 
   if (!cmd.read(pEvent->wmc.address)) {
-    debug("move_to: LookAroundCommand deleted while working.");
+    debug("look_ar: LookAroundCommand deleted while working.");
     return;
   }
-  debug("move_to: GOT A LookAroundCommand");
+  debug("look_ar: GOT A LookAroundCommand");
 
-  long count = 3;
+  long count = 5;
+  long made = 0;
   while (count > 0) {
-    double pan  = (rand() % 200 - 100) / 100.0 * (M_PI / 2);
+    const int panDegMax = 60;
+    const int deltaMin = 10;
+    double pan  = (rand() % panDegMax - panDegMax / 2) * M_PI / 180;
     //double tilt = (rand() % 20 - 10) / 100.0 * (M_PI);
-    if (fabs(pSoiFilter->m_RobotPose.pan - pan) * 180 / M_PI < 20)
+    if (fabs(pSoiFilter->m_RobotPose.pan - pan) * 180 / M_PI < deltaMin) {
+      if (made > 0) --count;
       continue;
+    }
 
     bool retry = false;
     for (unsigned int i = 0; i < cmd.pcmd->viewCones.size(); i++) {
       ViewConePtr &pvc = cmd.pcmd->viewCones[i];
       double vcpan = pvc->viewDirection - pvc->anchor.z;
-      if (fabs(vcpan - pan) * 180 / M_PI < 20) {
+      if (fabs(vcpan - pan) * 180 / M_PI < deltaMin) {
         retry = true;
         break;
       }
     }
-    if (retry) continue;
+    if (retry) {
+      if (made > 0) --count;
+      continue;
+    }
 
     ViewConePtr pCurVc = createViewCone();
     pCurVc->anchor.x = pSoiFilter->m_RobotPose.x;
@@ -116,6 +124,8 @@ void WmTaskExecutor_MoveToViewCone::lookAround(WmEvent *pEvent)
     pCurVc->tilt = pSoiFilter->m_RobotPose.tilt;
 
     cmd.pcmd->viewCones.push_back(pCurVc);
+    debug("look_ar: ViewCone at pan %.2lf", pan * 180 / M_PI);
+    ++made;
     --count;
   }
   cmd.succeed();
