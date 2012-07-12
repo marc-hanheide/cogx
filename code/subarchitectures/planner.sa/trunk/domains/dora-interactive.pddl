@@ -87,6 +87,7 @@
    ;; === place properties ===
    (placestatus ?n - place) - place_status
    (in-room ?p - place) - room
+   (gateway ?p - place) - boolean
    (place-exists ?p - place) - boolean
 
    ;; === placeholder properties ===
