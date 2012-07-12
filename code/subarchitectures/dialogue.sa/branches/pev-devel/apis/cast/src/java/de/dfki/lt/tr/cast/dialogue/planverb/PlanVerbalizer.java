@@ -23,6 +23,7 @@ import castutils.castextensions.WMView;
 
 import de.dfki.lt.tr.cast.dialogue.GBeliefMemory;
 import de.dfki.lt.tr.cast.dialogue.realisation.LFRealiser;
+import de.dfki.lt.tr.cast.dialogue.realisation.NoRealiser;
 import de.dfki.lt.tr.cast.dialogue.realisation.RealisationClient;
 import de.dfki.lt.tr.cast.dialogue.realisation.TarotCCGRealiser;
 import de.dfki.lt.tr.planverb.generation.Message;
@@ -93,16 +94,20 @@ public class PlanVerbalizer {
 			m_realiser = new RealisationClient(hostname, port);
 		} catch (UnknownHostException e) {
 			logException(e);
-			log("trying to use object-based tarot realiser instead of the realiserver.");
-			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
-			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
-			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
+			m_realiser = new NoRealiser();
+			log("Using NoRealiser!");
+//			log("trying to use object-based tarot realiser instead of the realiserver.");
+//			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
+//			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
+//			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
 		} catch (IOException e) {
 			logException(e);
-			log("trying to use object-based tarot realiser instead of the realiserver.");
-			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
-			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
-			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
+			m_realiser = new NoRealiser();
+			log("Using NoRealiser!");
+//			log("trying to use object-based tarot realiser instead of the realiserver.");
+//			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
+//			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
+//			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
 		}
 		
 		// initialize lexicon substitutions for the time being...
