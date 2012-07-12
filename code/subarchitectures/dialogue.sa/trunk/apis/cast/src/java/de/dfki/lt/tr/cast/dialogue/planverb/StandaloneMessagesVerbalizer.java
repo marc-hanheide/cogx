@@ -14,7 +14,7 @@ public class StandaloneMessagesVerbalizer {
 	 * String messagesFileName = args[4];
 	 * 
 	 * 2012-07-11_16:18/PlanVerbMessages.xml
-	 * 
+	 * pev/PlanVerbMessages.xml
 	 * 
 	 * @param arg
 	 */

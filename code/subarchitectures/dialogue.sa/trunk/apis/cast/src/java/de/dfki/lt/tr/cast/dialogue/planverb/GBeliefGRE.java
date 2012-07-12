@@ -293,7 +293,7 @@ public class GBeliefGRE {
 				// assuming it is a ROOM0@spatial.sa type
 				final String catF;
 				final String builderTypeF;
-				if (_lfWMA.id().toLowerCase().startsWith("room") || _lfWMA.subarchitecture().contains("coma")) {
+				if (_lfWMA.id().toLowerCase().contains("room") || _lfWMA.subarchitecture().contains("coma")) {
 					catF = "room";
 					builderTypeF = "e-place";
 				} else {
@@ -321,7 +321,7 @@ public class GBeliefGRE {
 			// "1_1_6,room3":castreferent ^ "1_1_6,room3"
 			final String catF;
 			final String builderTypeF;
-			if (_lfWMA.toString().split(",")[1].toLowerCase().startsWith("room")) {
+			if (_lfWMA.toString().toLowerCase().contains("room")) {
 				catF = "room";
 				builderTypeF = "e-place";
 			} else {
