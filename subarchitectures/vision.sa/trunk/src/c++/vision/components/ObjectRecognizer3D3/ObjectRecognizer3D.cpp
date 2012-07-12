@@ -86,14 +86,15 @@ static inline void ConvertSurfacePoints2PCLCloud(const vector<PointCloud::Surfac
   pcl_cloud.points.resize(points.size());
   for(size_t i = 0; i < pcl_cloud.points.size(); i++)
   {
-    RGBValue color;
     pcl_cloud.points[i].x = (float) points[i].p.x;
     pcl_cloud.points[i].y = (float) points[i].p.y;
     pcl_cloud.points[i].z = (float) points[i].p.z;
-    color.r = points[i].c.r;
-    color.g = points[i].c.g;
-    color.b = points[i].c.b;
-    pcl_cloud.points[i].rgb = color.float_value;
+    pcl_cloud.points[i].r = points[i].c.r;
+    pcl_cloud.points[i].g = points[i].c.g;
+    pcl_cloud.points[i].b = points[i].c.b;
+    if(i % (pcl_cloud.points.size()/10) == 0)
+      cout << "****** convert cloud r " << (int)points[i].c.r << " -> " << 
+        (int)pcl_cloud.points[i].r << "\n";
   }
 }
 
@@ -151,7 +152,27 @@ ObjectRecognizer3D::ObjectRecognizer3D()
   camId = 0;
   modelNameCnt = 0;
   P::Im3dRecogniserCore::Parameter paramRecogniser;
-  P::LearnerCore::Parameter paramLearner;
+  P::LearnerCore::Parameter paramLearner = P::LearnerCore::Parameter(
+    true,        // learnCloudKeypoints 
+    true,        // learnImageKeypoints
+    2.0,         // 3D/2D projective alignment dist
+    0.25,        // maxConfToLearn
+    0.35,        // imClusteringThrDesc 
+    0.2,         // cloudClusteringThrDesc
+    0.01,        // ransacEps 
+    0.01,        // ransacDist3d
+    0.8,         // pcentVoxelWeight
+    0.0005,      // minFitnessScore
+    55,          // alphaLoop [°]
+    50,          // icpIterRANSAC  (e.g. 500)
+    0.003,       // icpDistRANSAC
+    5,           // icpMaxIter (e.g. 50)
+    0.03,        // icpMaxDist
+    1e-9,        // icpTransformationEpsilon
+    false,       // detectLoop
+    true,        // usePriorPoseForAlignment
+    false        // forceLearning
+  );
   recogniser = new P::CModelThread(paramRecogniser, paramLearner);
 }
 
@@ -262,6 +283,9 @@ void ObjectRecognizer3D::start()
   ostringstream ss;
   ss <<  "function render()\nend\n";
   m_display.setLuaGlObject("Recognizer3D.Models", guiid("Models"), ss.str());
+
+  // and draw what models we have loaded by now
+  drawModels();
 #endif
 }
 
@@ -411,7 +435,7 @@ void ObjectRecognizer3D::visualizeRecognizedObject(cv::Mat &img,
     intrinsic.at<double>(1, 2) = cam.cy;
     intrinsic.at<double>(2, 2) = 1.;
     // last params: brighness and whether to draw keypoints
-    P::View::draw(*obj->views[loc.idxView], intrinsic, img, loc.pose, 2., false);
+    P::View::draw(*obj->views[loc.idxView], intrinsic, img, loc.pose, 2., true);
   }
 }
 
@@ -511,12 +535,12 @@ bool ObjectRecognizer3D::learn(const string &label, const Image &image,
     // set pose for learner:
     // a reasonable pose for the view: axis aligned and centroid
     Eigen::Matrix4f pose;
-    Eigen::Vector4f t;
+    /*Eigen::Vector4f t;
     pcl::compute3DCentroid(*pcl_cloud, t);
     // Note: learner requires inverse pose (pose of camera w.r.t. object)
     pose.setIdentity();
-    pose.block<4,1> (0, 3) = -t;
-    recogniser->setPoseLearner(pose);
+    pose.block<4,1> (0, 3) = t;
+    recogniser->setPoseLearner(pose);*/
 
     // now we are ready to learn
     log("learn model with id '%s' with label '%s'", model->id.c_str(), label.c_str());
@@ -878,6 +902,16 @@ static void drawCube(std::ostringstream &str, double size)
   str << "v(" << s << "," << s << "," << -s << ")\n";
   str << "v(" << -s << "," << s << "," << -s << ")\n";
   str << "glEnd()\n";
+  str << "glBegin(GL_LINES)\n";
+  str << "v(" << -s << "," << -s << "," << s << ")\n";
+  str << "v(" << -s << "," << -s << "," << -s << ")\n";
+  str << "v(" << s << "," << -s << "," << s << ")\n";
+  str << "v(" << s << "," << -s << "," << -s << ")\n";
+  str << "v(" << s << "," << s << "," << s << ")\n";
+  str << "v(" << s << "," << s << "," << -s << ")\n";
+  str << "v(" << -s << "," << s << "," << s << ")\n";
+  str << "v(" << -s << "," << s << "," << -s << ")\n";
+  str << "glEnd()\n";
 }
 
 void ObjectRecognizer3D::drawModels()
@@ -890,7 +924,6 @@ void ObjectRecognizer3D::drawModels()
   str.unsetf(ios::floatfield); // unset floatfield
   str.precision(3); // set the _maximum_ precision
   str << "function render()\n";
-  str << "glPointSize(2)\n";
   str << "v=glVertex\nc=glColor\n";
   
   // coordinate cross
@@ -912,20 +945,24 @@ void ObjectRecognizer3D::drawModels()
       models.end(); it++, modelCnt++)
   {
     double dy = modelSeparation*(double)modelCnt;
+    str << "c(0,0,255)\n";
     str << "showLabel(0, " << dy << ", " << viewSeparation*0.75 <<", '" << it->second->id << "', 12);\n";
     for(size_t i = 0; i < it->second->views.size(); i++)
     {
       double dx = viewSeparation*(double)i;
+      P::View &view = *it->second->views[i];
 
       str << "glPushMatrix()\n";
       str << "glTranslate(" << dx << "," << dy << "," << 0 << ")\n";
 
-      // draw a green cube around each view
-      str << "c(0,255,0)\n";
+      // draw a cube around each view
+      str << "c(0,0,255)\n";
       drawCube(str, viewSeparation);
+      // point cloud
+      str << "glPointSize(2)\n";
       str << "glBegin(GL_POINTS)\n";
-
-      pcl::PointCloud<pcl::PointXYZRGB> &cloud = *it->second->views[i]->cloud;
+      pcl::PointCloud<pcl::PointXYZRGB> cloud;
+      pcl::transformPointCloud(*view.cloud, cloud, view.invPose);
       for(size_t j = 0; j < cloud.points.size(); j++)
       {
         pcl::PointXYZRGB &p = cloud.points[j];
@@ -933,6 +970,32 @@ void ObjectRecognizer3D::drawModels()
         str << "v(" << p.x << "," << p.y << "," << p.z << ")\n";
       }
       str << "glEnd()\n";
+      // key points
+      Eigen::Matrix4f incPose = view.invPose;
+      Eigen::Matrix3f R = incPose.topLeftCorner<3, 3> ();
+      Eigen::Vector3f T = incPose.block<3,1> (0, 3);
+      str << "glPointSize(4)\n";
+      str << "glBegin(GL_POINTS)\n";
+      // key points: image key points
+      str << "c(255,255,0)\n";
+      for(size_t j = 0; j < view.imKeys3D.size(); j++)
+      {
+        Eigen::Vector3f pt_c = R*view.imKeys3D[j].segment(0,3) + T;
+        if(!isnan(pt_c[0]) && !isnan(pt_c[1]) && !isnan(pt_c[2]))
+          str << "v(" << 1.1*pt_c[0] << "," << 1.1*pt_c[1] << "," << 1.1*pt_c[2] << ")\n";
+      }
+      str << "glEnd()\n";
+      // key points: 3D key points
+      str << "glBegin(GL_POINTS)\n";
+      str << "c(0,0,255)\n";
+      for(size_t j = 0; j < view.cloudKeys3D.size(); j++)
+      {
+        Eigen::Vector3f pt_c = R*view.cloudKeys3D[j].segment(0,3) + T;
+        if(!isnan(pt_c[0]) && !isnan(pt_c[1]) && !isnan(pt_c[2]))
+          str << "v(" << 1.1*pt_c[0] << "," << 1.1*pt_c[1] << "," << 1.1*pt_c[2] << ")\n";
+      }
+      str << "glEnd()\n";
+
       str << "glPopMatrix()\n";
     }
   }
@@ -944,10 +1007,10 @@ void ObjectRecognizer3D::drawModels()
 
 void ObjectRecognizer3D::runComponent()
 {
-	while(isRunning())
+	/*while(isRunning())
   {
     drawModels();
     sleep(2);
-  }
+  }*/
 }
 
