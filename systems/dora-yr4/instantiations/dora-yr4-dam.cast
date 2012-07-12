@@ -49,7 +49,10 @@ VARDEFAULT feature_options=<multiline>
 
 SETVAR display_doors=
 
-SETVAR patrol_config=--targets "1 16 24 17" --deadline 30
+SETVAR patrol_config=--targets "1 16 24 16" --deadline 30
+
+SETVAR dont_update_without_motion=--dont-update-without-motion
+SETVAR no_slam_age_warning=--no-slam-age-warning
 
 SETVAR cons_rules=NOTEXISTS
 
