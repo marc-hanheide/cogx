@@ -748,6 +748,66 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	// return existingMotive;
 	// }
 
+	protected void removeQuestionEffect(WorkingMemoryAddress reference, String questionedFeature)
+			throws DoesNotExistOnWMException, ConsistencyException,
+			PermissionException, UnknownSubarchitectureException {
+				MergedBelief belief = getMemoryEntry(reference, MergedBelief.class);
+				CASTIndependentFormulaDistributionsBelief<MergedBelief> gb = CASTIndependentFormulaDistributionsBelief
+						.create(MergedBelief.class, belief);
+			
+				// "global-color-question-answered"
+				// "object-refering-color-question-answered
+				// polar-color-question-answered
+				String postfix = questionedFeature + "-question-answered";
+				String global = "global-" + postfix;
+				String object = "object-refering-" + postfix;
+				String polar = "polar-" + postfix;
+			
+				boolean overwriteNeeded = false;
+				if (gb.getContent().remove(global) != null) {
+					log("removed prior effect: " + global);
+					overwriteNeeded = true;
+				}
+			
+				if (gb.getContent().remove(object) != null) {
+					log("removed prior effect: " + object);
+					overwriteNeeded = true;
+				}
+			
+				if (gb.getContent().remove(polar) != null) {
+					log("removed prior effect: " + polar);
+					overwriteNeeded = true;
+				}
+			
+				if (overwriteNeeded) {
+					overwriteWorkingMemory(reference, gb.get());
+				} else {
+					log("no prior question effects: " + questionedFeature);
+				}
+			
+			}
+
+	protected void removeLearningEffect(WorkingMemoryAddress reference, String assertedFeature, boolean assertedLearn)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
+			ConsistencyException, PermissionException {
+				MergedBelief belief = getMemoryEntry(reference, MergedBelief.class);
+				CASTIndependentFormulaDistributionsBelief<MergedBelief> gb = CASTIndependentFormulaDistributionsBelief
+						.create(MergedBelief.class, belief);
+				String learningEffect = assertedFeature;
+				if (assertedLearn) {
+					learningEffect += VisionActionInterface.LEARNED_FEATURE_POSTFIX;
+				} else {
+					learningEffect += VisionActionInterface.UNLEARNED_FEATURE_POSTFIX;
+				}
+				if (gb.getContent().remove(learningEffect) != null) {
+					log("removed prior effect: " + learningEffect);
+					overwriteWorkingMemory(reference, gb.get());
+				} else {
+					log("no prior effect: " + learningEffect);
+				}
+			
+			}
+
 	protected static List<ObjectReferencingIntentionMotive> getAllInterpretedIntentionMotives(
 			ManagedComponent _component) throws UnknownSubarchitectureException {
 		List<ObjectReferencingIntentionMotive> _entries = new LinkedList<ObjectReferencingIntentionMotive>();
