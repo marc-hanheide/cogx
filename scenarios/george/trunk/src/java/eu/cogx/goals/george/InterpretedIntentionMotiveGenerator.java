@@ -116,7 +116,7 @@ public class InterpretedIntentionMotiveGenerator extends
 				InterpretedIntention ii = getMemoryEntry(
 						_motive.referenceEntry, InterpretedIntention.class);
 
-				cleanBelief(this, aboutBeliefAddress(ii), _motive);
+				unmarkReferent(this, aboutBeliefAddress(ii), _motive);
 
 				// and signal intention success
 

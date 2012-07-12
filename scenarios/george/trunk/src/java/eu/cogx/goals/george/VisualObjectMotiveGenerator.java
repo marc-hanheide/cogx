@@ -66,7 +66,7 @@ public class VisualObjectMotiveGenerator extends
 		// referent. this needs cleaning up...
 		
 		println("why on earth am I getting called?!");
-		AbstractInterpretedIntentionMotiveGenerator.cleanBelief(this,
+		AbstractInterpretedIntentionMotiveGenerator.unmarkReferent(this,
 				_motive.referenceEntry, _motive);
 
 	}
