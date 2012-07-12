@@ -126,20 +126,18 @@ def build_operator_for_ground_action(i, action, args):
         if isinstance(elem, pddl.effects.SimpleEffect) and elem.predicate not in pddl.builtin.numeric_ops:
             return pddl.state.Fact.from_literal(elem)
 
-    written_facts = set()
         
     #Commit preconditions: if there is a conditional effect, make sure
     #that we commit to something to prevent "explanation by inaction"
     for eff in pddl.visitors.visit(new_op.effect, get_cconds, []):
         fact = pddl.state.Fact.from_literal(eff)
-        written_facts.add(fact)
         if eff.predicate in (pddl.mapl.commit, pddl.builtin.equals) and not eff.negated:
             term = eff.args[0]
             cond = pddl.LiteralCondition(pddl.mapl.committed, [term], scope=new_op)
             new_op.extend_precondition(cond)
             svars_to_check.add(fact.svar)
 
-    written_facts.update(pddl.visitors.visit(new_op.effect, get_effects, []))
+    written_facts = set(pddl.visitors.visit(new_op.effect, get_effects, []))
 
     @pddl.visitors.replace
     def remove_unknown(elem, results):
@@ -317,8 +315,7 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
         else:
             a2, enabled_last, written = build_operator_for_ground_action(i, a, n.full_args)
             for f in written:
-                if f.value == pddl.UNKNOWN:
-                    reset_svars.add(f.svar)
+                reset_svars.add(f.svar)
             # print "   ",  [a.name for a in a2]
             add_ops = []
         for op in chain(a2, add_ops):
@@ -543,6 +540,8 @@ def build_explanation_problem(problem, last_plan, init_state, observed_state):
         if svar.get_type().equal_or_subtype_of(pddl.t_object) and not isinstance(svar.function, pddl.Predicate):
             cfact = pddl.state.Fact(svar.as_modality(pddl.mapl.commit, [val]), pddl.TRUE)
             p.init.append(cfact.to_init())
+        elif svar.function.name in ("is-virtual",) :
+            p.init.append(pddl.state.Fact(svar, val).to_init())
         
     # gfacts = [f.to_condition() for f in observed_state.iterfacts() if not f.value.is_instance_of(t_number)]
     # for f in sorted(observed_state.iterfacts(), key=str):

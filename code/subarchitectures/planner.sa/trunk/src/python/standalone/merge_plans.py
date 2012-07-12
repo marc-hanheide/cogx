@@ -66,8 +66,10 @@ def merge_plans(_plans, init_state, final_state):
                 facts.append(f)
         for f in old.iterfacts():
             if f.svar not in new and f.svar.function not in (pddl.builtin.total_cost,):
-                if f.svar.get_type() == pddl.t_boolean:
+                derived_val = new.get_extended_state([f.svar])[f.svar] #handle axioms
+                if f.svar.get_type() == pddl.t_boolean and derived_val != pddl.TRUE:
                     facts.append(pddl.state.Fact(f.svar, pddl.FALSE))
+
                 # else:
                 #     facts.append(pddl.state.Fact(f.svar, pddl.UNKNOWN))
         return facts
@@ -202,19 +204,23 @@ def merge_plans(_plans, init_state, final_state):
     def add_links(n, new_n):
         print "adding links:", new_n
         for pred, svar, val, type in get_incoming_links(n):
+            oldsvar = svar
             svar = mapped_svar(svar)
+            oldval = val
             val = virtual_mappings.get(val, val)
+            if val != oldval or svar != oldsvar:
+                print "mapping:", oldsvar, oldval, " => ", svar, val
             # if p.action.name == "init":
             #     print p, p in init_dict, id(p)
             if False:#pred in init_dict:
                 new_p = init_dict[pred] #What about mapping???
-                print "linking %s = %s to %s instead of init" % (str(svar), str(val), str(new_p))
+                # print "linking %s = %s to %s instead of init" % (str(svar), str(val), str(new_p))
             else:
                 new_p = get_node(pred)
-            print "    old link:", pred, svar, val, type
+            # print "    old link:", pred, svar, val, type
             if new_p == plan.init_node and svar in written and not n.is_virtual():
                 real_p, expected_val = written[svar]
-                print "        ", real_p
+                # print "        ", real_p
                 new_p = real_p
                 if val == expected_val:
                     type = "depends"
@@ -223,7 +229,7 @@ def merge_plans(_plans, init_state, final_state):
                     type = "unexpected"
                     # plan.add_edge(real_p, new_n, svar=svar, val=val, type = "unexpected")
             if not has_link(plan, new_p, new_n, svar, val, type):
-                print "    new link:", new_p, new_n, " (%s = %s)" % (svar, val)
+                # print "    new link:", new_p, new_n, " (%s = %s)" % (svar, val)
                 plan.add_edge(new_p, new_n, svar=svar, val=val, type=type)
 
     init_dict = {}
@@ -237,7 +243,7 @@ def merge_plans(_plans, init_state, final_state):
         n.time = i
         i += 1
         mapped_n = mapped_node(n)
-        print "===", n
+        # print "===", n
         if n.is_virtual() or n.action.name == "goal":
             new_n =  get_node(mapped_n)
             prev_was_init = False
@@ -245,7 +251,7 @@ def merge_plans(_plans, init_state, final_state):
             new_n =  get_node(mapped_n)
             prev_init_node = new_n
             init_dict[n] = new_n
-            print "insert init", id(n)
+            # print "insert init", id(n)
             prev_was_init = True
         elif n.action.name == "init":
             if prev_was_init:
@@ -264,7 +270,7 @@ def merge_plans(_plans, init_state, final_state):
             new_n.preconds = set()
             add_node(new_n)
             for eff in new_n.effects:
-                print "effect:", eff
+                # print "effect:", eff
                 if eff.svar in written:
                     if eff.svar in observed:
                         # If we observed an (expected) effect, and subsequently this effect is overwritten by an unexpected event,
@@ -275,23 +281,23 @@ def merge_plans(_plans, init_state, final_state):
                         real_p, expected_value = written[eff.svar]
                         
                     observed_value = new_st.get_extended_state([eff.svar])[eff.svar] #handle axioms
-                    print "%s: provided by %s, expected %s, observed %s" % (eff.svar, real_p, expected_value, observed_value)
+                    # print "%s: provided by %s, expected %s, observed %s" % (eff.svar, real_p, expected_value, observed_value)
 
                     if observed_value == expected_value: 
                         continue
                     assert eff.value != expected_value
                     if not real_p.action.name.startswith("new_facts"):
                         plan.add_edge(real_p, new_n, svar=eff.svar, val=expected_value, type="unexpected")
-                        print "unexpected link:", real_p, new_n
+                        # print "unexpected link:", real_p, new_n
                         new_n.preconds.add(eff)
                         conflicting_svars[(real_p, eff.svar)].add(eff.svar)
 
             for svar, val in mapped_n.effects:
                 observed[svar] = new_n, val
                 
-            print "init link:", prev_init_node, new_n
+            # print "init link:", prev_init_node, new_n
             init_dict[n] = new_n
-            print "insert init", id(n)
+            # print "insert init", id(n)
             current_state = new_st
             prev_was_init = True
             prev_init_node = new_n
@@ -303,7 +309,7 @@ def merge_plans(_plans, init_state, final_state):
             prev_was_init = False
         
         if new_n not in plan:
-            print "add:", new_n
+            # print "add:", new_n
             plan.add_node(new_n)
             
         add_links(n, new_n)
@@ -313,7 +319,7 @@ def merge_plans(_plans, init_state, final_state):
 
         if prev_exec_node is not None and prev_exec_node not in plan.pred_closure(new_n):
             if not prev_exec_node.is_virtual() and not new_n.is_virtual():
-                print "enforce ordering:", prev_exec_node, new_n
+                # print "enforce ordering:", prev_exec_node, new_n
                 plan.add_edge(prev_exec_node, new_n, type="order")
         if not new_n.is_virtual():
             prev_exec_node = new_n
@@ -323,7 +329,7 @@ def merge_plans(_plans, init_state, final_state):
             if svar in observed:
                 _, expected = observed[svar]
                 if expected != val:
-                    print "overwriting observation:", svar
+                    # print "overwriting observation:", svar
                     del observed[svar]
 
 
@@ -336,7 +342,7 @@ def merge_plans(_plans, init_state, final_state):
         i += 1
         new_n = get_node(mapped_node(n))
         if new_n in plan:
-            print "trying to reuse node:", new_n
+            # print "trying to reuse node:", new_n
             # avoid cycles caused by duplicate actions
             successors = plan.succ_closure(new_n)
             # print "successors:", map(str, successors)
@@ -347,11 +353,11 @@ def merge_plans(_plans, init_state, final_state):
                     # print "cycle!"
                     new_n = mapped_node(n)
                     #reusing node would cause cycle, add new node
-                    print "cycle, add unexec:", new_n
+                    # print "cycle, add unexec:", new_n
                     plan.add_node(new_n)
                     break
         else:
-            print "add unexec:", new_n
+            # print "add unexec:", new_n
             plan.add_node(new_n)
 
         add_links(n, new_n)
