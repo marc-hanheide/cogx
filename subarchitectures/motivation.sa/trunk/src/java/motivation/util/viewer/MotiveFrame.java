@@ -73,7 +73,7 @@ class MotiveFrame extends JFrame {
 		String[] labels = {"","UNSURFACED","SURFACED","","","ACTIVATED"};
 		final NumberAxis statusAxis = new SymbolAxis("Status",labels);
 		statusAxis.setLowerBound(0);
-		statusAxis.setUpperBound(5);
+		statusAxis.setUpperBound(6);
 		statusAxis
 				.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 		final StackedBarRenderer3D statusRender = new StackedBarRenderer3D();
