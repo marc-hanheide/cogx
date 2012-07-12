@@ -85,6 +85,8 @@ public class PEVUtils {
     	protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "FAILED", failedPastTenseReplacer);
     	protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "UNSUCCESSFUL", failedPastTenseReplacer);
 
+    	protoLF = CogXJavaHelpers.rewireAskIfWheneverApplicable(protoLF);
+    	
     	return protoLF;
     }
 
@@ -136,7 +138,10 @@ public class PEVUtils {
 	public static String postProcessLexiconSubstitution(String lfString) {
 		Map<String,String> postLexicalSub = new HashMap<String, String>();
 		postLexicalSub.put(" cones", " viewcones");
+		postLexicalSub.put(" shelf", " container");
+		postLexicalSub.put(" shelves", " containers");
 		postLexicalSub.put("did not search for", "didn't find");
+		postLexicalSub.put("could not successfully search for", "didn't find");
 		postLexicalSub.put("did not", "could not successfully");
 		postLexicalSub.put("in order to I went", "in order to go");
 		postLexicalSub.put("in order to I moved", "in order to move");
@@ -145,6 +150,7 @@ public class PEVUtils {
 		postLexicalSub.put("in order to I searched", "in order to search");
 		postLexicalSub.put("in order to I looked", "in order to look");
 		postLexicalSub.put("in order to I talked", "in order to talk");
+		postLexicalSub.put("in order to I asked", "in order to ask");
 		
 		for (String tmpWord : postLexicalSub.keySet()) {
 			if (lfString.contains(tmpWord)) {
@@ -166,7 +172,7 @@ public class PEVUtils {
 	public static String aggregateStrings(String text) {
 		// perform lexical substitution and spatial modifier summarization
 		String[] sentences = text.split("\n");
-		for (int i=0; i < sentences.length -1 ; i++) {
+		for (int i=0; i < sentences.length -1; i++) {
 			sentences[i] = postProcessLexiconSubstitution(sentences[i]);
 			
 			Pattern pattern = Pattern.compile("(in the room )([a-z]+)( at the place )([a-z]+)");
@@ -176,6 +182,8 @@ public class PEVUtils {
 				sentences[i+1] = "and " + sentences[i+1];
 			}
 		}
+		// ensure processing is also done for the last entry
+		sentences[sentences.length-1] = postProcessLexiconSubstitution(sentences[sentences.length-1]);
 		
 		boolean summarizePENDINGmotion = true;
 		text = "";
@@ -209,6 +217,12 @@ public class PEVUtils {
 		matchPatterns.add("(!![ a-zA-Z0-9]+\\.\n)+");
 		replacePatterns.add("my plan was to visit several other places, after which ");
 		
+		matchPatterns.add("(someone|somebody)([ a-zA-Z0-9]+?)(someone|somebody)");
+		replacePatterns.add("$1$2him");
+
+		matchPatterns.add("(ask)([ a-zA-Z0-9]+?)(if)([ a-zA-Z0-9]+?)(in|on)( the thing)");
+		replacePatterns.add("$1$2$3$4$5 it");
+
 		String[] mPats = matchPatterns.toArray(new String[matchPatterns.size()]);
 		String[] rPats = replacePatterns.toArray(new String[replacePatterns.size()]);
 		
