@@ -11,9 +11,6 @@ import VisionData.VisualObject;
 import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.WMView;
-
-import comadata.ComaRoom;
-
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
@@ -94,6 +91,7 @@ public class HypothesisVerificationGoalGenerator
 					ConnectivityTransferFunction.LABEL_VAL1));
 			values.add(hyp.getContent().get("val2"));
 			sb.append("(and ");
+			boolean foundValidGoal = false;
 			for (Entry<String, FormulaDistribution> s : hyp.getContent()
 					.entrySet()) {
 				if (VALID_RELATION_FEATURES.contains(s.getKey())) {
@@ -103,6 +101,7 @@ public class HypothesisVerificationGoalGenerator
 					sb.append("' (" + s.getKey());
 					for (FormulaDistribution fd : values) {
 						if (fd != null) {
+							foundValidGoal = true;
 							sb.append(" "
 									+ fd.getDistribution().getMostLikely()
 											.toString());
@@ -112,6 +111,11 @@ public class HypothesisVerificationGoalGenerator
 				}
 			}
 			sb.append(")");
+			if (!foundValidGoal) {
+				getLogger().warn(
+						"this relation could not be turned into a valid goal");
+				return null;
+			}
 			log("relation goal is " + sb.toString());
 		} else {
 			FormulaDistribution about = hyp.getContent().get("about");
@@ -120,9 +124,11 @@ public class HypothesisVerificationGoalGenerator
 				PointerFormula aboutPtr = (PointerFormula) about
 						.getDistribution().getMostLikely().get();
 				sb.append("(and ");
+				boolean foundValidGoal = false;
 				for (Entry<String, FormulaDistribution> s : hyp.getContent()
 						.entrySet()) {
 					if (VALID_ABOUT_FEATURES.contains(s.getKey())) {
+						foundValidGoal = true;
 						log("add kval goal for feature " + s.getKey());
 						sb.append("(kval '");
 						sb.append(this.getRobotBeliefAddr().id);
@@ -132,6 +138,11 @@ public class HypothesisVerificationGoalGenerator
 					}
 				}
 				sb.append(")");
+				if (!foundValidGoal) {
+					getLogger()
+							.warn("this relation could not be turned into a valid goal");
+					return null;
+				}
 			} else {
 				println("it's a about something existing");
 				sb.append("(kval '");
