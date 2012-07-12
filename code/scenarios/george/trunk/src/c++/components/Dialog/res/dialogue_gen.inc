@@ -548,6 +548,34 @@ DialogueInteraction.prototype.clearSpokenText = function()
   this.txtHistory.clear();
 }
 
+DialogueInteraction.prototype.setPresets = function(section, itemList)
+{
+  var ctrl = "";
+
+  if (section == "question") {
+    ctrl = "cbQuestion";
+  }
+  else if (section == "assertion") {
+    ctrl = "cbAssertion";
+  }
+  else if (section == "instruction") {
+    ctrl = "cbInstruction";
+  }
+  else if (section == "color") {
+    ctrl = "cbColor";
+  }
+  else if (section == "shape") {
+    ctrl = "cbShape";
+  }
+  else if (section == "type") {
+    ctrl = "cbType";
+  }
+
+  if (ctrl != "") {
+    dialogOwner.setComboBoxItems(ctrl, ["<" + section + ">"].concat(itemList));
+  }
+}
+
 
 )--"; // res_dialogue_js
 // --------------------------------------------------

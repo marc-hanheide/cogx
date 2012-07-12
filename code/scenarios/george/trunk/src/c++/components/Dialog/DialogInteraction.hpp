@@ -19,6 +19,7 @@ namespace v11n
 class CDialogInteraction : public cast::ManagedComponent
 {
   std::map<std::string, std::string> mOptions;
+  std::string mPresetFile;
   
 public:
   CDialogInteraction();
@@ -54,6 +55,7 @@ private:
     return mDisplay;
   }
 #endif
+  void loadPresets();
   void sayText(const std::string& text);
   void onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc);
   void onAdd_PhonString(const cast::cdl::WorkingMemoryChange & _wmc);
