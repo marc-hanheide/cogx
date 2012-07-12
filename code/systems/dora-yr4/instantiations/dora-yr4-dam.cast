@@ -49,7 +49,7 @@ VARDEFAULT feature_options=<multiline>
 
 SETVAR display_doors=
 
-SETVAR patrol_config=--targets "0 7 17 24 26 30 17" --deadline 30
+SETVAR patrol_config=--targets "1 16 24 17" --deadline 30
 
 SETVAR cons_rules=NOTEXISTS
 
