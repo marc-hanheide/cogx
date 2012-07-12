@@ -83,14 +83,14 @@ public class SimpleScheduler extends AbstractScheduler {
 						log("we have a plan to execute: "
 								+ plan.getEntry().firstActionID + "costs: "
 								+ plan.getEntry().costs);
-						if (getMaxPriority(possibleGoals).compareTo(
-								getMaxPriority(impossibleGoals)) < 0) {
-							// TODO here we should better replan for a subset to
-							// make sure that high prioritiy goals are always
-							// planned for.
-							getLogger()
-									.warn("there is a goal impossible which is of higher priority than the possible ones. This should better be treated in the future!");
-						}
+//						if (getMaxPriority(possibleGoals).compareTo(
+//								getMaxPriority(impossibleGoals)) < 0) {
+//							// TODO here we should better replan for a subset to
+//							// make sure that high prioritiy goals are always
+//							// planned for.
+//							getLogger()
+//									.warn("there is a goal impossible which is of higher priority than the possible ones. This should better be treated in the future!");
+//						}
 
 						setStatus(possibleGoals, MotiveStatus.ACTIVE);
 						log("start executing for " + possibleGoals.size()
