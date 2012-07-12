@@ -93,4 +93,9 @@ DialogueInteraction.prototype.addSpokenText = function(text)
   this.txtHistory.appendPlainText(text);
 }
 
+DialogueInteraction.prototype.clearSpokenText = function()
+{
+  this.txtHistory.clear();
+}
+
 // vim: set fileencoding=utf-8 sw=2 sts=4 ts=8 et :vim
