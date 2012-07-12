@@ -31,6 +31,7 @@ import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
+import execution.slice.Robot;
 
 public class LookAroundMotiveGenerator extends
 		AbstractBeliefMotiveGenerator<LookAtViewConeMotive, MergedBelief> {
@@ -45,11 +46,11 @@ public class LookAroundMotiveGenerator extends
 
 	public static final long BOREDOM_THRESHOLD = 20000;
 
-	public class DeleteEntry implements Runnable {
+	public class DeleteViewCone implements Runnable {
 
 		private final WorkingMemoryAddress m_toDelete;
 
-		public DeleteEntry(WorkingMemoryAddress m_toDelete) {
+		public DeleteViewCone(WorkingMemoryAddress m_toDelete) {
 			this.m_toDelete = m_toDelete;
 		}
 
@@ -57,7 +58,16 @@ public class LookAroundMotiveGenerator extends
 		public void run() {
 			try {
 				lockComponent();
-				deleteFromWorkingMemory(m_toDelete);
+
+				// get robot struct
+				assert (m_robotAddress != null);
+				Robot rbt = getMemoryEntry(m_robotAddress, Robot.class);
+				if (rbt.currentViewCone.address.equals(m_toDelete)) {
+					log("cone in use, rescheduling deletion");
+					scheduleForDeletion(this);
+				} else {
+					deleteFromWorkingMemory(m_toDelete);
+				}
 			} catch (SubarchitectureComponentException e) {
 				logException(
 						"Problem when performing scheduled deletion. You can ignore this",
@@ -80,11 +90,11 @@ public class LookAroundMotiveGenerator extends
 			if (m_myCones.isEmpty()) {
 
 				if (System.currentTimeMillis() - m_lastSystemActivity < BOREDOM_THRESHOLD) {
-					println("not bored yet");
+					log("not bored yet");
 				} else {
 					try {
 
-						println("ok, bored now, asking for some cones to look at");
+						log("ok, bored now, asking for some cones to look at");
 
 						LookAroundCommand cmd = new LookAroundCommand(null,
 								VisionCommandStatus.VCREQUESTED);
@@ -155,6 +165,8 @@ public class LookAroundMotiveGenerator extends
 
 	private long m_lastSystemActivity;
 
+	protected WorkingMemoryAddress m_robotAddress;
+
 	public LookAroundMotiveGenerator() {
 		super(VC_TYPE, LookAtViewConeMotive.class, MergedBelief.class);
 	}
@@ -172,6 +184,19 @@ public class LookAroundMotiveGenerator extends
 					public void workingMemoryChanged(WorkingMemoryChange arg0)
 							throws CASTException {
 						activityNoted();
+					}
+				});
+
+		// get robot address in a one-time reciever
+		addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(Robot.class),
+				new WorkingMemoryChangeReceiver() {
+
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange arg0)
+							throws CASTException {
+						m_robotAddress = arg0.address;
+						removeChangeFilter(this);
 					}
 				});
 
@@ -297,11 +322,11 @@ public class LookAroundMotiveGenerator extends
 	}
 
 	private void scheduleForDeletion(WorkingMemoryAddress coneAddr) {
-		// Can't delete the cone if it's the current viewcone in the robot
-		// belief!
-
-		// log("scheduling cone for deletion: " + CASTUtils.toString(coneAddr));
-		// m_executor.schedule(new DeleteEntry(coneAddr), 20, TimeUnit.SECONDS);
+		log("scheduling cone for deletion: " + CASTUtils.toString(coneAddr));
+		scheduleForDeletion(new DeleteViewCone(coneAddr));
 	}
 
+	private void scheduleForDeletion(DeleteViewCone _deleter) {
+		m_executor.schedule(_deleter, 20, TimeUnit.SECONDS);
+	}
 }
