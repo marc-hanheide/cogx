@@ -159,8 +159,12 @@ if isempty(svdRes)
 % % %         id_null = find(e <= minEigenEnergy) ;
   
 
-    min_s = 1e-4 ; %;minVals ; %0.01 ;
-    s = diag(S) ; ss = s/max(s) ; s(ss<=min_s) = min(s(ss>min_s)); mean(s(s>min_s)) ;
+%     min_s = 1e-4 ; %;minVals ; %0.01 ;
+%     //!!!!!!!!!!!!!!!!!!!!!!!!!!MKhack!!!!!!!!!!!!!!!!!!!!!!!!!
+%     s = diag(S) ; ss = s/max(s) ; s(ss<=min_s) = min(s(ss>min_s)); mean(s(s>min_s)) ;
+  min_s = 1e-15 ; %;minVals ; %0.01 ;
+    s = diag(S) ; ss = s/max(s) ; s(ss<=min_s) = 0.001 ; min(s(ss>min_s)); mean(s(s>min_s)) ;
+
     S = diag(s) ; %minVals = 0 ;
     globalCov = U*S*U' ; C = globalCov ;
 

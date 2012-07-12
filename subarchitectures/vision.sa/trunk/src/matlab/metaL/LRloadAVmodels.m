@@ -10,6 +10,9 @@ disp(['AV models loaded from ' fname ' .']);
 %fprintf('nlc=%d nec=%d   confs=', nlc, nec);disp(confs);
 getc(mC,'info')
 
+global Figs;
+%figure(Figs.LRguiL);
+set(0,'CurrentFigure',Figs.LRguiL.main);
 LRvisUpdate;
 %LRevalUpdate;
 

@@ -25,9 +25,10 @@ set(Figs.vsHs.axCimgH,'Visible','off');
 if ~isempty(pt3d)
 %     figure(7) ; clf ;
     axes(Figs.vsHs.axCpts3dH) ; hold off ;
-    f=extAPfeatures(x,b,Params.FV);
+    f=extAPfeatures(x,b,Params.FV)
   
-    cll = repmat( hsv2rgb(f(1:3)')*255, size(pt3d,1), 1 ) ;
+%    cll = repmat( hsv2rgb(f(1:3)')*255, size(pt3d,1), 1 ) ;
+    cll = repmat( hsl2rgb(f(1:3)')*255, size(pt3d,1), 1 ) ;
     idx = round(linspace(1,size(pt3d,1),N_max)) ;
     pt3d = pt3d(idx,:) ;
     cll = cll(idx,:) ;
