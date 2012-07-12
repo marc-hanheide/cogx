@@ -1,0 +1,49 @@
+[question]
+What is this?
+What color is
+What shape is
+Is it
+Is this
+Is the object
+Tell me what
+
+[assertion]
+The object is
+This is
+It is
+The object is not
+This is not
+It is not
+
+[instruction]
+Look forward!
+Look left!
+Look right!
+
+[color]
+red
+green
+blue
+yellow
+orange
+pink
+black
+white
+
+[shape]
+compact
+elongated
+
+[type]
+tea box
+coke can
+cornflakes
+box
+ball
+schokomusli
+fruchtemusli
+weetabix
+bircher
+toppas
+chocos
+darjeeling
