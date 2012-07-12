@@ -198,6 +198,7 @@
                                  (= (placestatus ?to) placeholder)
                                  )
                         (kval ?a (in-room ?to)))
+
                       (assign (placestatus ?to) trueplace)
                       (assign (is-in ?a) ?to)
                       (increase (total-cost) 2))
@@ -219,6 +220,7 @@
                            (kval ?a (in-room ?to)))
                          (assign (is-in ?a) ?to)
                          (assign (placestatus ?to) trueplace)
+                         (assign (placestatus ?via) trueplace)
                          (increase (total-cost) 3))
             )
 
