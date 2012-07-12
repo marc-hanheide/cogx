@@ -51,6 +51,7 @@ OPTDEFAULT feature_options=<multiline>
    !binder
    !binder-mln
    !dialogue
+   !dialogue-gui
    !planning
    # Include Manual Planning, only if planning is also enabled
    !manual-planning
@@ -151,8 +152,13 @@ ENDIF
 
 # dialogue ###################################################################
 IFOPTALL(%(feature_options), dialogue)
-   INCLUDE includes/dialogue.sa/INCL/george-live.cast
-   INCLUDE includes/dialogue.sa/dialogue-exe.cast
+    IFOPTALL(%(feature_options), dialogue-gui)
+        SETVAR Dialogue_IncludeGui=1
+    ELSE
+        SETVAR Dialogue_IncludeGui=0
+    ENDIF
+    INCLUDE includes/dialogue.sa/INCL/george-live.cast
+    INCLUDE includes/dialogue.sa/dialogue-exe.cast
 ENDIF
 
 # planning and execution #####################################################

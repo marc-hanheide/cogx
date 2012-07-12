@@ -38,6 +38,7 @@ OPTDEFAULT feature_options=<multiline>
    binder
    binder-mln
    dialogue
+   !dialogue-gui
    planning
    motivation
    manipulation
