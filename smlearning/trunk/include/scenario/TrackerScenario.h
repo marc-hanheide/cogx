@@ -30,11 +30,8 @@
 #include <scenario/Box.h>
 
 // TODO a proper fix to the warnings!
-// #include <ThreadObject/CameraThread.h>
-// #include <Tracker/Tracker.h>
 #include <scenario/TrackerThread.h>
 #include <TomGine/tgFont.h>
-// #include <GLWindow/GLWindow.h>
 #include <smltools/tracker_tools.h>
 
 #include <Golem/Phys/Application.h>
@@ -120,42 +117,16 @@ protected:
 	virtual void initMovement();
 	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
-	virtual void preprocess(golem::SecTmReal elapsedTime);
 	/** write data chunk (used in postprocess function) */
 	virtual void writeChunk (LearningData::Chunk& chunk);
 	/** Description */
 	TrackerScenario::Desc desc;
 	// /** Tracker thread */
 	TrackerThread* tracker_th;
-	// /** Tracker */
-	// golem::shared_ptr<Tracking::Tracker> m_tracker;
-	// // Tracking::Tracker* m_tracker;
-	// /** Object model */
-	// TomGine::tgModel m_object;
-	// /* The path to load and save the ply model */
-	// std::string m_plypath;
-	// /** Captured camera Image */
-	// IplImage* _img;
-	// TomGine::tgPose m_track_pose, m_initialPose;
-	// /** Tracker window */
-	// golem::shared_ptr<blortGLWindow::GLWindow> glWindow;
-	// /** Tracker parameters */
-	// // Tracking::Tracker::Parameter trackParams;
-	// /** Camera thread */
-	// CCameraThread* pThreadCamera;
-	// /** Model id */
-	// int m_trackpred_id, m_ground_id, m_track_id;
-	// /** is the current state of the object movement (fast / slow / still ) */
-	// Tracking::movement_state _movement;
-	// /** is the current quality of object visibilty ( ok / occluded / lost / locked ) */
-	// Tracking::quality_state _quality;
-	// /** is the current confidence of the model ( good / fair / bad ) */
-	// Tracking::confidence_state _confidence;
 	/** Event handling (Pause) */
 	golem::Event evContinue;
 	/** Keyboard handler. */
 	virtual void keyboardHandler(unsigned char key, int x, int y);
-	bool _quit;
 	/** katana arm */
 	Katana300Arm* pKatana300Arm;
 	/** close arm gripper */

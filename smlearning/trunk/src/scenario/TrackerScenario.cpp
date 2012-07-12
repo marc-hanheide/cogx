@@ -72,10 +72,6 @@ bool TrackerScenario::create(const TrackerScenario::Desc& desc) {
 	return true;
 }
 
-void TrackerScenario::preprocess (golem::SecTmReal elapsedTime)
-{
-}
-
 void TrackerScenario::writeChunk (LearningData::Chunk& chunk) {
 	//arm->getArm().lookupInp(chunk.action.armState, context.getTimer().elapsed()); //not present anymore
 	arm->getArm()->getArm().lookupState(chunk.action.armState, context.getTimer().elapsed()); //other possibility: lookupCommand
@@ -274,7 +270,6 @@ void TrackerScenario::run (int argc, char* argv[])
 		cout << "Iteration " << iteration << " finished." << endl; 
 
 	}
-	evContinue.set(true);
  	//move the arm to its initial position
 	arm->moveArmToStartPose(context);
 	//write obtained data into a binary file
@@ -291,7 +286,7 @@ void TrackerScenario::finish() {
 	// delete m_tracker;
 	// glWindow.release();
 	//capture->finish();
-	tracker_th->Stop ();
+	// tracker_th->Stop ();
 	delete tracker_th;
 	removeObject();						
 }
@@ -471,6 +466,7 @@ void TrackerScenarioApp::run(int argc, char *argv[]) {
 		// todo 
 		//pTrackerScenario->main();
 		pTrackerScenario->run(argc, argv);
+		pTrackerScenario->finish();
 	}
 	catch (const Scenario::Interrupted&) {
 		// todo
