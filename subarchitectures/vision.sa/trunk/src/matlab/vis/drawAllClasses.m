@@ -21,7 +21,7 @@ for i = 1 : 2
 %             clr = colrs(j) ;
 %         end
         %clr=colrs(j,:);
-        clr = colrs( getC(model,1,j,'name'),:) ;
+        clr = colrs( getc(model,1,j,'name'),:) ;
 
         executeOperatorIKDEClsfr( model{i}, 'showKDE_of_class_index', j, 'showkdecolor', clr, 'decompose', decompose, 'draw_to_these_axes', ha) ;
         fbs=getc(model,i,'Fb');

@@ -60,7 +60,7 @@ end
 RECrgb=cat(3,RECrgb1,RECrgb2,RECrgb3);
 
 dfigure(4.3,1.2,['VStest - Test colours HL; S=',num2str(S)]);
-resizefigs(gcf,4.5,1.2);
+resizeFigs(gcf,4.5,1.2);
 Test.rgba=subplot(1,3,1);
 %showimg(RGB);
 imagesc(RGB);
