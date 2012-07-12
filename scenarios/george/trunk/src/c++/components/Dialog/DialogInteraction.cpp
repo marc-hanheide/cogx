@@ -2,14 +2,17 @@
 // Created: 2012-06-15
 
 #include "DialogInteraction.hpp"
+#include "StringFmt.hpp"
 #include <Timers.hpp>
 
 #include <dialogue.hpp>
 #include <dialogue_utils.hpp>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
+#include <fstream>
 #include <sstream>
 #include <cmath>
+#include <algorithm>
 
 using namespace cast;
 namespace dlgice = de::dfki::lt::tr::dialogue::slice;
@@ -54,6 +57,11 @@ void CDialogInteraction::configure(const std::map<std::string,std::string> & _co
     else mOptions["dialogue.sa"] = it->second;
   }
 
+  if((it = _config.find("--presets")) != _config.end())
+  {
+    mPresetFile = it->second;
+  }
+
 #ifdef FEAT_VISUALIZATION
   display().configureDisplayClient(_config);
 #endif
@@ -81,6 +89,72 @@ void CDialogInteraction::start()
 #endif
 }
 
+
+void CDialogInteraction::loadPresets()
+{
+  std::ifstream f;
+  f.open(mPresetFile.c_str());
+  if (f.fail()) {
+    error("File not found: '" + mPresetFile + "'");
+    return;
+  }
+
+  std::vector<std::string> validSections({
+      "question", "assertion", "instruction", "color", "shape", "type"
+      });
+  std::string section;
+  std::vector<std::string> items;
+
+  auto emitSection = [&]() -> void
+  {
+    if (items.size() < 1) {
+      println("no items in section %s", section.c_str());
+      return;
+    }
+    if (std::find(validSections.begin(), validSections.end(), section) == validSections.end()) {
+      println("invalid section %s", section.c_str());
+      return;
+    }
+
+    std::ostringstream ss;
+    ss << "dlgctrl.setPresets('" << section << "', [";
+    int cnt = 0;
+    for (auto sitem: items) {
+      _s_::replace(sitem, "\'", "");
+      _s_::replace(sitem, "\"", "");
+      _s_::replace(sitem, "\\", "");
+      if (cnt++ > 0) ss << ", ";
+      ss << "'" << sitem << "'";
+    }
+    ss << "]);";
+#ifdef FEAT_VISUALIZATION
+    println(" *** %s", ss.str().c_str());
+    display().execInDialog(display().mDialogId, ss.str());
+#endif
+  };
+
+  while (f.good() && !f.eof()) {
+    std::string line;
+    std::getline(f, line);
+    line = _s_::strip(line);
+    if (line.size() < 1 || _s_::startswith(line, "#")) {
+      continue;
+    }
+    if (_s_::startswith(line, "[") && _s_::endswith(line, "]")) {
+      if (section != "" && items.size() > 0) {
+        emitSection();
+      }
+      section = _s_::strip(line, "[]\t ");
+      items.clear();
+      continue;
+    }
+    items.push_back(line);
+  }
+  if (section != "" && items.size() > 0) {
+    emitSection();
+  }
+}
+
 void CDialogInteraction::runComponent()
 {
   const int intervalMs = 100;  // desired time between checks
@@ -88,6 +162,9 @@ void CDialogInteraction::runComponent()
 
 #ifdef FEAT_VISUALIZATION
   display().execInDialog(display().mDialogId, "dlgctrl.clearSpokenText();");
+
+  if (mPresetFile != "")
+    loadPresets();
 #endif
 
   while (isRunning()) {
