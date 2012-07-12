@@ -7,6 +7,11 @@
                   (exists (?p2 - place) (or (connected ?p ?p2)                 ;; or every place has at least one connection
                                             (connected ?p2 ?p))))))
 
+ (forall (?p - place) 
+         (and (imply (and (= (placestatus ?p) trueplace)                       ;; Trueplaces that are not gateways must have a 
+                          (not (= (gateway ?p) true)))                         ;; room assigned
+                     (exists (?r - room) (= (in-room ?p) ?r)))))
+
  (forall (?r - room)
          (imply (not (is-virtual ?r))
                 (defined (category ?r))))
