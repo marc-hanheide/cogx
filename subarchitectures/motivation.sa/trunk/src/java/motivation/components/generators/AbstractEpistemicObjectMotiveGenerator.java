@@ -25,7 +25,7 @@ import eu.cogx.beliefs.slice.GroundedBelief;
 public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T extends Ice.Object>
 		extends ManagedComponent {
 	// TODO: BAAAAAAAD
-	public static final String ROBOT_BELIEF_TYPE = "Robot"; 
+	public static final String ROBOT_BELIEF_TYPE = "Robot";
 	public static final String SPATIAL_SA = "spatial.sa";
 
 	private static final int DEFAULT_MAX_EXECUTION_TIME = 60 * 5;
@@ -35,6 +35,7 @@ public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T
 	final Class<M> motiveClass;
 	final Class<T> epistemicClass;
 	private WorkingMemoryAddress robotBeliefAddr = null;
+
 	/**
 	 * 
 	 */
@@ -66,20 +67,24 @@ public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T
 
 			for (CASTData<GroundedBelief> beliefEntry : groundedBeliefs) {
 				if (beliefEntry.getData().type.equals(ROBOT_BELIEF_TYPE)) {
-					robotBeliefAddr = new WorkingMemoryAddress(beliefEntry
-							.getID(), SPATIAL_SA);
+					robotBeliefAddr = new WorkingMemoryAddress(
+							beliefEntry.getID(), SPATIAL_SA);
 					break;
 				}
+			}
+			if (robotBeliefAddr == null) {
 				getLogger().warn(
-						"unable to find belief '" + ROBOT_BELIEF_TYPE + "'");
+						"unable to find belief '" + ROBOT_BELIEF_TYPE
+								+ "' yet, wait a bit longer");
+				sleepComponent(50);
 			}
 		}
 		return robotBeliefAddr;
 	}
 
-	
 	/**
 	 * Returns true if this generator still has any motives on WM.
+	 * 
 	 * @return
 	 */
 	protected boolean hasAvailableMotives() {
