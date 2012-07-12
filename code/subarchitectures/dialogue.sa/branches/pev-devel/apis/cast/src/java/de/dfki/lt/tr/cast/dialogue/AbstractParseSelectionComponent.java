@@ -31,6 +31,7 @@ import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parse.PackedLFs;
 import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
+import de.dfki.lt.tr.dialogue.util.VerbalisationUtils;
 
 public abstract class AbstractParseSelectionComponent<T extends ParseSelector>
 extends AbstractDialogueComponent {
@@ -74,7 +75,7 @@ extends AbstractDialogueComponent {
 		try {
 			PackedLFs plf = getMemoryEntry(_wmc.address, PackedLFs.class);
 			if (isFinalized(plf)) {
-				addTask(new ProcessingTaskWithData<PackedLFs>(plf) {
+				addTask(new ProcessingTaskWithDataAndComponent<PackedLFs, AbstractParseSelectionComponent<?>>(plf, this) {
 
 					@Override
 					public void execute(PackedLFs plf) {
@@ -91,6 +92,7 @@ extends AbstractDialogueComponent {
 						}
 						else {
 							getLogger().warn("no parse found");
+                                                        VerbalisationUtils.verbaliseString(getComponent(), "sorry I did not understand what you said");
 						}
 					}
 
