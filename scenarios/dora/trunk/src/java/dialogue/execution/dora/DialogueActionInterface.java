@@ -2,7 +2,6 @@ package dialogue.execution.dora;
 
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import cast.AlreadyExistsOnWMException;
@@ -11,7 +10,6 @@ import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
-import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
@@ -51,6 +49,20 @@ import execution.util.ComponentActionFactory;
 public class DialogueActionInterface extends
 		AbstractDialogueActionInterface<dBelief> {
 
+	protected static CASTIndependentFormulaDistributionsBelief<GroundedBelief> createResponseBelief(
+			CASTIndependentFormulaDistributionsBelief<HypotheticalBelief> bel,
+			String id) {
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class);
+		gb.setId(id);
+		gb.setContent(bel.getContent());
+		gb.setFrame(bel.getFrame());
+		gb.setPrivate(bel.getPrivate());
+		gb.setTime(bel.getStartTime(), bel.getEndTime());
+		gb.setType(bel.getType());
+		return gb;
+	}
+
 	WMView<StandbyMode> standbyModeView = WMView
 			.create(this, StandbyMode.class);
 
@@ -70,52 +82,66 @@ public class DialogueActionInterface extends
 		public AskForLabelExistenceDialogue(ManagedComponent _component) {
 			super(_component, AskForLabelExistence.class);
 		}
-	
+
 		@Override
 		protected void addAddressContent(
 				Map<String, WorkingMemoryAddress> _addressContent) {
 			super.addAddressContent(_addressContent);
-			_addressContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.PKEY_ABOUT, getAction().beliefAddress);
-			_addressContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.PKEY_RELATED_ENTITY ,getAction().pointer);
+			_addressContent
+					.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.PKEY_ABOUT,
+							getAction().beliefAddress);
+			_addressContent
+					.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.PKEY_RELATED_ENTITY,
+							getAction().pointer);
 			logAddressContent(_addressContent);
 		}
-	
+
 		@Override
 		protected void addStringContent(Map<String, String> _stringContent) {
 			super.addStringContent(_stringContent);
-			_stringContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_TYPE, "question");
-			_stringContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_SUBTYPE, "polar");
-			_stringContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_SUBSUBTYPE, "hgv");
-	
-			_stringContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_LABEL, getAction().label);
-			_stringContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_RELATION, getAction().relation);
+			_stringContent
+					.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_TYPE,
+							"question");
+			_stringContent
+					.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_SUBTYPE,
+							"polar");
+			_stringContent
+					.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_SUBSUBTYPE,
+							"hgv");
+
+			_stringContent
+					.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_LABEL,
+							getAction().label);
+			_stringContent
+					.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_RELATION,
+							getAction().relation);
 			logStringContent(_stringContent);
 		}
-	
+
 		@Override
 		protected TriBool checkResponse(InterpretedIntention _ii)
 				throws SubarchitectureComponentException {
 			String value = "false";
 			if (_ii.stringContent.get("asserted-polarity").equals("pos"))
 				value = "true";
-	
+
 			try {
-	
+
 				((AbstractDialogueActionInterface<?>) getComponent())
 						.addFeature(getAction().beliefAddress, "entity-exists",
 								value);
-	
+
 			} catch (SubarchitectureComponentException e) {
 				logException(e);
 			}
 			return TriBool.TRITRUE;
 		}
-	
+
 	}
 
 	/**
-	 * Class to represent the first UGV dialogue action to ask 
-	 * see https://codex.cs.bham.ac.uk/trac/cogx/ticket/516
+	 * Class to represent the first UGV dialogue action to ask see
+	 * https://codex.cs.bham.ac.uk/trac/cogx/ticket/516
 	 * 
 	 * @author marc
 	 * 
@@ -135,42 +161,56 @@ public class DialogueActionInterface extends
 		@Override
 		protected void addStringContent(Map<String, String> _stringContent) {
 			super.addStringContent(_stringContent);
-			_stringContent.put(DefCategoryLabelQuestionIntention.Transcoder.INSTANCE.SKEY_TYPE, "question");
-			_stringContent.put(DefCategoryLabelQuestionIntention.Transcoder.INSTANCE.SKEY_SUBTYPE, "polar");
-			_stringContent.put(DefCategoryLabelQuestionIntention.Transcoder.INSTANCE.SKEY_SUBSUBTYPE, "ubk-category");
+			_stringContent
+					.put(DefCategoryLabelQuestionIntention.Transcoder.INSTANCE.SKEY_TYPE,
+							"question");
+			_stringContent
+					.put(DefCategoryLabelQuestionIntention.Transcoder.INSTANCE.SKEY_SUBTYPE,
+							"polar");
+			_stringContent
+					.put(DefCategoryLabelQuestionIntention.Transcoder.INSTANCE.SKEY_SUBSUBTYPE,
+							"ubk-category");
 
-			_stringContent.put(LabelQuestionIntention.Transcoder.INSTANCE.SKEY_LABEL, getAction().label);
-			_stringContent.put(DefCategoryLabelQuestionIntention.Transcoder.INSTANCE.SKEY_CATEGORY, getAction().category);
+			_stringContent.put(
+					LabelQuestionIntention.Transcoder.INSTANCE.SKEY_LABEL,
+					getAction().label);
+			_stringContent
+					.put(DefCategoryLabelQuestionIntention.Transcoder.INSTANCE.SKEY_CATEGORY,
+							getAction().category);
 			logStringContent(_stringContent);
 		}
 
 		@Override
 		protected TriBool checkResponse(InterpretedIntention _ii)
 				throws SubarchitectureComponentException {
-			CASTIndependentFormulaDistributionsBelief<HypotheticalBelief> bel = CASTIndependentFormulaDistributionsBelief.create(HypotheticalBelief.class);
+			CASTIndependentFormulaDistributionsBelief<HypotheticalBelief> bel = CASTIndependentFormulaDistributionsBelief
+					.create(HypotheticalBelief.class);
 			bel.setType(ConnectivityTransferFunction.LABEL_RELATION);
 			// fill belief
-			FormulaDistribution fd=FormulaDistribution.create();
+			FormulaDistribution fd = FormulaDistribution.create();
 			fd.add(getAction().label, 1.0);
 			bel.getContent().put(ConnectivityTransferFunction.LABEL_VAL0, fd);
-			
-			fd=FormulaDistribution.create();
+
+			fd = FormulaDistribution.create();
 			fd.add(getAction().category, 1.0);
 			bel.getContent().put(ConnectivityTransferFunction.LABEL_VAL1, fd);
-			
-			fd=FormulaDistribution.create();
-			double prob=PROB_BK_LABEL_IN_CAT_NEG;
-			if (_ii.stringContent.get(LABEL_ASSERTED_POLARITY).equals(REPLY_POS))
-				prob=PROB_BK_LABEL_IN_CAT_POS;
-			fd.add(true, prob);
+
+			fd = FormulaDistribution.create();
+			double prob = PROB_BK_LABEL_IN_CAT_NEG;
+			if (_ii.stringContent.get(LABEL_ASSERTED_POLARITY)
+					.equals(REPLY_POS))
+				prob = PROB_BK_LABEL_IN_CAT_POS;
+			//fd.add(true, prob);
+			fd.add((float) prob, 1.0);
 			bel.getContent().put(LABEL_DORA_INROOM, fd);
 
 			String id = getComponent().newDataID();
-			bel.setId(id);
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = createResponseBelief(
+					bel, id);
 
-			getComponent().println("belief to be submitted: "+bel.toString());
+			getComponent().println("belief to be submitted: " + gb.toString());
 			try {
-				getComponent().addToWorkingMemory(id, bel.get());
+				getComponent().addToWorkingMemory(id, gb.get());
 			} catch (CASTException e) {
 				logException(e);
 			}
@@ -180,8 +220,8 @@ public class DialogueActionInterface extends
 	}
 
 	/**
-	 * Class to represent the first UGV dialogue action to ask 
-	 * see https://codex.cs.bham.ac.uk/trac/cogx/ticket/516
+	 * Class to represent the first UGV dialogue action to ask see
+	 * https://codex.cs.bham.ac.uk/trac/cogx/ticket/516
 	 * 
 	 * @author marc
 	 * 
@@ -202,47 +242,63 @@ public class DialogueActionInterface extends
 		@Override
 		protected void addStringContent(Map<String, String> _stringContent) {
 			super.addStringContent(_stringContent);
-			_stringContent.put(DefLabelRelationLabelQuestionIntention.Transcoder.INSTANCE.SKEY_TYPE, "question");
-			_stringContent.put(DefLabelRelationLabelQuestionIntention.Transcoder.INSTANCE.SKEY_SUBTYPE, "polar");
-			_stringContent.put(DefLabelRelationLabelQuestionIntention.Transcoder.INSTANCE.SKEY_SUBSUBTYPE, "ubk-label");
+			_stringContent
+					.put(DefLabelRelationLabelQuestionIntention.Transcoder.INSTANCE.SKEY_TYPE,
+							"question");
+			_stringContent
+					.put(DefLabelRelationLabelQuestionIntention.Transcoder.INSTANCE.SKEY_SUBTYPE,
+							"polar");
+			_stringContent
+					.put(DefLabelRelationLabelQuestionIntention.Transcoder.INSTANCE.SKEY_SUBSUBTYPE,
+							"ubk-label");
 
-			_stringContent.put(LabelQuestionIntention.Transcoder.INSTANCE.SKEY_LABEL, getAction().label);
-			_stringContent.put(DefLabelRelationLabelQuestionIntention.Transcoder.INSTANCE.SKEY_OTHERLABEL, getAction().otherLabel);
-			_stringContent.put(DefLabelRelationLabelQuestionIntention.Transcoder.INSTANCE.SKEY_RELATION, getAction().relation);
+			_stringContent.put(
+					LabelQuestionIntention.Transcoder.INSTANCE.SKEY_LABEL,
+					getAction().label);
+			_stringContent
+					.put(DefLabelRelationLabelQuestionIntention.Transcoder.INSTANCE.SKEY_OTHERLABEL,
+							getAction().otherLabel);
+			_stringContent
+					.put(DefLabelRelationLabelQuestionIntention.Transcoder.INSTANCE.SKEY_RELATION,
+							getAction().relation);
 			logStringContent(_stringContent);
 		}
 
 		@Override
 		protected TriBool checkResponse(InterpretedIntention _ii)
 				throws SubarchitectureComponentException {
-			CASTIndependentFormulaDistributionsBelief<HypotheticalBelief> bel = CASTIndependentFormulaDistributionsBelief.create(HypotheticalBelief.class);
+			CASTIndependentFormulaDistributionsBelief<HypotheticalBelief> bel = CASTIndependentFormulaDistributionsBelief
+					.create(HypotheticalBelief.class);
 			bel.setType(ConnectivityTransferFunction.LABEL_RELATION);
 			// fill belief
-			FormulaDistribution fd=FormulaDistribution.create();
+			FormulaDistribution fd = FormulaDistribution.create();
 			fd.add(getAction().label, 1.0);
 			bel.getContent().put(ConnectivityTransferFunction.LABEL_VAL0, fd);
-			
-			fd=FormulaDistribution.create();
+
+			fd = FormulaDistribution.create();
 			fd.add(getAction().relation, 1.0);
 			bel.getContent().put(ConnectivityTransferFunction.LABEL_VAL1, fd);
-			
-			fd=FormulaDistribution.create();
+
+			fd = FormulaDistribution.create();
 			fd.add(getAction().otherLabel, 1.0);
 			bel.getContent().put(LABEL_VAL2, fd);
-			
-			fd=FormulaDistribution.create();
-			double prob=PROB_BK_LABEL_RELATION_NEG;
-			if (_ii.stringContent.get(LABEL_ASSERTED_POLARITY).equals(REPLY_POS))
-				prob=PROB_BK_LABEL_RELATION_POS;
-			fd.add(true, prob);
+
+			fd = FormulaDistribution.create();
+			double prob = PROB_BK_LABEL_RELATION_NEG;
+			if (_ii.stringContent.get(LABEL_ASSERTED_POLARITY)
+					.equals(REPLY_POS))
+				prob = PROB_BK_LABEL_RELATION_POS;
+			//fd.add(true, prob);
+			fd.add((float) prob, 1.0);
 			bel.getContent().put(LABEL_RELATED, fd);
 
 			String id = getComponent().newDataID();
-			bel.setId(id);
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = createResponseBelief(
+					bel, id);
 
-			getComponent().println("belief to be submitted: "+bel.toString());
+			getComponent().println("belief to be submitted: " + gb.toString());
 			try {
-				getComponent().addToWorkingMemory(id, bel.get());
+				getComponent().addToWorkingMemory(id, gb.get());
 			} catch (CASTException e) {
 				logException(e);
 			}
@@ -251,7 +307,6 @@ public class DialogueActionInterface extends
 
 	}
 
-	
 	public static class ReportPositionDialogue extends
 			BeliefIntentionDialogueAction<ReportPosition> {
 
@@ -430,15 +485,15 @@ public class DialogueActionInterface extends
 							new ComponentActionFactory<AskForLabelExistence, AskForLabelExistenceDialogue>(
 									this, AskForLabelExistenceDialogue.class));
 			m_actionStateManager
-			.registerActionType(
-					AskForBKLabelInCategory.class,
-					new ComponentActionFactory<AskForBKLabelInCategory, AskForBKLabelInCategoryAction>(
-							this, AskForBKLabelInCategoryAction.class));
+					.registerActionType(
+							AskForBKLabelInCategory.class,
+							new ComponentActionFactory<AskForBKLabelInCategory, AskForBKLabelInCategoryAction>(
+									this, AskForBKLabelInCategoryAction.class));
 			m_actionStateManager
-			.registerActionType(
-					AskForBKLabelRelLabel.class,
-					new ComponentActionFactory<AskForBKLabelRelLabel, AskForBKLabelRelLabelAction>(
-							this, AskForBKLabelRelLabelAction.class));
+					.registerActionType(
+							AskForBKLabelRelLabel.class,
+							new ComponentActionFactory<AskForBKLabelRelLabel, AskForBKLabelRelLabelAction>(
+									this, AskForBKLabelRelLabelAction.class));
 
 		}
 	}
@@ -480,4 +535,5 @@ public class DialogueActionInterface extends
 		}
 
 	}
+
 }
