@@ -440,7 +440,7 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 		for (Entry<WorkingMemoryAddress, Motive> m : copySet) {
 			Motive motive = m.getValue();
 
-			if (motive.status == MotiveStatus.ACTIVE) {
+			if (motive.status == MotiveStatus.ACTIVE || motive.status == MotiveStatus.SURFACED) {
 
 				WorkingMemoryAddress wma = m.getKey();
 
