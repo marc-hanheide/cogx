@@ -195,7 +195,7 @@ public class GBeliefGRE {
 			.getDistribution().getMostLikely().getProposition();
 			if (cat==null || cat.equals("")) cat = "object";
 			final String catF = cat;
-//			log("Gbelief is a visual object with category: " + catF);
+			System.err.println("Gbelief is a visual object with category: " + catF);
 			
 			myRefRep = new ReferentReplacer() {
 	            @Override
@@ -293,12 +293,20 @@ public class GBeliefGRE {
 				// assuming it is a ROOM0@spatial.sa type
 				final String catF;
 				final String builderTypeF;
+				final String delF;
 				if (_lfWMA.id().toLowerCase().contains("room") || _lfWMA.subarchitecture().contains("coma")) {
 					catF = "room";
 					builderTypeF = "e-place";
+					delF = "unique";
+				}
+				else if (_lfWMA.subarchitecture().contains("vision.sa")) {
+					catF = "person";
+					builderTypeF = "person";
+					delF = "existential";
 				} else {
 					catF = _lfWMA.id().toLowerCase();
 					builderTypeF = "thing";
+					delF = "unique";
 				}
 				myRefRep = new ReferentReplacer() {
 					@Override
@@ -306,7 +314,7 @@ public class GBeliefGRE {
 
 						BasicState headState = BasicState.newBuilder(builderTypeF)
 								.setProposition(catF)
-								.addFeature("Delimitation", "unique")
+								.addFeature("Delimitation", delF) // existential (a) vs unique (the)
 								.addFeature("Quantification", "specific")
 								.addFeature("Num", "sg")
 								.build();
@@ -318,15 +326,25 @@ public class GBeliefGRE {
 			} // end else (i.e. spatial.sa but not well-formed WMA id
 		} // end if spatial.sa WMA
 		else {
+			System.err.println("HERE!" + _lfWMA.toString());
+
 			// "1_1_6,room3":castreferent ^ "1_1_6,room3"
 			final String catF;
 			final String builderTypeF;
+			final String delF;
 			if (_lfWMA.toString().toLowerCase().contains("room")) {
 				catF = "room";
 				builderTypeF = "e-place";
+				delF = "unique";
+			}
+			else if (_lfWMA.subarchitecture().contains("vision.sa")) {
+					catF = "person";
+					builderTypeF = "person";
+					delF = "existential";
 			} else {
 				catF = "thing";
 				builderTypeF = "thing";
+				delF = "unique";
 			}
 			myRefRep = new ReferentReplacer() {
 				@Override
@@ -334,7 +352,7 @@ public class GBeliefGRE {
 
 					BasicState headState = BasicState.newBuilder(builderTypeF)
 							.setProposition(catF)
-							.addFeature("Delimitation", "unique")
+							.addFeature("Delimitation", delF)
 							.addFeature("Quantification", "specific")
 							.addFeature("Num", "sg")
 							.build();

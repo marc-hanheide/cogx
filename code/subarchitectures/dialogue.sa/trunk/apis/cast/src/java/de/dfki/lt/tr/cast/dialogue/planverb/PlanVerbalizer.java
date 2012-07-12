@@ -222,6 +222,8 @@ public class PlanVerbalizer {
 		m_preLexicalSub.put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
 		m_preLexicalSub.put("m-cause", "m-condition");
 		m_preLexicalSub.put(":category ^ meetingroom", ":e-place ^ meetingroom");
+		m_preLexicalSub.put("container", "shelf");
+//		m_preLexicalSub.put("vision.sa\":thing ^ thing", "vision.sa\":person ^ PERSON");
 	}
 	
 	/**
