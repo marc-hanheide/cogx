@@ -30,6 +30,9 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 	private static final float[] FIXED_ANGLES = new float[] { 0, 45, 90, -45,
 			-90 };
 
+	// TODO: figure out if this is useful
+	private static final double TILT_DEG = 7.5;
+
 	// private static final double FIXED_TILT = -40 * Math.PI / 180.0;
 
 	private final Stack<SetPTZPoseCommand> m_remainingCommands;
@@ -47,7 +50,7 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 
 		for (float angle_deg : FIXED_ANGLES) {
 			SetPTZPoseCommand cmd = new SetPTZPoseCommand(new PTZPose(angle_deg
-					* Math.PI / 180.0, 0, 1), PTZCompletion.COMPINIT);
+					* Math.PI / 180.0, TILT_DEG* Math.PI / 180.0, 1), PTZCompletion.COMPINIT);
 
 			m_remainingCommands.push(cmd);
 		}
