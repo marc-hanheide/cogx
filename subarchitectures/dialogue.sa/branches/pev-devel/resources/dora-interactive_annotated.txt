@@ -688,7 +688,7 @@
    ;;          :sense (category ?r)
    ;;          )
 
-;;LF ask-for-category-polar => @{step_?block_?step:communication}(ask ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?tid_?block_?step,?h:castreferent ^ ?tid_?block_?step,?h) ^ <Event>(be_?block_?step:ascription ^ be ^ <Cop-Restr>(?tid_?block_?step,?r:castreferent ^ ?tid_?block_?step,?r) ^ <Cop-Scope>(?c_?block_?step:category ^ ?c ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific)))
+;;LF ask-for-category-polar => @{step_?block_?step:communication}(ask ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(?tid_?block_?step,?h:castreferent ^ ?tid_?block_?step,?h) ^ <Event>(be_?block_?step:ascription ^ be1 ^ <Cop-Restr>(?tid_?block_?step,?r:castreferent ^ ?tid_?block_?step,?r) ^ <Cop-Scope>(?c_?block_?step:category ^ ?c ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific)))
    (:action ask-for-category-polar
             :agent (?a - robot)
             :parameters (?r - room ?c - category)
@@ -742,7 +742,7 @@
                      (increase (total-cost) 10))
             )
 
-;;LF ask-for-object-existence => @{step_?block_?step:communication}(ask ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(context_?block_?step:person ^ context ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(if_?block_?step:m-condition ^ if ^ <Event>(be_?block_?step:ascription ^ be ^ <Cop-Restr>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(?rel_?block_?step:m-location ^ ?rel ^ <Anchor>(?tid_?block_?step,?what:castreferent ^ ?what)))))
+;;LF ask-for-object-existence => @{step_?block_?step:communication}(ask ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Patient>(context_?block_?step:person ^ context ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(if_?block_?step:m-condition ^ if ^ <Event>(be_?block_?step:ascription ^ be1 ^ <Cop-Restr>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(?rel_?block_?step:m-location ^ ?rel ^ <Anchor>(?tid_?block_?step,?what:castreferent ^ ?what)))))
    (:action ask-for-object-existence
             :agent (?a - robot)
             :parameters (?l - label ?o - visualobject ?rel - spatial_relation ?what - (either visualobject room))

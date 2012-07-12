@@ -1,0 +1,2479 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log4j:logsequence xmlns:log4j="http://jakarta.apache.org/log4j/" user="user" time="17:15:17">
+
+<log4j:event logger="cast.server.c++.ComponentServer" timestamp="1342019728627" level="INFO" thread="0x7fad50aa97a0">
+<log4j:message><![CDATA[CPP server version: "2.1.17 beta (Free The Pterodactyl 3)"]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.server.c++.ComponentServer" timestamp="1342019728629" level="INFO" thread="0x7fad50aa97a0">
+<log4j:message><![CDATA[profiling disabled. set env variable 'CAST_PROFILER=filename.prof' to enable it.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.server.java.ComponentServer" timestamp="1342019729425" level="INFO" thread="main">
+<log4j:message><![CDATA[Java server: "2.1.17 beta (Free The Pterodactyl 3)"]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.server.python.ComponentServer" timestamp="1342019729707" level="INFO" thread="0x7f7086784720">
+<log4j:message><![CDATA[Python server version: "2.1.17 beta (Free The Pterodactyl 3)"]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019737486" level="INFO" thread="0x7fad49d86700">
+<log4j:message><![CDATA[Will NOT use X window to show the exploration map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.map.manager" timestamp="1342019737641" level="INFO" thread="0x7fad49585700">
+<log4j:message><![CDATA[Will NOT use X window to show the tentative local map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.map.manager" timestamp="1342019737641" level="INFO" thread="0x7fad49585700">
+<log4j:message><![CDATA[Will NOT use X window to show the current local map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342019739053" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[will recognise: magazine as blobs of color 255, 0, 0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342019739055" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[will recognise: table as blobs of color 0, 255, 0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342019739056" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[will recognise: chocolate_chips as blobs of color 0, 0, 255]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342019739057" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[will recognise: sugar as blobs of color 255, 0, 255]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.recognizer.people" timestamp="1342019739232" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[will recognise: person as blobs of color 255, 255, 0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.asr-loquendo" timestamp="1342019739438" level="ERROR" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[failed to connect to the ASR server]]></log4j:message>
+<log4j:throwable><![CDATA[Ice.ConnectionRefusedException
+    error = 0
+	at IceInternal.ConnectRequestHandler.getConnection(ConnectRequestHandler.java:240)
+	at IceInternal.ConnectRequestHandler.sendRequest(ConnectRequestHandler.java:138)
+	at IceInternal.Outgoing.invoke(Outgoing.java:66)
+	at Ice._ObjectDelM.ice_isA(_ObjectDelM.java:30)
+	at Ice.ObjectPrxHelperBase.ice_isA(ObjectPrxHelperBase.java:111)
+	at Ice.ObjectPrxHelperBase.ice_isA(ObjectPrxHelperBase.java:77)
+	at de.dfki.lt.tr.dialogue.asr.loquendo.ServerPrxHelper.checkedCast(ServerPrxHelper.java:1133)
+	at de.dfki.lt.tr.dialogue.asr.LoquendoClient.<init>(LoquendoClient.java:69)
+	at de.dfki.lt.tr.cast.dialogue.LoquendoASR.onConfigure(LoquendoASR.java:70)
+	at de.dfki.lt.tr.cast.dialogue.AbstractDialogueComponent.configure(AbstractDialogueComponent.java:34)
+	at cast.core.CASTComponent.configure(Unknown Source)
+	at cast.interfaces._ManagedComponentTie.configure(Unknown Source)
+	at cast.interfaces._CASTComponentDisp.___configure(Unknown Source)
+	at cast.interfaces._ManagedComponentDisp.__dispatch(Unknown Source)
+	at IceInternal.Incoming.invoke(Incoming.java:159)
+	at Ice.ConnectionI.invokeAll(ConnectionI.java:2357)
+	at Ice.ConnectionI.dispatch(ConnectionI.java:1208)
+	at Ice.ConnectionI.message(ConnectionI.java:1163)
+	at IceInternal.ThreadPool.run(ThreadPool.java:302)
+	at IceInternal.ThreadPool.access$300(ThreadPool.java:12)
+	at IceInternal.ThreadPool$EventHandlerThread.run(ThreadPool.java:643)
+	at java.lang.Thread.run(Thread.java:679)
+Caused by: java.net.ConnectException: Connection refused
+	at sun.nio.ch.SocketChannelImpl.checkConnect(Native Method)
+	at sun.nio.ch.SocketChannelImpl.finishConnect(SocketChannelImpl.java:592)
+	at IceInternal.Network.doFinishConnect(Network.java:325)
+	at IceInternal.TcpTransceiver.initialize(TcpTransceiver.java:33)
+	at Ice.ConnectionI.initialize(ConnectionI.java:1831)
+	at Ice.ConnectionI.message(ConnectionI.java:1038)
+	... 4 more
+]]></log4j:throwable>
+</log4j:event>
+
+<log4j:event logger="dialogue.int-recognizer" timestamp="1342019739483" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[will be looking for abducer rulefiles in `/home/hendrik/cogx/dora-yr4/subarchitectures/dialogue.sa/resources/abduction/cogx/current']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.int-realizer" timestamp="1342019739498" level="INFO" thread="Ice.ThreadPool.Server-0">
+<log4j:message><![CDATA[will be looking for abducer rulefiles in `/home/hendrik/cogx/dora-yr4/subarchitectures/dialogue.sa/resources/abduction/cogx/current']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="de.dfki.lt.crowl.Crowl" timestamp="1342019745089" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[Jena[MICRO, subarchitectures/coma.sa/ontologies/dora.rules, subarchitectures/coma.sa/ontologies/jenaabox.rules] load and prepare took 0.909s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="de.dfki.lt.crowl.Crowl" timestamp="1342019745090" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[fixpoint in 0.001s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="coma.pm-coma" timestamp="1342019745155" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[using ComaRoomTransferFunction as transfer function.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.display.srv" timestamp="1342019746801" level="INFO" thread="0x7fad16a2d700">
+<log4j:message><![CDATA[Clients will use a remote display server that should be running on: '192.168.48.149']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="laser.server" timestamp="1342019747783" level="INFO" thread="0x7fad49585700">
+<log4j:message><![CDATA[configure]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.init.0" timestamp="1342019748807" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[created new PythonServer]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.init.0" timestamp="1342019748809" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[registering Python planner server]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="ptz.server" timestamp="1342019748948" level="INFO" thread="0x7fad49d86700">
+<log4j:message><![CDATA[CDisplayClient connected to standalone server on '192.168.48.149'.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="laser.server" timestamp="1342019748962" level="INFO" thread="0x7fad49585700">
+<log4j:message><![CDATA[start]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.SpatialPropertyRemover" timestamp="1342019750208" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[SpatialPropertyRemover starts listening for places]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.relation.manager" timestamp="1342019751449" level="INFO" thread="0x7fad49d86700">
+<log4j:message><![CDATA[Connected to peekabot, ready to go]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.asr-loquendo" timestamp="1342019758291" level="INFO" thread="Ice.ThreadPool.Server-2">
+<log4j:message><![CDATA[no client found, going to die]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="planner.sa.exec-monitor" timestamp="1342019761081" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[DisplayClient(java) connected to standalone server on '192.168.48.149'.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="categorical.sa.categorical.laserprocessor" timestamp="1342019762862" level="INFO" thread="0x7fad49585700">
+<log4j:message><![CDATA[Loading shape model...]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="categorical.sa.categorical.laserprocessor" timestamp="1342019762936" level="INFO" thread="0x7fad49585700">
+<log4j:message><![CDATA[Done!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.plannertasksdisplay" timestamp="1342019763002" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[DisplayClient(java) connected to standalone server on '192.168.48.149'.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.goaldisplay" timestamp="1342019763141" level="INFO" thread="Ice.ThreadPool.Server-1">
+<log4j:message><![CDATA[DisplayClient(java) connected to standalone server on '192.168.48.149'.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342019763146" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[add type 'SpatialData.NodeHypothesis']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342019763153" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[add type 'execution.slice.Action']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342019763161" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[add type 'SpatialData.ViewPoint']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342019763171" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[add type 'SpatialProperties.PlaceProperty']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342019763181" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[add type 'autogen.Planner.PlanningTask']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342019763192" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[add type 'SpatialData.ProcessConeGroup']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342019763208" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[add type 'eu.cogx.beliefs.slice.GroundedBelief']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342019763217" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[add type 'autogen.Planner.Action']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342019763224" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[add type 'comadata.ComaRoom']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342019763231" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[add type 'eu.cogx.beliefs.slice.HypotheticalBelief']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342019763238" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[add type 'SpatialData.RelationalViewPointGenerationCommand']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342019763246" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[add type 'SpatialData.ObjectSearchResult']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.wmeditor.xml" timestamp="1342019763620" level="INFO" thread="Ice.ThreadPool.Server-3">
+<log4j:message><![CDATA[ready to go]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.ptzJavaServer" timestamp="1342019764106" level="INFO" thread="ptzJavaServer-runComponent">
+<log4j:message><![CDATA[go through a sequence of commands to help with a pan-tilt player bug, that seems to choke when the pan-tilt is not at 0.0 at start up]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342019764120" level="INFO" thread="0x7f707b431700">
+<log4j:message><![CDATA[DisplayClient(python) connected to standalone server on '192.168.48.149']]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.init" timestamp="1342019764231" level="INFO" thread="0x7facdc197700">
+<log4j:message><![CDATA[registerScan2dPushClient]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.init" timestamp="1342019764241" level="INFO" thread="0x7facdd199700">
+<log4j:message><![CDATA[registerScan2dPushClient]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.init" timestamp="1342019764248" level="INFO" thread="0x7facdd199700">
+<log4j:message><![CDATA[registerScan2dPushClient]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.init" timestamp="1342019764248" level="INFO" thread="0x7facdc197700">
+<log4j:message><![CDATA[registerScan2dPushClient]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.init" timestamp="1342019764260" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[registerScan2dPushClient]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.init" timestamp="1342019764261" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[registerScan2dPushClient]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019764520" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Running!!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.diag-exe" timestamp="1342019764549" level="INFO" thread="diag-exe-runComponent">
+<log4j:message><![CDATA[disabled ASR processing... robot is deaf now]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="visualization.sa.motivedisplay" timestamp="1342019764556" level="INFO" thread="motivedisplay-runComponent">
+<log4j:message><![CDATA[DisplayClient(java) connected to standalone server on '192.168.48.149'.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="planner.sa.fileviewer.cli" timestamp="1342019764570" level="INFO" thread="0x7facd798e700">
+<log4j:message><![CDATA[CDisplayClient connected to standalone server on '192.168.48.149'.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.init" timestamp="1342019764620" level="INFO" thread="0x7facd2183700">
+<log4j:message><![CDATA[registerScan2dPushClient]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.init" timestamp="1342019764622" level="INFO" thread="0x7facd2183700">
+<log4j:message><![CDATA[registerScan2dPushClient]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019764921" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 30.748937 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019764949" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 30.777024 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019765008" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 30.836558 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.init" timestamp="1342019765246" level="INFO" thread="0x7facdd99a700">
+<log4j:message><![CDATA[registerScan2dPushClient]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="cast.init" timestamp="1342019765248" level="INFO" thread="0x7facdd99a700">
+<log4j:message><![CDATA[registerScan2dPushClient]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.standby-manager" timestamp="1342019765276" level="INFO" thread="standby-manager-runComponent">
+<log4j:message><![CDATA[StandbyMode ADD -> turning on local standby mode]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019765317" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 31.145080 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019765326" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 31.154028 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019765422" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 31.248204 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019765536" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 31.364660 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342019765749" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>my_name_is_dora.)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019765787" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 31.614575 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.slam.process" timestamp="1342019765807" level="INFO" thread="0x7face21a3700">
+<log4j:message><![CDATA[Still waiting for SLAM to initialize]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019765827" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 31.654527 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019765939" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 31.767567 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.slam.process" timestamp="1342019765984" level="INFO" thread="0x7face21a3700">
+<log4j:message><![CDATA[Fake measurement kick start finished x=0.00 y=0.00 a=0.0000 t=31.696515]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019766035" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 31.863001 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019767330" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019770347" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342019770563" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_discovered_a_new_room)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019771136" level="INFO" thread="0x7facf0acd700">
+<log4j:message><![CDATA[Refreshing node hypotheses]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019773356" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019775659" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 1.935187 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019775783" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 2.059424 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019776451" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019805932" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC manual.planning ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] ADD]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019805933" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019805951" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019805964" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[0/PENDING/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342019805984" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Planner PythonServer: New PlanningTask received:]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019805988" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019805988" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019805989" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342019805994" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Connected to CppServer Planner]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342019806049" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Loading domain /home/hendrik/cogx/dora-yr4/subarchitectures/planner.sa/domains/dora-interactive.pddl.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342019806057" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>Got_a_new_task)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019806669" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342019806705" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Connected to Comaserver hfcserver]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342019806826" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Connected to conceptual.sa query server hfcserver]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019807357" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019807358" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019807358" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019807555" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019807555" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019807556" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019807560" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Plan is empty, replanning]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019807561" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Planning was triggered for task 1.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342019811391" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[First action: 3: move robot_0__c place_1__b == move 0:C@spatial.sa 1:B@spatial.sa]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019811439" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019811439" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019811440" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/PENDING/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019811497" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019811497" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342019811497" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6: 57]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342019811521" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>Starting_plan_execution.)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342019811717" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019813716" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Begin executing command]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019814255" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019814983" level="INFO" thread="0x7facf0acd700">
+<log4j:message><![CDATA[Refreshing node hypotheses]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019817314" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342019818302" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_explored_place_hypothesis_1)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019818600" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Robot stopped]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019820358" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019822939" level="INFO" thread="0x7facf0acd700">
+<log4j:message><![CDATA[Refreshing node hypotheses]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019823370" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="WMLogger.execution.slice.Action" timestamp="1342019823961" level="WARN" thread="wmlogger-receiver">
+<log4j:message><![CDATA[CASTException caught: ]]></log4j:message>
+<log4j:throwable><![CDATA[cast.DoesNotExistOnWMException
+    message = "Entry does not exist: 0:01"
+    wma.id = "0:01"
+    wma.subarchitecture = "planner.sa"
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:57)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:532)
+	at java.lang.Class.newInstance0(Class.java:372)
+	at java.lang.Class.newInstance(Class.java:325)
+	at IceInternal.BasicStream$DynamicUserExceptionFactory.createAndThrow(BasicStream.java:2142)
+	at IceInternal.BasicStream.throwException(BasicStream.java:1564)
+	at IceInternal.Outgoing.throwUserException(Outgoing.java:443)
+	at cast.interfaces._WorkingMemoryDelM.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getBaseMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at castutils.experimentation.WMLogger$LoggingChangeReceiver.workingMemoryChanged(WMLogger.java:116)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.forwardToSubclass(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.runQueue(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.run(Unknown Source)
+	at java.lang.Thread.run(Thread.java:679)
+]]></log4j:throwable>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019824123" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019824136" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342019824992" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[received task update]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.cast-state" timestamp="1342019825285" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Object place_4__b fails test: (forall (?p - place) (and (or (not (= (placestatus place_4__b) placeholder)) (exists (?c - category) (defined (leads_to_room place_4__b ?c)))) (or (forall (?p2 - place) (= place_4__b ?p2)) (exists (?p2 - place) (or (connected place_4__b ?p2) (connected ?p2 place_4__b))))))]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019825588" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019825589" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019825590" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019825632" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019825632" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019825632" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019826421" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.cast-state" timestamp="1342019827236" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Object place_4__b fails test: (forall (?p - place) (and (or (not (= (placestatus place_4__b) placeholder)) (exists (?c - category) (defined (leads_to_room place_4__b ?c)))) (or (forall (?p2 - place) (= place_4__b ?p2)) (exists (?p2 - place) (or (connected place_4__b ?p2) (connected ?p2 place_4__b))))))]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019828006" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019828006" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019828007" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019828853" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Preconditions of (move_direct robot_0__c place_2__b place_1__b place_0__b) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019828987" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Preconditions of (move_direct robot_0__c place_2__b place_1__b place_0__b) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019828987" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Planning was triggered for task 1.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342019833142" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[First action: 4: move robot_0__c place_2__b == move 0:C@spatial.sa 2:B@spatial.sa]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019833177" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019833178" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019833182" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019833221" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019833221" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342019833221" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/3: 39]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342019833426" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019834902" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Begin executing command]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019835907" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019838907" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019841997" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019845052" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342019846271" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_explored_place_hypothesis_2)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019846470" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Robot stopped]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="categorical.sa.categorical.dataprovider" timestamp="1342019848035" level="WARN" thread="0x7facd2183700">
+<log4j:message><![CDATA[caught CASTException in outputTarget(): cast::ConsistencyException]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019848105" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019849357" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019849754" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019851062" level="INFO" thread="0x7facf0acd700">
+<log4j:message><![CDATA[Refreshing node hypotheses]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019851171" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019853175" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019853176" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342019853495" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[received task update]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.cast-state" timestamp="1342019853655" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Object place_5__b fails test: (forall (?p - place) (and (or (not (= (placestatus place_5__b) placeholder)) (exists (?c - category) (defined (leads_to_room place_5__b ?c)))) (or (forall (?p2 - place) (= place_5__b ?p2)) (exists (?p2 - place) (or (connected place_5__b ?p2) (connected ?p2 place_5__b))))))]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019854143" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019854144" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019854145" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/3]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019854175" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019854337" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019854337" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019854337" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/3]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.cast-state" timestamp="1342019855448" level="WARN" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Object place_6__b fails test: (forall (?p - place) (and (or (not (= (placestatus place_6__b) placeholder)) (exists (?c - category) (defined (leads_to_room place_6__b ?c)))) (or (forall (?p2 - place) (= place_6__b ?p2)) (exists (?p2 - place) (or (connected place_6__b ?p2) (connected ?p2 place_6__b))))))]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019856270" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019856270" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019856270" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/3]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019857298" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Preconditions of (__commit-room_from_placeholder-0 robot_0__c place_2__b room1 meetingroom) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019857371" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Preconditions of (create_cones_in_room robot_0__c magazine room1 place_2__b) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019857372" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Planning was triggered for task 1.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342019863514" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[First action: 3: move robot_0__c place_5__b == move 0:C@spatial.sa 5:B@spatial.sa]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019863542" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019863542" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019863543" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/3]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019863607" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019863607" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342019863607" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/9: 64]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342019863755" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019865348" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Begin executing command]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019866189" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019869282" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342019871223" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_explored_place_hypothesis_5)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019871308" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Robot stopped]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019872340" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019875408" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019876254" level="INFO" thread="0x7facf0acd700">
+<log4j:message><![CDATA[Refreshing node hypotheses]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="WMLogger.execution.slice.Action" timestamp="1342019877630" level="WARN" thread="wmlogger-receiver">
+<log4j:message><![CDATA[CASTException caught: ]]></log4j:message>
+<log4j:throwable><![CDATA[cast.DoesNotExistOnWMException
+    message = "Entry does not exist: 2:01"
+    wma.id = "2:01"
+    wma.subarchitecture = "planner.sa"
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:57)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:532)
+	at java.lang.Class.newInstance0(Class.java:372)
+	at java.lang.Class.newInstance(Class.java:325)
+	at IceInternal.BasicStream$DynamicUserExceptionFactory.createAndThrow(BasicStream.java:2142)
+	at IceInternal.BasicStream.throwException(BasicStream.java:1564)
+	at IceInternal.Outgoing.throwUserException(Outgoing.java:443)
+	at cast.interfaces._WorkingMemoryDelM.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getBaseMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at castutils.experimentation.WMLogger$LoggingChangeReceiver.workingMemoryChanged(WMLogger.java:116)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.forwardToSubclass(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.runQueue(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.run(Unknown Source)
+	at java.lang.Thread.run(Thread.java:679)
+]]></log4j:throwable>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019877898" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019877899" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342019878096" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[received task update]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019878456" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019879488" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019879489" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019879489" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/9]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019879797" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Preconditions of (move_direct robot_0__c place_6__b place_5__b place_2__b) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019879909" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Preconditions of (move_direct robot_0__c place_6__b place_5__b place_2__b) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019879911" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Planning was triggered for task 1.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342019887183" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[First action: 3: move robot_0__c place_6__b == move 0:C@spatial.sa 6:B@spatial.sa]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019887310" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019887310" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342019887310" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/8: 7820]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019887336" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019887336" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342019887400" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019888664" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Begin executing command]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019890027" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019893029" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019896084" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342019898690" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_explored_place_hypothesis_6)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019898878" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Robot stopped]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019899086" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019899173" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019900079" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019902254" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019903601" level="INFO" thread="0x7facf0acd700">
+<log4j:message><![CDATA[Refreshing node hypotheses]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="WMLogger.execution.slice.Action" timestamp="1342019905307" level="WARN" thread="wmlogger-receiver">
+<log4j:message><![CDATA[CASTException caught: ]]></log4j:message>
+<log4j:throwable><![CDATA[cast.DoesNotExistOnWMException
+    message = "Entry does not exist: 3:01"
+    wma.id = "3:01"
+    wma.subarchitecture = "planner.sa"
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:57)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:532)
+	at java.lang.Class.newInstance0(Class.java:372)
+	at java.lang.Class.newInstance(Class.java:325)
+	at IceInternal.BasicStream$DynamicUserExceptionFactory.createAndThrow(BasicStream.java:2142)
+	at IceInternal.BasicStream.throwException(BasicStream.java:1564)
+	at IceInternal.Outgoing.throwUserException(Outgoing.java:443)
+	at cast.interfaces._WorkingMemoryDelM.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getBaseMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at castutils.experimentation.WMLogger$LoggingChangeReceiver.workingMemoryChanged(WMLogger.java:116)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.forwardToSubclass(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.runQueue(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.run(Unknown Source)
+	at java.lang.Thread.run(Thread.java:679)
+]]></log4j:throwable>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019905353" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019905429" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019905430" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342019906646" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[received task update]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019907485" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019907492" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019907492" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/8]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019907688" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Plan is still valid.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019907689" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[no actions are executing, reissuing plan]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342019907755" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[First action: 4: move_direct robot_0__c place_2__b == move_direct 0:C@spatial.sa 2:B@spatial.sa]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019907788" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019907789" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019907789" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/8]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019907831" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019907832" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342019907832" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/7: 42]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342019907963" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019910172" level="ERROR" thread="0x7facde19b700">
+<log4j:message><![CDATA[Heading directly for the goal as it is reachable
+]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019910173" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Begin executing command]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019912157" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019915231" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019919053" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Task finished]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019919066" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Task finished]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019919104" level="INFO" thread="0x7facf0acd700">
+<log4j:message><![CDATA[Refreshing node hypotheses]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019920254" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019920880" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019920880" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342019921039" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[received task update]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019921040" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019921044" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019921045" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.cast-state" timestamp="1342019921387" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Object place_7__b fails test: (forall (?p - place) (and (or (not (= (placestatus place_7__b) placeholder)) (exists (?c - category) (defined (leads_to_room place_7__b ?c)))) (or (forall (?p2 - place) (= place_7__b ?p2)) (exists (?p2 - place) (or (connected place_7__b ?p2) (connected ?p2 place_7__b))))))]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019922061" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019922061" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019922061" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/7]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019922346" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019922346" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019922346" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/7]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019923294" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019923454" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019923532" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019923532" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.cast-state" timestamp="1342019924082" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Object place_7__b fails test: (forall (?p - place) (and (or (not (= (placestatus place_7__b) placeholder)) (exists (?c - category) (defined (leads_to_room place_7__b ?c)))) (or (forall (?p2 - place) (= place_7__b ?p2)) (exists (?p2 - place) (or (connected place_7__b ?p2) (connected ?p2 place_7__b))))))]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019924989" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019924990" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019924990" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/7]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019925349" level="WARN" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019925358" level="WARN" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019925359" level="WARN" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019926081" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Preconditions of (move_direct robot_0__c place_4__b place_0__b place_1__b) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019926158" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Preconditions of (move_direct robot_0__c place_4__b place_0__b place_1__b) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019926160" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Planning was triggered for task 1.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.cast-state" timestamp="1342019929541" level="WARN" thread="0x7f707bc32700">
+<log4j:message><![CDATA[place_4__b seems to be a compiled belief name, but not in name/belief dict!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.cast-state" timestamp="1342019929541" level="WARN" thread="0x7f707bc32700">
+<log4j:message><![CDATA[place_4__b seems to be a compiled belief name, but not in name/belief dict!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.cast-state" timestamp="1342019929542" level="WARN" thread="0x7f707bc32700">
+<log4j:message><![CDATA[place_4__b seems to be a compiled belief name, but not in name/belief dict!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.cast-state" timestamp="1342019929544" level="WARN" thread="0x7f707bc32700">
+<log4j:message><![CDATA[place_4__b seems to be a compiled belief name, but not in name/belief dict!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.cast-state" timestamp="1342019929550" level="WARN" thread="0x7f707bc32700">
+<log4j:message><![CDATA[place_4__b seems to be a compiled belief name, but not in name/belief dict!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.cast-state" timestamp="1342019929550" level="WARN" thread="0x7f707bc32700">
+<log4j:message><![CDATA[place_4__b seems to be a compiled belief name, but not in name/belief dict!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342019930007" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[First action: 3: move_direct robot_0__c place_3__b == move_direct 0:C@spatial.sa 3:B@spatial.sa]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019930024" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019930025" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019930026" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/7]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019930146" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019930161" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342019930161" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6: 135]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342019930203" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019931920" level="ERROR" thread="0x7facde19b700">
+<log4j:message><![CDATA[Heading directly for the goal as it is reachable
+]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019931920" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Begin executing command]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019933495" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019938718" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342019938800" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_explored_place_hypothesis_3)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019938864" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Robot stopped]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019939111" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019940046" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019941744" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019943671" level="INFO" thread="0x7facf0acd700">
+<log4j:message><![CDATA[Refreshing node hypotheses]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019949108" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019949458" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019949459" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342019950204" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[received task update]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019950205" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019950223" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019950223" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019951163" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019951168" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019951168" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019951324" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Plan is still valid.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019951324" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[no actions are executing, reissuing plan]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342019951375" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[First action: 4: move robot_0__c place_0__b == move 0:C@spatial.sa 0:B@spatial.sa]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019951402" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019951403" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019951403" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/6]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019951452" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019951452" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342019951452" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/5: 48]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342019951539" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019952124" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019953087" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Begin executing command]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019955176" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019958244" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019961314" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019961357" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Task finished]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019961422" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Task finished]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019961495" level="INFO" thread="0x7facf0acd700">
+<log4j:message><![CDATA[Refreshing node hypotheses]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019963239" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019963239" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342019963591" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[received task update]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019963592" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019963597" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019963597" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019964070" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019964070" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019964071" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/5]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019964277" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Plan is still valid.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019964277" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[no actions are executing, reissuing plan]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342019964368" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[First action: 5: move_direct robot_0__c place_7__b == move_direct 0:C@spatial.sa 7:B@spatial.sa]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019964404" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019964405" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019964405" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/5]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019964454" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019964455" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342019964455" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/4: 50]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342019964519" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019965925" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Begin executing command]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019966508" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019969544" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019972630" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342019974871" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>I_explored_place_hypothesis_7)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019975064" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Robot stopped]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019975687" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019978754" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019979213" level="INFO" thread="0x7facf0acd700">
+<log4j:message><![CDATA[Refreshing node hypotheses]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019980396" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019981052" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019985638" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019986103" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019986103" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342019986402" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[received task update]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019986406" level="WARN" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019986408" level="WARN" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342019986408" level="WARN" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019987005" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019987005" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019987006" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/4]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019987146" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Plan is still valid.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342019987146" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[no actions are executing, reissuing plan]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342019987230" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[First action: 6: move robot_0__c place_1__b == move 0:C@spatial.sa 1:B@spatial.sa]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019987266" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019987267" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019987267" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/4]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019987311" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342019987312" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342019987312" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/3: 45]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342019987414" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.GoToPlace]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019988687" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019988773" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Begin executing command]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019991756" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342019993965" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>Ah_ha._Looks_like_there_is_a_door_here)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342019993973" level="INFO" thread="0x7facf0acd700">
+<log4j:message><![CDATA[Refreshing node hypotheses]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019994864" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342019997885" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020000645" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Task finished]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020000652" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Task finished]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020000674" level="INFO" thread="0x7facf0acd700">
+<log4j:message><![CDATA[Refreshing node hypotheses]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342020000950" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="WMLogger.execution.slice.Action" timestamp="1342020003767" level="WARN" thread="wmlogger-receiver">
+<log4j:message><![CDATA[CASTException caught: ]]></log4j:message>
+<log4j:throwable><![CDATA[cast.DoesNotExistOnWMException
+    message = "Entry does not exist: 8:01"
+    wma.id = "8:01"
+    wma.subarchitecture = "planner.sa"
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:57)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:532)
+	at java.lang.Class.newInstance0(Class.java:372)
+	at java.lang.Class.newInstance(Class.java:325)
+	at IceInternal.BasicStream$DynamicUserExceptionFactory.createAndThrow(BasicStream.java:2142)
+	at IceInternal.BasicStream.throwException(BasicStream.java:1564)
+	at IceInternal.Outgoing.throwUserException(Outgoing.java:443)
+	at cast.interfaces._WorkingMemoryDelM.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.getWorkingMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getBaseMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent.getMemoryEntry(Unknown Source)
+	at castutils.experimentation.WMLogger$LoggingChangeReceiver.workingMemoryChanged(WMLogger.java:116)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.forwardToSubclass(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.runQueue(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.run(Unknown Source)
+	at java.lang.Thread.run(Thread.java:679)
+]]></log4j:throwable>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020003843" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020003844" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342020004024" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[received task update]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020004028" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020004031" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020004032" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020004662" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020004662" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020004662" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/3]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342020004796" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Preconditions of (search_for_object_in_room robot_0__c magazine room_0__a1 place_1__b visualobject2) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342020004839" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Preconditions of (create_cones_in_room robot_0__c magazine room_0__a1 place_1__b) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342020004850" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Planning was triggered for task 1.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020007875" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[First action: 3: create_cones_in_room robot_0__c magazine room_0__a1 == create_cones_in_room 0:C@spatial.sa 'magazine' 0:A1@coma]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020007907" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020007907" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020007907" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/3]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020007961" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020007961" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342020007961" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/2: 53]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342020008209" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.CreateRelationalConesForModel]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342020008217" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>creating_view_cones_for_magazine_in_room_0)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020022156" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020025226" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020026117" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - interval: 3.145187 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020026120" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 3.889947 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020026260" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 4.033046 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020026354" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 4.127234 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020026504" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 4.277520 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020028669" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020028671" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342020029108" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[received task update]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020029114" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020029117" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020029118" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020030055" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020030056" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020030056" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/2]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342020030188" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Preconditions of (search_for_object_in_room robot_0__c magazine room_0__a1 place_1__b visualobject2) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342020030198" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Preconditions of (search_for_object_in_room robot_0__c magazine room_0__a1 place_1__b visualobject2) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342020030199" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Planning was triggered for task 1.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020034882" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[starting dt task]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020037363" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020037365" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020037365" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/2]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342020037365" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Starting new DT task with id 0]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342020037698" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Connected to DTPServer PlannerDTServer]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342020044187" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[0: received new action from DT]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020044586" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[First action: 1: process_conegroup robot_0__c conegroup_1__l == process_conegroup 0:C@spatial.sa 1:L@binder]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020044665" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020044665" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020044666" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/2]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020044690" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020044690" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342020044690" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1: 24]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342020044860" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>searching_in_a_view_cone)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.exe-spatial" timestamp="1342020045686" level="INFO" thread="exe-spatial-receiver">
+<log4j:message><![CDATA[object from WM class: class execution.slice.actions.ProcessConeGroupAction]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020045743" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 2.143206 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020045920" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 1.976042 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020046902" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 2.957198 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020046984" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 3.038660 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020047132" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 3.187294 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020048913" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Begin executing command]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342020051716" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342020054743" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020055264" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Task finished]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020055539" level="INFO" thread="0x7facde19b700">
+<log4j:message><![CDATA[Task finished]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020055703" level="INFO" thread="0x7facf0acd700">
+<log4j:message><![CDATA[Refreshing node hypotheses]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342020063420" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>looking_for_object_magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342020064669" level="INFO" thread="blobdetector-receiver">
+<log4j:message><![CDATA[is [ColorRGB 255,0,0] equal to [ColorRGB 255,0,0]?]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="vision.sa.blobdetector" timestamp="1342020064670" level="INFO" thread="blobdetector-receiver">
+<log4j:message><![CDATA[  YES, found an object]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020065078" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342020065178" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>That_looks_like_magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342020065263" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020066173" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342020068337" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342020068484" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>looking_for_object_magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342020069331" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>There_is_no_magazine_here)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342020071359" level="INFO" thread="0x7facd4988700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342020075531" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>looking_for_object_magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342020076471" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d1:dvp}(c-goal ^ <CannedText>There_is_no_magazine_here)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="conceptual.sa.conceptual.observer" timestamp="1342020077113" level="INFO" thread="0x7face82bc700">
+<log4j:message><![CDATA[Updating world state!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020082703" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020082704" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342020082983" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[received task update]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020082991" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020082998" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020083005" level="WARN" thread="0x7f707df06700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020084283" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[1: delivered observation (observed-entity-exists visualobject2 true)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020084290" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[1: delivered observation (observed-label visualobject2 magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020084291" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[1: delivered observation (observed-relation visualobject2 in)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020084291" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[1: delivered observation (observed-related-to visualobject2 room_0__a1)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020084291" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[1: delivered observation (observed-entity-exists visualobject2 true)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020084291" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[1: delivered observation (observed-label visualobject2 magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020084292" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[1: delivered observation (observed-relation visualobject2 in)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020084292" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[1: delivered observation (observed-related-to visualobject2 room_0__a1)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020084292" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[1: delivered observation (observed-entity-exists visualobject2 true)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020084292" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[1: delivered observation (observed-label visualobject2 magazine)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020084292" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[1: delivered observation (observed-relation visualobject2 in)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020084293" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[1: delivered observation (observed-related-to visualobject2 room_0__a1)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020084321" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020084323" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020084323" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342020085449" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[0: received new action from DT]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020085450" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Goal action recieved. DT task completed]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020085451" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[dt planning cancelled.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020085464" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020085474" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020085475" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342020085681" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[cancelled DT task 0 for task 1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020085699" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020085701" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020085702" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342020085962" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Preconditions of (__commit-category-room_0__a1-meetingroom robot_0__c) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342020085971" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Plan is still valid.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020085985" level="INFO" thread="0x7f707df06700">
+<log4j:message><![CDATA[Waiting for effects of 3: search_for_object_in_room robot_0__c magazine room_0__a1 to appear]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020086013" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020086013" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020086014" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020088090" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020088096" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020088096" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342020089288" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Preconditions of (__commit-category-room_0__a1-meetingroom robot_0__c) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342020089306" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Plan is still valid.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020089307" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Waiting for effects of 3: search_for_object_in_room robot_0__c magazine room_0__a1 to appear]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020089327" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020089328" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020089328" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020089495" level="INFO" thread="0x7f707bc32700">
+<log4j:message><![CDATA[Wait for 3: search_for_object_in_room robot_0__c magazine room_0__a1 timed out. Plan failed.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020089535" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020089536" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = PENDING]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020089536" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/PENDING/INPROGRESS/1/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342020092605" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[received task update]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020092611" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020092625" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.belief-preprocessor" timestamp="1342020092631" level="WARN" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Pointer to belief 4:B cannot be resolved!]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer" timestamp="1342020094107" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Retry planning after failure]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020094146" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020094147" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = INPROGRESS]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020094147" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/INPROGRESS/INPROGRESS/1/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342020094252" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Preconditions of (__commit-category-room_0__a1-meetingroom robot_0__c) are not satisfied, triggering replanning.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.planner" timestamp="1342020094253" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Planning was triggered for task 1.]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="PlannerPythonServer.plan-control" timestamp="1342020103623" level="INFO" thread="0x7f707cf04700">
+<log4j:message><![CDATA[Plan is empty]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020103678" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020103678" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.PlanningTask" timestamp="1342020103678" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[1/SUCCEEDED/INPROGRESS/0/(exists (?o - visualobject) (and (= (label ?o) magazine) (kval '0:C' (related-to ?o))))/1: 9531]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020103705" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[[WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.info.PlanningTask" timestamp="1342020103706" level="INFO" thread="plannerstopwatch-receiver">
+<log4j:message><![CDATA[STATUS = SUCCEEDED]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="StopWatch.tictoc.SerialPlanstExecuter" timestamp="1342020103806" level="INFO" thread="Thread-28">
+<log4j:message><![CDATA[execution complete: [WMA id = 0:y : sa = planner.sa]: 292256]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.cplan" timestamp="1342020104725" level="INFO" thread="cplan-runComponent">
+<log4j:message><![CDATA[adding the canned text LF to the WM: @{d:dvp}(<CannedText>I_finished_my_task_successfully.)]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020106993" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020107595" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020119193" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - interval: 2.688039 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020119193" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 2.842773 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020119274" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 2.931171 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020119437" level="WARN" thread="0x7facde19b700">
+<log4j:message><![CDATA[WARNING: SpatialControl::updateCtrl - SLAM pose age: 3.095871 s]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020145336" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020145925" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020179368" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020182489" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020217728" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020221791" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020256868" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020263306" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020296886" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020303332" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020337895" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saving grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="spatial.sa.spatial.control" timestamp="1342020360023" level="INFO" thread="0x7faccc978700">
+<log4j:message><![CDATA[Saved grid map]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="robot.server" timestamp="1342020370756" level="ERROR" thread="0x7face19a2700">
+<log4j:message><![CDATA[***************************************************************]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="robot.server" timestamp="1342020371628" level="ERROR" thread="0x7face19a2700">
+<log4j:message><![CDATA[***************************************************************]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="robot.server" timestamp="1342020371628" level="ERROR" thread="0x7face19a2700">
+<log4j:message><![CDATA[Aborting after catching unknown exception from runComponent()]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="robot.server" timestamp="1342020371628" level="ERROR" thread="0x7face19a2700">
+<log4j:message><![CDATA[***************************************************************]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="robot.server" timestamp="1342020372777" level="ERROR" thread="0x7face19a2700">
+<log4j:message><![CDATA[***************************************************************]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.poplanmon" timestamp="1342020614238" level="ERROR" thread="poplanmon-receiver">
+<log4j:message><![CDATA[*********************************************************]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.poplanmon" timestamp="1342020614239" level="ERROR" thread="poplanmon-receiver">
+<log4j:message><![CDATA[*********************************************************]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.poplanmon" timestamp="1342020614240" level="ERROR" thread="poplanmon-receiver">
+<log4j:message><![CDATA[Something unexpected thrown by change receiver, exiting]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.poplanmon" timestamp="1342020614241" level="ERROR" thread="poplanmon-receiver">
+<log4j:message><![CDATA[Change event: [WMC Planner ::autogen::Planner::PlanningTask [::Ice::Object, ::autogen::Planner::PlanningTask] [WMA id = 0:y : sa = planner.sa] OVERWRITE]]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.poplanmon" timestamp="1342020614241" level="ERROR" thread="poplanmon-receiver">
+<log4j:message><![CDATA[]]></log4j:message>
+<log4j:throwable><![CDATA[Ice.UnknownLocalException
+    unknown = "Ice::ConnectionRefusedException
+               Ice.ConnectionRefusedException
+                   error = 0
+               	at IceInternal.ConnectRequestHandler.getConnection(ConnectRequestHandler.java:240)
+               	at IceInternal.ConnectRequestHandler.sendRequest(ConnectRequestHandler.java:138)
+               	at IceInternal.Outgoing.invoke(Outgoing.java:66)
+               	at cast.interfaces._TimeServerDelM.getCASTTime(Unknown Source)
+               	at cast.interfaces.TimeServerPrxHelper.getCASTTime(Unknown Source)
+               	at cast.interfaces.TimeServerPrxHelper.getCASTTime(Unknown Source)
+               	at cast.core.CASTComponent.getCASTTime(Unknown Source)
+               	at cast.architecture.SubarchitectureWorkingMemory.signalChange(Unknown Source)
+               	at cast.architecture.SubarchitectureWorkingMemory.overwriteWorkingMemory(Unknown Source)
+               	at cast.interfaces._WorkingMemoryTie.overwriteWorkingMemory(Unknown Source)
+               	at cast.interfaces._WorkingMemoryDisp.___overwriteWorkingMemory(Unknown Source)
+               	at cast.interfaces._WorkingMemoryDisp.__dispatch(Unknown Source)
+               	at IceInternal.Incoming.invoke(Incoming.java:159)
+               	at Ice.ConnectionI.invokeAll(ConnectionI.java:2357)
+               	at Ice.ConnectionI.dispatch(ConnectionI.java:1208)
+               	at Ice.ConnectionI.message(ConnectionI.java:1163)
+               	at IceInternal.ThreadPool.run(ThreadPool.java:302)
+               	at IceInternal.ThreadPool.access$300(ThreadPool.java:12)
+               	at IceInternal.ThreadPool$EventHandlerThread.run(ThreadPool.java:643)
+               	at java.lang.Thread.run(Thread.java:679)
+               Caused by: java.net.ConnectException: Connection refused
+               	at sun.nio.ch.SocketChannelImpl.checkConnect(Native Method)
+               	at sun.nio.ch.SocketChannelImpl.finishConnect(SocketChannelImpl.java:592)
+               	at IceInternal.Network.doFinishConnect(Network.java:325)
+               	at IceInternal.TcpTransceiver.initialize(TcpTransceiver.java:33)
+               	at Ice.ConnectionI.initialize(ConnectionI.java:1831)
+               	at Ice.ConnectionI.message(ConnectionI.java:1038)
+               	... 4 more
+               "
+	at IceInternal.Outgoing.invoke(Outgoing.java:147)
+	at cast.interfaces._WorkingMemoryDelM.overwriteWorkingMemory(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.overwriteWorkingMemory(Unknown Source)
+	at cast.interfaces.WorkingMemoryPrxHelper.overwriteWorkingMemory(Unknown Source)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(Unknown Source)
+	at cast.architecture.WorkingMemoryWriterComponent.overwriteWorkingMemory(Unknown Source)
+	at de.dfki.lt.tr.cast.dialogue.POPlanMonitor.overwritePEVTaskStatus(POPlanMonitor.java:537)
+	at de.dfki.lt.tr.cast.dialogue.POPlanMonitor.reportFinishedHistory(POPlanMonitor.java:501)
+	at de.dfki.lt.tr.cast.dialogue.POPlanMonitor.processOverwrittenPlanningTask(POPlanMonitor.java:351)
+	at de.dfki.lt.tr.cast.dialogue.POPlanMonitor.access$300(POPlanMonitor.java:49)
+	at de.dfki.lt.tr.cast.dialogue.POPlanMonitor$4.workingMemoryChanged(POPlanMonitor.java:163)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.forwardToSubclass(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.runQueue(Unknown Source)
+	at cast.architecture.WorkingMemoryReaderComponent$WorkingMemoryChangeThread.run(Unknown Source)
+	at java.lang.Thread.run(Thread.java:679)
+]]></log4j:throwable>
+</log4j:event>
+
+<log4j:event logger="dialogue.poplanmon" timestamp="1342020614243" level="ERROR" thread="poplanmon-receiver">
+<log4j:message><![CDATA[*********************************************************]]></log4j:message>
+</log4j:event>
+
+<log4j:event logger="dialogue.poplanmon" timestamp="1342020614243" level="ERROR" thread="poplanmon-receiver">
+<log4j:message><![CDATA[*********************************************************]]></log4j:message>
+</log4j:event>
+
