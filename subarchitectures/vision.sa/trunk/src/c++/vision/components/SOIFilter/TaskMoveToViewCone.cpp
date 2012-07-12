@@ -88,15 +88,18 @@ void WmTaskExecutor_MoveToViewCone::lookAround(WmEvent *pEvent)
   }
   debug("look_ar: GOT A LookAroundCommand");
 
-  long count = 5;
+  // The way that the handling of LookAroundCommand results is currently
+  // implemented it doesn't make sense to create more than 1 viewcone per
+  // request.
+  // long count = 5;
   long made = 0;
-  while (count > 0) {
+  while (made < 1) {
     const int panDegMax = 60;
-    const int deltaMin = 10;
+    const int deltaMin = 20;
     double pan  = (rand() % panDegMax - panDegMax / 2) * M_PI / 180;
     //double tilt = (rand() % 20 - 10) / 100.0 * (M_PI);
     if (fabs(pSoiFilter->m_RobotPose.pan - pan) * 180 / M_PI < deltaMin) {
-      if (made > 0) --count;
+      //if (made > 0) --count;
       continue;
     }
 
@@ -110,7 +113,7 @@ void WmTaskExecutor_MoveToViewCone::lookAround(WmEvent *pEvent)
       }
     }
     if (retry) {
-      if (made > 0) --count;
+      //if (made > 0) --count;
       continue;
     }
 
@@ -126,7 +129,7 @@ void WmTaskExecutor_MoveToViewCone::lookAround(WmEvent *pEvent)
     cmd.pcmd->viewCones.push_back(pCurVc);
     debug("look_ar: ViewCone at pan %.2lf", pan * 180 / M_PI);
     ++made;
-    --count;
+    //--count;
   }
   cmd.succeed();
 }
