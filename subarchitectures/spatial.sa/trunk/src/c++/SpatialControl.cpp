@@ -1823,7 +1823,7 @@ void SpatialControl::deletePersonData(const cdl::WorkingMemoryChange &objID) {
  */
 void SpatialControl::newMapUpdateStatusChange(
     const cdl::WorkingMemoryChange &objID) {
-  log("Received new VisualExplorationCommand");
+  log("Received new MapUpdateStatusChange");
   try {
     NavData::MapUpdateStatusChangePtr obj = getMemoryEntry<
         NavData::MapUpdateStatusChange> (objID.address);
@@ -2125,14 +2125,33 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom) {
       debug("SpatialControl::updateCtrl - interval: %f s", ((double) diff) * 1e-6);
     }
 
-    diff = (newTime.s - m_lastSLAMPoseTime.s) * 1000000l + (newTime.us
-        - m_lastSLAMPoseTime.us);
-    if (diff > 1800000 && m_monitorSlamAge) {
-      wrn("WARNING: SpatialControl::updateCtrl - SLAM pose age: %f s",
-          ((double) diff) * 1e-6);
-    } else {
-      debug("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double) diff)
-          * 1e-6);
+    if (m_monitorSlamAge) {
+      double SLAMOdometryDifference = 
+	(m_SlamRobotPose.getX()-m_CurrPose.getX()) *
+	(m_SlamRobotPose.getX()-m_CurrPose.getX()) +
+	(m_SlamRobotPose.getY()-m_CurrPose.getY()) *
+	(m_SlamRobotPose.getY()-m_CurrPose.getY());
+      double SLAMOdometryAngle =
+	m_SlamRobotPose.getTheta() - m_CurrPose.getTheta();
+      if (SLAMOdometryAngle > M_PI) SLAMOdometryAngle -= 2*M_PI;
+      if (SLAMOdometryAngle < -M_PI) SLAMOdometryAngle += 2*M_PI;
+
+
+      // If robot has moved far enough since last SLAM pose,
+      // and it's old, send a warning
+      if (SLAMOdometryDifference > 0.01 ||
+	  SLAMOdometryAngle > 0.5 ||
+	  SLAMOdometryAngle < -0.5) {
+	diff = (newTime.s - m_lastSLAMPoseTime.s) * 1000000l + (newTime.us
+	    - m_lastSLAMPoseTime.us);
+	if (diff > 1800000) {
+	  wrn("WARNING: SpatialControl::updateCtrl - SLAM pose age: %f s",
+	      ((double) diff) * 1e-6);
+	} else {
+	  debug("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double) diff)
+	      * 1e-6);
+	}
+      }
     }
   }
 
