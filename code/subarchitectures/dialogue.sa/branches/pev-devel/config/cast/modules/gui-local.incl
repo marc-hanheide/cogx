@@ -1,1 +1,5 @@
-JAVA MG	gui-local    de.dfki.lt.tr.cast.dialogue.DialogueGUI --log true
+VARDEFAULT Dialogue_IncludeGui=1
+
+IFNEQ(%(Dialogue_IncludeGui), 0)
+   JAVA MG	gui-local    de.dfki.lt.tr.cast.dialogue.DialogueGUI --log true
+ENDIF
