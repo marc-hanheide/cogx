@@ -111,9 +111,9 @@ public class PatrolPlaceGenerator extends GotoPlaceGenerator {
 	protected synchronized void reactivateMotive(WorkingMemoryChange _wmc,
 			PatrolMotive motive) {
 		// flag that we have no active goal
-		log("reactive called after a goal has been signalled as achieved. Check if it is the one we are responsible for.");
+		log("reactivate called after a goal has been signalled as achieved. Check if it is the one we are responsible for.");
 		if (_wmc.address.equals(currentWMA)) {
-			log("reactive called after a goal has been achieved. Signalling that we are free to issue the next one.");
+			log("reactivate called after a goal has been achieved. Signalling that we are free to issue the next one.");
 			currentWMA = null;
 			//sleepComponent(1000);
 			// trigger new one
@@ -126,6 +126,7 @@ public class PatrolPlaceGenerator extends GotoPlaceGenerator {
 	protected void runComponent() {
 		// submit the first one if possible (very unlikely, but just to get
 		// things properly started)
+    println("start the generation of patrol motives");
 		manageMotive();
 		super.runComponent();
 	}
