@@ -5,6 +5,10 @@ package vision.execution.george;
 
 import java.util.Map;
 
+import motivation.slice.LookAtViewConeMotive;
+import motivation.slice.Motive;
+import motivation.slice.MotiveStatus;
+
 import ptz.PTZInterface;
 import ptz.PTZInterfacePrx;
 import ptz.PTZReading;
@@ -27,6 +31,7 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
@@ -71,6 +76,10 @@ public class VisionActionInterface extends
 	private boolean m_fakeRobotPose;
 	// is the arm resting at system startup?
 	private boolean m_armIsRestingInitially;
+	protected Class<? extends Motive> m_activeMotive;
+
+	private final static Class<? extends Motive> DELAY_CLASS = LookAtViewConeMotive.class;
+	private final static int LOOK_AROUND_DELAY_MS = 3000;
 
 	public VisionActionInterface() {
 		super(MergedBelief.class);
@@ -123,6 +132,16 @@ public class VisionActionInterface extends
 		@Override
 		protected TriBool executionResult(MoveToViewConeCommand _cmd) {
 
+			if (((VisionActionInterface) getComponent()).m_activeMotive == DELAY_CLASS) {
+				try {
+					log("Sleeping to delay looking around for this many ms: "
+							+ LOOK_AROUND_DELAY_MS);
+					Thread.sleep(LOOK_AROUND_DELAY_MS);
+				} catch (InterruptedException e) {
+					getComponent().logException(e);
+				}
+			}
+
 			try {
 				if (_cmd.status == VisionCommandStatus.VCSUCCEEDED) {
 
@@ -132,7 +151,8 @@ public class VisionActionInterface extends
 
 					// record that we have looked at it
 					((VisionActionInterface) getComponent()).addFeature(
-							getAction().beliefAddress, LookAroundMotiveGenerator.LOOKED_AT, true);
+							getAction().beliefAddress,
+							LookAroundMotiveGenerator.LOOKED_AT, true);
 
 					return TriBool.TRITRUE;
 				} else {
@@ -436,6 +456,21 @@ public class VisionActionInterface extends
 						boolean success = createInitialView(_wmc.address);
 						if (success) {
 							removeChangeFilter(this);
+						}
+					}
+				});
+
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(Motive.class,
+				WorkingMemoryOperation.OVERWRITE),
+				new WorkingMemoryChangeReceiver() {
+
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+						Motive mtv = getMemoryEntry(_wmc.address, Motive.class);
+
+						if (mtv.status == MotiveStatus.ACTIVE) {
+							m_activeMotive = mtv.getClass();
 						}
 					}
 				});
