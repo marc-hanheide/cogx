@@ -42,7 +42,6 @@ import de.dfki.lt.tr.dialogue.production.PlanVerbalizationRequest;
 import de.dfki.lt.tr.dialogue.slice.produce.PEVStatusType;
 import de.dfki.lt.tr.dialogue.slice.produce.PEVTaskStatus;
 import de.dfki.lt.tr.planverb.generation.Message;
-import de.dfki.lt.tr.planverb.history.History;
 import de.dfki.lt.tr.planverb.planning.pddl.PDDLHistory;
 import eu.cogx.beliefs.slice.GroundedBelief;
 
