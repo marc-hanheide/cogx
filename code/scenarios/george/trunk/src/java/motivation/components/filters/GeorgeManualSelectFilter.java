@@ -158,8 +158,8 @@ public class GeorgeManualSelectFilter implements MotiveFilter {
 			jMotivesPanel.add(getJSliderLearnVO());
 			jMotivesPanel.add(new JLabel("Robot Non-Situated"));
 			jMotivesPanel.add(getJSliderRobotNonSituated());
-			// jMotivesPanel.add(new JLabel("Look Around"));
-			// jMotivesPanel.add(getJSliderLookAround());
+			jMotivesPanel.add(new JLabel("Look Around"));
+			jMotivesPanel.add(getJSliderLookAround());
 
 			jMotivesPanel.add(getPresetPanel());
 		}

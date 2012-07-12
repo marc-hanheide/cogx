@@ -2,14 +2,9 @@ package motivation.components.filters;
 
 import java.util.Map;
 
-import motivation.slice.AnalyzeProtoObjectMotive;
-import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
-import motivation.slice.RobotNonSituatedMotive;
-import motivation.slice.TutorInitiativeLearningMotive;
-import motivation.slice.TutorInitiativeQuestionMotive;
 import si.unilj.fri.cogx.v11n.core.DisplayClient;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
@@ -28,12 +23,13 @@ public class DriveHierarchyFilter implements MotiveFilter,
 
 	private MotiveFilterManager m_component;
 
-	private final DriveHierarchy m_driveHierarchy;
+	private final DriveHierarchy m_driveHierarchy = GeorgeDriveConfig
+			.getGeorgeDriveHierarchy();
 
 	int m_activeLevel = Integer.MAX_VALUE;
 
 	public DriveHierarchyFilter() {
-		m_driveHierarchy = new DriveHierarchy();
+
 	}
 
 	/**
@@ -109,19 +105,8 @@ public class DriveHierarchyFilter implements MotiveFilter,
 		m_display.updateActiveLevel(m_activeLevel);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void configure(Map<String, String> _config) {
-		// define priority levels, highest first
-
-		m_driveHierarchy.addPrioritySet(TutorInitiativeLearningMotive.class,
-				TutorInitiativeQuestionMotive.class);
-
-		m_driveHierarchy.addPrioritySet(AnalyzeProtoObjectMotive.class,
-				LearnObjectFeatureMotive.class);
-
-		m_driveHierarchy.addPrioritySet(RobotNonSituatedMotive.class);
-		
 		m_display.configureDisplayClient(_config);
 	}
 

@@ -16,7 +16,7 @@ public class DriveHierarchy {
 		m_driveHierarchy = new ArrayList<Set<Class<? extends Motive>>>();
 	}
 	
-	public void addPrioritySet(Class<? extends Motive>... _motiveClasses) {
+	public synchronized void addPrioritySet(Class<? extends Motive>... _motiveClasses) {
 		HashSet<Class<? extends Motive>> motiveClasses = new HashSet<Class<? extends Motive>>(
 				_motiveClasses.length);
 
@@ -27,7 +27,7 @@ public class DriveHierarchy {
 		m_driveHierarchy.add(motiveClasses);
 	}
 
-	public int getPriority(Class<? extends Motive> _motiveCls) {
+	public synchronized int getPriority(Class<? extends Motive> _motiveCls) {
 		int priority = UNKNOWN_CLASS_VALUE;
 		for (int i = 0; i < m_driveHierarchy.size(); i++) {
 			if (m_driveHierarchy.get(i).contains(_motiveCls)) {

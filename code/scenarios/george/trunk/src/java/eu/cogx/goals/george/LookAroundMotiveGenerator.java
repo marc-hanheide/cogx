@@ -14,15 +14,22 @@ import VisionData.ViewCone;
 import VisionData.VisionCommandStatus;
 import autogen.Planner.Goal;
 import cast.CASTException;
+import cast.ConsistencyException;
+import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
+import cast.SubarchitectureComponentException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import eu.cogx.beliefs.slice.MergedBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 public class LookAroundMotiveGenerator extends
@@ -36,7 +43,31 @@ public class LookAroundMotiveGenerator extends
 
 	// number of millis to wait with nothing going on before looking around.
 
-	public static final long BOREDOM_THRESHOLD = 40000;
+	public static final long BOREDOM_THRESHOLD = 20000;
+
+	public class DeleteEntry implements Runnable {
+
+		private final WorkingMemoryAddress m_toDelete;
+
+		public DeleteEntry(WorkingMemoryAddress m_toDelete) {
+			this.m_toDelete = m_toDelete;
+		}
+
+		@Override
+		public void run() {
+			try {
+				lockComponent();
+				deleteFromWorkingMemory(m_toDelete);
+			} catch (SubarchitectureComponentException e) {
+				logException(
+						"Problem when performing scheduled deletion. You can ignore this",
+						e);
+			} finally {
+				unlockComponent();
+			}
+		}
+
+	}
 
 	public class GetCones implements Runnable, WorkingMemoryChangeReceiver {
 
@@ -124,11 +155,8 @@ public class LookAroundMotiveGenerator extends
 
 	private long m_lastSystemActivity;
 
-	private boolean m_fired;
-
 	public LookAroundMotiveGenerator() {
 		super(VC_TYPE, LookAtViewConeMotive.class, MergedBelief.class);
-		m_fired = false;
 	}
 
 	@Override
@@ -169,39 +197,80 @@ public class LookAroundMotiveGenerator extends
 		log("checkForAddition(): check belief " + _newEntry.id
 				+ " for addition");
 
-		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
-				.create(MergedBelief.class, _newEntry);
-
-		CASTBeliefHistory hist = (CASTBeliefHistory) _newEntry.hist;
-		WorkingMemoryAddress coneAddr = hist.ancestors.get(0).address;
-
 		LookAtViewConeMotive result = null;
 
-		if (m_myCones.contains(coneAddr)
-				&& !belief.getContent().containsKey(LOOKED_AT)) {
+		try {
 
-			log("ViewCone  has not been looked at, so generating motive.");
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> coneBelief = CASTIndependentFormulaDistributionsBelief
+					.create(MergedBelief.class, _newEntry);
 
-			result = new LookAtViewConeMotive();
+			WorkingMemoryPointer vcPtr;
 
-			result.coneAddr = coneAddr;
+			vcPtr = BeliefUtils.recurseAncestorsForType(this, _wma,
+					CASTUtils.typeName(ViewCone.class));
 
-			result.created = getCASTTime();
-			result.updated = result.created;
-			result.maxExecutionTime = MAX_EXECUTION_TIME;
-			result.maxPlanningTime = MAX_PLANNING_TIME;
-			result.priority = MotivePriority.UNSURFACE;
-			result.referenceEntry = _wma;
-			result.status = MotiveStatus.UNSURFACED;
+			if (vcPtr != null) {
 
-			result.goal = new Goal(100f, -1,
-					"(" + LOOKED_AT + "'" + belief.getId() + "')", false);
+				WorkingMemoryAddress coneAddr = vcPtr.address;
 
-			log("goal is " + result.goal.goalString + " with inf-gain "
-					+ result.informationGain);
+				if (m_myCones.contains(coneAddr)
+						&& !coneHasBeenLookedAt(coneBelief)) {
 
+					log("ViewCone has not been looked at, so generating motive.");
+
+					// HACK planner doesn't recognise objects with no attribute
+					// set
+					BeliefUtils.addFeature(coneBelief,
+							LookAroundMotiveGenerator.LOOKED_AT, false);
+					overwriteWorkingMemory(coneBelief.getId(), "binder",
+							coneBelief.get());
+					// END HACK
+
+					result = new LookAtViewConeMotive();
+
+					result.coneAddr = coneAddr;
+
+					result.created = getCASTTime();
+					result.updated = result.created;
+					result.maxExecutionTime = MAX_EXECUTION_TIME;
+					result.maxPlanningTime = MAX_PLANNING_TIME;
+					result.priority = MotivePriority.UNSURFACE;
+					result.referenceEntry = _wma;
+					result.status = MotiveStatus.UNSURFACED;
+
+					result.goal = new Goal(100f, -1, "(" + LOOKED_AT + " '"
+							+ coneBelief.getId() + "')", false);
+
+					log("goal is " + result.goal.goalString + " with inf-gain "
+							+ result.informationGain);
+
+				}
+			} else {
+				getLogger().warn("Unable to find ViewCone belief ancsestor",
+						getLogAdditions());
+			}
+		} catch (DoesNotExistOnWMException e) {
+			logException(e);
+		} catch (UnknownSubarchitectureException e) {
+			logException(e);
+		} catch (PermissionException e) {
+			logException(e);
+		} catch (ConsistencyException e) {
+			logException(e);
 		}
+
 		return result;
+	}
+
+	private boolean coneHasBeenLookedAt(
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> coneBelief) {
+		FormulaDistribution fd = coneBelief.getContent().get(LOOKED_AT);
+		boolean lookedAt = false;
+		if (fd != null) {
+			lookedAt = fd.getDistribution().getMostLikely().getBoolean();
+		}
+		return lookedAt;
+
 	}
 
 	@Override
@@ -210,49 +279,29 @@ public class LookAroundMotiveGenerator extends
 		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(MergedBelief.class, _newEntry);
 
-		if (!belief.getContent().containsKey(LOOKED_AT)) {
+		if (!coneHasBeenLookedAt(belief)) {
 			log("ViewCone belief is still not looked at, so leaving motive unchanged.");
 			return _existingMotive;
 		} else {
 			log("ViewCone belief has been looked at, so removing motive.");
 			m_myCones.remove(_existingMotive.coneAddr);
+			scheduleForDeletion(_existingMotive.coneAddr);
 			return null;
 		}
 	}
 
-	// /**
-	// * Cleans up this component's view cones when no look around motives are
-	// * left.
-	// *
-	// * TODO parameterise based on newly added VCs.
-	// *
-	// * @author nah
-	// *
-	// */
-	// private class CleanupReceiver implements WorkingMemoryChangeReceiver {
-	// @Override
-	// public void workingMemoryChanged(WorkingMemoryChange arg0)
-	// throws CASTException {
-	//
-	// // see if there are any look around motives left
-	//
-	// if (!hasAvailableMotives()) {
-	//
-	// Iterator<WorkingMemoryAddress> i = m_myCones.iterator();
-	//
-	// while (i.hasNext()) {
-	// log("cleaning up cone");
-	// deleteFromWorkingMemory(i.next());
-	// i.remove();
-	// }
-	//
-	// removeChangeFilter(this);
-	//
-	// } else {
-	// println("some motives still available");
-	// }
-	// }
-	//
-	// }
+	@Override
+	protected void motiveWasCompleted(LookAtViewConeMotive _motive)
+			throws SubarchitectureComponentException {
+		scheduleForDeletion(_motive.coneAddr);
+	}
+
+	private void scheduleForDeletion(WorkingMemoryAddress coneAddr) {
+		// Can't delete the cone if it's the current viewcone in the robot
+		// belief!
+
+		// log("scheduling cone for deletion: " + CASTUtils.toString(coneAddr));
+		// m_executor.schedule(new DeleteEntry(coneAddr), 20, TimeUnit.SECONDS);
+	}
 
 }

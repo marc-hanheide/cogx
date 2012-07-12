@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import motivation.slice.LearnObjectFeatureMotive;
+import motivation.slice.LookAtViewConeMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.RobotNonSituatedMotive;
@@ -114,13 +115,19 @@ public class DelayFilter implements MotiveFilter {
 
 	@Override
 	public void configure(Map<String, String> arg0) {
-		int postDialogueDelay = 10000;
+		int postDialogueDelay = 15000;
 
 		m_delayMap.put(LearnObjectFeatureMotive.class, postDialogueDelay);
+
 		m_postDelayWindowMap.put(LearnObjectFeatureMotive.class,
 				postDialogueDelay);
 
 		m_delayMap.put(RobotNonSituatedMotive.class, postDialogueDelay);
+
+		// No delays here as the generator delays anyway
+		// m_delayMap.put(LookAtViewConeMotive.class, postDialogueDelay);
+		// m_postDelayWindowMap.put(LookAtViewConeMotive.class,
+		// postDialogueDelay);
 
 	}
 

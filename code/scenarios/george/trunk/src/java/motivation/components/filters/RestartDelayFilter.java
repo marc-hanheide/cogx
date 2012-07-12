@@ -2,12 +2,7 @@ package motivation.components.filters;
 
 import java.util.Map;
 
-import motivation.slice.AnalyzeProtoObjectMotive;
-import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.Motive;
-import motivation.slice.RobotNonSituatedMotive;
-import motivation.slice.TutorInitiativeLearningMotive;
-import motivation.slice.TutorInitiativeQuestionMotive;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
@@ -22,27 +17,18 @@ import castutils.castextensions.WMView.ChangeHandler;
  */
 public class RestartDelayFilter extends DelayFilter implements
 		ChangeHandler<Motive> {
-	private final DriveHierarchy m_driveHierarchy;
+	
+	private final DriveHierarchy m_driveHierarchy = GeorgeDriveConfig
+			.getGeorgeDriveHierarchy();
 
 	public RestartDelayFilter() {
 		super();
-		m_driveHierarchy = new DriveHierarchy();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void configure(Map<String, String> arg0) {
+		// super is necessary
 		super.configure(arg0);
-
-		// define priority levels, highest first
-
-		m_driveHierarchy.addPrioritySet(TutorInitiativeLearningMotive.class,
-				TutorInitiativeQuestionMotive.class);
-
-		m_driveHierarchy.addPrioritySet(AnalyzeProtoObjectMotive.class,
-				LearnObjectFeatureMotive.class);
-
-		m_driveHierarchy.addPrioritySet(RobotNonSituatedMotive.class);
 
 	}
 
