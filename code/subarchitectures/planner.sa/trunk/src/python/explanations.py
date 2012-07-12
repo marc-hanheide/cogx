@@ -4,6 +4,8 @@ from standalone import pddl, plans, config
 from standalone.pddl import types
 from standalone.pddl.builtin import t_number 
 
+write_dot = False
+
 # some globals that will be used all over the module once set
 expl_domain = None
 se_condition = None
@@ -39,6 +41,7 @@ SWITCH_OP2 = """
 compatible_axiom = """
 (:derived (compatible ?svar - (function object)  ?val - (typeof ?svar))
           (or (poss ?svar ?val)
+              (= ?svar ?val)
               (not (exists (?val2 - (typeof ?svar)) (poss ?svar ?val2))))
 )
 """
@@ -99,7 +102,13 @@ def build_operator_for_ground_action(i, action, args):
     action_id = "action_" + str(i).zfill(3)
     expl_domain.add_constant(types.TypedObject(action_id, action_t))
     name = "_%s_%s" % (action_id, action.name)
+    if len(action.args)  > len(args):
+        new_args = action.args[len(args):]
+    else:
+        new_args = []
+        
     new_op = pddl.Action(name, [], None, None, expl_domain)
+    new_op.args = new_op.copy_args(new_args)
     with action.instantiate(args, expl_domain):
         if action.precondition:
             new_op.precondition = action.precondition.copy(copy_instance=True)
@@ -111,23 +120,41 @@ def build_operator_for_ground_action(i, action, args):
     def get_cconds(elem, results):
         if isinstance(elem, pddl.effects.ConditionalEffect):
             return elem.condition.visit(pddl.visitors.collect_conditions)
-            
+        
+    @pddl.visitors.collect
+    def get_effects(elem, results):
+        if isinstance(elem, pddl.effects.SimpleEffect) and elem.predicate not in pddl.builtin.numeric_ops:
+            return pddl.state.Fact.from_literal(elem)
+
+    written_facts = set()
+        
     #Commit preconditions: if there is a conditional effect, make sure
     #that we commit to something to prevent "explanation by inaction"
     for eff in pddl.visitors.visit(new_op.effect, get_cconds, []):
+        fact = pddl.state.Fact.from_literal(eff)
+        written_facts.add(fact)
         if eff.predicate in (pddl.mapl.commit, pddl.builtin.equals) and not eff.negated:
             term = eff.args[0]
             cond = pddl.LiteralCondition(pddl.mapl.committed, [term], scope=new_op)
             new_op.extend_precondition(cond)
-            svars_to_check.add(pddl.state.StateVariable.from_term(term))
-            
+            svars_to_check.add(fact.svar)
+
+    written_facts.update(pddl.visitors.visit(new_op.effect, get_effects, []))
+
+    @pddl.visitors.replace
+    def remove_unknown(elem, results):
+        if isinstance(elem, pddl.effects.SimpleEffect) and elem.predicate == pddl.builtin.assign and elem.args[1] == pddl.UNKNOWN:
+            return False
+
+    new_op.effect = new_op.effect.visit(remove_unknown) if new_op.effect else None
+        
     enabled_cond = str2cond("(= (enabled) %s)" % action_id, expl_domain)
     # for cond in [se_condition, enabled_cond]:
     for cond in [enabled_cond]:
         new_op.extend_precondition(cond)
     enabled_eff = str2eff("(assign (enabled) %s)" % action_id, expl_domain)
     new_op.set_total_cost(pddl.Term(1))
-    return [new_op], enabled_eff
+    return [new_op], enabled_eff, written_facts
 
 
 
@@ -172,10 +199,14 @@ def possible_compatibility_effect(fact):
         return False
     return fact_filter(fact)
 
-def build_operator_for_new_facts(i, node):
+def build_operator_for_new_facts(i, node, reset_svars):
     compatibility_conds = set(pddl.state.Fact(f.svar.as_modality(compatible, [f.value]), pddl.TRUE) for f in node.preconds if possible_commit_effect(f))
 
     compatibility_conds |= set(pddl.state.Fact(f.svar.as_modality(compatible, [f.value]), pddl.TRUE) for f in node.effects if possible_compatibility_effect(f))
+
+    # print "reset:", map(str, reset_svars)
+    # print "remove:", map(str, (f for f in compatibility_conds if f.svar in reset_svars))
+    compatibility_conds = set(f for f in compatibility_conds if f.svar.nonmodal() not in reset_svars)
     
     node.preconds = set(f for f in node.preconds if possible_cond_effect(f))
     known_svars.update(f.svar for f in node.effects if f.svar.modality is None)
@@ -256,8 +287,9 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
    # extract actions from old plan
     last_actions = []
     i = 0
+    reset_svars = set()
     for n in last_plan.topological_sort():
-        print "***",n, n.status
+        # print "***",n, n.status
         # iterate through plan, create action constants to enfore simulated re-execution during monitoring
         a = n.action
         if isinstance(a, plans.DummyAction) and not a.name.startswith("new_facts"):
@@ -279,11 +311,15 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
         except KeyError:
             pass
         if a.name.startswith("new_facts"):
-            a2, add_ops, enabled_last = build_operator_for_new_facts(i, n)
-            print "   ",  [a.name for a in a2]
+            a2, add_ops, enabled_last = build_operator_for_new_facts(i, n, reset_svars)
+            reset_svars = set()
+            # print "   ",  [a.name for a in a2]
         else:
-            a2, enabled_last = build_operator_for_ground_action(i, a, n.full_args)
-            print "   ",  [a.name for a in a2]
+            a2, enabled_last, written = build_operator_for_ground_action(i, a, n.full_args)
+            for f in written:
+                if f.value == pddl.UNKNOWN:
+                    reset_svars.add(f.svar)
+            # print "   ",  [a.name for a in a2]
             add_ops = []
         for op in chain(a2, add_ops):
             expl_domain.add_action(op)
@@ -488,15 +524,26 @@ def build_explanation_problem(problem, last_plan, init_state, observed_state):
     stratify_assumptions(expl_domain)
     high_p_init_state = apply_high_p_assumptions(init_state, expl_domain)
 
+    b = pddl.Builder(p)
     p.init = [f.to_init() for f in high_p_init_state.iterfacts()]
-    p.init.append(pddl.Builder(p).init("=", ("enabled",), "apply_rules_000"))
+    p.init.append(b.init("=", ("enabled",), "apply_rules_000"))
     # p.init.append(pddl.Builder(p).init("=", ("enabled",), "action_000"))
 
     relevant = set()
+    initial_ground_truth = {}
     for n in last_plan:
         if n.status != plans.ActionStatusEnum.EXECUTABLE and not n.is_virtual() and not n.action.name.startswith("new_facts") and not isinstance(n, plans.DummyNode):
             relevant |= n.effects
+        if n.action.name.startswith("new_facts"):
+            for f in n.effects:
+                if f.svar.modality is None and f.svar not in initial_ground_truth:
+                    initial_ground_truth[f.svar] = f.value
 
+    for svar, val in initial_ground_truth.iteritems():
+        if svar.get_type().equal_or_subtype_of(pddl.t_object) and not isinstance(svar.function, pddl.Predicate):
+            cfact = pddl.state.Fact(svar.as_modality(pddl.mapl.commit, [val]), pddl.TRUE)
+            p.init.append(cfact.to_init())
+        
     # gfacts = [f.to_condition() for f in observed_state.iterfacts() if not f.value.is_instance_of(t_number)]
     # for f in sorted(observed_state.iterfacts(), key=str):
     #     print ":", f
@@ -668,7 +715,7 @@ def postprocess_explanations(expl_plan, exec_plan):
                         else:
                             cvar, cval  = c
                             val, pred = written.get(cvar, (None,None))
-                            print "written:", svar, cval, val
+                            print "written:", cvar, cval, val
                         if val is not None:
                             if (val == cval and not negated) or (val != cval and negated):
                                 expl_plan.replace_link(pred, n, cvar, val, "explanation")
@@ -743,10 +790,11 @@ def postprocess_explanations(expl_plan, exec_plan):
             return {'color' : 'green'}
         if data['type'] == 'explanation':
             return {'color' : 'green', 'style' : 'dashed'}
-        
-    G = expl_plan.to_dot(node_deco=node_decorator, edge_deco=edge_decorator) 
-    G.write("plan-explained.dot")
-    G = expl_plan.to_dot(node_deco=node_decorator, edge_deco=edge_decorator) 
-    G.layout(prog='dot')
-    G.draw("plan-explained.pdf")
+
+    if write_dot:
+        G = expl_plan.to_dot(node_deco=node_decorator, edge_deco=edge_decorator) 
+        G.write("plan-explained.dot")
+        G = expl_plan.to_dot(node_deco=node_decorator, edge_deco=edge_decorator) 
+        G.layout(prog='dot')
+        G.draw("plan-explained.pdf")
     return relevant_expl, expl_plan
