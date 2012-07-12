@@ -183,7 +183,7 @@ xterm -title "Abducer" -e bash -c "ulimit -c unlimited; tools/abducer/bin/abduce
 ABDUCERPID="$!"
 PIDS="$PIDS $ABDUCERPID"
 
-xterm -title "OpenCCG-Realiserver" -e bash -c "cd tools/openccg-realiserver; ./start-server.sh 2>&1 | tee logs/openccg-realiserver.log" &
+xterm -title "OpenCCG-Realiserver" -e bash -c "cd tools/openccg-realiserver; ./start-server.sh 2>&1 | tee ../../logs/openccg-realiserver.log" &
 OPENCCG_REALISERVER_PID="$!"
 PIDS="$PIDS $OPENCCG_REALISERVER_PID"
 
