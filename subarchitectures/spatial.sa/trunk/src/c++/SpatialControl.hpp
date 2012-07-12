@@ -188,6 +188,7 @@ protected:
   bool m_usePeekabot;
   bool m_show3Dobstacles;
   bool m_showExpandedMap;
+  bool m_monitorSlamAge;
 
   void connectPeekabot();
   void CreateGridMap();
