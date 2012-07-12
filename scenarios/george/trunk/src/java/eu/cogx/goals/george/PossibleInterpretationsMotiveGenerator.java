@@ -6,6 +6,7 @@ import java.util.List;
 import motivation.slice.ObjectReferencingIntentionMotive;
 import motivation.slice.TutorInitiativeLearningMotive;
 import motivation.slice.TutorInitiativeMotive;
+import motivation.slice.TutorInitiativeQuestionMotive;
 import cast.AlreadyExistsOnWMException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
@@ -114,7 +115,9 @@ public class PossibleInterpretationsMotiveGenerator
 		TutorInitiativeMotive motive = generateMotiveFromIntention(_piiAddr,
 				mostConfidentIntention, true);
 
-		if (motive instanceof ObjectReferencingIntentionMotive) {
+		if (motive != null
+				&& motive instanceof ObjectReferencingIntentionMotive) {
+
 			// mark referents from /all/ interpretations.
 
 			List<WorkingMemoryAddress> potentialReferenceList = new LinkedList<WorkingMemoryAddress>();
@@ -124,18 +127,28 @@ public class PossibleInterpretationsMotiveGenerator
 			}
 			markReferent((ObjectReferencingIntentionMotive) motive,
 					potentialReferenceList);
-			monitorForObjectVisibility(motive, potentialReferenceList);
 
 			// if this is an attributed belief task, mark attributions in all
 			// referents too
 			if (motive instanceof TutorInitiativeLearningMotive) {
-
 				TutorInitiativeLearningMotive tilm = (TutorInitiativeLearningMotive) motive;
-				for (WorkingMemoryAddress addr : potentialReferenceList) {
-					addAttribution(addr, tilm.assertedFeature,
+				for (WorkingMemoryAddress reference : potentialReferenceList) {
+					// need to add attribution because the superclass only adds
+					// this to the most confident referent
+					addAttribution(reference, tilm.assertedFeature,
 							tilm.assertedValue, tilm.assertedLearn);
+					removeLearningEffect(reference, tilm.assertedFeature,
+							tilm.assertedLearn);
+				}
+			} else if (motive instanceof TutorInitiativeQuestionMotive) {
+				TutorInitiativeQuestionMotive tiqm = (TutorInitiativeQuestionMotive) motive;
+				for (WorkingMemoryAddress reference : potentialReferenceList) {
+					removeQuestionEffect(reference, tiqm.questionedFeature);
 				}
 			}
+
+			monitorForObjectVisibility(motive, potentialReferenceList);
+
 		}
 		return motive;
 	}
