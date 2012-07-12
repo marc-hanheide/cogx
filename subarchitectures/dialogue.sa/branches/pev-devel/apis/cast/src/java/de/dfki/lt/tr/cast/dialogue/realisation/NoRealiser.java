@@ -6,7 +6,7 @@ import de.dfki.tarot.util.ParseException;
 
 public class NoRealiser extends Object implements LFRealiser {
 
-	public NoRealiser() {
+	public () {
 		System.err.println("Using NoRealiser -- always return empty String!");
 	}
 
