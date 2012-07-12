@@ -1,0 +1,36 @@
+[question]
+What is this?
+What color is
+What shape is
+Is it
+Is this
+Is the object
+
+[assertion]
+The object is
+This is
+It is
+
+[instruction]
+Look forward!
+Look left!
+Look right!
+
+[color]
+red
+green
+blue
+yellow
+orange
+pink
+black
+white
+
+[shape]
+compact
+elongated
+
+[type]
+tea box
+coke can
+cornflakes
