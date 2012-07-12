@@ -1930,22 +1930,19 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
   m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob
       = newConeProbability;
 
-  // Then adjust the probability of each cone 
-  for (std::map<int, ConeGroup>::iterator it = m_beliefConeGroups.begin(); it
-      != m_beliefConeGroups.end(); it++) {
-    vector<ViewPointGenerator::SensingAction> &cones = it->second.viewcones;
+  // Then adjust the probability of each cone in this location
+  for (size_t i = 0; i < coneGroupsInLocation.size(); i++) {
+    ConeGroup &coneGroup = m_beliefConeGroups[coneGroupsInLocation[i]];
+    vector<ViewPointGenerator::SensingAction> &cones = coneGroup.viewcones;
 
     for (size_t i = 0; i < cones.size(); i++) {
       cones[i].totalprob *= normalisationBlowup;
     }
+
+    // Then post the changes to each Belief on WM
+    updateConeGroupBelief(coneGroupsInLocation[i]);
   }
 
-  // Then post the changes to each Belief on WM
-
-  for (std::map<int, ConeGroup>::iterator it = m_beliefConeGroups.begin(); it
-      != m_beliefConeGroups.end(); it++) {
-    updateConeGroupBelief(it->first);
-  }
 
   // this means it's the first time we're reporting search result
   if (m_locationToBetaWMAddress.count(currentConeGroup.bloxelMapId) == 0) {
