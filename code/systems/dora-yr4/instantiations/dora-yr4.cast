@@ -221,6 +221,12 @@ ELSE
   VARDEFAULT slam_mapconfig=--no-file-output
 ENDIF
 
+### stop localisation without motion 
+VARDEFAULT dont_update_without_motion=
+
+### stop SLAM age warning (set to --no-slam-age-warning)
+VARDEFAULT no_slam_age_warning=
+
 ### Disable placeholder generation (no exploration): --no-placeholders
 VARDEFAULT no_placeholders=
 
@@ -372,14 +378,14 @@ IFOPTALL(%(feature_options), spatial)
 # Generates node hypotheses for PlaceManager on request, using grid map
 # Receives VisualExplorationCommand and controls PTU to explore space
 # Visualizes grid map, local odometry position estimate (red tick), laser scan
-    CPP GD spatial.control      SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin %(spatial_node_obstacle_margin) --node-unknown-margin %(spatial_node_unknown_margin) %(spatial_load_map) %(spatial_show_3d_obstacles) %(spatial_show_expanded_map) --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) %(spatial_ctrl_ptu) %(spatial_pcserver) %(usePB) %(simulate_kinect) #--display-cure-obstacle-map --cat-explore-range 5.6
+    CPP GD spatial.control      SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin %(spatial_node_obstacle_margin) --node-unknown-margin %(no_slam_age_warning) %(spatial_node_unknown_margin) %(spatial_load_map) %(spatial_show_3d_obstacles) %(spatial_show_expanded_map) --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) %(spatial_ctrl_ptu) %(spatial_pcserver) %(usePB) %(simulate_kinect) #--display-cure-obstacle-map --cat-explore-range 5.6
 
     IFEQ(%(hardware),none)
         CPP GD slam.process     SlamProcessFake -c %(spatial_cureconfig) %(slam_mapconfig) -m tmpmap.metric
     ELSE
 ### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
 # If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
-        CPP GD slam.process     SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 %(slam_mapconfig) %(usePB) %(spatial_output_raw_data)
+        CPP GD slam.process     SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 %(slam_mapconfig) %(usePB) %(spatial_output_raw_data) %(dont_update_without_motion)
     ENDIF
 
 ### Creates NavData::FNode and AEdge as the robot traverses space
