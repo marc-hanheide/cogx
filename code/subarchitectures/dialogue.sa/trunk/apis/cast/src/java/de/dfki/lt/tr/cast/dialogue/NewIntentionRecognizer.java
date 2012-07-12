@@ -905,10 +905,49 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 			ReferenceResolutionResult rr = new ReferenceResolutionResult(null, null, "combined", new LinkedList<EpistemicReferenceHypothesis>());
 			result = new ReferenceResolutionResultWrapper(rr);
 		}
+/*
+                protected boolean isUniform(ReferenceResolutionResult rr) {
+                    boolean allEqual = false;
+                    double prevScore = Double.NaN;
+                    for (EpistemicReferenceHypothesis h : rr.hypos) {
+                        if (Double.isNaN(prevScore)) {
+                            prevScore = h.score;
+                            allEqual = true;
+                        }
+                        else {
+                            if (h.score != prevScore) return false;
+                        }
 
+                    }
+                    return allEqual;
+                }
+                
+                protected void improveUniform(ReferenceResolutionResult rr) {
+                    if (rr.hypos.size() > 0) {
+                        double eq = 1.0 / rr.hypos.size();
+                        for (EpistemicReferenceHypothesis h : rr.hypos) {
+                            h.score = eq;
+                        }
+                    }
+                    else {
+			getLogger().debug("this was an EMPTY result yet we were still asked to improve it!!!");
+                    }
+                }
+*/                
 		@Override
 		synchronized public void addResult(ReferenceResolutionResultWrapper added) {
 			getLogger().debug("got a new reference resolution result: " + ReferenceUtils.resolutionResultToString(added.getResult()));
+/*                        
+                        if ("MLN".equals(added.getResult().method)) {
+                                if (isUniform(added.getResult())) {
+                                    improveUniform(added.getResult());
+                                    getLogger().debug("this seems to have been a uniform result, adjusted it to: " + ReferenceUtils.resolutionResultToString(added.getResult()));
+                                }
+                                else {
+                                    getLogger().debug("this was a sensible result, no adjustments done");
+                                }
+                        }
+*/                        
 			++count;
 			if (result.getResult().nom == null) {
 				result.getResult().nom = added.getResult().nom;
