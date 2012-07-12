@@ -413,17 +413,17 @@
            :effect (probabilistic 1.0 (and (assign (entity-exists ?o) ?val)))
            )
 
-  (:dtrule sample_object_existence-default
-           :parameters (?o - visualobject ?l - label ?rel - spatial_relation ?where - (either visualobject room) ?val - boolean)
-           :precondition (and (= (label ?o) ?l)
-                              (= (related-to ?o) ?where)
-                              (= (relation ?o) ?rel)
-                              ;; (is-virtual ?o)
-                              ;; (= (obj_exists ?l ?rel ?where) ?val)
-                              )
-           :effect (probabilistic unknown (and (assign (entity-exists ?o) ?val)
-                                               (assign (obj_exists ?l ?rel ?where) ?val)))
-           )
+  ;; (:dtrule sample_object_existence-default
+  ;;          :parameters (?o - visualobject ?l - label ?rel - spatial_relation ?where - (either visualobject room) ?val - boolean)
+  ;;          :precondition (and (= (label ?o) ?l)
+  ;;                             (= (related-to ?o) ?where)
+  ;;                             (= (relation ?o) ?rel)
+  ;;                             ;; (is-virtual ?o)
+  ;;                             ;; (= (obj_exists ?l ?rel ?where) ?val)
+  ;;                             )
+  ;;          :effect (probabilistic unknown (and (assign (entity-exists ?o) ?val)
+  ;;                                              (assign (obj_exists ?l ?rel ?where) ?val)))
+  ;;          )
 
   ;; probability of finding a specific object in a conegroup
   ;;used only by DT (?)
@@ -771,17 +771,17 @@
                           )
              )
 
-   (:action __knowledge_bk_inroom
-            :agent (?a - planning_agent)
-            :parameters (?l - label ?c - category)
-            :precondition (kval ?a (dora__inroom ?l ?c))
-            :effect (kd ?a (likely_dora__inroom ?l ?c)))
+   ;; (:action __knowledge_bk_inroom
+   ;;          :agent (?a - planning_agent)
+   ;;          :parameters (?l - label ?c - category)
+   ;;          :precondition (kval ?a (dora__inroom ?l ?c))
+   ;;          :effect (kd ?a (likely_dora__inroom ?l ?c)))
 
-   (:action __knowledge_bk_inobject
-            :agent (?a - planning_agent)
-            :parameters (?l1 ?l2 - label ?c - category)
-            :precondition (kval ?a (dora__inobject ?l1 ?l2 ?c))
-            :effect (kd ?a (likely_dora__inobject ?l1 ?l2 ?c)))
+   ;; (:action __knowledge_bk_inobject
+   ;;          :agent (?a - planning_agent)
+   ;;          :parameters (?l1 ?l2 - label ?c - category)
+   ;;          :precondition (kval ?a (dora__inobject ?l1 ?l2 ?c))
+   ;;          :effect (kd ?a (likely_dora__inobject ?l1 ?l2 ?c)))
 
    ;; (:action ask-for-category-polar
    ;;          :agent (?a - robot)
