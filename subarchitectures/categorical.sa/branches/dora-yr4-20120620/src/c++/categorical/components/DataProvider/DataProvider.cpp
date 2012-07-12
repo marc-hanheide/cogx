@@ -503,7 +503,15 @@ void CategoricalDataProvider::newDataProviderCommandAdded(const cdl::WorkingMemo
     getLogger()->warn("delete. caught CASTException in newDataProviderCommandAdded(): "+ std::string(e.what()));
   }
   // Send the ack
-  CategoricalData::DataProviderCommandAckPtr commandAck = new CategoricalData::DataProviderCommandAck;
+  CategoricalData::DataProviderCommandAckPtr commandAck;
+  try {
+    commandAck = getMemoryEntry<CategoricalData::DataProviderCommandAck>(_dataProviderCommandAckId);
+  }
+  catch (const DoesNotExistOnWMException& e) {
+    getLogger()->warn("add. caught CASTException in newDataProviderCommandAdded(): "+ std::string(e.what()));
+    return;
+  }
+  
   commandAck->cmd = command;
   commandAck->src = wmc.src;
   try {
@@ -666,7 +674,15 @@ void CategoricalDataProvider::pullImage(CategoricalData::ImagePtr image)
 cast::cdl::CASTTime CategoricalDataProvider::outputImage()
 {
   // Generate CategoricalData::Image
-  CategoricalData::ImagePtr image = new CategoricalData::Image();
+  CategoricalData::ImagePtr image;
+  try {
+    image = getMemoryEntry<CategoricalData::Image>(_imageId);
+  }
+  catch (const DoesNotExistOnWMException& e) {
+    getLogger()->warn("caught CASTException in outputImage(): "+ std::string(e.what()));
+    return getCASTTime();
+  }
+  
   if (_useVision)
   {
     // Acquiring image
@@ -905,7 +921,15 @@ void CategoricalDataProvider::findOdometryReading(const cast::cdl::CASTTime& ref
 cast::cdl::CASTTime CategoricalDataProvider::outputOdometryReading(const cast::cdl::CASTTime& refT)
 {
   // Generate CategoricalData::Odometry
-  CategoricalData::OdometryPtr odom = new CategoricalData::Odometry();
+  CategoricalData::OdometryPtr odom;
+  try {
+    odom = getMemoryEntry<CategoricalData::Odometry>(_odometryId);
+  }
+  catch (const DoesNotExistOnWMException& e) {
+    getLogger()->warn("caught CASTException in outputOdometryReading(): "+ std::string(e.what()));
+    return getCASTTime();
+  }
+
   if (_useOdometry)
   {
     // Acquiring odometry
@@ -958,7 +982,15 @@ cast::cdl::CASTTime CategoricalDataProvider::outputOdometryReading(const cast::c
 void CategoricalDataProvider::outputTarget()
 {
   // Generate CategoricalData::Target
-  CategoricalData::TargetPtr target = new CategoricalData::Target();
+  CategoricalData::TargetPtr target;
+  try {
+    target = getMemoryEntry<CategoricalData::Target>(_targetId);
+  }
+  catch (const DoesNotExistOnWMException& e) {
+    getLogger()->warn("caught CASTException in outputTarget(): "+ std::string(e.what()));
+    return;
+  }
+
   // Acquiring target
   if (_loadDataFromDisk)
   { // Load form disk
