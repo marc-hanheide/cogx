@@ -694,7 +694,7 @@
                                (= (label ?o) ?l)
                                (= (is-in ?h) ?p)
                                (= (is-in ?a) ?p)
-                               (poss (related-to ?o) ?what)
+                               (= (related-to ?o) ?what)
                                (= (entity-exists ?what) true)
                                (can-relate ?a ?what ?h)
                                )
