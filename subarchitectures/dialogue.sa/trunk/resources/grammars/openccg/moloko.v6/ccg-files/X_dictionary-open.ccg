@@ -147,7 +147,6 @@
   noun(wall, thing,)
     
   noun(pizza, thing,) 
-  noun(cerealbox, thing,) 
   noun(thing, thing,) 
   noun(book, thing,) 
   noun(ball, thing,) 
@@ -161,6 +160,9 @@
   noun(toppas, thing,) 
   noun(chocos, thing,) 
   noun(darjeeling, thing,) 
+  noun(teabox, thing,) 
+  noun(cerealbox, thing,) 
+  noun(drinkcan, thing,) 
 
   word box2-noun-n:Noun(thing, pred=box) { blocks :  s-sg full asr-correction; }
   word box3-noun-n:Noun(thing, pred=box) { ball :  s-sg full asr-correction; }
