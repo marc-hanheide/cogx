@@ -35,15 +35,18 @@ compact
 elongated
 
 [type]
-tea box
-coke can
-cornflakes
-box
-ball
-schokomusli
-fruchtemusli
-weetabix
-bircher
-toppas
-chocos
-darjeeling
+mug
+cerealbox
+teabox
+drinkcan
+
+# cornflakes
+# box
+# ball
+# schokomusli
+# fruchtemusli
+# weetabix
+# bircher
+# toppas
+# chocos
+# darjeeling
