@@ -45,4 +45,18 @@ OPTDEFAULT feature_options=<multiline>
    visualization
 </multiline>
 
+OPTDEFAULT Motivation_George_Options=<multiline>
+    model-status-generator
+</multiline>
+VARDEFAULT MotiveFileManagerGoalFilter=automatic
+
+IFEQ(1, 0)
+    SETVAR MotiveFileManagerGoalFilter=manual
+ENDIF
+IFEQ(1, 0)
+    # fake katana
+    SETOPT feature_options=manipulation
+    SETOPT hardware_options=!katana
+ENDIF
+
 INCLUDE george.cast
