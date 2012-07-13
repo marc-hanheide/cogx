@@ -586,9 +586,12 @@ void ObjectRelationManager::newObject(
   }
 
   string obsLabel = observedObject->identLabels[0];
+  
+  double confidence = observedObject->identDistrib[0];
+//  double confidence = observedObject->detectionConfidence;//Always 0?!
 
-  debug("Confidence %f", observedObject->detectionConfidence);
-  if (observedObject->detectionConfidence == 0) {
+  debug("Confidence (%s), %f", obsLabel.c_str(), confidence);
+  if (confidence == 0) {
     return;
   }
 
