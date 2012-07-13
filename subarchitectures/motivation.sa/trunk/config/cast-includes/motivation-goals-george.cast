@@ -1,9 +1,15 @@
+OPTDEFAULT Motivation_George_Options=<multiline>
+   model-status-generator
+</multiline>
+
 # year 4
 JAVA MG gg.po 		eu.cogx.goals.george.ProtoObjectMotiveGenerator
 JAVA MG gg.vo 		eu.cogx.goals.george.VisualObjectMotiveGenerator
 JAVA MG gg.ii 		eu.cogx.goals.george.InterpretedIntentionMotiveGenerator --log 
-JAVA MG gg.pii     	eu.cogx.goals.george.PossibleInterpretationsMotiveGenerator --log
-JAVA MG gg.ms 	   	eu.cogx.goals.george.ModelStatusMotiveGenerator
+JAVA MG gg.pii 		eu.cogx.goals.george.PossibleInterpretationsMotiveGenerator --log
+IFOPTANY(%(Motivation_George_Options), model-status-generator)
+   JAVA MG gg.ms 	eu.cogx.goals.george.ModelStatusMotiveGenerator
+ENDIF
 JAVA MG gg.la 		eu.cogx.goals.george.LookAroundMotiveGenerator --log
 
 # Choose automatic or manual filtering
