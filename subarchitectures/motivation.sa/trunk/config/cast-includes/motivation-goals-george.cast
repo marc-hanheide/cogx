@@ -11,9 +11,9 @@ JAVA MG gg.la 		eu.cogx.goals.george.LookAroundMotiveGenerator --log
 VARDEFAULT MotiveFileManagerGoalFilter=manual
 
 IFEQ(%(MotiveFileManagerGoalFilter), manual)
-    JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "GeorgeManualSelectFilter"  #--delete-on-complete
+    JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "LimitTriesFilter,GeorgeManualSelectFilter"  --max-tries 2 #--delete-on-complete
 ENDIF
 IFEQ(%(MotiveFileManagerGoalFilter), automatic)
-    JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "DriveHierarchyFilter,RestartDelayFilter" --recheck-interval 5000 
+    JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "LimitTriesFilter,DriveHierarchyFilter,RestartDelayFilter" --recheck-interval 5000 --max-tries 2
 ENDIF
 
