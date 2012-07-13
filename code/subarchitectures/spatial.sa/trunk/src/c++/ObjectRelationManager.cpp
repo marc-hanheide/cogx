@@ -770,6 +770,7 @@ void ObjectRelationManager::newObject(
         theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
         theobjectproxy.set_scale(box->radius1 * 2, box->radius2 * 2,
             box->radius3 * 2);
+        theobjectproxy.set_color(0,0,1);
       } else if (obsObject->type == OBJECT_HOLLOW_BOX) {
         HollowBoxObject *box = (HollowBoxObject*) obsObject;
         peekabot::CubeProxy theobjectproxy;
