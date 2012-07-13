@@ -51,6 +51,7 @@
     ;;(allow-autonomous-objecttype-learning ?v - VisualObject ?t - IdentName ?r - Robot)
 
     (looked-at ?vc - ViewCone)
+    (object-property-requested)
 
     (is-object-in-question ?v - VisualObject)
     (is-potential-object-in-question ?v - VisualObject)
@@ -324,6 +325,7 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
+        (not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (or
@@ -333,9 +335,10 @@
       )
     :effect 
       (and
+        (object-property-requested)
         (assign (attributed-color ?v) (color ?v))
         (is-potential-object-in-question ?v)
-        (increase (total-cost) 2)
+        (increase (total-cost) 3)
       )
   )
 
@@ -344,6 +347,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-color-question ?v ?c ?r)
@@ -354,9 +358,10 @@
       )
     :effect 
       (and
+        (object-property-requested)
         (assign (attributed-color ?v) ?c)        
         (is-potential-object-in-question ?v)
-        (increase (total-cost) 1)
+        (increase (total-cost) 2)
       )
   )
 
@@ -365,6 +370,7 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
+        (not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (or
@@ -373,10 +379,11 @@
         )
       )
     :effect 
-      (and 
+      (and
+        (object-property-requested)
         (assign (attributed-shape ?v) (shape ?v))
         (is-potential-object-in-question ?v)
-        (increase (total-cost) 2)
+        (increase (total-cost) 3)
       )
   )
 
@@ -385,6 +392,7 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
+        (not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-shape-question ?v ?s ?r)
@@ -394,10 +402,11 @@
         )
       )
     :effect 
-      (and 
+      (and
+        (object-property-requested)
         (assign (attributed-shape ?v) ?s)
         (is-potential-object-in-question ?v)
-        (increase (total-cost) 1)
+        (increase (total-cost) 2)
       )
   )
 
@@ -477,10 +486,11 @@
       )
     :effect 
       (and
+        (not (object-property-requested))
 	(color-learned ?v)
         (not (is-potential-object-in-question ?v))
         (update (is-potential-object-in-question ?v) false)
-	(increase (total-cost) 10)
+	(increase (total-cost) 1)
       )
   )
 
@@ -515,10 +525,11 @@
       )
     :effect 
       (and
+        (not (object-property-requested))
 	(shape-learned ?v)
         (not (is-potential-object-in-question ?v))
         (update (is-potential-object-in-question ?v) false)
-	(increase (total-cost) 10)
+	(increase (total-cost) 1)
       )
   )
 
@@ -555,7 +566,7 @@
         (objecttype-learned ?v)
         (not (is-potential-object-in-question ?v))
         (update (is-potential-object-in-question ?v) false)
-        (increase (total-cost) 5)
+        (increase (total-cost) 1)
       )
   )
 
