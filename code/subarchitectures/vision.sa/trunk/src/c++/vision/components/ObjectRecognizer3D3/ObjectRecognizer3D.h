@@ -98,7 +98,6 @@ protected:
 public:
   ObjectRecognizer3D();
   virtual ~ObjectRecognizer3D();
-  virtual void runComponent();
 
   virtual void receiveImages(const vector<Video::Image>& images) {}
   void saveModelDatabase();
