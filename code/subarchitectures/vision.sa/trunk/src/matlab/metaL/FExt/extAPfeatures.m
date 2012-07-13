@@ -53,10 +53,8 @@ else
         %GET APPEARANCE FEATURES
         if FV<=5
             HSV=rgb2hsv(x);
-            5
         else
             HSV=rgb2hsl2(double(x)/255);
-            6
         end
         %HSV(HSV(:,:,1)>.8)=0; %red color...
         %!!DS!!REMOVED THIS HACK!!!      idxs=find(HSV(:,:,1)>.8);HSV(idxs)=1-HSV(idxs); %red color...

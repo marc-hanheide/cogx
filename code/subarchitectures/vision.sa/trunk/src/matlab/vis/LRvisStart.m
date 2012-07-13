@@ -12,7 +12,7 @@ Coma.Fnames=extAPfeatures;%['Hu';'Sa';'In';'Ar';'Df';'Ec'];
 
 Figs.LRguiL.main=LRlearning;
 Figs.LRguiL.pnModels=findobj(Figs.LRguiL.main, 'tag','pnModels');
-Figs.LRguiL.tx_Fb=findobj(Figs.LRguiL.main, 'tag','tx_Fb');
+%Figs.LRguiL.tx_Fb=findobj(Figs.LRguiL.main, 'tag','tx_Fb');
 showLmodels(mC,Coma.Fnames,Coma.Cnames,[2,4],Figs.LRguiL);
 
 %global LRaxRoi LRtxFroi LRaxRec LRtxRec LRtxFrec LRtxFisRec LRtxFisRoi LRaxPts3d
