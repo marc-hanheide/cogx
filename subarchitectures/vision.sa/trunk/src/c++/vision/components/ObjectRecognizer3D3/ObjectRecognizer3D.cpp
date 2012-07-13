@@ -1005,12 +1005,3 @@ void ObjectRecognizer3D::drawModels()
 }
 #endif
 
-void ObjectRecognizer3D::runComponent()
-{
-	/*while(isRunning())
-  {
-    drawModels();
-    sleep(2);
-  }*/
-}
-
