@@ -61,6 +61,7 @@
    ;; default probabilities. These come from Coma.
    (dora__inroom ?l - label ?c - category) - number
    (dora__inobject ?l1 ?l2 - label ?c - category) - number
+   (dora__related ?l1 - label ?rel - spatial_relation ?l2 - label) - number
    (dora__on ?l1 ?l2 - label ?c - category) - number
 
    (dora__not_inroom ?l - label ?c - category) - number
@@ -187,6 +188,12 @@
   ;;                             )
   ;;             )
 
+  (:init-rule default_inobject
+              :parameters (?l1 ?l2 - label  ?c - category)
+              :precondition (and (= (dora__inobject ?l1 ?l2 ?c) unknown)
+                                 (defined (dora__related ?l1 in ?l2)))
+              :effect (assign (dora__inobject ?l1 ?l2 ?c) (dora__related ?l1 in ?l2))
+              )
 
   (:init-rule default_search_costs_for_room
               :parameters (?l - label  ?r - room)
