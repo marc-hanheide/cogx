@@ -3,6 +3,7 @@ include_directories(../../../../matlab/Proxy)
 
 project(VisualLearner)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 ENABLE_COGX_VISUALIZATION(TRUE)
 
 if (BUILD_SA_VISION_VISLEARNER_FAKE)

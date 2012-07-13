@@ -95,16 +95,24 @@ void VisualLearner::CMyDisplayClient::createViews()
   ss << "<pre style='margin-left: 1em;'>BUILD_SA_VISION_VISLEARNER_FAKE=OFF</pre>";
   setActiveHtml("VisLearner.FAKE", "info", ss.str());
 #else
-  const int nModels = 3;
-  const string models[nModels] = {
-    string("mC1"),
-    string("mC2"),
-    string("mC3") };
-
-  for (int i=0; i<nModels; i++) {
-    ss << "<input type='button' value='Load model " << models[i] << "' "
-      << "@@ONCLICK@@('" << models[i] << "');\" /><br>";
+  std::vector<std::string> models({ "mC1", "mC2", "mC3", "mC4", "mC5" });
+  for (auto sm : models) {
+    ss << "<input type='button' value='Load model " << sm << "' "
+      << "@@ONCLICK@@('" << sm << "');\" /><br>";
   }
+  //const int nModels = 3;
+  //const string models[nModels] = {
+  //  string("mC1"),
+  //  string("mC2"),
+  //  string("mC3"),
+  //  string("mC4"),
+  //  string("mC5"),
+  //};
+
+  //for (int i=0; i<nModels; i++) {
+  //  ss << "<input type='button' value='Load model " << models[i] << "' "
+  //    << "@@ONCLICK@@('" << models[i] << "');\" /><br>";
+  //}
 
   //ss << ": <select name='" << IDC_FORM_OBJECT_NAME << "' 
   //   << " onchange=\"CogxJsSendValue('@@FORMID@@','" << ID_CMD_OBJECT_RELOAD << "','"
