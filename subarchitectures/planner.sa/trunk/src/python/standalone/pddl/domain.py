@@ -154,6 +154,13 @@ class Domain(Scope):
             # print [n for n in self.name2action.iterkeys()]
             raise
 
+    def has_action(self, name):
+        try:
+            a = self.get_action(name)
+            return True
+        except KeyError:
+            return False
+
     def add_constant(self, object):
         if object.name in self:
             self.constants.remove(self[object.name])
