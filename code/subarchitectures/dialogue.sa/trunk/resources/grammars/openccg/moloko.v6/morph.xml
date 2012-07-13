@@ -4133,8 +4133,6 @@
   <entry word="walls" macros="@s-pl-unsp @full" pos="Noun" stem="wall-noun-n" class="thing" pred="wall"/>
   <entry word="pizza" macros="@s-sg @full" pos="Noun" stem="pizza-noun-n" class="thing" pred="pizza"/>
   <entry word="pizzas" macros="@s-pl-unsp @full" pos="Noun" stem="pizza-noun-n" class="thing" pred="pizza"/>
-  <entry word="cerealbox" macros="@s-sg @full" pos="Noun" stem="cerealbox-noun-n" class="thing" pred="cerealbox"/>
-  <entry word="cerealboxes" macros="@s-pl-unsp @full" pos="Noun" stem="cerealbox-noun-n" class="thing" pred="cerealbox"/>
   <entry word="thing" macros="@s-sg @full" pos="Noun" stem="thing-noun-n" class="thing" pred="thing"/>
   <entry word="things" macros="@s-pl-unsp @full" pos="Noun" stem="thing-noun-n" class="thing" pred="thing"/>
   <entry word="book" macros="@s-sg @full" pos="Noun" stem="book-noun-n" class="thing" pred="book"/>
@@ -4159,6 +4157,12 @@
   <entry word="chocoses" macros="@s-pl-unsp @full" pos="Noun" stem="chocos-noun-n" class="thing" pred="chocos"/>
   <entry word="darjeeling" macros="@s-sg @full" pos="Noun" stem="darjeeling-noun-n" class="thing" pred="darjeeling"/>
   <entry word="darjeelings" macros="@s-pl-unsp @full" pos="Noun" stem="darjeeling-noun-n" class="thing" pred="darjeeling"/>
+  <entry word="teabox" macros="@s-sg @full" pos="Noun" stem="teabox-noun-n" class="thing" pred="teabox"/>
+  <entry word="teaboxes" macros="@s-pl-unsp @full" pos="Noun" stem="teabox-noun-n" class="thing" pred="teabox"/>
+  <entry word="cerealbox" macros="@s-sg @full" pos="Noun" stem="cerealbox-noun-n" class="thing" pred="cerealbox"/>
+  <entry word="cerealboxes" macros="@s-pl-unsp @full" pos="Noun" stem="cerealbox-noun-n" class="thing" pred="cerealbox"/>
+  <entry word="drinkcan" macros="@s-sg @full" pos="Noun" stem="drinkcan-noun-n" class="thing" pred="drinkcan"/>
+  <entry word="drinkcans" macros="@s-pl-unsp @full" pos="Noun" stem="drinkcan-noun-n" class="thing" pred="drinkcan"/>
   <entry word="blocks" macros="@s-sg @full @asr-correction" pos="Noun" stem="box2-noun-n" class="thing" pred="box"/>
   <entry word="ball" macros="@s-sg @full @asr-correction" pos="Noun" stem="box3-noun-n" class="thing" pred="box"/>
   <entry word="books" macros="@s-sg @full @asr-correction" pos="Noun" stem="box4-noun-n" class="thing" pred="box"/>
