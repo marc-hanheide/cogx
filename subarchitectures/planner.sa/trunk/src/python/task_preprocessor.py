@@ -344,7 +344,7 @@ def unify_objects(obj_descriptions):
       values.append((obj, prob))
 
     if isinstance(ftup, AttributedSVarDistribution):
-      agent = unify(agent)
+      agent = unify(ftup.agent)
       yield AttributedSVarDistribution(agent, ftup.feature, args, values)
     elif isinstance(ftup, HypotheticalSVarDistribution):
       hyp_value = unify(ftup.hyp_value)

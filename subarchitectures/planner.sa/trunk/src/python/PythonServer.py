@@ -294,6 +294,9 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     pass
 
   def runComponent(self):
+      # import objgraph
+      # objgraph.show_growth(limit=15)
+      
       self.m_display.connectIceClient(self)
       self.m_display.installEventReceiver()
       self.m_display.init_html()
@@ -306,8 +309,18 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   @pdbdebug
   def registerTask(self, task_desc, current=None):
     log.info("Planner PythonServer: New PlanningTask received:")
+    # import objgraph
+    # objgraph.show_growth(limit=15)
+    
     standalone.globals.set_time()
     self.verbalise("Got a new task")
+
+    if len(task_desc.goals) == 1 and task_desc.goals[0].goalString.lower().strip() == "debug":
+        import debug
+        log.warning("Entering debugger")
+        print "Entering debugger, please telnet to localhost:4444"
+        debug.set_trace()
+        return
 
     task = CASTTask(task_desc, self.beliefs, self.domain_fn, self, problem_fn=self.problem_fn, expl_rules_fn=self.expl_rules_fn)
     # task = CASTTask(task_desc, self.beliefs, self.domain_fn, self, problem_fn=self.problem_fn, expl_rules_fn=self.expl_rules_fn)
@@ -320,7 +333,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   @pdbdebug
   def deliver_plan(self, task, slice_plan):
       task.status = Planner.Completion.SUCCEEDED
-      self.m_display.update_task(task, TaskStateInfoEnum.WAITING_FOR_ACTION)
+      # self.m_display.update_task(task, TaskStateInfoEnum.WAITING_FOR_ACTION)
       if task.id != -1:
           self.getClient().deliverPlan(task.id, slice_plan, task.slice_goals);
 
@@ -383,6 +396,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       
       standalone.globals.set_time()
       log.info("received task update")
+      # import objgraph
+      # objgraph.show_growth(limit=15)
       if task_desc.executionStatus in (Planner.Completion.SUCCEEDED, Planner.Completion.FAILED, Planner.Completion.ABORTED):
           log.info("task %d is done.", task_desc.id)
           self.m_display.remove_task(self.tasks[task_desc.id])
