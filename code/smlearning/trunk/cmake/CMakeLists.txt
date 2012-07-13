@@ -193,6 +193,7 @@ SET(SCENARIO_SOURCES
 	${SMLEARNING_ROOT}/src/scenario/PredictingScenario.cpp
 #	${SMLEARNING_ROOT}/src/scenario/ActiveGNGScenario.cpp
 	${SMLEARNING_ROOT}/src/scenario/ActiveLearnScenario.cpp
+	${SMLEARNING_ROOT}/src/scenario/OnlineLearningDataset.cpp
 	${SMLEARNING_ROOT}/src/scenario/PredictingActiveLearnScenario.cpp
         ${SMLEARNING_ROOT}/src/scenario/TrackerScenario.cpp
 	${SMLEARNING_ROOT}/src/scenario/PushingApplication.cpp
@@ -212,6 +213,7 @@ SET(SCENARIO_HEADERS
 	${SMLEARNING_ROOT}/include/scenario/PredictingScenario.h
 #	${SMLEARNING_ROOT}/include/scenario/ActiveGNGScenario.h
 	${SMLEARNING_ROOT}/include/scenario/ActiveLearnScenario.h
+	${SMLEARNING_ROOT}/include/scenario/OnlineLearningDataset.h
 	${SMLEARNING_ROOT}/include/scenario/PredictingActiveLearnScenario.h
 	${SMLEARNING_ROOT}/include/scenario/TrackerThread.h
         ${SMLEARNING_ROOT}/include/scenario/TrackerScenario.h
@@ -244,6 +246,10 @@ SET(ACTIVELEARN_PREDICTION_EXPERIMENT_SOURCE
 
 SET(TRACKER_TEST_SOURCE
  	${SMLEARNING_ROOT}/src/tests/TrackerTest.cpp
+)
+
+SET(ONLINELEARNINGDATASET_EXPERIMENT_SOURCE
+	${SMLEARNING_ROOT}/src/scenario/onlinelearningdataset_experiment.cpp
 )
 
 SET(TOOLS_SOURCES
@@ -332,6 +338,7 @@ SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/train.nc
 	${SMLEARNING_ROOT}/config/valid.nc
 	${SMLEARNING_ROOT}/config/tracker_test.xml
+	${SMLEARNING_ROOT}/config/onlinelearningdataset_experiment.xml
 #	${SMLEARNING_ROOT}/config/GolemDeviceKatana300Sim.xml  #For now this is not really useful
 #	${SMLEARNING_ROOT}/config/GolemDeviceKatana300.xml
 #	${SMLEARNING_ROOT}/config/katana300_6M180.cfg
@@ -392,6 +399,7 @@ ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
 #ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE})
 ADD_EXECUTABLE(activelearn_experiment ${ACTIVELEARN_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(activelearn_prediction_experiment ${ACTIVELEARN_PREDICTION_EXPERIMENT_SOURCE})
+ADD_EXECUTABLE(onlinelearningdataset_experiment ${ONLINELEARNINGDATASET_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
 # ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
 ADD_EXECUTABLE(data_plot_test ${DATA_PLOT_TEST_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
@@ -420,6 +428,7 @@ INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS activelearn_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS activelearn_prediction_experiment RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS onlinelearningdataset_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS prediction_experiment RUNTIME DESTINATION bin/SMLearning)
 # INSTALL(TARGETS activegng_experiment RUNTIME DESTINATION bin/SMLearning)
 # INSTALL(TARGETS offlineactivegng_experiment RUNTIME DESTINATION bin/SMLearning)
