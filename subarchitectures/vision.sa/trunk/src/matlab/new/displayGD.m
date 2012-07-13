@@ -2,8 +2,8 @@ function displayGD(mC)
 
 if getc(mC,'numSC')>=2
    fh=figure('Visible','Off');
-%   resizeFigs(fh,1.5,.75);
-   resizeFigs(fh,3.6,1.5);
+   resizeFigs(fh,1.5,.75);
+%   resizeFigs(fh,3.6,1.5);
    drawAllClasses( mC,fh ) ;
 %    c1=mC{1}.cummulative_feat_costs;
 %    c2=mC{2}.cummulative_feat_costs;
