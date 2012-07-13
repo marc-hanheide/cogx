@@ -1,6 +1,6 @@
 /** @file ActiveLearnScenario.cpp
  * 
- * Program demonstrates affordances learning with LSTMs.
+ * Program demonstrates affordances learning
  * 
  * Program can be run in two modes:
  * - the first uses real Katana arm
@@ -79,6 +79,7 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 			cerr << "Sequence data file limits do not correspond to scenario limits" << endl;
 			abort ();			
 		}
+		//Store in feature vector the motor context
 		for (int i=0; i<data.size(); i++)
 			for (int j=0; j<data[i].size(); j++)
 				LearningData::write_chunk_to_featvector (data[i][j].featureVector, data[i][j], normalization, limits, _end_effector_pos | _effector_pos | _object /*| _action_params*/ );
