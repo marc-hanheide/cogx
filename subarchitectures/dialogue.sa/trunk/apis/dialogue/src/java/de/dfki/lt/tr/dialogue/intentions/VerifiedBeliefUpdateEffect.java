@@ -5,8 +5,11 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.util.VerbalisationUtils;
@@ -72,18 +75,49 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 
 				// update the verified belief in memory
 				for (String feature : featuresToSet.keySet()) {
-					component.log(
-							"setting "
-									+ feature
-									+ " -> "
-									+ BeliefIntentionUtils
-											.dFormulaToString(featuresToSet
-													.get(feature)) + "...");
 
-					BeliefUtils.addFeature(verifiedBelief, feature,
-							featuresToSet.get(feature));
+                                    final boolean isPositive;
+                                    
+                                    // TODO: determine the polarity
+                                    dFormula givenFormula = featuresToSet.get(feature);
+                                    if (givenFormula instanceof NegatedFormula) {
+                                        NegatedFormula nf = (NegatedFormula) givenFormula;
+                                        isPositive = false;
+                                        givenFormula = nf.negForm;
+                                    }
+                                    else {
+                                        isPositive = true;
+                                    }
+                                    
+                                    final String value;
+                                    if (givenFormula instanceof ElementaryFormula) {
+                                        ElementaryFormula ef = (ElementaryFormula) givenFormula;
+                                        value = ef.prop;
+                                    }
+                                    else {
+                                        value = null;
+                                    }
+                                    
+                                    final double prob = isPositive ? 1.0 : 0.0;
+
+                                    if (value != null) {
+                                    
+					component.log("setting " + feature + " -> " + value + String.format(" @ p=%.2f", prob));
+
+                                        FormulaDistribution distr = verifiedBelief.getContent().get(feature);
+                                        if (distr == null) {
+                                            distr = FormulaDistribution.create();
+                                        }
+                                        distr.add(value, prob);
+                                        verifiedBelief.getContent().put(feature, distr);
+                                        
+//					BeliefUtils.addFeature(verifiedBelief, feature, featuresToSet.get(feature));
                                         
                                         BeliefUtils.addFeature(verifiedBelief, feature + "-prob", new FloatFormula(-1, 1.0f));
+                                    }
+                                    else {
+                                        component.log("don't know how do the effect for " + feature + " -> " + BeliefIntentionUtils.dFormulaToString(featuresToSet.get(feature)));
+                                    }
 
 				}
 				
