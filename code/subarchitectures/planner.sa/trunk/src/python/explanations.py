@@ -42,11 +42,21 @@ compatible_axiom = """
 (:derived (compatible ?svar - (function object)  ?val - (typeof ?svar))
           (or (poss ?svar ?val)
               (= ?svar ?val)
-              (not (exists (?val2 - (typeof ?svar)) (poss ?svar ?val2))))
+              (not (committed ?svar)))
 )
 """
 p = pddl.Parameter("?f", types.FunctionType(pddl.t_object))
 compatible = pddl.Predicate("compatible", [p, pddl.Parameter("?v", pddl.types.ProxyType(p)), ])
+
+# has_value_axiom = """
+# (:derived (poss-has-value ?svar - (function object)  ?val - (typeof ?svar))
+#           (or (poss ?svar ?val)
+#               (= ?svar ?val)))
+# """
+#
+# p = pddl.Parameter("?f", types.FunctionType(pddl.t_object))
+# has_value = pddl.Predicate("poss-has-value", [p, pddl.Parameter("?v", pddl.types.ProxyType(p)), ])
+
 state_rules = []
 
 def str2cond(fstr, scope):
@@ -258,6 +268,8 @@ def build_explanation_domain(last_plan, problem, orig_domain, expl_rules_fn):
     phase_f = pddl.predicates.Function("phase", [], phase_t)
     for f in [enabled_f, phase_f]:
         expl_domain.functions.add(f)
+    # expl_domain.predicates.add(has_value)
+    # expl_domain.axioms.append(pddl.parser.Parser.parse_as(has_value_axiom.splitlines(), pddl.axioms.Axiom, expl_domain))
     expl_domain.predicates.add(compatible)
     expl_domain.axioms.append(pddl.parser.Parser.parse_as(compatible_axiom.splitlines(), pddl.axioms.Axiom, expl_domain))
 
@@ -692,6 +704,8 @@ def postprocess_explanations(expl_plan, exec_plan):
         changed, deleted = changed_effects(n)
         print n, "changed:", map(str, changed), "deleted:", map(str, deleted)
         for f in chain(changed, deleted):
+            if f.svar in written and written[f.svar] == f.value:
+                continue
             succ = get_conflict_link_target(n, f)
             if succ:
                 expl_plan.replace_link(n, succ, f.svar, f.value, "repaired")
@@ -719,6 +733,7 @@ def postprocess_explanations(expl_plan, exec_plan):
                             print "written:", cvar, cval, val
                         if val is not None:
                             if (val == cval and not negated) or (val != cval and negated):
+                                print "  explained ", pred, n, cvar, val
                                 expl_plan.replace_link(pred, n, cvar, val, "explanation")
                                 explanations.add(pred)
 
@@ -738,10 +753,13 @@ def postprocess_explanations(expl_plan, exec_plan):
     open_expl = set(explanations)
     while open_expl:
         n = open_expl.pop()
+        # print "open:", n
         for pred in expl_plan.predecessors_iter(n):
-            if pred.action.name.startswith("_switch"):
+            if pred.action.name.startswith("_switch") or pred.action.name.startswith("_action") :
                 continue
+            # print "  pred:", pred
             if pred != expl_plan.init_node and pred.effects - old_assumptions:
+                # print "    added"
                 relevant_expl.add(pred)
                 open_expl.add(pred)
 

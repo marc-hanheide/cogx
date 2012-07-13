@@ -67,7 +67,7 @@
 
 (:action state_rule_room_existence
         :parameters (?r - room ?p - place)
-        :precondition (not (poss (entity-exists ?r) false))
+        :precondition (compatible (entity-exists ?r) true)
         :effect (poss (in-room ?p) ?r))
 
 ;; (:action commit-existence
