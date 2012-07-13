@@ -237,7 +237,7 @@ def build_operator_for_new_facts(i, node, reset_svars):
     return [new_op], add_ops, enabled_eff
     
 
-def build_explanation_domain(last_plan, problem, expl_rules_fn):
+def build_explanation_domain(last_plan, problem, orig_domain, expl_rules_fn):
     global se_condition, expl_domain, commitments
     domain_orig = problem.domain
     expl_domain = domain_orig.copy_skeleton()
@@ -299,10 +299,11 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
                 if svar.modality == pddl.mapl.commit and not succ.is_virtual():
                     # print "link:", n, succ, svar, val
                     commitments.add(pddl.state.Fact(svar.as_modality(pddl.mapl.committed), pddl.TRUE))
-            a = a.copy()
-            # a.extend_precondition(ar_condition)
-            #print "virtual action:", w.write_action(a)  
-            expl_domain.add_action(a)
+            if not expl_domain.has_action(a.name):
+                a = a.copy()
+                # a.extend_precondition(ar_condition)
+                #print "virtual action:", w.write_action(a)  
+                expl_domain.add_action(a)
             continue
         try:
             a = expl_domain.alternatives[a.name]
@@ -576,8 +577,9 @@ def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn
     sorted_plan = last_plan.topological_sort()
 
     known_svars.update(f.svar for f in init_state.iterfacts() if f.svar.modality is None)
-    
-    build_explanation_domain(last_plan, problem, expl_rules_fn)
+
+    cp_domain = cp_task.mapldomain
+    build_explanation_domain(last_plan, problem, cp_domain, expl_rules_fn)
     # print "\n".join(w.write_domain(expl_domain))
 
     expl_problem = build_explanation_problem(problem, sorted_plan, init_state, observed_state)

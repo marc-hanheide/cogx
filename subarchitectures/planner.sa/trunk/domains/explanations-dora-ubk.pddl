@@ -107,6 +107,31 @@
                       (poss (obj_exists ?l1 in ?o) true)))
 
 
+
+;; p(?label IN ?room | category(?room) = ?cat)
+(:action __commit_obj_in_room
+         :parameters (?l - label ?r - room ?c - category)
+         :precondition (and (poss (category ?r) ?c)
+                            (defined (dora__inroom ?l ?c))
+                            (not (defined (p-obj_exists ?l in ?r ?c))))
+         :effect (and (assign (probability) (dora__inroom ?l ?c))
+                      (poss (obj_exists ?l in ?r) true)))
+
+
+;; p(?label IN ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
+(:action __commit_obj_in_obj
+         :parameters (?l1 ?l2 - label ?o - visualobject ?r - room ?c - category)
+         :precondition (and (poss (category ?r) ?c)
+                            (= (label ?o) ?l2)
+                            (poss (related-to ?o) ?r)
+                            (poss (relation ?o) in)
+                            (defined (dora__inobject ?l1 ?l2 ?c))
+                            (not (defined (p-obj_exists ?l1 in ?o ?c))))
+         :effect (and (assign (probability) (dora__inobject ?l1 ?l2 ?c))
+                      (poss (obj_exists ?l1 in ?r) true)
+                      (poss (obj_exists ?l1 in ?o) true)))
+
+
 ;; ;; p(?label ON ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
 ;; (:action __commit_obj_on_obj_new
 ;;          :parameters (?l1 ?l2 - label ?o - visualobject ?r - room ?c - category)
