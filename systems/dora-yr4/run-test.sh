@@ -85,7 +85,8 @@ log4j.appender.srvConsole.layout=org.apache.log4j.PatternLayout
 log4j.appender.srvConsole.layout.ConversionPattern=[%p %c: %m]%n
 EOF
 
-echo "<log4j:logsequence>" > logs/log.xml
+echo "<?xml version=\"1.0\" encoding=\"UTF-8\" xmlns:log4j=\"http://jakarta.apache.org/log4j/\" ?>" > logs/log.xml
+echo "<log4j:logsequence>" >> logs/log.xml
 
 # log specific components at TRACE (none at present), everything else at DEBUG
 rm -f log4j.properties
