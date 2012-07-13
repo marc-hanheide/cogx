@@ -50,6 +50,8 @@ private:
 
   cdl::WorkingMemoryAddress m_pointedObjAddr;
 
+  ManipulationTaskStatus m_lastStatus;
+
 #if 0
   struct armAction {
   ManipulationTaskType type;
@@ -81,12 +83,12 @@ private:
   PABDisplayClient display;
 #endif
 #endif
-  bool pointAtObject(cdl::WorkingMemoryAddress addr);
+  ManipulationTaskStatus pointAtObject(cdl::WorkingMemoryAddress addr);
   cogx::Math::Pose3 pointingPose(const cogx::Math::Pose3 objPose);
 
   bool addFarArmMovementCommand(cast::cdl::WorkingMemoryAddress wma); //, cogx::Math::Vector3 offset);
-  bool addMoveToHomeCommand();
-  bool addMoveArmToPose(cogx::Math::Pose3 pose);
+  ManipulationTaskStatus addMoveToHomeCommand();
+  ManipulationTaskStatus addMoveArmToPose(cogx::Math::Pose3 pose);
   bool addOpenGripperCommand();
   bool addCloseGripperCommand();
 

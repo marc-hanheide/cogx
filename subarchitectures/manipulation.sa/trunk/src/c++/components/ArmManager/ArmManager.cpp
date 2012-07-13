@@ -28,7 +28,7 @@ using namespace cogx::Math;
 namespace cogx
 {
 
-ArmManager::ArmManager()
+  ArmManager::ArmManager() : m_lastStatus(MCREQUESTED)
 {
 #ifdef FEAT_VISUALIZATION
   //display.setClientData(this);
@@ -126,12 +126,7 @@ void ArmManager::runComponent()
           //    task->objPointerSeq[0]->address.id.c_str());
           //      	  m_pointing_now = addFarArmMovementCommand(addr);
           assert(task->objPointerSeq[0]->type.find("VisualObject") != string::npos);
-          m_pointing_now = pointAtObject(task->objPointerSeq[0]->address);
-
-          if(m_pointing_now)
-            task->status = MCSUCCEEDED;
-          else
-            task->status = MCFAILED;
+          task->status = pointAtObject(task->objPointerSeq[0]->address);
 
           break;
         case RETRACTARM:
@@ -139,11 +134,10 @@ void ArmManager::runComponent()
           //  task->status = MCFAILED;
           //  break;
           //} 
-          if(addMoveToHomeCommand()) {
+	  task->status = addMoveToHomeCommand();
+          if(task->status == MCSUCCEEDED) {
             m_pointing_now = false;
-            task->status = MCSUCCEEDED;
-          } else
-            task->status = MCFAILED;
+          } 
 
           break;
         default:
@@ -190,7 +184,7 @@ Pose3 ArmManager::pointingPose(const Pose3 objPose)
   return pointingPose;
 }
 
-bool ArmManager::pointAtObject(cdl::WorkingMemoryAddress addr)
+ManipulationTaskStatus ArmManager::pointAtObject(cdl::WorkingMemoryAddress addr)
 {
   Pose3 objPose;
   setIdentity(objPose);
@@ -201,7 +195,7 @@ bool ArmManager::pointAtObject(cdl::WorkingMemoryAddress addr)
   }
   catch(DoesNotExistOnWMException e) {
     println("pointAtObject: the object does not exist!");
-    return false;
+    return MCFAILED;
   }
   
  // addCloseGripperCommand();
@@ -260,7 +254,7 @@ void ArmManager::receiveNewCommand(const cdl::WorkingMemoryChange &_wmc)
 //}
 //}
 
-bool ArmManager::addMoveArmToPose(cogx::Math::Pose3 pose) //, cogx::Math::Vector3 offset)
+ManipulationTaskStatus ArmManager::addMoveArmToPose(cogx::Math::Pose3 pose) //, cogx::Math::Vector3 offset)
 {
   log("Starting to move the arm (MoveArmToPose).");
   MoveArmToPosePtr moveArmCom = new MoveArmToPose();
@@ -270,6 +264,8 @@ bool ArmManager::addMoveArmToPose(cogx::Math::Pose3 pose) //, cogx::Math::Vector
   //	farArmMovementCom->offset = offset;
   string data_id = newDataID();
   m_repeat_arm_movement = true;
+  m_lastStatus = MCREQUESTED;
+  m_lastStatus = MCREQUESTED;
 
   while(m_repeat_arm_movement) {
     m_repeat_arm_movement = false;
@@ -281,11 +277,11 @@ bool ArmManager::addMoveArmToPose(cogx::Math::Pose3 pose) //, cogx::Math::Vector
     m_halt_arm = true;
 
     if(!isRunning())
-      return false;
+      return MCFAILED;
     deleteFromWorkingMemory(data_id);	
   }
   log("Arm movement finished.");
-  return true;
+  return m_lastStatus;
 }
 
 bool ArmManager::addFarArmMovementCommand(cast::cdl::WorkingMemoryAddress wma) //, cogx::Math::Vector3 offset)
@@ -316,7 +312,7 @@ bool ArmManager::addFarArmMovementCommand(cast::cdl::WorkingMemoryAddress wma) /
   return true;
 }
 
-bool ArmManager::addMoveToHomeCommand()
+ManipulationTaskStatus ArmManager::addMoveToHomeCommand()
 {
   log("Starting to move the arm (MoveArmToHomePositionCommand).");
 
@@ -327,6 +323,7 @@ bool ArmManager::addMoveToHomeCommand()
   //	farArmMovementCom->offset = offset;
   string data_id = newDataID();
   m_repeat_arm_movement = true;
+  m_lastStatus = MCREQUESTED;
 
   while(m_repeat_arm_movement){
     m_repeat_arm_movement = false;
@@ -337,11 +334,11 @@ bool ArmManager::addMoveToHomeCommand()
       sleepComponent(100);
     m_halt_arm = true;
     if(!isRunning())
-      return false;
+      return MCFAILED;
     deleteFromWorkingMemory(data_id);
   }
   log("Arm movement finished.");
-  return true;
+  return m_lastStatus;
 }
 
 
@@ -451,12 +448,16 @@ void ArmManager::overwriteMoveToPose(const cdl::WorkingMemoryChange & _wmc)
   if(cmd->status == manipulation::slice::FINISHED){
     log("Arm movement finished");
     m_halt_arm =false;
+    m_lastStatus = MCSUCCEEDED;
   }
-  if(cmd->status == manipulation::slice::COMMANDFAILED){
+  else if(cmd->status == manipulation::slice::COMMANDFAILED){
     log("Arm movement failed");
     m_halt_arm =false;
     //		m_repeat_arm_movement = true;
+    m_lastStatus = MCFAILED;
+
   }
+
   if (m_halt_arm)
     log("m_halt_arm true");
   else
