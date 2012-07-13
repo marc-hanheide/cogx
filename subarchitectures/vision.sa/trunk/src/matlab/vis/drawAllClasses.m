@@ -35,7 +35,7 @@ for i = 1 : 2
     end
     title(nam{i},'Parent',ha);
     
-    if i==1
+    if i==1 && length(getc(model,1,'Fb'))==2
         axis(ha,[0 1 0 1]);
     end
 end

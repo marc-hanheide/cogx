@@ -55,33 +55,42 @@ for i=1:numCall
    %   set(ha,'ButtonDownFcn',{'showOneModel',mC(i),Fnames,Cnames});
 end
 
-txt=strFromIdxs(mC);	
-if length(txt)>1 && numCall>0%8
-    a=axis(ha);
-    w = a(2) - a(1) ;
+txt=strFromIdxs1(mC)
+if length(txt)>1 && numCall>0
     
-    len_p = length([mC{1}.class_labels,mC{2}.class_labels]) ;
-    sh = mod( len_p,5) ;
-    dd = 0 ;
-    if sh == 0
-        sh = 4 ;
-    end
-    if sh > 2          
-        dd = 4 + sh ;
-    end
-    if size(a) <= 4
-        h = a(4) - a(3) ;
-        text(a(1)- (dd*w/1),a(3)-0.2*h,txt,'FontSize',12 , 'Parent', ha);
-    else
-        h = a(4) - a(3) ;
-        text(a(1)- (dd*w/1),0,a(5)-0.2*h,txt,'FontSize',12 , 'Parent', ha);
-    end
     
+ha = axes('Position',[0 0 1 1],'Parent',hp,'Visible','off');
+ text(.5,.01,txt,'FontSize',11 , 'Parent', ha, 'HorizontalAlignment','center','VerticalAlignment','bottom');
     
 end
-if length(txt)>1%8
-   set(fig.tx_Fb,'String',txt);
-end
+
+% if length(txt)>1 && numCall>0%8
+%     a=axis(ha);
+%     w = a(2) - a(1) ;
+%     
+%     len_p = length([mC{1}.class_labels,mC{2}.class_labels]) ;
+%     sh = mod( len_p,5) ;
+%     dd = 0 ;
+%     if sh == 0
+%         sh = 4 ;
+%     end
+%     if sh > 2          
+%         dd = 4 + sh ;
+%     end
+%     if size(a) <= 4
+%         h = a(4) - a(3) ;
+%         text(a(1)- (dd*w/1),a(3)-0.2*h,txt,'FontSize',12 , 'Parent', ha);
+%     else
+%         h = a(4) - a(3) ;
+%         text(a(1)- (dd*w/1),0,a(5)-0.2*h,txt,'FontSize',12 , 'Parent', ha);
+%     end
+%     
+%     
+% end
+% if length(txt)>1%8
+%    set(fig.tx_Fb,'String',txt);
+% end
+
 displayG(fig.main,'GL');
 displayTL(mC);
 %displayTD(mC);
@@ -110,3 +119,19 @@ txt=[txt '['];
    fbs=reshape(Coma.Fnames(fb,:)',1,numel(Coma.Fnames(fb,:)));
    txt=[txt fbs '     '];   
 end
+
+
+function txt=strFromIdxs1(mC)
+
+numSC=getc(mC,'numSC');
+
+global Coma
+
+txt=[];
+for sc=1:numSC
+   scn=Coma.SCnames(sc,:);
+   fb=getc(mC,sc,'Fb');
+   fbs=reshape(Coma.Fnames(fb,:)',1,numel(Coma.Fnames(fb,:)));
+   txt=[txt scn ': ' fbs '    '];
+end
+
