@@ -881,9 +881,9 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
                     else:
                         cparts.append(lit)
 
-                commit_effects = []
+                knowledge_effects = []
                 for (f, args), v in zip(r.variables, values):
-                    commit_effects.append(b.effect(mapl.direct_knowledge, agent, b(f, *args)))
+                    knowledge_effects.append(b.effect(mapl.direct_knowledge, agent, b(f, *args)))
                     cparts.append(b.cond(mapl.commit, b(f, *args), v))
                     
                 prob_eff = b.effect("assign", (probability,), p )
@@ -903,7 +903,7 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
                     a.precondition = conditions.Conjunction(cparts, a)
                     a.replan = conditions.Conjunction(rparts, a)
                 
-                a.effect = effects.ConjunctiveEffect(commit_effects + [prob_eff], a)
+                a.effect = effects.ConjunctiveEffect(knowledge_effects + [prob_eff], a)
                 a.set_total_cost(0)
                 # if r.costs is None:
                 #     a.set_total_cost(0)
@@ -911,7 +911,59 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
                 #     a.set_total_cost(r.costs)
 
                 actions.append(a)
-            
+
+        #inverse knowlegde actions
+        # for r in domain.dt_rules:
+        #     for p, values in r.values:
+        #         for (f, args), v in zip(r.variables, values):
+        #             agent = predicates.Parameter("?a", mapl.t_planning_agent)
+        #             i = action_count[r]
+        #             action_count[r] += 1
+        #             a = mapl.MAPLAction("__knowledge-inverse-%s-%d" % (r.name,i), [agent], r.args, [], None, None, None, [], domain)
+        #             b = Builder(a)
+        #             cparts = []
+        #             rparts = []
+
+        #             knowledge_effects = []
+        #             for lit in r.conditions:
+        #                 if lit.predicate == builtin.equals and lit.args[0].function in prob_functions:
+        #                     cparts.append(b.cond(mapl.commit, lit.args[0], lit.args[1]))
+        #                     knowledge_effects.append(b.effect(mapl.direct_knowledge, agent, lit.args[0]))
+        #                 elif lit.predicate != mapl.defined:
+        #                     cparts.append(lit)
+
+
+        #             rparts = [b.cond(mapl.knowledge, agent, b(f, *args))]
+                    
+
+
+        #             # make a distinction between certain knowledge transfer (if p ~= 1) and uncertain
+        #             # knowledge transfer. The former can be applied even if the precondition is true in the initial state,
+        #             # the latter not.
+        #             try:
+        #                 pval = p.object.value
+        #             except AttributeError:
+        #                 if isinstance(p, predicates.FunctionTerm):
+        #                     knowledge_effects.append(b.effect(mapl.direct_knowledge, agent, p))
+
+        #             pval = 0.5
+        #             #prob_eff = b.effect("assign", (probability,), p )
+
+        #             if pval > 0.999:
+        #                 a.precondition = conditions.Conjunction(cparts+rparts, a)
+        #             else:
+        #                 a.precondition = conditions.Conjunction(cparts, a)
+        #                 a.replan = conditions.Conjunction(rparts, a)
+
+        #             a.effect = effects.ConjunctiveEffect(knowledge_effects, a)
+        #             a.set_total_cost(100)
+        #             # if r.costs is None:
+        #             #     a.set_total_cost(0)
+        #             # else:
+        #             #     a.set_total_cost(r.costs)
+
+        #             actions.append(a)
+                
         return actions
     
     def commit_actions_from_rules(self, domain, prob_functions):
@@ -1000,6 +1052,14 @@ class DTPDDLCompiler(translators.Translator):
             new_reward_eff = b.effect("assign", ("reward",), -10)
 
         a2.effect = effects.ConjunctiveEffect.join([a2.effect, new_reward_eff])
+
+        axiom_preds = set(a.predicate.name for a in action.parent.axioms)
+        print map(str, axiom_preds)
+        @visitors.replace
+        def remove_axioms_conds(cond, parts):
+            if isinstance(cond, conditions.LiteralCondition) and cond.predicate.name in axiom_preds:
+                return False
+        a2.precondition.visit(remove_axioms_conds)
         
         if fail_cost_term:
             fail_cost_term = fail_cost_term[0]
