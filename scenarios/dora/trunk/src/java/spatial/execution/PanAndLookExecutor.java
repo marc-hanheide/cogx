@@ -31,7 +31,7 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 			-90 };
 
 	// TODO: figure out if this is useful
-	private static final double TILT_DEG = 7.5;
+	private static final double TILT_DEG = 12.5; // was 7.5
 
 	// private static final double FIXED_TILT = -40 * Math.PI / 180.0;
 
