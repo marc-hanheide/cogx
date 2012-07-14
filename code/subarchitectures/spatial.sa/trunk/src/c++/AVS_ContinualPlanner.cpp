@@ -910,6 +910,7 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
 
   for (size_t j = 0; j < comarooms[comaroom_i]->containedPlaceIds.size(); j++) {
     currentRoomPlaceIds.push_back(comarooms[comaroom_i]->containedPlaceIds[j]);
+    log("room %d contains place %d", comaroom_i, comarooms[comaroom_i]->containedPlaceIds[j]);
     NavData::FNodePtr node = agg->getNodeFromPlaceID(
         comarooms[comaroom_i]->containedPlaceIds[j]);
     m_roomNodes[roomId].push_back(node);
