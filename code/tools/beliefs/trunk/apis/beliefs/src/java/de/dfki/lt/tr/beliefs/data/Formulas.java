@@ -243,6 +243,10 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 	public Formula firstValue() {
 		return Formula.create(_content.values.get(0).val);
 	}
+	
+	public float firstProb() {
+		return _content.values.get(0).prob;
+	}
 
 	public Formula getMostLikely() {
 		double max = -1;
@@ -260,6 +264,24 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 //		}
 
 	}
+	
+	public float getMaxProb() {
+		float max = -1;
+	//	dFormula maxFormula = null;
+		for (FormulaProbPair f : _content.values) {
+			if (f.prob > max) {
+				max = f.prob;
+//				maxFormula = f.val;
+			}
+		}
+		// if (maxFormula != null) {
+			return max;
+//		} else {
+//			return null;
+//		}
+
+	}
+	
 
 	/**
 	 * computes the Shannon entropy (in 'nat')
