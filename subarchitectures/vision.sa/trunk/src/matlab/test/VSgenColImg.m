@@ -9,7 +9,7 @@ wh=11;
 global Test
 %rgb=impixel(rgba);rgb
 [i j]=getpts(Test.rgba);
-pt=round([i,j])
+pt=round([i,j]);
 rgb=squeeze(Test.RGB(pt(2),pt(1),:))
 
 x=cat(3,repmat(rgb(1),wh,wh),repmat(rgb(2),wh,wh),repmat(rgb(3),wh,wh));
@@ -30,9 +30,9 @@ set(Figs.vsHs.axCimgH,'Visible','off');
 if ~isempty(pt3d)
 %     figure(7) ; clf ;
     axes(Figs.vsHs.axCpts3dH) ; hold off ;
-    f=extAPfeatures(x,b,Params.FV);
-  
-    cll = repmat( hsv2rgb(f(1:3)')*255, size(pt3d,1), 1 ) ;
+    f=extAPfeatures(x*255,b,Params.FV);
+    
+    cll = repmat( hsl2rgb(f(1:3)')*255, size(pt3d,1), 1 ) ;
     idx = round(linspace(1,size(pt3d,1),N_max)) ;
     pt3d = pt3d(idx,:) ;
     cll = cll(idx,:) ;
