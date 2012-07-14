@@ -427,11 +427,13 @@ void ArmManager::overwriteMoveToHomeCommand(const cdl::WorkingMemoryChange & _wm
   if(cmd->status == manipulation::slice::FINISHED){
     log("Arm movement finished");
     m_halt_arm =false;
+    m_lastStatus = MCSUCCEEDED;
   }
-  if(cmd->status == manipulation::slice::COMMANDFAILED){
+  else if(cmd->status == manipulation::slice::COMMANDFAILED){
     log("Arm movement failed");
     m_halt_arm =false;
     //		m_repeat_arm_movement = true;
+    m_lastStatus = MCFAILED;
   }
   if (m_halt_arm)
     log("m_halt_arm true");
