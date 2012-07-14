@@ -171,7 +171,7 @@ else
             end
             shp3d = extractShpFts( pts3d ) ;
         else
-            shp3d = [ -666, -666, -666 ] ;
+            shp3d = [ -6, -6, -6 ] ;
         end
         
         
