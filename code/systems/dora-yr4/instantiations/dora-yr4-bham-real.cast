@@ -1,5 +1,5 @@
 # use this line if UBK is wanted rather than HGV
-SETVAR expl_rules=explanations-dora-ubk.pddl
+#SETVAR expl_rules=explanations-dora-ubk.pddl
 
 # old planning history files are useful for PEV debugging
 SETVAR old_planning_history=true
@@ -31,7 +31,8 @@ SETVAR spatial_max_door_width=0.85
 #SETVAR exclude_exploration=--exclude-from-exploration "x > 2.7 y < 0 or x > 10.5 or x > 9 y < -0.8"
 #
 ## exclude 234 and down corridor past 245
-SETVAR exclude_exploration=--exclude-from-exploration "x > 10.3 x < 12 y > 1.5 y < 3.7 or x > 1.7 x < 2.7 y > 1.9 y < 3 or x > 2.8 x < 4.9 y > -1 y < 0"
+#234: x > 1.7 x < 2.7 y > 1.9 y < 3
+SETVAR exclude_exploration=--exclude-from-exploration "x > 10.3 x < 12 y > 1.5 y < 3.7 or x > 2.8 x < 4.9 y > -1 y < 0.9"
 # also exclude 236, 237, etc:
 # or x > 5 x < 11 y > 3.2 y < 4.5"
 
@@ -79,17 +80,17 @@ SETVAR spatial_node_obstacle_margin=0.9
 SETVAR spatial_node_unknown_margin=1.0
 
 # Greatest allowed number of generated view cones
-#SETVAR max_viewcones=20
+SETVAR max_viewcones=20
 
 # Smallest allowed ABSOLUTE probability of any one view cone
-#SETVAR min_cone_prob=0.01
+SETVAR min_cone_prob=0.03
 
 # Smallest allowed RELATIVE probability of any one view cone
 # (i.e. its portion out of the total probability mass in a room)
-#SETVAR min_relative_cone_prob=0.01
+SETVAR min_relative_cone_prob=0.03
 
 # Smallest allowed ABSOLUTE probability of any one cone group
-#SETVAR min_conegroup_prob=0.04
+SETVAR min_conegroup_prob=0.1
 
 ## Use an increased confidence to avoid false postives
 SETVAR object_detector_confidence=0.11
