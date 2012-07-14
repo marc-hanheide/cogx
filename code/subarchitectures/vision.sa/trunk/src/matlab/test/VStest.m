@@ -22,7 +22,7 @@ function varargout = VStest(varargin)
 
 % Edit the above text to modify the response to help VStest
 
-% Last Modified by GUIDE v2.5 12-Jul-2012 01:06:00
+% Last Modified by GUIDE v2.5 14-Jul-2012 02:01:04
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -200,3 +200,19 @@ global mC;
 fig=dfigure(5,2,'Models');
 resizeFigs(fig,5,2);
 drawAllClasses(mC,fig);
+
+
+% --- Executes on button press in pb_evalmC.
+function pb_evalmC_Callback(hObject, eventdata, handles)
+% hObject    handle to pb_evalmC (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+VSevalmC;
+
+
+% --- Executes on button press in pushbutton8.
+function pushbutton8_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton8 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+VSselectImage;
