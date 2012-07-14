@@ -22,7 +22,7 @@ function varargout = VStest(varargin)
 
 % Edit the above text to modify the response to help VStest
 
-% Last Modified by GUIDE v2.5 14-Jul-2012 02:01:04
+% Last Modified by GUIDE v2.5 14-Jul-2012 22:04:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -216,3 +216,64 @@ function pushbutton8_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 VSselectImage;
+
+
+
+function ed_colors_Callback(hObject, eventdata, handles)
+% hObject    handle to ed_colors (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of ed_colors as text
+%        str2double(get(hObject,'String')) returns contents of ed_colors as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function ed_colors_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ed_colors (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pb_genImg.
+function pb_genImg_Callback(hObject, eventdata, handles)
+% hObject    handle to pb_genImg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if get(handles.lb_colSpace, 'Value')==1
+  rgb=str2num(get(handles.ed_colors, 'String'))
+  hsl=rgb2hsl(rgb)
+else
+  hsl=str2num(get(handles.ed_colors, 'String'))
+  rgb=hsl2rgb(hsl)
+end
+VSgenImgFromRGB(rgb);
+
+
+% --- Executes on selection change in lb_colSpace.
+function lb_colSpace_Callback(hObject, eventdata, handles)
+% hObject    handle to lb_colSpace (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns lb_colSpace contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from lb_colSpace
+
+
+% --- Executes during object creation, after setting all properties.
+function lb_colSpace_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lb_colSpace (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
