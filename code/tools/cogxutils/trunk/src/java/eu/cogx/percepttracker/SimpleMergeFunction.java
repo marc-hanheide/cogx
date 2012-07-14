@@ -294,8 +294,16 @@ private final Class<Via> m_viaCls;
 				logger.debug("ignore feature " + entry.getKey());
 				continue;
 			}
-			result.put(entry.getKey(), entry.getValue());
-			logger.debug("add " + entry.getKey() + " from dom");
+			if (entry.getValue().getDistribution().getMaxProb() > 0.9) {
+				result.put(entry.getKey(), entry.getValue());
+				logger.debug("add " + entry.getKey() + " from dom");
+			}
+			else if(entry.getValue().getDistribution().firstValue().isProposition() &&
+					entry.getValue().getDistribution().getMostLikely().getProposition() ==
+						sub.get(entry.getKey()).getDistribution().getMostLikely().getProposition()) {
+				result.put(entry.getKey(), entry.getValue());
+				logger.debug("add " + entry.getKey() + " from dom");
+			}
 		}
 		
 		for (Entry<String, FormulaDistribution> entry : sub.entrySet()) {
@@ -305,6 +313,13 @@ private final Class<Via> m_viaCls;
 				continue;
 			}
 			if (dom.get(entry.getKey()) == null) {
+				result.put(entry.getKey(), entry.getValue());
+				logger.debug("add " + entry.getKey() + " from sub");
+			}
+			else if (entry.getValue().getDistribution().firstValue().isProposition() &&
+					dom.get(entry.getKey()).getDistribution().getMostLikely().getProposition() !=
+									entry.getValue().getDistribution().getMostLikely().getProposition()  &&
+					dom.get(entry.getKey()).getDistribution().getMaxProb() < 0.1) {
 				result.put(entry.getKey(), entry.getValue());
 				logger.debug("add " + entry.getKey() + " from sub");
 			}
