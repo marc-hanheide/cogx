@@ -13,8 +13,8 @@ HOSTNAME  Main           [Bamboo1]
 
 HOSTNAME  PlayerHost     [Main]
 HOSTNAME  PeekabotHost   [Bamboo2]
-HOSTNAME  DisplayHost    [Bamboo2]
-HOSTNAME  AbducerHost    [Main]
+HOSTNAME  DisplayHost    [Bamboo1]
+HOSTNAME  AbducerHost    [Bamboo1]
 HOSTNAME  DialogueHost   [Bamboo2]
 
 # All subarchitectures executed on the same host
