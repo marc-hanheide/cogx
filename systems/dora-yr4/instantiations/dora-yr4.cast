@@ -197,6 +197,11 @@ VARDEFAULT min_obstacle_height=0.25
 # determining free space
 VARDEFAULT explore_range=2.0
 
+# Maximum allowed translational and rotational velocities
+# during a GOTO_PLACE command
+VARDEFAULT max_goto_v=0.5
+VARDEFAULT max_goto_w=0.5
+
 # Whether to save and load obstacle grid map
 VARDEFAULT spatial_load_map=--load-map --save-map
 
@@ -378,7 +383,7 @@ IFOPTALL(%(feature_options), spatial)
 # Generates node hypotheses for PlaceManager on request, using grid map
 # Receives VisualExplorationCommand and controls PTU to explore space
 # Visualizes grid map, local odometry position estimate (red tick), laser scan
-    CPP GD spatial.control      SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin %(spatial_node_obstacle_margin) --node-unknown-margin %(no_slam_age_warning) %(spatial_node_unknown_margin) %(spatial_load_map) %(spatial_show_3d_obstacles) %(spatial_show_expanded_map) --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) %(spatial_ctrl_ptu) %(spatial_pcserver) %(usePB) %(simulate_kinect) #--display-cure-obstacle-map --cat-explore-range 5.6
+    CPP GD spatial.control      SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin %(spatial_node_obstacle_margin) --node-unknown-margin %(no_slam_age_warning) %(spatial_node_unknown_margin) %(spatial_load_map) %(spatial_show_3d_obstacles) %(spatial_show_expanded_map) --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) %(spatial_ctrl_ptu) %(spatial_pcserver) %(usePB) --max-goto-v %(max_goto_v) --max-goto-w %(max_goto_w) %(simulate_kinect) #--display-cure-obstacle-map --cat-explore-range 5.6
 
     IFEQ(%(hardware),none)
         CPP GD slam.process     SlamProcessFake -c %(spatial_cureconfig) %(slam_mapconfig) -m tmpmap.metric
