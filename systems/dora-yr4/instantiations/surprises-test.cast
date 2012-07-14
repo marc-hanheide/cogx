@@ -4,43 +4,19 @@ VARDEFAULT planning_domain=dora-interactive.pddl
 VARDEFAULT planning_problem=dora-interactive-avs-viewcones.pddl
 # VARDEFAULT planning_problem=dora-avs-p1-init.pddl
 # VARDEFAULT planning_problem=dora-interactive1.pddl
-VARDEFAULT history_file=history1-9.pddl
+# VARDEFAULT history_file=history-moving-and-searching.pddl
+# VARDEFAULT history_file=planner-log-1.log
+VARDEFAULT history_file=~/cogxlog/planner-log-1.log
+# VARDEFAULT history_file=history-high.pddl
+# VARDEFAULT history_file=history-no-kitchen.pddl
 
-VARDEFAULT expl_rules=explanations-dora.pddl
+VARDEFAULT expl_rules=explanations-dora-ubk.pddl
+# VARDEFAULT expl_rules=explanations-dora.pddl
 
 # VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-TRO.txt"
 VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-DOESNOTEXIST.txt"
 VARDEFAULT default_knowledge="instantiations/defaultprobs/default_knowledge-tro.xml"
 # VARDEFAULT default_knowledge="instantiations/defaultprobs/default_knowledge.xml"
-VARDEFAULT discrete_room_cats=
-#VARDEFAULT discrete_room_cats=--discrete
-VARDEFAULT tour_places="0 9 4"
-VARDEFAULT logged_types=<multiline>
-  execution.slice.Action, 
-  VisionData.VisualObject, 
-  SpatialData.NavCommand, 
-  SpatialData.ObjectSearchResult, 
-  SpatialData.ViewPoint, 
-  SpatialData.ProcessConeGroup, 
-  SpatialData.RelationalViewPointGenerationCommand,
-  comadata.ComaRoom,
-  autogen.Planner.Action,
-  autogen.Planner.PlanningTask
-</multiline>
-
-VARDEFAULT siftroot_=./instantiations/sift-models
-VARDEFAULT plyroot_=./instantiations/ply-models
-VARDEFAULT or3d_sift_files=<multiline>
-   %(siftroot_)/frosties2.sift
-   %(siftroot_)/re_book.sift
-</multiline>
-VARDEFAULT or3d_ply_files=<multiline>
-   %(plyroot_)/frosties2.ply
-   %(plyroot_)/re_book.ply
-</multiline>
-VARDEFAULT or3d_labels=cerealbox book
-
-
 
 HOST localhost
 
@@ -48,11 +24,18 @@ HOST localhost
 INCLUDE includes/visualization.sa/v11n-base.cast
 
 # planning and motivation #####################################################
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --debug --nodot --pdb  --low-p-threshold 0.01 --default %(defaults) --config config.dora.ini --history %(history_file)  --expl_rules %(expl_rules)
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --debug --nodot --pdb  --low-p-threshold 0.01 --default %(defaults) --config config.dora.ini --history %(history_file)  --expl_rules %(expl_rules) --run-now
 COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
 INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/viz-plan.cast
-JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent --goals %(goal)
+# INCLUDE includes/planner.sa/viz-plan.cast
+# JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent --goals %(goal)
+# JAVA MG goal.hyp-generator motivation.components.generators.VisualObjectHypothesisGoalGenerator
+# JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "PassAllFilter" 
+# JAVA MG goal.scheduler motivation.components.managers.SimpleScheduler
+
+# JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact
+
+
 # exection ####################################################################
 #JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
 #JAVA MG executor dora.execution.components.DoraExecutionMediator

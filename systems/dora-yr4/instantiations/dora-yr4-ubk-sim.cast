@@ -43,7 +43,7 @@ VARDEFAULT logged_types=<multiline>
 </multiline>
 
 ### the default goals passed on to the planner GUI
-VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
+VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace)); (kval ROBOT (category ROOM)); (kval ROBOT (dora__inroom container meetingroom)); (kval ROBOT (dora__inobject magazine container meetingroom))"
 
 SETVAR hardware=simulation
 # SETVAR old_planning_history=true
