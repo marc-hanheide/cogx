@@ -655,36 +655,6 @@
              )
 
 
-
-   ;; (:action ask-for-object-existence
-   ;;          :agent (?a - robot)
-   ;;          :parameters (?l - label)
-   ;;          :variables (?h - person ?r - room ?p - place)
-   ;;          :precondition (and (not (done))
-   ;;                             (engaged ?h)
-   ;;                             (= (is-in ?h) ?p)
-   ;;                             (= (is-in ?a) ?p)
-   ;;                             (= (in-room ?p) ?r))
-   ;;          :effect (and 
-   ;;                   (increase (total-cost) 500)
-   ;;                   ;; (assign (failure-cost) 100)
-   ;;                   )
-   ;;          )
-
-   ;; (:observe object-existence
-   ;;           :agent (?a - robot)
-   ;;           :parameters (?l - label ?h - person ?p - place ?r - room ?val - boolean)
-   ;;           :execution (ask-for-object-existence ?a ?l ?h ?r ?p)
-   ;;           :precondition (and
-   ;;                          ;; (engaged ?h)
-   ;;                          ;; (= (is-in ?h) ?p)
-   ;;                          ;; (= (label ?o) ?l)
-   ;;                          )
-   ;;           :effect (and (when (= (obj_exists ?l in ?r) ?val)
-   ;;                          (probabilistic 0.95 (observed (obj_exists ?l in ?r) ?val))))
-   ;;           )
-
-
    (:action ask-for-object-existence
             :agent (?a - robot)
             :parameters (?l - label ?o - visualobject ?rel - spatial_relation ?what - (either visualobject room))
@@ -702,16 +672,17 @@
                      (increase (total-cost) 10)
                      ;; (assign (failure-cost) 100)
                      )
+            :sense (entity-exists ?o)
             )
 
-   (:observe object-existence
-             :agent (?a - robot)
-             :parameters (?l - label ?o - visualobject ?h - person ?p - place ?what - (either visualobject room) ?rel - spatial_relation ?val - boolean)
-             :execution (ask-for-object-existence ?a ?l ?o ?rel ?what ?p ?h)
-             :precondition (and)
-             :effect (and (when (= (entity-exists ?o) ?val)
-                            (probabilistic 0.95 (observed (entity-exists ?o) ?val))))
-             )
+   ;; (:observe object-existence
+   ;;           :agent (?a - robot)
+   ;;           :parameters (?l - label ?o - visualobject ?h - person ?p - place ?what - (either visualobject room) ?rel - spatial_relation ?val - boolean)
+   ;;           :execution (ask-for-object-existence ?a ?l ?o ?rel ?what ?p ?h)
+   ;;           :precondition (and)
+   ;;           :effect (and (when (= (entity-exists ?o) ?val)
+   ;;                          (probabilistic 0.95 (observed (entity-exists ?o) ?val))))
+   ;;           )
 
 
    (:action ask-for-bk-inroom
