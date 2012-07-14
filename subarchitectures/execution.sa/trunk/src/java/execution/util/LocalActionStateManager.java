@@ -73,8 +73,11 @@ public class LocalActionStateManager extends Thread {
 							m_executorWrapper.m_second);
 
 				} catch (CASTException e) {
-					m_component.println(e.message);
-					e.printStackTrace();
+					m_component
+							.logException(
+									"Exception when action completing. This may indicate the action was cancelled elsewhere",
+									e);
+
 				}
 			}
 		}
@@ -252,7 +255,7 @@ public class LocalActionStateManager extends Thread {
 
 					if (executor.isBlockingAction()) {
 						TriBool executionSuccess = executor.execute();
-						
+
 						// need to lock to protect from other updates
 						m_component.lockComponent();
 						actionCompleted(executionSuccess,
