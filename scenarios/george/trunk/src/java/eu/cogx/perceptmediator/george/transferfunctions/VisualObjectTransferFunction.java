@@ -10,17 +10,16 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import VisionData.VisualObject;
+import VisionData.VisualObjectPresence;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChange;
-import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
-import de.dfki.lt.tr.beliefs.data.formulas.Formula;
-import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
+import de.dfki.lt.tr.beliefs.data.formulas.BoolFormula;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleTransferFunction;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 
 /**
  * @author marc, nah
@@ -77,6 +76,12 @@ public class VisualObjectTransferFunction extends
 		fpair.prob = 1;
 
 		result.put(PRESENCE_KEY, fpair);
+
+		// non-visible objects can no longer be talked about
+		if (from.presence != VisualObjectPresence.VopVISIBLE) {
+			result.put("is-potential-object-in-question", new FormulaProbPair(
+					BoolFormula.create(false).get(), 1f));
+		}
 
 		// logger.info("added salience");
 
