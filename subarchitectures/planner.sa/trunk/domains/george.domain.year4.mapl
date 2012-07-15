@@ -116,6 +116,23 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;                   INIT RULES                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+  (:init-rule set-initial-attributed-color
+    :parameters (?v - VisualObject)
+    :precondition (= (attributed-color ?v) UNKNOWN)
+    :effect (assign (attributed-color ?v) UNKNOWN_COLOR)
+  )
+
+  (:init-rule set-initial-attributed-shape
+    :parameters (?v - VisualObject)
+    :precondition (= (attributed-shape ?v) UNKNOWN)
+    :effect (assign (attributed-shape ?v) UNKNOWN_SHAPE)
+  )
+
+  (:init-rule set-initial-attributed-objecttype
+    :parameters (?v - VisualObject)
+    :precondition (= (attributed-objecttype ?v) UNKNOWN)
+    :effect (assign (attributed-objecttype ?v) UNKNOWN_IDENT)
+  )
 
   (:init-rule set-polar-question-color-threshold
     :parameters (?r - Robot)
