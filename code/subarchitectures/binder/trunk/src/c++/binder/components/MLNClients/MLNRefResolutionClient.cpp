@@ -74,6 +74,15 @@ void MLNRefResolutionClient::configure(const map<string,string> & _config)
   AbsMLNClient::configure(_config);
     
   map<string,string>::const_iterator it;
+  
+  if ((it = _config.find("--keys")) != _config.end()) {
+		stringstream ss(it->second);
+		string token;
+	
+	  while(getline(ss, token, ',')) {
+	       m_supportedConstraintTypes.insert(token);
+	  }
+	}
 /* 
   if ((it = _config.find("--eids")) != _config.end()) {
   	stringstream ss(it->second);
@@ -93,9 +102,9 @@ void MLNRefResolutionClient::start()
   AbsMLNClient::start();
   m_constraintAddr.id = "no constraint";
   
-  string constraints[] = {"color","shape","type"};
+ // string constraints[] = {"color","shape","objecttype"};
   
-  m_supportedConstraintTypes = set<string>(constraints, constraints + 3); 
+ // m_supportedConstraintTypes = set<string>(constraints, constraints + 3); 
   
   addChangeFilter(createGlobalTypeFilter<ReferenceResolutionRequest>(cdl::ADD),
 		new MemberFunctionChangeReceiver<MLNRefResolutionClient>(this,
