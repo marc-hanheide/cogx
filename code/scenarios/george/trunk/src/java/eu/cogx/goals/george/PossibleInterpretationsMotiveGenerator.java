@@ -133,10 +133,7 @@ public class PossibleInterpretationsMotiveGenerator
 			if (motive instanceof TutorInitiativeLearningMotive) {
 				TutorInitiativeLearningMotive tilm = (TutorInitiativeLearningMotive) motive;
 				for (WorkingMemoryAddress reference : potentialReferenceList) {
-					// need to add attribution because the superclass only adds
-					// this to the most confident referent
-					addAttribution(reference, tilm.assertedFeature,
-							tilm.assertedValue, tilm.assertedLearn);
+				
 					removeLearningEffect(reference, tilm.assertedFeature,
 							tilm.assertedLearn);
 				}

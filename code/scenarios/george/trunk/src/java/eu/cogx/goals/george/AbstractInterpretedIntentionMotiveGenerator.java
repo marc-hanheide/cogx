@@ -35,6 +35,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
+import de.dfki.lt.tr.dialogue.intentions.RichIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.FeatureAscriptionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.OpenFeatureQuestionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
@@ -182,15 +183,20 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	}
 
 	protected void logIntention(BaseIntention _intention) {
-		println("stringContent");
+		logIntention(this, _intention);
+	}
+
+	public static void logIntention(ManagedComponent _component,
+			BaseIntention _intention) {
+		_component.log("stringContent");
 		for (String key : _intention.stringContent.keySet()) {
-			println(key + " -> " + _intention.stringContent.get(key));
+			_component.log(key + " -> " + _intention.stringContent.get(key));
 		}
 
-		println("");
-		println("addressContent");
+		_component.log("");
+		_component.log("addressContent");
 		for (String key : _intention.addressContent.keySet()) {
-			println(key + " -> "
+			_component.log(key + " -> "
 					+ CASTUtils.toString(_intention.addressContent.get(key)));
 		}
 	}
@@ -242,11 +248,6 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 					.tryDecode(_intention);
 			assert (decoded != null);
 
-			if (!_ambiguous) {
-				CASTEffect acceptEffect = decoded.getOnAcceptEffect();
-				acceptEffect.makeItSo(this);
-			}
-
 			return openQuestion(decoded.getFeatureName(),
 					aboutBeliefAddress(_intention));
 		} else if (subtype.equals("polar")) {
@@ -255,11 +256,6 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			PolarFeatureQuestionIntention decoded = PolarFeatureQuestionIntention.Transcoder.INSTANCE
 					.tryDecode(_intention);
 			assert (decoded != null);
-
-			if (!_ambiguous) {
-				CASTEffect acceptEffect = decoded.getOnAcceptEffect();
-				acceptEffect.makeItSo(this);
-			}
 
 			return polarQuestion(decoded.getFeatureName(),
 					decoded.getHypothesis(), aboutBeliefAddress(_intention));
@@ -536,11 +532,6 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 		assert (decoded != null);
 
-		if (!_ambiguous) {
-			CASTEffect acceptEffect = decoded.getOnAcceptEffect();
-			acceptEffect.makeItSo(this);
-		}
-
 		String feature = decoded.getFeatureName();
 		String value = decoded.getFeatureValue();
 		boolean learn = decoded.isPositive();
@@ -566,71 +557,12 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 				+ motive.informationGain);
 
 		// HACK or NOT-HACK? add attributed feature into ground belief
-		addAttribution(aboutBeliefAddress(_intention), feature, value, learn);
+//		addAttribution(aboutBeliefAddress(_intention), feature, value, learn);
 
 		return motive;
 
 	}
 
-	@Deprecated
-	private TutorInitiativeLearningMotive tutorDrivenAscriptionY3(
-			InterpretedIntention _intention) throws DoesNotExistOnWMException,
-			UnknownSubarchitectureException, AlreadyExistsOnWMException,
-			ConsistencyException, PermissionException {
-
-		// [gg.ii: tutorDrivenAscription]
-		// [gg.ii: stringContent]
-		// [gg.ii: asserted-value -> red]
-		// [gg.ii: subtype -> ascription]
-		// [gg.ii: asserted-polarity -> pos]
-		// [gg.ii: type -> assertion]
-		// [gg.ii: asserted-feature -> color]
-		// [gg.ii: ]
-		// [gg.ii: addressContent]
-		// [gg.ii: asserted -> [WMA id = irecog:1 : sa = dialogue]]
-		// [gg.ii: about -> [WMA id = 1:31 : sa = binder]]
-		// [LOG gg.ii: goal is (color-learnt '0:U') with inf-gain 0.0]
-
-		String feature = _intention.stringContent.get("asserted-feature");
-		String polarity = _intention.stringContent.get("asserted-polarity");
-		String value = _intention.stringContent.get("asserted-value");
-
-		boolean learn;
-
-		if (polarity.equals("pos")) {
-			learn = true;
-		} else {
-			learn = false;
-		}
-
-		println("tutorDrivenAscription");
-		logIntention(_intention);
-
-		TutorInitiativeLearningMotive motive = VisualObjectMotiveGenerator
-				.newMotive(TutorInitiativeLearningMotive.class, null,
-						getCASTTime());
-
-		String goalString = conjoinGoalStrings(new String[] {
-				getAdditionalGoals(),
-				getAscriptionGoalString(feature, learn,
-						aboutBeliefAddress(_intention).id) });
-
-		// HACK used later for adding attribution to all possible referentss
-		motive.assertedFeature = feature;
-		motive.assertedValue = value;
-		motive.assertedLearn = learn;
-		// HACK END
-
-		motive.goal = new Goal(100f, -1, goalString, false);
-
-		log("goal is " + motive.goal.goalString + " with inf-gain "
-				+ motive.informationGain);
-
-		// HACK or NOT-HACK? add attributed feature into ground belief
-		addAttribution(aboutBeliefAddress(_intention), feature, value, learn);
-
-		return motive;
-	}
 
 	protected String getAscriptionPredicate(String feature, boolean learn) {
 
@@ -711,36 +643,31 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		}
 
 		motive.potentiallyReferencedObjectBeliefs = _beliefAddresses;
-
-		// planning won't work without this in place anyway, but it probably
-		// isn't required on faster machines
-		// sleepComponent(500);
-		// UPDATE: as this writes directly to the merged belief, then I don't
-		// think the sleep is necessary any longer
-
 	}
 
-	protected void addAttribution(WorkingMemoryAddress _beliefAddr,
-			String _feature, String _value, boolean _polarity)
-			throws DoesNotExistOnWMException, ConsistencyException,
-			PermissionException, UnknownSubarchitectureException {
-
-		String attributionPredication = "attributed-" + _feature;
-		println("adding attribution: (" + attributionPredication + " " + _value
-				+ ")");
-
-		// addStringFeature(_beliefAddr, attributionPredication,
-		// _value);
-
-		// keep dBelief here to allow switches between different subclasses,
-		// e.g. Merged or Merged
-		BeliefUtils.addFeature(this, _beliefAddr, dBelief.class,
-				attributionPredication, _value);
-
-		// planning won't work without this in place anyway, but it probably
-		// isn't required on faster machines
-		sleepComponent(500);
-	}
+//	protected void addAttribution(WorkingMemoryAddress _beliefAddr,
+//			String _feature, String _value, boolean _polarity)
+//			throws DoesNotExistOnWMException, ConsistencyException,
+//			PermissionException, UnknownSubarchitectureException {
+//
+//		// if (false) {
+//		String attributionPredication = "attributed-" + _feature;
+//		println("adding attribution: (" + attributionPredication + " " + _value
+//				+ ")");
+//
+//		// addStringFeature(_beliefAddr, attributionPredication,
+//		// _value);
+//
+//		// keep dBelief here to allow switches between different subclasses,
+//		// e.g. Merged or Merged
+//		BeliefUtils.addFeature(this, _beliefAddr, dBelief.class,
+//				attributionPredication, _value);
+//
+//		// planning won't work without this in place anyway, but it probably
+//		// isn't required on faster machines
+//		sleepComponent(250);
+//		// }
+//	}
 
 	// @Override
 	// protected TutorInitiativeMotive checkForUpdate(
@@ -947,6 +874,40 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			_component.overwriteWorkingMemory(_beliefAddr, gb.get());
 		}
 
+	}
+
+	public static void executeSuccessEffect(ManagedComponent _component,
+			InterpretedIntention _ii) {
+		// go through all types we know how to decode... can it be more
+		// elegant than this?
+		RichIntention decoded = AbstractDialogueActionInterface
+				.extractRichIntention(_ii);
+
+		if (decoded == null) {
+			_component.getLogger().warn("Unable to decode intention",
+					_component.getLogAdditions());
+			logIntention(_component, _ii);
+		} else {
+			CASTEffect successEffect = decoded.getOnSuccessEffect();
+			successEffect.makeItSo(_component);
+			_component.log("executed success effect");
+		}
+	}
+
+	public static void executeAcceptEffect(ManagedComponent _component,
+			InterpretedIntention _ii) {
+		RichIntention decoded = AbstractDialogueActionInterface
+				.extractRichIntention(_ii);
+
+		if (decoded == null) {
+			_component.getLogger().warn("Unable to decode intention",
+					_component.getLogAdditions());
+			logIntention(_component, _ii);
+		} else {
+			CASTEffect acceptEffect = decoded.getOnAcceptEffect();
+			acceptEffect.makeItSo(_component);
+			_component.println("executed accept effect");
+		}
 	}
 
 }
