@@ -657,9 +657,11 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 						+ pii.intentions.size());
 
 				for (WorkingMemoryAddress addr : pii.intentions.keySet()) {
+					
 					InterpretedIntention iint = pii.intentions.get(addr);
 					WorkingMemoryAddress potentialReferentAddr = iint.addressContent
 							.get("about");
+
 					if (!potentialReferentAddr.equals(correctReferentAddr)) {
 						unmarkReferent(potentialReferentAddr);
 					} else {
@@ -1354,6 +1356,9 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 	 */
 	public static RichIntention extractRichIntention(InterpretedIntention ii) {
 
+		
+		//
+		
 		RichIntention decoded = PolarFeatureQuestionIntention.Transcoder.INSTANCE
 				.tryDecode(ii);
 
