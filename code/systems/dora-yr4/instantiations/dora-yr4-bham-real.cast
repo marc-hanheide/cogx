@@ -1,8 +1,16 @@
+### stop localisation without motion 
+SETVAR dont_update_without_motion=--dont-update-without-motion
+
+# Maximum allowed translational and rotational velocities
+# during a GOTO_PLACE command
+SETVAR max_goto_v=0.3
+SETVAR max_goto_w=0.5
+
 # use this line if UBK is wanted rather than HGV
 #SETVAR expl_rules=explanations-dora-ubk.pddl
 
 # old planning history files are useful for PEV debugging
-SETVAR old_planning_history=true
+#SETVAR old_planning_history=true
 
 ### the directory containing the calibration files to use
 SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
