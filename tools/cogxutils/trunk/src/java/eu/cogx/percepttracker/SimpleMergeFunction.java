@@ -299,8 +299,8 @@ private final Class<Via> m_viaCls;
 				logger.debug("add " + entry.getKey() + " from dom");
 			}
 			else if(entry.getValue().getDistribution().firstValue().isProposition() &&
-					entry.getValue().getDistribution().getMostLikely().getProposition() ==
-						sub.get(entry.getKey()).getDistribution().getMostLikely().getProposition()) {
+					entry.getValue().getDistribution().getMostLikely().getProposition().equals(
+						sub.get(entry.getKey()).getDistribution().getMostLikely().getProposition())) {
 				result.put(entry.getKey(), entry.getValue());
 				logger.debug("add " + entry.getKey() + " from dom");
 			}
@@ -317,8 +317,8 @@ private final Class<Via> m_viaCls;
 				logger.debug("add " + entry.getKey() + " from sub");
 			}
 			else if (entry.getValue().getDistribution().firstValue().isProposition() &&
-					dom.get(entry.getKey()).getDistribution().getMostLikely().getProposition() !=
-									entry.getValue().getDistribution().getMostLikely().getProposition()  &&
+					!dom.get(entry.getKey()).getDistribution().getMostLikely().getProposition().equals(
+									entry.getValue().getDistribution().getMostLikely().getProposition())  &&
 					dom.get(entry.getKey()).getDistribution().getMaxProb() < 0.1) {
 				result.put(entry.getKey(), entry.getValue());
 				logger.debug("add " + entry.getKey() + " from sub");
