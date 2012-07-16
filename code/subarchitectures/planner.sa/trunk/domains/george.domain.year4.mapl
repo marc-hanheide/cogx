@@ -243,7 +243,6 @@
  ; (:derived (must-learn)
  ;   (or
  ;     (exists (?v - VisualObject) (and (not (color-learned ?v)) (exists (?c - ColorName) (attributed-color
-    
 
   (:derived (allow-polar-color-question ?v - VisualObject ?c - ColorName ?r - Robot)
     (and
@@ -353,9 +352,10 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
-        (not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
+        (forall (?c - ColorName) (or (= ?c UNKNOWN_COLOR) (not (= (attributed-color ?v) ?c))))
+        ;;(not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
         (is-object-in-question ?v)
-        (not (object-property-requested))
+        ;;(not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (or
@@ -365,7 +365,7 @@
       )
     :effect 
       (and
-        (object-property-requested)
+        ;;(object-property-requested)
         (assign (attributed-color ?v) (color ?v))
         (is-potential-object-in-question ?v)
         (increase (total-cost) 3)
@@ -377,9 +377,10 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
+        (forall (?c - ColorName) (or (= ?c UNKNOWN_COLOR) (not (= (attributed-color ?v) ?c))))
+        ;;(not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
         (is-object-in-question ?v)
-        (not (object-property-requested))
+        ;;(not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-color-question ?v ?c ?r)
@@ -390,7 +391,7 @@
       )
     :effect 
       (and
-        (object-property-requested)
+        ;;(object-property-requested)
         (assign (attributed-color ?v) ?c)        
         (is-potential-object-in-question ?v)
         (increase (total-cost) 2)
@@ -402,9 +403,10 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
-        (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
+        (forall (?s - ShapeName) (or (= ?s UNKNOWN_SHAPE) (not (= (attributed-shape ?v) ?s))))
+        ;;(not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
         (is-object-in-question ?v)
-        (not (object-property-requested))
+        ;;(not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (or
@@ -414,7 +416,7 @@
       )
     :effect 
       (and
-        (object-property-requested)
+        ;;(object-property-requested)
         (assign (attributed-shape ?v) (shape ?v))
         (is-potential-object-in-question ?v)
         (increase (total-cost) 3)
@@ -426,9 +428,10 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
+        (forall (?s - ShapeName) (or (= ?s UNKNOWN_SHAPE) (not (= (attributed-shape ?v) ?s))))
+        ;;(not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
         (is-object-in-question ?v)
-        (not (object-property-requested))
+        ;;(not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-shape-question ?v ?s ?r)
@@ -439,7 +442,7 @@
       )
     :effect 
       (and
-        (object-property-requested)
+        ;;(object-property-requested)
         (assign (attributed-shape ?v) ?s)
         (is-potential-object-in-question ?v)
         (increase (total-cost) 2)
@@ -522,7 +525,7 @@
       )
     :effect 
       (and
-        (not (object-property-requested))
+        ;;(not (object-property-requested))
 	(color-learned ?v)
         (not (is-potential-object-in-question ?v))
         (update (is-potential-object-in-question ?v) false)
@@ -561,7 +564,7 @@
       )
     :effect 
       (and
-        (not (object-property-requested))
+        ;;(not (object-property-requested))
 	(shape-learned ?v)
         (not (is-potential-object-in-question ?v))
         (update (is-potential-object-in-question ?v) false)
@@ -650,6 +653,10 @@
       )
     :effect 
       (and
+        ;;(forall (?v1 - VisualObject) (not (is-potential-object-in-question ?v1)))
+        ;;(assign (attributed-color ?v) UNDETERMINED_COLOR)          
+        ;;(assign (attributed-shape ?v) UNDETERMINED_SHAPE)
+        ;;(assign (attributed-objecttype ?v) UNDETERMINED_OBJECTTYPE)
         (not (is-potential-object-in-question ?v))
         (increase (total-cost) 2)
       )
