@@ -536,6 +536,11 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		String value = decoded.getFeatureValue();
 		boolean learn = decoded.isPositive();
 
+		if(feature.equals("objecttype") && !learn) {
+			log("no motive for objecttype unlearning");
+			return null;
+		}
+		
 		TutorInitiativeLearningMotive motive = VisualObjectMotiveGenerator
 				.newMotive(TutorInitiativeLearningMotive.class, null,
 						getCASTTime());
