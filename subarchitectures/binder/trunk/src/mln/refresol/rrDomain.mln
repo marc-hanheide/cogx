@@ -1,8 +1,8 @@
 // domains
 t_null = {Null}
-t_color = {P_red, P_blue, P_green, P_yellow, P_orange, P_pink, P_white, P_black, P_AS_YET_UNKNOWN_COLOR}
-t_shape = {P_compact, P_elongated, P_AS_YET_UNKNOWN_SHAPE}
-t_type =  {P_teabox, P_cerealbox, P_mug, P_drinkcan, P_box, P_type6, P_type7, P_AS_YET_UNKNOWN_OBJECTTYPE}
+t_color = {P_red, P_blue, P_green, P_yellow, P_orange, P_pink, P_white, P_black, P_UNDETERMINED_COLOR}
+t_shape = {P_compact, P_elongated, P_UNDETERMINED_SHAPE}
+t_type =  {P_teabox, P_cerealbox, P_mug, P_drinkcan, P_box, P_type6, P_type7, P_UNDETERMINED_OBJECTTYPE}
 t_default={Default}		
 t_attr_color = {A_red, A_blue, A_green, A_yellow, A_orange, A_pink, A_white, A_black}
 t_attr_shape = {A_compact, A_elongated}
