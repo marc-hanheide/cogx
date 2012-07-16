@@ -12,7 +12,7 @@
     VISUAL_OBJECT_DUMMY - VisualObject
 
     UNKNOWN_COLOR - ColorName
-    AS_YET_UNKNOWN_COLOR - ColorName
+    UNDETERMINED_COLOR - ColorName
     RED - ColorName
     GREEN - ColorName
     BLUE - ColorName
@@ -21,12 +21,12 @@
     BLACK - ColorName    
 
     UNKNOWN_SHAPE - ShapeName
-    AS_YET_UNKNOWN_SHAPE - ShapeName
+    UNDETERMINED_SHAPE - ShapeName
     COMPACT - ShapeName
     ELONGATED - ShapeName
 
     UNKNOWN_IDENT - IdentName
-    AS_YET_UNKNOWN_IDENT - IdentName
+    UNDETERMINED_OBJECTTYPE - IdentName
 
     VISIBLE - Visibility
     WAS-VISIBLE - Visibility
