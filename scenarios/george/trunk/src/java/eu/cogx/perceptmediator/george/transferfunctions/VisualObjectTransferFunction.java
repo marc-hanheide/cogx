@@ -91,14 +91,14 @@ public class VisualObjectTransferFunction extends
 
 		fillConcept("shape", result, from.shapeLabels, from.shapeDistrib);
 
-		if (from.identLabels.length == 0) {
-			// HACK to allow questions to be answered with no recognition result
-			fillConcept("objecttype", result, new String[] { "box" },
-					new double[] { 0.01 });
-		} else {
+//		if (from.identLabels.length == 0) {
+//			// HACK to allow questions to be answered with no recognition result
+//			fillConcept("objecttype", result, new String[] { "box" },
+//					new double[] { 0.01 });
+//		} else {
 			fillConcept("objecttype", result, from.identLabels,
 					from.identDistrib);
-		}
+//		}
 		return result;
 	}
 
