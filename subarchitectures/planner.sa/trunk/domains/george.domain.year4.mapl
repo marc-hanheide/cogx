@@ -286,9 +286,12 @@
   ;;)
 
   (:derived (is-object-in-question ?v - VisualObject)
-    (and
-      (is-potential-object-in-question ?v)
-      (not (exists (?v1 - VisualObject) (and (= (presence ?v1) VISIBLE) (not (= ?v ?v1)) (is-potential-object-in-question ?v1))))
+    (or
+      (and
+        (is-potential-object-in-question ?v)
+        (not (exists (?v1 - VisualObject) (and (= (presence ?v1) VISIBLE) (not (= ?v ?v1)) (is-potential-object-in-question ?v1))))
+      )
+      (not (exists (?v1 - VisualObject) (and (= (presence ?v1) VISIBLE) (is-potential-object-in-question ?v1))))
     )
   )
 
@@ -342,6 +345,7 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
+        (is-object-in-question ?v)
         (not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
@@ -364,6 +368,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
@@ -387,6 +392,7 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
+        (is-object-in-question ?v)
         (not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
@@ -409,6 +415,7 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
