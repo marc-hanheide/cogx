@@ -1,5 +1,5 @@
 GARNAME = peak-linux-driver
-GARVERSION = 6.20
+GARVERSION = 7.6
 CATEGORIES = bootstrap
 DISTFILES = $(GARNAME).${GARVERSION}.tar.gz
 
