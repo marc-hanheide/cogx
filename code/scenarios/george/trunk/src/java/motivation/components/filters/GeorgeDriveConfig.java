@@ -1,6 +1,7 @@
 package motivation.components.filters;
 
 import motivation.slice.AnalyzeProtoObjectMotive;
+import motivation.slice.ComplexActionCommandMotive;
 import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.LookAtViewConeMotive;
 import motivation.slice.RobotNonSituatedMotive;
@@ -19,7 +20,8 @@ public abstract class GeorgeDriveConfig {
 
 			m_driveHierarchy.addPrioritySet(
 					TutorInitiativeLearningMotive.class,
-					TutorInitiativeQuestionMotive.class);
+					TutorInitiativeQuestionMotive.class,
+					ComplexActionCommandMotive.class);
 
 			m_driveHierarchy.addPrioritySet(AnalyzeProtoObjectMotive.class,
 					LearnObjectFeatureMotive.class);
