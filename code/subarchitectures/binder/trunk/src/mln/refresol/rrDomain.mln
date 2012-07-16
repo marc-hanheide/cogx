@@ -2,11 +2,11 @@
 t_null = {Null}
 t_color = {P_red, P_blue, P_green, P_yellow, P_orange, P_pink, P_white, P_black}
 t_shape = {P_compact, P_elongated}
-t_type =  {P_box, P_type2, P_type3, P_type4, P_type5, P_type6, P_type7}
+t_type =  {P_teabox, P_cerealbox, P_mug, P_drinkcan, P_type5, P_type6, P_type7}
 t_default={Default}		
 t_attr_color = {A_red, A_blue, A_green, A_yellow, A_orange, A_pink, A_white, A_black}
 t_attr_shape = {A_compact, A_elongated}
-t_attr_type = {A_box, A_type2, A_type3, A_type4, A_type5, A_type6, A_type7}
+t_attr_type = {A_teabox, A_cerealbox, A_mug, A_drinkcan, A_type5, A_type6, A_type7}
 t_attr_salience = {A_high, A_low}
 
 t_belief={Blf1, Blf2, Blf3, Blf4, Blf5, Blf6}
