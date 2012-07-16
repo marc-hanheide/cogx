@@ -59,4 +59,10 @@ IFEQ(1, 0)
     SETOPT hardware_options=!katana
 ENDIF
 
+IFEQ(1, 1)
+    # The world used is george-02.world, it must be specified at Gazebo startup.
+    # The object list is shared between GazeboJuggler and GeorgeTester.
+    SETVAR JugglerObjectList=%(CONFIG_DIR)/../xdata/gazebo/test1.objects.txt
+ENDIF
+
 INCLUDE george.cast
