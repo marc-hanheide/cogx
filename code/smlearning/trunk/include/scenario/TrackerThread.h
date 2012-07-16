@@ -68,33 +68,37 @@ namespace smlearning {
 class TrackerThread : public CThread /*golem::Runnable*/
 {
 public:
-	// std cto initializing the thread
+	/// std cto initializing the thread
 	TrackerThread(const std::string,const std::string,const std::string, const TomGine::tgPose);
-	// std dto
+	/// std dto
 	~TrackerThread();
-	// executes the former standalone.cpp loop as the thread task
+	/// executes the former standalone.cpp loop as the thread task
 	virtual BOOL OnTask();
 	// virtual void run () /*{ OnTask (); }*/;
 	// void start ();
-	// returns the current object position by reference
+	/// returns the current object position by reference
 	TomGine::tgPose getPose();
-	// returns true if tracker is running
+	/// sets a given predicted pose
+	void setPredictedPose (TomGine::tgPose pose);
+	/// sets prediction mode
+	void setPrediction (bool pred = true);
+	/// returns true if tracker is running
 	bool running ();
 protected:
 	//golem::Thread thread;
 	//golem::CriticalSection cs;
 	// // contains the pose of the object
 	// TomGine::tgPose _object_pose;
-	// is true if the program was ended
+	/// is true if the program was ended
 	bool _quit;
-	// is true if there was a new object position stored
-	bool _new_position;
-	// thread specific variable
+	/// is true if a predicted pose should be drawn
+	bool _prediction;
+	/// thread specific variable
 	TomGine::tgTimer m_timer;
-	// thread specific variable
+	/// thread specific variable
 	CEventClass m_evData;
 	CMutexClass m_running;
-	// font
+	/// font
 	TomGine::tgFont font;
 	/** Tracker */
 	// golem::shared_ptr<Tracking::Tracker> m_tracker;
@@ -105,7 +109,7 @@ protected:
 	std::string m_plypath;
 	/** Captured camera Image */
 	IplImage* _img;
-	TomGine::tgPose m_track_pose, m_initialPose;
+	TomGine::tgPose m_track_pose, m_initialPose, m_pred_pose;
 	/** Tracker window */
 	// golem::shared_ptr<blortGLWindow::GLWindow> glWindow;
 	blortGLWindow::GLWindow* glWindow;

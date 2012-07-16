@@ -41,7 +41,7 @@ TrackerThread::TrackerThread(const std::string tracker_ini, const std::string ca
 	cam_ini_file = cam_ini;
 	pose_ini_file = pose_ini;
 	m_track_pose = initial_object_pose;
-
+	_prediction = false;
 }
 
 /////////////PUBLIC/////////////
@@ -174,6 +174,13 @@ BOOL TrackerThread::OnTask()
 	        m_tracker->drawImage(0);
 		m_tracker->drawResult(2.0f);
 		m_tracker->drawCoordinateSystem(0.1f, 2.0f);
+		// m_tracker->drawModelWireframe (m_object, m_track_pose, 2.0f);
+		if (_prediction)
+		{
+			glColor3f(1,0,0);
+			m_tracker->drawModelWireframe (m_object, m_pred_pose, 2.0f);
+		}
+			
 		// m_tracker->drawCoordinates ();
 		
 		m_tracker->getModelMovementState(m_track_id, _movement);
@@ -236,6 +243,20 @@ TomGine::tgPose TrackerThread::getPose(/*mat3& matrix, vec3& vector*/)
 	return m_track_pose;
 		// _new_position=false;
 	// }
+}
+
+void TrackerThread::setPredictedPose (TomGine::tgPose pose)
+{
+	m_mutex.Lock ();
+	m_pred_pose = pose;
+	m_mutex.Unlock ();
+}
+
+void TrackerThread::setPrediction (bool pred)
+{
+	_prediction = pred;
+	if (_prediction)
+		m_pred_pose = m_track_pose;
 }
 
 bool TrackerThread::running ()

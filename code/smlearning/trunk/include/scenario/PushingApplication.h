@@ -91,7 +91,7 @@ void PushingApplication<S,D>::define_program_options_desc()
 		if (S::getName() == "Scenario" || S::getName() == "PredictingScenario" || S::getName() == "ActiveGNGScenario" || S::getName() == "ActiveLearnScenario" || S::getName() == "PredictingActiveLearnScenario" || S::getName() == "TrackerScenario") {
 			prgOptDesc.add_options()
 				("help,h", "produce help message")
-				("numSequences,S", po::value<string>(), "number of sequences")
+				("numSequences,S", po::value<int>(), "number of sequences")
 				("startingPosition,P", po::value<int>(), "only starting position to use")
 				// ("storeLabels,L", "store labels")
 				("configFile,C", po::value<string>(), "name of the xml config file");
