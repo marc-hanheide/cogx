@@ -12,13 +12,16 @@ import org.apache.log4j.Logger;
 import VisionData.VisualObject;
 import VisionData.VisualObjectPresence;
 import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.BoolFormula;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleTransferFunction;
 
 /**
@@ -39,6 +42,20 @@ public class VisualObjectTransferFunction extends
 
 	public VisualObjectTransferFunction(ManagedComponent component) {
 		super(component, logger, GroundedBelief.class);
+	}
+
+	@Override
+	public GroundedBelief create(WorkingMemoryAddress idToCreate,
+			WorkingMemoryChange wmc, VisualObject from) {
+		// add this the first time
+
+		GroundedBelief belief = super.create(idToCreate, wmc, from);
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, belief);
+		BeliefUtils.addFeature(gb, "attributed-color", "UNDETERMINED_COLOR");
+		BeliefUtils.addFeature(gb, "attributed-shape", "UNDETERMINED_SHAPE");
+		BeliefUtils.addFeature(gb, "attributed-shape", "UNDETERMINED_IDENT");
+		return belief;
 	}
 
 	@Override
@@ -81,13 +98,18 @@ public class VisualObjectTransferFunction extends
 		if (from.presence != VisualObjectPresence.VopVISIBLE) {
 			result.put("is-potential-object-in-question", new FormulaProbPair(
 					BoolFormula.create(false).get(), 1f));
+			result.put("color-learned",
+					new FormulaProbPair(BoolFormula.create(false).get(), 1f));
+			result.put("shape-learned",
+					new FormulaProbPair(BoolFormula.create(false).get(), 1f));
+			result.put("objecttype-learned", new FormulaProbPair(BoolFormula
+					.create(false).get(), 1f));
 		}
 
 		// logger.info("added salience");
 
 		if (from.colorLabels.length == 0) {
-			fillConcept("color", result,
-					new String[] { "UNDETERMINED_COLOR" },
+			fillConcept("color", result, new String[] { "UNDETERMINED_COLOR" },
 					new double[] { 0.02 });
 		} else {
 			fillConcept("color", result, from.colorLabels, from.colorDistrib);
@@ -95,8 +117,7 @@ public class VisualObjectTransferFunction extends
 		// logger.info("added color");
 
 		if (from.shapeLabels.length == 0) {
-			fillConcept("shape", result,
-					new String[] { "UNDETERMINED_SHAPE" },
+			fillConcept("shape", result, new String[] { "UNDETERMINED_SHAPE" },
 					new double[] { 0.02 });
 		} else {
 			fillConcept("shape", result, from.shapeLabels, from.shapeDistrib);
