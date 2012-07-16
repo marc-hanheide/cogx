@@ -54,7 +54,6 @@
     ;;(allow-autonomous-objecttype-learning ?v - VisualObject ?t - IdentName ?r - Robot)
 
     (looked-at ?vc - ViewCone)
-    (object-property-requested)
 
     (is-object-in-question ?v - VisualObject)
     (is-potential-object-in-question ?v - VisualObject)
@@ -118,24 +117,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;                   INIT RULES                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-  ;; (:init-rule set-initial-attributed-color
-  ;;   :parameters (?v - VisualObject)
-  ;;   :precondition (= (attributed-color ?v) UNKNOWN)
-  ;;   :effect (assign (attributed-color ?v) UNKNOWN_COLOR)
-  ;; )
-
-  ;; (:init-rule set-initial-attributed-shape
-  ;;   :parameters (?v - VisualObject)
-  ;;   :precondition (= (attributed-shape ?v) UNKNOWN)
-  ;;   :effect (assign (attributed-shape ?v) UNKNOWN_SHAPE)
-  ;; )
-
-  ;; (:init-rule set-initial-attributed-objecttype
-  ;;   :parameters (?v - VisualObject)
-  ;;   :precondition (= (attributed-objecttype ?v) UNKNOWN)
-  ;;   :effect (assign (attributed-objecttype ?v) UNKNOWN_IDENT)
-  ;; )
 
   (:init-rule set-polar-question-color-threshold
     :parameters (?r - Robot)
@@ -352,10 +333,8 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
-        (forall (?c - ColorName) (or (= ?c UNKNOWN_COLOR) (not (= (attributed-color ?v) ?c))))
-        ;;(not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
+        (not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
         (is-object-in-question ?v)
-        ;;(not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (or
@@ -365,8 +344,8 @@
       )
     :effect 
       (and
-        ;;(object-property-requested)
-        (assign (attributed-color ?v) (color ?v))
+        ;;(assign (attributed-color ?v) (color ?v))
+        (assign (attributed-color ?v) UNDETERMINED_COLOR)
         (is-potential-object-in-question ?v)
         (increase (total-cost) 3)
       )
@@ -377,10 +356,9 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (forall (?c - ColorName) (or (= ?c UNKNOWN_COLOR) (not (= (attributed-color ?v) ?c))))
-        ;;(not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
+        ;;(forall (?c - ColorName) (or (= ?c UNKNOWN_COLOR) (not (= (attributed-color ?v) ?c))))
+        (not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
         (is-object-in-question ?v)
-        ;;(not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-color-question ?v ?c ?r)
@@ -391,8 +369,7 @@
       )
     :effect 
       (and
-        ;;(object-property-requested)
-        (assign (attributed-color ?v) ?c)        
+        (assign (attributed-color ?v) ?c)
         (is-potential-object-in-question ?v)
         (increase (total-cost) 2)
       )
@@ -403,10 +380,9 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
-        (forall (?s - ShapeName) (or (= ?s UNKNOWN_SHAPE) (not (= (attributed-shape ?v) ?s))))
-        ;;(not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
+        ;;(forall (?s - ShapeName) (or (= ?s UNKNOWN_SHAPE) (not (= (attributed-shape ?v) ?s))))
+        (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
         (is-object-in-question ?v)
-        ;;(not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (or
@@ -416,8 +392,8 @@
       )
     :effect 
       (and
-        ;;(object-property-requested)
-        (assign (attributed-shape ?v) (shape ?v))
+        ;;(assign (attributed-shape ?v) (shape ?v))
+        (assign (attributed-shape ?v) UNDETERMINED_SHAPE)
         (is-potential-object-in-question ?v)
         (increase (total-cost) 3)
       )
@@ -428,10 +404,9 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (forall (?s - ShapeName) (or (= ?s UNKNOWN_SHAPE) (not (= (attributed-shape ?v) ?s))))
-        ;;(not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
+        ;;(forall (?s - ShapeName) (or (= ?s UNKNOWN_SHAPE) (not (= (attributed-shape ?v) ?s))))
+        (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
         (is-object-in-question ?v)
-        ;;(not (object-property-requested))
         (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-shape-question ?v ?s ?r)
@@ -442,7 +417,6 @@
       )
     :effect 
       (and
-        ;;(object-property-requested)
         (assign (attributed-shape ?v) ?s)
         (is-potential-object-in-question ?v)
         (increase (total-cost) 2)
@@ -525,7 +499,6 @@
       )
     :effect 
       (and
-        ;;(not (object-property-requested))
 	(color-learned ?v)
         (not (is-potential-object-in-question ?v))
         (update (is-potential-object-in-question ?v) false)
@@ -564,7 +537,6 @@
       )
     :effect 
       (and
-        ;;(not (object-property-requested))
 	(shape-learned ?v)
         (not (is-potential-object-in-question ?v))
         (update (is-potential-object-in-question ?v) false)
