@@ -42,11 +42,21 @@ class IntentionToAct extends BaseIntention {
 dictionary<cast::cdl::WorkingMemoryAddress, InterpretedIntention> AddressToIntentionMap;
 dictionary<cast::cdl::WorkingMemoryAddress, sitbeliefs::dBelief> AddressToBeliefMap;
 
+//Used to record what the status of each possible interpretation is
+enum InterpretationStatus {
+	UNCHECKED,
+	INCORRECT,
+	CORRECT
+};
+
+dictionary<cast::cdl::WorkingMemoryAddress, InterpretationStatus> AddressToStatusMap;
+
 class PossibleInterpretedIntentions {
 	AddressToIntentionMap intentions;
 	AddressToBeliefMap beliefs;
 	//if set, this indicates which intention in the intentions map was the correct one
 	cast::cdl::WorkingMemoryAddress resolvedIntention;
+	AddressToStatusMap statuses;
 };
 
 };

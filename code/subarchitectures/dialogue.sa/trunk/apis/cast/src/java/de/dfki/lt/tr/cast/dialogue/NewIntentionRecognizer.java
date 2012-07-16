@@ -20,6 +20,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
+import de.dfki.lt.tr.beliefs.slice.intentions.InterpretationStatus;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
@@ -242,6 +243,13 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 				if (!listIpret.isEmpty()) {
 					PossibleInterpretedIntentions pii = createPossibleInterpretedIntentions(translatorFactory, listIpret);
 					pii = prunePossibleInterpretedIntentions(pii);
+					
+					//set status if single interpretation
+					if(pii.intentions.size() == 1) {
+						WorkingMemoryAddress wma = pii.intentions.keySet().iterator().next();
+						pii.statuses.put(wma, InterpretationStatus.CORRECT);
+					}
+					
 					getLogger().debug("normalizing confidences");
 					normalizeConfidences(pii);
 					getLogger().debug("after pruning and normalization: " + pii.intentions.size() + " alternative intentions");
@@ -281,13 +289,15 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 		PossibleInterpretedIntentions pii = new PossibleInterpretedIntentions(
 				new HashMap<WorkingMemoryAddress, InterpretedIntention>(),
 				new HashMap<WorkingMemoryAddress, dBelief>(),
-				EMPTY_ADDRESS);
+				EMPTY_ADDRESS,
+				new HashMap<WorkingMemoryAddress, InterpretationStatus>());
 
 		for (InterpretedUserIntention iui : listIpret) {
 			WMAddressTranslator translator = translatorFactory.newTranslator();
 			WorkingMemoryAddress wma = translator.translate(iui.getAddress());
 			pii.intentions.put(wma, iui.toIntention(translator));
 			pii.beliefs.putAll(iui.toBeliefs(translator));
+			pii.statuses.put(wma,InterpretationStatus.UNCHECKED);
 		}
 		
 		return pii;
@@ -363,7 +373,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 	public PossibleInterpretedIntentions extractFromRoot(WorkingMemoryAddress wma, PossibleInterpretedIntentions pii) {
 		PossibleInterpretedIntentions newPii = new PossibleInterpretedIntentions(
 				new HashMap<WorkingMemoryAddress, InterpretedIntention>(),
-				new HashMap<WorkingMemoryAddress, dBelief>(), EMPTY_ADDRESS);
+				new HashMap<WorkingMemoryAddress, dBelief>(), EMPTY_ADDRESS,
+				new HashMap<WorkingMemoryAddress, InterpretationStatus>());
 
 		InterpretedIntention iint = pii.intentions.get(wma);
 		newPii.intentions.put(wma, iint);
@@ -372,6 +383,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 				newPii.beliefs.put(addr, pii.beliefs.get(addr));
 			}
 		}
+		newPii.statuses.put(wma, InterpretationStatus.UNCHECKED);
 		
 		return newPii;
 	}
