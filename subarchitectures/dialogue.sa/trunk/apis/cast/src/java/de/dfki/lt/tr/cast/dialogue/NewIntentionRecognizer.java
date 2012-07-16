@@ -96,6 +96,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 	public final String DEFAULT_ABD_ENDPOINT_CONFIG = "default";
 	public final String DEFAULT_ENGINE_NAME = "intention-recognition";
 	public final int DEFAULT_TIMEOUT = 250;
+        
+        public final int DEFAULT_REF_RESOLUTION_TIMEOUT = 5;
 
 	public final int DEFAULT_MAX_READINGS = 1;
         public final int DEFAULT_NUM_REF_EX_RESOLVERS = 2;
@@ -108,6 +110,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 	private String rulesetFile = "/dev/null";
 
         private int numRefExResolvers = DEFAULT_NUM_REF_EX_RESOLVERS;
+        private int refResolutionTimeout = DEFAULT_REF_RESOLUTION_TIMEOUT;
 	private int timeout = DEFAULT_TIMEOUT;
 
 	private final Map<String, RemappedSLF> nomToLFMap;
@@ -174,12 +177,18 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
                     String numResolversStr = args.get("--num-resolvers");
                     numRefExResolvers = Integer.parseInt(numResolversStr);
                 }
+                if (args.containsKey("--ref-resolution-timeout")) {
+                    String refResolutionTimeoutStr = args.get("--ref-resolution-timeout");
+                    refResolutionTimeout = Integer.parseInt(refResolutionTimeoutStr);
+                }
 
 		getLogger().debug("will only look at the " + maxReadings + " best reading(s)");
 		condition = new MaximumReadingsTerminationCondition(maxReadings);
 
 		getLogger().debug("will be combining the results of " + numRefExResolvers + " reference expression resolvers");
 
+                getLogger().debug("ref resolution timeout will be " + refResolutionTimeout + " s");
+                
 		String abd_host = args.get("--abd-host");
 		abd_endpoints = AbducerUtils.getAbducerServerEndpointString(abd_host, DEFAULT_ABD_PORT);
 
@@ -618,7 +627,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 				logException(ex);
 			}
 
-			result = gatherer.ensureStabilization(5, TimeUnit.SECONDS);
+			result = gatherer.ensureStabilization(refResolutionTimeout, TimeUnit.SECONDS);
 			final String nom = getNominalInTheRequest(wma);
 			assert nom != null;
 			stopGathererObservation(wma);
