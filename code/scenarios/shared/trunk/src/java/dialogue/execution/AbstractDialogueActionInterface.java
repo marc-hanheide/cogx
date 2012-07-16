@@ -1182,12 +1182,6 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 		CASTIndependentFormulaDistributionsBelief<BeliefType> belief = CASTIndependentFormulaDistributionsBelief
 				.create(m_beliefCls, rawBelief);
 
-		// HACK - this is the more efficient place to do this
-		belief.getContent().remove("attributed-color");
-		belief.getContent().remove("attributed-shape");
-		belief.getContent().remove("attributed-objecttype");
-		// END HACK
-
 		boolean result = false;
 
 		if (belief.getContent().containsKey(IS_POTENTIAL_OBJECT_IN_QUESTION)) {
