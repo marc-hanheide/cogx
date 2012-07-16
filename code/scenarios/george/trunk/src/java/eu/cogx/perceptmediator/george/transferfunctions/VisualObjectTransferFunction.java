@@ -85,20 +85,32 @@ public class VisualObjectTransferFunction extends
 
 		// logger.info("added salience");
 
-		fillConcept("color", result, from.colorLabels, from.colorDistrib);
-
+		if (from.colorLabels.length == 0) {
+			fillConcept("color", result,
+					new String[] { "AS_YET_UNKNOWN_COLOR" },
+					new double[] { 0.02 });
+		} else {
+			fillConcept("color", result, from.colorLabels, from.colorDistrib);
+		}
 		// logger.info("added color");
 
-		fillConcept("shape", result, from.shapeLabels, from.shapeDistrib);
+		if (from.shapeLabels.length == 0) {
+			fillConcept("shape", result,
+					new String[] { "AS_YET_UNKNOWN_SHAPE" },
+					new double[] { 0.02 });
+		} else {
+			fillConcept("shape", result, from.shapeLabels, from.shapeDistrib);
+		}
 
-//		if (from.identLabels.length == 0) {
-//			// HACK to allow questions to be answered with no recognition result
-//			fillConcept("objecttype", result, new String[] { "box" },
-//					new double[] { 0.01 });
-//		} else {
+		if (from.identLabels.length == 0) {
+			// HACK to allow questions to be answered with no recognition result
+			fillConcept("objecttype", result,
+					new String[] { "AS_YET_UNKNOWN_OBJECTTYPE" },
+					new double[] { 0.02 });
+		} else {
 			fillConcept("objecttype", result, from.identLabels,
 					from.identDistrib);
-//		}
+		}
 		return result;
 	}
 
