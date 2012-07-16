@@ -25,6 +25,7 @@ import castutils.castextensions.WMEventQueue;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
+import de.dfki.lt.tr.beliefs.slice.intentions.InterpretationStatus;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
@@ -613,7 +614,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 		protected TriBool checkResponse(
 				InterpretedIntention interpretedIntention)
 				throws SubarchitectureComponentException {
-			// TODO Handle matched response looking like this:
+			// Handle matched response looking like this:
 			// stringContent:
 			// type -> "verification"
 			// polarity -> "pos" | "neg"
@@ -636,70 +637,68 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 			println("verification polarity: " + polarity);
 
-			if (polarity.equals("pos")) {
+			// this is the thing we care about
+			// get the list of all potential intentions and thus referents
 
-				println("positive polarity: ");
+			WorkingMemoryAddress verifiedReferentAddr = interpretedIntention.addressContent
+					.get("about");
 
-				// this is the thing we care about
-				// get the list of all potential intentions and thus referents
+			WorkingMemoryAddress piiAddr = interpretedIntention.addressContent
+					.get("verification-of");
 
-				WorkingMemoryAddress correctReferentAddr = interpretedIntention.addressContent
+			PossibleInterpretedIntentions pii = getComponent().getMemoryEntry(
+					piiAddr, PossibleInterpretedIntentions.class);
+
+			println("number of iis in pii found on WM: "
+					+ pii.intentions.size());
+
+			for (WorkingMemoryAddress addr : pii.intentions.keySet()) {
+
+				InterpretedIntention iint = pii.intentions.get(addr);
+				WorkingMemoryAddress potentialReferentAddr = iint.addressContent
 						.get("about");
 
-				WorkingMemoryAddress piiAddr = interpretedIntention.addressContent
-						.get("verification-of");
-
-				PossibleInterpretedIntentions pii = getComponent()
-						.getMemoryEntry(piiAddr,
-								PossibleInterpretedIntentions.class);
-
-				println("number of iis in pii found on WM: "
-						+ pii.intentions.size());
-
-				for (WorkingMemoryAddress addr : pii.intentions.keySet()) {
-					
-					InterpretedIntention iint = pii.intentions.get(addr);
-					WorkingMemoryAddress potentialReferentAddr = iint.addressContent
-							.get("about");
-
-					if (!potentialReferentAddr.equals(correctReferentAddr)) {
-						unmarkReferent(potentialReferentAddr);
+				// if the ii at addr was NOT about reference we just verified
+				if (!potentialReferentAddr.equals(verifiedReferentAddr)) {
+					// if the verification was successful, then this ii in
+					// incorrect
+					if (polarity.equals("pos")) {
+						updateIncorrectIntention(pii, addr,
+								potentialReferentAddr);
 					} else {
-
-						assert (pii.resolvedIntention
-								.equals(NewIntentionRecognizer.EMPTY_ADDRESS));
-
-						// store the correctly resolved intention address in the
-						// possibles structure
-						pii.resolvedIntention = addr;
-						// write PII back to wm to reflect update to
-						getComponent().overwriteWorkingMemory(piiAddr, pii);
-
-						// else decode and mark as accepted
-						RichIntention decoded = AbstractDialogueActionInterface
-								.extractRichIntention(iint);
-
-						if (decoded == null) {
-							getComponent().getLogger().warn(
-									"Unable to decode intention",
-									getComponent().getLogAdditions());
-
-						} else {
-							CASTEffect acceptEffect = decoded
-									.getOnAcceptEffect();
-							acceptEffect.makeItSo(getComponent());
-							log("executed accept effect");
-						}
-
+						// we can't update this
 					}
 				}
 
-			} else {
-				// this is the wrong thing
-
-				unmarkReferent(getAction().beliefAddress);
+				// if the ii at addr WAS about reference we just verified
+				else {
+					// if the verification was successful, then this ii in
+					// CORRECT
+					if (polarity.equals("pos")) {
+						updateCorrectIntention(pii, piiAddr, iint, addr);
+					}
+					// if we were verifying this and they said no, then this is
+					// incorrect
+					else {
+						updateIncorrectIntention(pii, addr,
+								potentialReferentAddr);
+					}
+				}
 
 			}
+
+			// here we could be in the case where we've stated that all but
+			// one interpretation is incorrect, thus we should mark the
+			// remaining interpretation as correct
+			WorkingMemoryAddress remainingCorrectAddr = checkForRemainder(pii);
+			if (remainingCorrectAddr != null) {
+				println("last remaining unchecked interpretation must be correct: "
+						+ CASTUtils.toString(remainingCorrectAddr));
+				updateCorrectIntention(pii, piiAddr,
+						pii.intentions.get(remainingCorrectAddr),
+						remainingCorrectAddr);
+			}
+			
 			return TriBool.TRITRUE;
 
 			// <de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention>
@@ -745,6 +744,68 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			// <confidence>1.0</confidence>
 			// </de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention>
 
+		}
+
+		private void updateCorrectIntention(PossibleInterpretedIntentions _pii,
+				WorkingMemoryAddress _piiAddr, InterpretedIntention _correctII,
+				WorkingMemoryAddress _correctIIAddr)
+				throws DoesNotExistOnWMException, ConsistencyException,
+				PermissionException, UnknownSubarchitectureException {
+			_pii.statuses.put(_correctIIAddr, InterpretationStatus.CORRECT);
+
+			assert (_pii.resolvedIntention
+					.equals(NewIntentionRecognizer.EMPTY_ADDRESS));
+
+			// store the correctly resolved intention address in
+			// the
+			// possibles structure
+			_pii.resolvedIntention = _correctIIAddr;
+			// write PII back to wm to reflect update to
+			getComponent().overwriteWorkingMemory(_piiAddr, _pii);
+
+			// else decode and mark as accepted
+			RichIntention decoded = AbstractDialogueActionInterface
+					.extractRichIntention(_correctII);
+
+			if (decoded == null) {
+				getComponent().getLogger().warn("Unable to decode intention",
+						getComponent().getLogAdditions());
+
+			} else {
+				CASTEffect acceptEffect = decoded.getOnAcceptEffect();
+				acceptEffect.makeItSo(getComponent());
+				log("executed accept effect");
+			}
+		}
+
+		private void updateIncorrectIntention(
+				PossibleInterpretedIntentions _pii,
+				WorkingMemoryAddress _incorrectIIAddr,
+				WorkingMemoryAddress _incorrectIIReferentAddr)
+				throws DoesNotExistOnWMException,
+				UnknownSubarchitectureException, ConsistencyException,
+				PermissionException {
+			_pii.statuses.put(_incorrectIIAddr, InterpretationStatus.INCORRECT);
+			unmarkReferent(_incorrectIIReferentAddr);
+		}
+
+		private WorkingMemoryAddress checkForRemainder(
+				PossibleInterpretedIntentions pii) {
+
+			WorkingMemoryAddress lastUnchecked = null;
+			for (WorkingMemoryAddress addr : pii.intentions.keySet()) {
+				// we have found an unchecked ii
+				if (pii.statuses.get(addr) == InterpretationStatus.UNCHECKED) {
+					// if we previously found one, then we don't have a single
+					// remainder
+					if (lastUnchecked != null) {
+						return null;
+					} else {
+						lastUnchecked = addr;
+					}
+				}
+			}
+			return lastUnchecked;
 		}
 
 		private void unmarkReferent(WorkingMemoryAddress _refGroundBelAddr)
@@ -1356,9 +1417,8 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 	 */
 	public static RichIntention extractRichIntention(InterpretedIntention ii) {
 
-		
 		//
-		
+
 		RichIntention decoded = PolarFeatureQuestionIntention.Transcoder.INSTANCE
 				.tryDecode(ii);
 
