@@ -65,8 +65,6 @@ OPTDEFAULT test_options=<multiline>
     !tutor-driven-test
 </multiline>
 
-VARDEFAULT JugglerObjectList=%(CONFIG_DIR)/../gazebo/test1.objects.txt
-
 ###########################################################################
 
 HOST     [Main]
