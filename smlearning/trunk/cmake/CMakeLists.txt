@@ -244,8 +244,8 @@ SET(ACTIVELEARN_PREDICTION_EXPERIMENT_SOURCE
 # 	${SMLEARNING_ROOT}/src/metalearning/offlineactivegng_experiment.cpp
 # )
 
-SET(TRACKER_TEST_SOURCE
- 	${SMLEARNING_ROOT}/src/tests/TrackerTest.cpp
+SET(TRACKER_EXPERIMENT_SOURCE
+ 	${SMLEARNING_ROOT}/src/scenario/TrackerExperiment.cpp
 )
 
 SET(ONLINELEARNINGDATASET_EXPERIMENT_SOURCE
@@ -337,7 +337,7 @@ SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/activelearn_prediction_experiment.xml
 	${SMLEARNING_ROOT}/config/train.nc
 	${SMLEARNING_ROOT}/config/valid.nc
-	${SMLEARNING_ROOT}/config/tracker_test.xml
+	${SMLEARNING_ROOT}/config/tracker_experiment.xml
 	${SMLEARNING_ROOT}/config/onlinelearningdataset_experiment.xml
 #	${SMLEARNING_ROOT}/config/GolemDeviceKatana300Sim.xml  #For now this is not really useful
 #	${SMLEARNING_ROOT}/config/GolemDeviceKatana300.xml
@@ -416,7 +416,7 @@ ADD_EXECUTABLE(write_data_cryssmex_fmt ${WRITE_DATA_CRYSSMEX_FMT_SOURCE})
 ADD_EXECUTABLE(data_plot_test_server ${DATA_PLOT_TEST_SERVER_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
 ADD_EXECUTABLE(data_plot_test_client ${DATA_PLOT_TEST_CLIENT_SOURCE})
 ADD_EXECUTABLE(data_plot_server ${DATA_PLOT_SERVER_SOURCE})
-ADD_EXECUTABLE(tracker_test ${TRACKER_TEST_SOURCE})
+ADD_EXECUTABLE(tracker_experiment ${TRACKER_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(prediction_experiment ${PREDICTION_EXPERIMENT_SOURCE})
 # ADD_EXECUTABLE(activegng_experiment ${ACTIVEGNG_EXPERIMENT_SOURCE})
 # ADD_EXECUTABLE(offlineactivegng_experiment ${OFFLINEACTIVEGNG_EXPERIMENT_SOURCE})
@@ -432,7 +432,7 @@ INSTALL(TARGETS onlinelearningdataset_experiment RUNTIME DESTINATION bin/SMLearn
 INSTALL(TARGETS prediction_experiment RUNTIME DESTINATION bin/SMLearning)
 # INSTALL(TARGETS activegng_experiment RUNTIME DESTINATION bin/SMLearning)
 # INSTALL(TARGETS offlineactivegng_experiment RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS tracker_test RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS tracker_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS print_dataset RUNTIME DESTINATION bin/SMLearning)
 # INSTALL(TARGETS eval_plotting RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS evalplot_activelearning RUNTIME DESTINATION bin/SMLearning)

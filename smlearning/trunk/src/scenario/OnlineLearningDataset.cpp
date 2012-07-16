@@ -32,7 +32,7 @@ void OnlineLearningDataset::init (boost::program_options::variables_map vm)
 		cerr << "error reading sequence data file" << endl;
 		exit (-1);
 	}
-	dataFileName = vm["seqFile"].as<string>() + "_copy";
+	dataFileName = vm["seqFile"].as<string>();
 	//Store in feature vector the motor context
 	for (int i=0; i<data.size(); i++)
 		for (int j=0; j<data[i].size(); j++)

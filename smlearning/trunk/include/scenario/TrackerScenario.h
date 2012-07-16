@@ -29,10 +29,13 @@
 #include <scenario/Polyflap.h>
 #include <scenario/Box.h>
 
+#include <boost/function.hpp>
+
 // TODO a proper fix to the warnings!
 #include <scenario/TrackerThread.h>
 #include <TomGine/tgFont.h>
 #include <smltools/tracker_tools.h>
+#include <metalearning/CrySSMEx.h>
 
 #include <Golem/Phys/Application.h>
 #include <Golem/Device/Katana300/Katana300.h>
@@ -101,12 +104,10 @@ public:
 	/** Finish */
 	virtual void finish();
 	/** Run experiment */
-	void run(int argc, char* argv[]);
+	virtual void run(int argc, char* argv[]);
 	/** get class name */
 	static string getName () { return "TrackerScenario"; }
 protected:
-	// /** Renders the object. */
-	virtual void render();
 	// /** Releases resources */
 	// virtual void release() {};
 	/** select a random action */
@@ -115,24 +116,30 @@ protected:
 	// virtual void calculateStartCoordinates() {};
 	/** Describe the experiment trajectory */
 	virtual void initMovement();
+	/** Renders the object. */
+        virtual void render();
 	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
 	/** write data chunk (used in postprocess function) */
 	virtual void writeChunk (LearningData::Chunk& chunk);
+	/** experiment initialization (setting arm and object) */
+	void initExperiment ();
+	/** close arm gripper */
+	void closeGripper(Katana300Arm &arm);
+	/** object object pose in Golem simulation */
+	void updateObjectPoseSimulation ();
+	/** calculate the start coordinates of the arm */
+	virtual void calculateStartCoordinates ();
+	/** Keyboard handler. */
+	virtual void keyboardHandler(unsigned char key, int x, int y);
 	/** Description */
 	TrackerScenario::Desc desc;
 	// /** Tracker thread */
 	TrackerThread* tracker_th;
 	/** Event handling (Pause) */
 	golem::Event evContinue;
-	/** Keyboard handler. */
-	virtual void keyboardHandler(unsigned char key, int x, int y);
 	/** katana arm */
 	Katana300Arm* pKatana300Arm;
-	/** close arm gripper */
-	void closeGripper(Katana300Arm &arm);
-	/** calculate the start coordinates of the arm */
-	virtual void calculateStartCoordinates ();
 	/** default object bounds */
 	golem::Bounds::SeqPtr objectLocalBounds;
 	/** current iteration */
@@ -141,13 +148,93 @@ protected:
 
 };
 
+class TrackerScenarioPredictionSingle : public TrackerScenario
+{
+public:
+	/** Object description */
+	class Desc : public TrackerScenario::Desc {
+	protected:
+		/** Creates the object from the description. */
+		CREATE_FROM_OBJECT_DESC1(TrackerScenarioPredictionSingle, golem::Object::Ptr, golem::Scene&)
+
+	public:
+		/** Constructs description object */
+		Desc() {
+			TrackerScenario::Desc::setToDefault();
+		}
+	};
+	/** cto, such that Scenario can only be created with(in) a scene (context) [requirement of golem]*/
+	TrackerScenarioPredictionSingle(golem::Scene&);
+	/** destructor */
+	~TrackerScenarioPredictionSingle () {};
+	/** Run experiment */
+	virtual void run(int argc, char* argv[]);
+	/** set experiment default values */
+	virtual void init(boost::program_options::variables_map vm);
+protected:
+	// /** Renders the object. */
+	virtual void render();
+	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
+	virtual void postprocess(golem::SecTmReal elapsedTime);
+	/** update error in output prediction */
+	void updateAvgError ();
+	/** normalization function */
+	boost::function<float (const float&, const float&, const float&)> normalization;
+	/** denormalization function */
+	boost::function<float (const float&, const float&, const float&)> denormalization;
+	/** Encapsulation of CrySSMEx components */
+	CrySSMEx cryssmex;
+	/** method for feature selection */
+	unsigned int featureSelectionMethod;
+	/** average error in prediction */
+	vector<double> avgerrors;
+
+
+};
+
+class TrackerScenarioPredictionEnsemble : public TrackerScenario
+{
+public:
+	/** Object description */
+	class Desc : public TrackerScenario::Desc {
+	protected:
+		/** Creates the object from the description. */
+		CREATE_FROM_OBJECT_DESC1(TrackerScenarioPredictionEnsemble, golem::Object::Ptr, golem::Scene&)
+
+	public:
+		/** Constructs description object */
+		Desc() {
+			TrackerScenario::Desc::setToDefault();
+		}
+	};
+	/** cto, such that Scenario can only be created with(in) a scene (context) [requirement of golem]*/
+	TrackerScenarioPredictionEnsemble(golem::Scene&);
+	/** destructor */
+	~TrackerScenarioPredictionEnsemble () {};
+protected:
+	/** normalization function */
+	boost::function<float (const float&, const float&, const float&)> normalization;
+	/** denormalization function */
+	boost::function<float (const float&, const float&, const float&)> denormalization;
+
+};
+
 bool XMLData(TrackerScenario::Desc&, XMLContext*, Context*);
+bool XMLData(TrackerScenarioPredictionSingle::Desc&, XMLContext*, Context*);
+bool XMLData(TrackerScenarioPredictionEnsemble::Desc&, XMLContext*, Context*);
 
 /** TrackerScenarioApp */
 class TrackerScenarioApp : public golem::Application {
+public:
+	/** Program options and main app initialization */
+	virtual int main(int argc, char *argv[]);
 protected:
 	/** Runs TrackerScenarioApp */
 	virtual void run(int argc, char *argv[]);
+	/** options map */
+	boost::program_options::variables_map vm;
+	/** options description */
+	boost::program_options::options_description prgOptDesc;
 };
 
 

@@ -23,7 +23,6 @@
 
 #include <scenario/TrackerScenario.h>
 
-
 using namespace TomGine;
 using namespace blortGLWindow;
 using namespace Tracking;
@@ -35,6 +34,18 @@ TrackerScenario::TrackerScenario (golem::Scene &scene) :
 {
 }
 
+TrackerScenarioPredictionSingle::TrackerScenarioPredictionSingle (golem::Scene &scene) : TrackerScenario (scene)
+{
+	normalization = normalize<float>;
+	denormalization = denormalize<float>;
+}
+
+TrackerScenarioPredictionEnsemble::TrackerScenarioPredictionEnsemble (golem::Scene &scene) : TrackerScenario (scene)
+{
+	normalization = normalize<float>;
+	denormalization = denormalize<float>;
+}
+
 TrackerScenario::~TrackerScenario ()
 {
 	// delete tracker_th;
@@ -43,6 +54,46 @@ TrackerScenario::~TrackerScenario ()
 void TrackerScenario::init(boost::program_options::variables_map vm)
 {
 	Scenario::init (vm);
+}
+
+void TrackerScenarioPredictionSingle::init (boost::program_options::variables_map vm)
+{
+	TrackerScenario::init (vm);
+
+	featureSelectionMethod = vm["featuresel"].as<feature_selection>();
+
+	// Set Substochastic Sequential Machine
+	cryssmex.setSSM (vm["ssmFile"].as<string>());
+
+	string inputqfile = vm["prefix"].as<string>() + "/cryssmex_inputq.qnt";
+	cryssmex.setInputQuantizer (inputqfile);
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt) //suitable for Mealy machines
+		assert (learningData.motorVectorSizeMarkov + learningData.efVectorSize == cryssmex.getInputQuantizer()->dimensionality());
+
+	else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
+		assert (learningData.motorVectorSizeMarkov == cryssmex.getInputQuantizer()->dimensionality());
+	else if (featureSelectionMethod == _mcobpose_obpose_direction || featureSelectionMethod == _mcobpose_obpose_sft)
+		assert (2*learningData.motorVectorSizeMarkov + learningData.pfVectorSize == cryssmex.getInputQuantizer()->dimensionality());
+
+	// Set Output Quantizer
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
+	{
+		string outputqfile = vm["prefix"].as<string>() + "/cryssmex_outputq.qnt";
+		cryssmex.setOutputQuantizer (outputqfile);
+		assert (learningData.pfVectorSize == cryssmex.getOutputQuantizer()->dimensionality());
+		
+	}
+	// Set State Quantizer
+	cryssmex.setStateQuantizer (vm["cvqFile"].as<string>());
+	
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction || featureSelectionMethod == _mcobpose_obpose_sft) //suitable for Mealy machines
+		assert (learningData.pfVectorSize  == cryssmex.getStateQuantizer()->dimensionality());
+	
+	else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
+		assert (learningData.efVectorSize + learningData.pfVectorSize == cryssmex.getStateQuantizer()->dimensionality());
+	cryssmex.averageModelVectors ();
+
+	
 }
 
 bool TrackerScenario::create(const TrackerScenario::Desc& desc) {
@@ -89,6 +140,20 @@ void TrackerScenario::writeChunk (LearningData::Chunk& chunk) {
 	
 }
 
+void TrackerScenario::updateObjectPoseSimulation ()
+{
+	if (object != NULL && !bStart)
+	{
+		CriticalSectionWrapper csw (cs);
+		golem::Mat34 objectPose = TrackingToGolem (tracker_th->getPose ());
+		Real obRoll, obPitch, obYaw;
+		objectPose.R.toEuler (obRoll, obPitch, obYaw);
+		if (!isnan(obRoll) && !isnan(obPitch) && !isnan(obYaw))
+			object->setPose (objectPose);
+	}
+
+}
+
 void TrackerScenario::postprocess (golem::SecTmReal elapsedTime)
 {
 	if (_concreteActor == NULL)
@@ -109,15 +174,43 @@ void TrackerScenario::postprocess (golem::SecTmReal elapsedTime)
 			object->setPose (chunk.object.objectPose);
 	}
 
-	if (object != NULL && !bStart)
+	updateObjectPoseSimulation ();
+}
+
+void TrackerScenarioPredictionSingle::postprocess (golem::SecTmReal elapsedTime)
+{
+	if (_concreteActor == NULL)
+		return;
+	if (!tracker_th->running ())
+		return;
+	if (bStart)
 	{
+		if (object == NULL)
+			return;
+		
 		CriticalSectionWrapper csw (cs);
-		golem::Mat34 objectPose = TrackingToGolem (tracker_th->getPose ());
-		Real obRoll, obPitch, obYaw;
-		objectPose.R.toEuler (obRoll, obPitch, obYaw);
-		if (!isnan(obRoll) && !isnan(obPitch) && !isnan(obYaw))
-			object->setPose (objectPose);
+		LearningData::Chunk chunk;
+		writeChunk (chunk);
+		learningData.currentChunkSeq.push_back (chunk);
+		
+		FeatureVector inputVector;
+		LearningData::load_cryssmexinput (inputVector, chunk, featureSelectionMethod, normalization, learningData.featLimits);
+		
+		pair<int, string> result = cryssmex.parseInput (inputVector);
+		if (result.first >= 0)
+		{
+			FeatureVector predictedVector = cryssmex.getQntMvMapVector(result.first);
+			
+			if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction || featureSelectionMethod == _mcobpose_obpose_sft) //suitable for Mealy machines
+				learningData.get_pfPose_from_cryssmexquantization (predictedVector, 0, denormalization);
+			
+			else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt ) //suitable for Moore machines
+				learningData.get_pfPose_from_cryssmexquantization (predictedVector, learningData.efVectorSize, denormalization);
+		}		
 	}
+
+	updateObjectPoseSimulation ();
+
 }
 
 void TrackerScenario::closeGripper(Katana300Arm &arm) {
@@ -195,8 +288,7 @@ void TrackerScenario::initMovement()
 
 }
 
-
-void TrackerScenario::run (int argc, char* argv[])
+void TrackerScenario::initExperiment ()
 {
 	// Create arm
 	pKatana300Arm = static_cast<Katana300Arm*>(&(arm->getArm()->getArm()));
@@ -234,9 +326,14 @@ void TrackerScenario::run (int argc, char* argv[])
 	arm->setCollisionDetection(true);
 	object = dynamic_cast<ActorObject*>(scene.createObject(desc.descActorObject));
 	object->setShape(scene,_concreteActor,true);
-	int max_iterations = 10;
+	objectLocalBounds = object->getLocalBoundsSeq ();
+}
+
+void TrackerScenario::run (int argc, char* argv[])
+{
+	initExperiment ();
 	
-	for (iteration=0; iteration<max_iterations; iteration++)
+	for (iteration=0; iteration<numSequences; iteration++)
 	{
 		//turn on collision detection
 		arm->setCollisionDetection(true);
@@ -260,7 +357,7 @@ void TrackerScenario::run (int argc, char* argv[])
 		arm->setCollisionDetection(false);
 		//move finger to initial position
 		arm->moveFingerToStartPose(context);
-		if (iteration!=max_iterations-1)
+		if (iteration!=numSequences-1)
 		{
 		// wait for key
 			evContinue.wait ();
@@ -268,7 +365,7 @@ void TrackerScenario::run (int argc, char* argv[])
 		}
 		arm->moveFingerToStartPose(context);
 		cout << "Iteration " << iteration << " finished." << endl; 
-
+		if (universe.interrupted()) throw Interrupted();
 	}
  	//move the arm to its initial position
 	arm->moveArmToStartPose(context);
@@ -277,9 +374,91 @@ void TrackerScenario::run (int argc, char* argv[])
 	// Wait for some time
 	PerfTimer::sleep(SecTmReal(5.0));
 
+}
+
+void TrackerScenarioPredictionSingle::run (int argc, char* argv[])
+{
+	initExperiment ();
+	tracker_th->setPrediction ();
+	
+	for (iteration=0; iteration<numSequences; iteration++)
+	{
+		//turn on collision detection
+		arm->setCollisionDetection(true);
+		// experiment main loops
+		std::cout <<"calculate starting coordinates "<<std::endl;
+		chooseAction ();
+		calculateStartCoordinates ();
+		tracker_th->setPredictedPose (tracker_th->getPose ());
+		std::cout << "sending position ";
+		cout << Real(target.pos.p.v1) << " " << Real(target.pos.p.v2) << " " << Real(target.pos.p.v3) << endl;
+		//move the finger to the beginning of experiment trajectory
+		arm->sendPosition(context,target , ReacPlanner::ACTION_GLOBAL);
+		//create sequence for this loop run
+		learningData.currentChunkSeq.clear();
+		//compute direction and other features of trajectory
+		initMovement ();	
+		//move the finger along described experiment trajectory
+		arm->moveFinger(context,target, bStart,duration,end);
+		//turn off collision detection
+		arm->setCollisionDetection(false);
+		//move finger to initial position
+		arm->moveFingerToStartPose(context);
+		if (iteration!=numSequences-1)
+		{
+			// wait for key
+			evContinue.wait ();
+			evContinue.set(false);
+		}
+		//update avg error in prediction
+		updateAvgError ();
+		learningData.currentPredictedPfSeq.clear();
+		arm->moveFingerToStartPose(context);
+		cout << "Iteration " << iteration << " finished." << endl; 
+		if (universe.interrupted()) throw Interrupted();
+
+	}
+ 	//move the arm to its initial position
+	arm->moveArmToStartPose(context);
+	PerfTimer::sleep(SecTmReal(5.0));
+	// //write obtained data into a binary file
+	// writeData ();
+	// Wait for some time
+	double avgerror = 0.0;
+	for (unsigned int i=0; i<avgerrors.size (); i++)
+		avgerror += avgerrors[i];
+	avgerror /= avgerrors.size();
+	cout << endl << "Avg Error: " << avgerror << endl;
 
 
 }
+
+void TrackerScenarioPredictionSingle::updateAvgError ()
+{
+	if (learningData.currentPredictedPfSeq.size () == learningData.currentChunkSeq.size ())
+	{
+		double avgerror = 0.0;
+		for (unsigned int i=0; i<learningData.currentPredictedPfSeq.size(); i++)
+		{
+			double error = 0.0;
+			error += pow(normalization(learningData.currentPredictedPfSeq[i].p.v1, learningData.featLimits.minX, learningData.featLimits.maxX) - normalization(learningData.currentChunkSeq[i].object.objectPose.p.v1, learningData.featLimits.minX, learningData.featLimits.maxX), 2);
+			error += pow(normalization(learningData.currentPredictedPfSeq[i].p.v2, learningData.featLimits.minY, learningData.featLimits.maxY) - normalization(learningData.currentChunkSeq[i].object.objectPose.p.v2, learningData.featLimits.minY, learningData.featLimits.maxY), 2);
+			error += pow(normalization(learningData.currentPredictedPfSeq[i].p.v3, learningData.featLimits.minZ, learningData.featLimits.maxZ) - normalization(learningData.currentChunkSeq[i].object.objectPose.p.v3, learningData.featLimits.minZ, learningData.featLimits.maxZ), 2);
+			Real predRoll, predPitch, predYaw;
+			learningData.currentPredictedPfSeq[i].R.toEuler (predRoll, predPitch, predYaw);
+			error += pow(normalization(predRoll,-REAL_PI, REAL_PI) - normalization(learningData.currentChunkSeq[i].object.obRoll, -REAL_PI, REAL_PI), 2);
+			error += pow(normalization(predPitch,-REAL_PI, REAL_PI) - normalization(learningData.currentChunkSeq[i].object.obPitch, -REAL_PI, REAL_PI), 2);
+			error += pow(normalization(predYaw,-REAL_PI, REAL_PI) - normalization(learningData.currentChunkSeq[i].object.obYaw,-REAL_PI, REAL_PI), 2);
+			error = sqrt (error);
+			cout << "error: " << error << endl;
+			avgerror += error;
+		}
+		avgerror /= learningData.currentChunkSeq.size();
+		cout << "avg error: " << avgerror << endl;
+		avgerrors.push_back (avgerror);
+	}
+}
+
 
 void TrackerScenario::finish() {
 	// m_tracker.release();
@@ -307,20 +486,38 @@ void TrackerScenario::keyboardHandler(unsigned char key, int x, int y) {
 			data.erase (data.end() - 1);
 		iteration--;
 		evContinue.set(true);
+		break;
 	}
 }
 
 void TrackerScenario::render ()
 {
 	CriticalSectionWrapper csw (cs);
-
+	
 	if (_concreteActor == NULL)
 		return;
-
+	
 	// golem::BoundsRenderer boundsRenderer;
 	// boundsRenderer.setMat (_concreteActor->getPose ());
 	// boundsRenderer.setWireColour (RGBA::RED);
 	// boundsRenderer.renderWire (objectLocalBounds->begin (), objectLocalBounds->end());
+
+}
+
+void TrackerScenarioPredictionSingle::render ()
+{
+	CriticalSectionWrapper csw (cs);
+	int seq_last = learningData.currentPredictedPfSeq.size() - 1;
+
+	if (_concreteActor == NULL || object == NULL || seq_last < 0)
+		return;
+	
+	golem::BoundsRenderer boundsRenderer;
+	golem::Mat34 currentPose = learningData.currentPredictedPfSeq[seq_last];
+	tracker_th->setPredictedPose (GolemToTracking (currentPose));
+	boundsRenderer.setMat (currentPose);
+	boundsRenderer.setWireColour (RGBA::RED);
+	boundsRenderer.renderWire (objectLocalBounds->begin (), objectLocalBounds->end());
 
 }
 
@@ -451,13 +648,108 @@ bool XMLData(TrackerScenario::Desc &val, XMLContext* xmlcontext, Context *contex
 
 }
 
-void TrackerScenarioApp::run(int argc, char *argv[]) {
-	TrackerScenario::Desc desc;
-	XMLData(desc, xmlcontext(), context());
+bool XMLData(TrackerScenarioPredictionSingle::Desc &val, XMLContext* xmlcontext, Context *context) {
+	XMLData ((TrackerScenario::Desc&)val, xmlcontext, context);
+}
 
-	TrackerScenario *pTrackerScenario = dynamic_cast<TrackerScenario*>(scene()->createObject(desc)); // throws
-	if (pTrackerScenario == NULL)
-		throw Message(Message::LEVEL_CRIT, "TrackerScenarioApp::run(): unable to cast to TrackerScenario");
+bool XMLData(TrackerScenarioPredictionEnsemble::Desc &val, XMLContext* xmlcontext, Context *context) {
+	XMLData ((TrackerScenario::Desc&)val, xmlcontext, context);
+}
+
+int TrackerScenarioApp::main(int argc, char *argv[])
+{
+	try {
+		prgOptDesc.add_options ()
+			("help,h", "produce help message")
+			("prediction,P", po::value<string>(), "type of prediction (ensemble or single)")
+			("prefix,p", po::value<string>()->default_value("./"), "path for looking for quantization and SSMs machines")
+			("numSequences,S", po::value<int>()->default_value(10), "number of sequences")
+			("featuresel,f", po::value<feature_selection>()->default_value (_mcobpose_obpose_direction), feature_selection_options ().c_str())
+			("ssmFile,s", po::value<string>(), "If -P == single, name of SSM file")
+			("cvqFile,c", po::value<string>(), "If -P == single, name of CVQ quantizer file")
+			("configFile,C", po::value<string>(), "name of the xml config file");
+		po::store(po::parse_command_line(argc, argv, prgOptDesc), vm);
+		po::notify(vm);
+		
+		if (vm.count("help")) {
+			
+			cout << prgOptDesc << endl;
+			return 0;
+		}
+		if (vm.count("configFile"))
+		{
+			char* arr[2];
+			arr[0] = argv[0];
+			arr[1] = (char*)vm["configFile"].as<string>().c_str();
+			Application::main (2, arr);
+			return 0;
+		}
+		else
+		{
+			char* arr [] = {argv[0]};
+			Application::main (1, arr);
+			return 0;
+		}
+		
+	} catch (std::exception& e) {
+		cerr << "error: " << e.what() << "\n";
+		return 1;
+	} catch(...) {
+		cerr << "Exception of unknown type!\n";
+		return 1;
+
+	}
+
+}
+
+void TrackerScenarioApp::run(int argc, char *argv[]) {
+
+	TrackerScenario *pTrackerScenario;
+	if (vm.count("prediction"))
+	{
+		// Prediction with a single CrySSMEx machine
+		if (vm["prediction"].as<string>() == "single")
+		{
+			TrackerScenarioPredictionSingle::Desc desc;
+			XMLData(desc, xmlcontext(), context());
+			pTrackerScenario = dynamic_cast<TrackerScenarioPredictionSingle*>(scene()->createObject(desc)); // throws
+			if (pTrackerScenario == NULL)
+				throw Message(Message::LEVEL_CRIT, "TrackerScenarioApp::run(): unable to cast to TrackerScenarioPredictionSingle");
+			if (!vm.count("ssmFile")) {
+				cerr << "You should provide a .ssm file name" << endl;
+				cout << prgOptDesc << endl;
+				return;
+			}
+			if (!vm.count("cvqFile")) {
+				cerr << "You should provide a CVQ .qnt file name" << endl;
+				cout << prgOptDesc << endl;
+				return;
+			}
+		}
+			
+		else if (vm["prediction"].as<string>() == "ensemble")
+		{
+			TrackerScenarioPredictionEnsemble::Desc desc;
+			XMLData(desc, xmlcontext(), context());
+			pTrackerScenario = dynamic_cast<TrackerScenarioPredictionEnsemble*>(scene()->createObject(desc)); // throws
+			if (pTrackerScenario == NULL)
+				throw Message(Message::LEVEL_CRIT, "TrackerScenarioApp::run(): unable to cast to TrackerScenarioPredictionEnsemble");
+		}
+		else
+		{
+			cerr << "Choose among 2 types of prediction: ensemble|single" << endl;
+			return;
+		}
+	}
+	else
+	{
+		TrackerScenario::Desc desc;
+		XMLData(desc, xmlcontext(), context());
+
+		pTrackerScenario = dynamic_cast<TrackerScenario*>(scene()->createObject(desc)); // throws
+		if (pTrackerScenario == NULL)
+			throw Message(Message::LEVEL_CRIT, "TrackerScenarioApp::run(): unable to cast to TrackerScenario");
+	}
 
 	// Random number generator seed
 	context()->getMessageStream()->write(Message::LEVEL_INFO, "Random number generator seed %d", context()->getRandSeed()._U32[0]);
@@ -465,6 +757,7 @@ void TrackerScenarioApp::run(int argc, char *argv[]) {
 	try {
 		// todo 
 		//pTrackerScenario->main();
+		pTrackerScenario->init (vm);
 		pTrackerScenario->run(argc, argv);
 		pTrackerScenario->finish();
 	}

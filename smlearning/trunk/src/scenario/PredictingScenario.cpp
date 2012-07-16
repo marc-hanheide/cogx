@@ -173,7 +173,7 @@ void PredictingScenario::initMovement() {
 
 void PredictingScenario::render () {
 	CriticalSectionWrapper csw (cs);
-	unsigned int seq_size;
+	int seq_size;
 	// if (data.size() == 0)
 		seq_size = learningData.currentPredictedPfSeq.size() - 1;
 	// else

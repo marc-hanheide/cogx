@@ -16,25 +16,6 @@ namespace smlearning {
 class OnlineLearningDataset : public ActiveLearnScenario
 {
 public:
-
-	// /** Object description */
-	// class Desc : public ActiveLearnScenario::Desc {
-	// protected:
-	// 	/*virtual golem::Object::Ptr create(golem::Scene& scene) const {
-	// 	  OnlineLearningDataset *pObject = new OnlineLearningDataset (scene);
-	// 		golem::Object::Ptr pointer(pObject);
-	// 		if (!pObject->create(*this))
-	// 			pointer.release();
-	// 		return pointer;
-	// 		}*/
-	// 	CREATE_FROM_OBJECT_DESC1(OnlineLearningDataset, golem::Object::Ptr, golem::Scene&)
-		
-	// public:
-	// 	/** Constructs description object */
-	// 	Desc() {
-	// 		ActiveLearnScenario::Desc::setToDefault();
-	// 	}
-	// };
 	
 	/** constructor */
 	OnlineLearningDataset (golem::Scene& scene);

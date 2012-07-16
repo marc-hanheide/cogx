@@ -5,6 +5,7 @@
  * @version 2.0 beta
  *
  */
+
 #ifndef SMLEARNING_CRYSSMEX_H_
 #define SMLEARNING_CRYSSMEX_H_
 
@@ -12,6 +13,7 @@
 #include <boost/iostreams/tee.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <metalearning/data_structs.h>
+#include <smltools/fixx11h.h>
 #include <quantizing/quantizer_file_export.hh>
 #include <ssm/ssm_file_export.hh>
 #include <ssm/ssm_parser.hh>

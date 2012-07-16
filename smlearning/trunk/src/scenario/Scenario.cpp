@@ -84,7 +84,7 @@ void Scenario::init(boost::program_options::variables_map vm)
 	// storeLabels = false;
 	
 	if (vm.count("numSequences")) {
-		numSequences = atoi(vm["numSequences"].as<string>().c_str());
+		numSequences = vm["numSequences"].as<int>();
 	}
 
 	if (vm.count("startingPosition")) {
