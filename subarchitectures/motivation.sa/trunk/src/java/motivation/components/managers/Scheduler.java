@@ -11,8 +11,13 @@ import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
 import autogen.Planner.PlanningTask;
 import cast.CASTException;
+import cast.ConsistencyException;
+import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryPermissions;
 import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
+import eu.cogx.planner.facade.PlannerFacade;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
@@ -89,6 +94,15 @@ public class Scheduler extends AbstractScheduler {
 					WMEntryQueueElement<PlanningTask> plan = doPlanning(
 							prioritySet, possibleGoals, impossibleGoals);
 
+					// George specific. Increment tries for impossible goals
+					Map<WorkingMemoryAddress, Motive> updatedImpossibleGoals = new HashMap<WorkingMemoryAddress, Motive>();
+
+					for (WorkingMemoryAddress addr : impossibleGoals.keySet()) {
+						Motive updated = recordFailure(addr);
+						updatedImpossibleGoals.put(addr, updated);
+					}
+					impossibleGoals = updatedImpossibleGoals;
+
 					if (plan != null && possibleGoals.size() > 0) {
 						log("we have a plan to execute: "
 								+ plan.getEntry().firstActionID + "costs: "
@@ -163,6 +177,28 @@ public class Scheduler extends AbstractScheduler {
 			// }
 
 		}
+
+	}
+
+	private Motive recordFailure(WorkingMemoryAddress wma)
+			throws ConsistencyException, DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
+		Motive motive = null;
+		try {
+			lockEntry(wma, WorkingMemoryPermissions.LOCKEDOD);
+			motive = getMemoryEntry(wma, Motive.class);
+			motive.tries++;
+			overwriteWorkingMemory(wma, motive);
+			log("recorded failure for:" + motive.goal);
+		} catch (CASTException e) {
+			getLogger().warn(
+					"CASTException when incrementing try count: " + e.message);
+		} finally {
+			if (this.holdsLock(wma.id, wma.subarchitecture)) {
+				unlockEntry(wma);
+			}
+		}
+		return motive;
 
 	}
 
