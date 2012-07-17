@@ -80,7 +80,7 @@ find_ref_features(BId, Nom) <-
 
 %-------------------------------------------------------------------------
 
-try_objecttype(BId, Nom) <-
+try_objecttype(_BId, Nom) <-
 	has_no_objecttype(Nom) / 1.0.
 
 try_objecttype(BId, Nom) <-
@@ -91,7 +91,7 @@ try_objecttype(BId, Nom) <-
 
 %-------------------------------------------------------------------------
 
-try_modifier(BId, Nom) <-
+try_modifier(_BId, Nom) <-
 	has_no_modifier(Nom) / 1.0.
 
 try_modifier(BId, Nom) <-
@@ -100,7 +100,7 @@ try_modifier(BId, Nom) <-
 
 %-------------------------------------------------------------------------
 
-try_proximity(BId, Nom) <-
+try_proximity(_BId, Nom) <-
 	has_no_proximity(Nom) / 1.0.
 
 try_proximity(BId, Nom) <-

@@ -66,7 +66,11 @@ verbalised_feature_value(Feat, Val, neg, [not, VerbVal]) <-
 
 verbalised_feature_value(color, X, pos, [X]).
 verbalised_feature_value(shape, X, pos, [X]).
-verbalised_feature_value(objecttype, X, pos, [a, X]).
+verbalised_feature_value(objecttype, X, pos, [a, X]) <-
+	no_better_verbalisation_for(X) / 2.0.
+verbalised_feature_value(objecttype, X, pos, [a, Y]) <-
+	fancy_verbalisation(X, Y).
+
 verbalised_feature_value(identity, X, pos, [a, X]).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -81,6 +85,6 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, type, 'assertion'),
 	i : int : string_content(IntAddr, subtype, 'answer-unknown'),
 %	i : int : string_content(IntAddr, 'asserted-certainty', Certainty),
-	i : int : address_content(IntAddr, about, BeliefAddr),
+	i : int : address_content(IntAddr, about, _BeliefAddr),
 
 	event : produce_text(['I', 'do', 'not', 'know']) / -5.0.

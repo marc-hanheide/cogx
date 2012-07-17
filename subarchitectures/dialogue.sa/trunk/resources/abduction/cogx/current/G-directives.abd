@@ -144,9 +144,9 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : address_content(IntAddr, about, BeliefAddr),
 	i : int : address_content(IntAddr, 'verification-of', _IntSetAddr),
 
-	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, []),
+	? generate : reference_generation(BeliefAddr, yes, no, _ObjectRE, []),
 
-	event : produce_text([did, you, mean, this, object]) / -1.0.
+	event : produce_text([did, you, mean, this, object, '?']) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -157,6 +157,6 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : address_content(IntAddr, about, BeliefAddr),
 	i : int : address_content(IntAddr, 'verification-of', _IntSetAddr),
 
-	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, []),
+	? generate : reference_generation(BeliefAddr, yes, no, _ObjectRE, []),
 
-	event : produce_text([did, you, mean, the, Description, object]) / -4.0.
+	event : produce_text([did, you, mean, the, Description, object, '?']) / -4.0.
