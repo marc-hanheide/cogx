@@ -76,7 +76,7 @@ def getGoalDescription(goal, gnode, _state):
 def get_conditional_effects(effects):
     def ceff_visitor(eff, results):
         results = sum(results, [])
-        assert(not isinstance(eff, pddl.effects.UniversalEffect))
+        #assert(not isinstance(eff, pddl.effects.UniversalEffect))
         if isinstance(eff, pddl.effects.SimpleEffect):
             return [(None, eff)]
         if isinstance(eff, pddl.effects.ConditionalEffect):
