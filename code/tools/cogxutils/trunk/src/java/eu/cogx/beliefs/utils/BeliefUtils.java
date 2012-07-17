@@ -68,12 +68,17 @@ public class BeliefUtils {
 			ManagedComponent _component, WorkingMemoryAddress _beliefAddress,
 			String _type) throws DoesNotExistOnWMException,
 			UnknownSubarchitectureException {
+		dBelief belief = null;
+		try {
+			// starting belief
+			belief = _component.getMemoryEntry(_beliefAddress, dBelief.class);
+		} catch (ClassCastException e) {
+			_component.logException(
+					"Reached the bottom of this belief tree at: "
+							+ CASTUtils.toString(_beliefAddress), e);
+			return null;
+		}
 
-		// TODO need to catch something for incorrect class here I think
-
-		// starting belief
-		dBelief belief = _component.getMemoryEntry(_beliefAddress,
-				dBelief.class);
 		CASTIndependentFormulaDistributionsBelief<dBelief> pb = CASTIndependentFormulaDistributionsBelief
 				.create(dBelief.class, belief);
 
@@ -83,9 +88,16 @@ public class BeliefUtils {
 			CASTBeliefHistory hist = (CASTBeliefHistory) pb.get().hist;
 
 			for (WorkingMemoryPointer ancestor : hist.ancestors) {
+				_component.log("recurseAncestorsForType testing "
+						+ ancestor.type + " against " + _type);
+
 				if (ancestor.type.equals(_type)) {
+					_component.log("recurseAncestorsForType: found it");
 					return ancestor;
 				} else {
+					_component
+							.log("recurseAncestorsForType: didn't find it, recursing into: "
+									+ CASTUtils.toString(ancestor.address));
 					WorkingMemoryPointer recurseResult = recurseAncestorsForType(
 							_component, ancestor.address, _type);
 					if (recurseResult != null) {
@@ -176,5 +188,17 @@ public class BeliefUtils {
 		FormulaDistribution fd = FormulaDistribution.create();
 		fd.add(_value, 1);
 		_belief.getContent().put(_feature, fd);
+	}
+
+	public static boolean ancestorsContain(CASTBeliefHistory bh,
+			WorkingMemoryPointer ancesterPointer) {
+
+		for (WorkingMemoryPointer ptr : bh.ancestors) {
+			if (ptr.address.equals(ancesterPointer.address)) {
+				return true;
+			}
+		}
+		return false;
+
 	}
 }

@@ -28,6 +28,7 @@ import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
 
 /**
  * This implements a generic Merger for {@link Belief}s. It listens for the
@@ -369,8 +370,9 @@ public class WMSimpleMerger<Src1 extends dBelief, Src2 extends dBelief, Dest ext
 					component.log("have created new belief with type="
 							+ to.type + " (" + toWMA.id + ")");
 					matcherFunction1.update(ev, from, to);
-					manageHistory(viaWMA, srcType2.getName(), via, to);
-					manageHistory(ev.address, srcType1.getName(), from, to);
+					manageHistory(viaWMA, CASTUtils.typeName(srcType2), via, to);
+					manageHistory(ev.address, CASTUtils.typeName(srcType1),
+							from, to);
 					component.log("have filled with values:" + to.type + " ("
 							+ toWMA.id + " sa: " + toWMA.subarchitecture
 							+ "), ready to write to WM now.");
@@ -404,7 +406,8 @@ public class WMSimpleMerger<Src1 extends dBelief, Src2 extends dBelief, Dest ext
 						component.log("updating belief "
 								+ CASTUtils.toString(matchingWMA));
 						matcherFunction1.update(ev, from, to);
-						manageHistory(ev.address, srcType1.getName(), from, to);
+						manageHistory(ev.address, CASTUtils.typeName(srcType1),
+								from, to);
 						component.overwriteWorkingMemory(matchingWMA, to);
 						srcDestMap.put(ev.address, matchingWMA);
 						// temporarily put the destination as the key
@@ -457,7 +460,8 @@ public class WMSimpleMerger<Src1 extends dBelief, Src2 extends dBelief, Dest ext
 					lock(matchingWMA);
 					Dest to = component.getMemoryEntry(matchingWMA, destType);
 					matcherFunction1.update(ev, from, to);
-					manageHistory(ev.address, srcType1.getName(), from, to);
+					manageHistory(ev.address, CASTUtils.typeName(srcType1),
+							from, to);
 					try {
 						// component.lockComponent();
 						component.overwriteWorkingMemory(matchingWMA, to);
@@ -514,7 +518,8 @@ public class WMSimpleMerger<Src1 extends dBelief, Src2 extends dBelief, Dest ext
 					lock(matchingWMA);
 					Dest to = component.getMemoryEntry(matchingWMA, destType);
 					matcherFunction2.update(ev, from, via, to);
-					manageHistory(ev.address, srcType2.getName(), from, to);
+					manageHistory(ev.address, CASTUtils.typeName(srcType2),
+							from, to);
 					try {
 						// component.lockComponent();
 						component.overwriteWorkingMemory(matchingWMA, to);
@@ -569,7 +574,7 @@ public class WMSimpleMerger<Src1 extends dBelief, Src2 extends dBelief, Dest ext
 		CASTBeliefHistory bh = (CASTBeliefHistory) to.hist;
 		WorkingMemoryPointer ancesterPointer = new WorkingMemoryPointer(
 				address, type);
-		if (!bh.ancestors.contains(ancesterPointer)) {
+		if (!BeliefUtils.ancestorsContain(bh, ancesterPointer)) {
 			bh.ancestors.add(ancesterPointer);
 		}
 	}
