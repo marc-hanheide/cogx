@@ -41,10 +41,6 @@
     (shape-learned ?v - VisualObject)
     (objecttype-learned ?v - VisualObject)
 
-    (color-unlearned ?v - VisualObject)
-    (shape-unlearned ?v - VisualObject)
-    ;;(objecttype-unlearned ?v - VisualObject)
-
     (allow-polar-color-question ?v - VisualObject ?c - ColorName ?r - Robot)
     (allow-polar-shape-question ?v - VisualObject ?s - ShapeName ?r - Robot)
     (allow-polar-objecttype-question ?v - VisualObject ?t - ObjecttypeName ?r - Robot)
@@ -97,6 +93,10 @@
     (learn-autonomous-objecttype-threshold ?r - Robot) - number
     (convinced-of-objecttype-threshold ?r - Robot) - number
     (believe-in-objecttype-threshold ?r - Robot) - number
+
+    (color-unlearned ?v - VisualObject) - ColorName
+    (shape-unlearned ?v - VisualObject) - ShapeName
+    ;;(objecttype-unlearned ?v - VisualObject) - ObjecttypeName
 
     (object-of-desired-color-available ?r - Robot) - ColorName
     (object-of-desired-shape-available ?r - Robot) - ShapeName
@@ -418,6 +418,44 @@
       )
   )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;                 ASSERTIONS              ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  ;; (:action assert-color-is-known
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject)
+  ;;   :precondition
+  ;;     (and
+  ;;       (not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
+  ;;       (is-object-in-question ?v)
+  ;;       (not (= (presence ?v) REMOVED))
+  ;;       (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+  ;;     )
+  ;;   :effect 
+  ;;     (and 
+  ;;       (assign (attributed-color ?v) UNDETERMINED_COLOR)
+  ;;       (increase (total-cost) 20)
+  ;;     )
+  ;; )      
+
+  ;; (:action assert-shape-is-known
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject)
+  ;;   :precondition
+  ;;     (and
+  ;;       (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
+  ;;       (is-object-in-question ?v)
+  ;;       (not (= (presence ?v) REMOVED))
+  ;;       (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+  ;;     )
+  ;;   :effect 
+  ;;     (and 
+  ;;       (assign (attributed-shape ?v) UNDETERMINED_SHAPE)
+  ;;       (increase (total-cost) 20)
+  ;;     )
+  ;; )
+
   (:action assert-objecttype-is-known
     :agent (?r - Robot)
     :parameters (?v - VisualObject)
@@ -431,7 +469,7 @@
     :effect 
       (and 
         (assign (attributed-objecttype ?v) UNDETERMINED_OBJECTTYPE)
-        (increase (total-cost) 10)
+        (increase (total-cost) 20)
       )
   )
 
@@ -1130,7 +1168,6 @@
     :precondition
       (and
         (not (= (presence ?v) REMOVED))
-        ;;(not (= (attributed-color ?v) (color ?v)))
         (not (= ?c UNKNOWN_COLOR))
         (exists (?p - ProtoObject)
           (and 
@@ -1142,7 +1179,7 @@
       )
     :effect 
       (and
-        (color-unlearned ?v)
+        (assign (color-unlearned ?v) ?c)
         (increase (total-cost) 1)
       )
   )
@@ -1153,7 +1190,6 @@
     :precondition 
       (and
         (not (= (presence ?v) REMOVED))
-        ;;(not (= (attributed-shape ?v) (shape ?v)))
         (not (= ?s UNKNOWN_SHAPE))
         (exists (?p - ProtoObject) 
           (and 
@@ -1165,7 +1201,7 @@
       )
     :effect 
       (and
-        (shape-unlearned ?v)
+        (assign (shape-unlearned ?v) ?s)
         (increase (total-cost) 1)
       )
   )
