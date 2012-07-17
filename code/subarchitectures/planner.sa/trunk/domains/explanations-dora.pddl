@@ -161,7 +161,6 @@
          :variables (?p - place)
          :precondition (and (= (is-in ?a) ?p)
                             (= (in-room ?p) ?r)
-                            (not (not_fully_explored ?r))
                             (not (done)))
          :effect (and (cones_created ?l in ?r)
                       (increase (total-cost) 5))
