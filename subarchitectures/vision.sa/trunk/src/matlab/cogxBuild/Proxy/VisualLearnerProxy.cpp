@@ -26,18 +26,6 @@ namespace matlab {
 
 #include "LoggerMacro.h"
 
-static CLoggerProxy* plog = new CLoggerProxy();
-void CLoggerProxy::setLogger(CLoggerProxy& logger)
-{
-   if (plog)
-      delete plog;
-   plog = &logger;
-}
-CLoggerProxy& CLoggerProxy::getLogger()
-{
-   return *plog;
-}
-
 static void addLabels(mwArray &ans, double weight, vector<string> &labels, vector<double> &probs)
 {
    //unsigned n_dims = ans.NumberOfDimensions();
@@ -176,7 +164,7 @@ void VL_update_model(ProtoObject &Object, std::vector<string>& labels, std::vect
       for (unsigned i = 0; i < labels.size(); i++) {
         if (weights[i] > 0) {
            double en = (double) Enumerator.getEnum(labels[i]);
-           DEBUG("VisualLearner will LEARN " << labels[i] << "(" << ")" << trunc(en)); 
+           DEBUG("VisualLearner will LEARN " << labels[i] << "(" << trunc(en) << ")"); 
            avw(row, 1) =  (double) en;
            avw(row, 2) =  (double) weights[i];
            row++;
