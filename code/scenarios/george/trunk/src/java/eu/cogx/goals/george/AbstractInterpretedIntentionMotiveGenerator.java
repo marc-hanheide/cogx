@@ -901,6 +901,9 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 	public static void executeAcceptEffect(ManagedComponent _component,
 			InterpretedIntention _ii) {
+
+		_component.println("executing accept effect");
+		
 		RichIntention decoded = AbstractDialogueActionInterface
 				.extractRichIntention(_ii);
 

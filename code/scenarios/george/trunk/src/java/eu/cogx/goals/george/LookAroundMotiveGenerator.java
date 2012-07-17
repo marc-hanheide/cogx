@@ -301,18 +301,22 @@ public class LookAroundMotiveGenerator extends
 	@Override
 	protected LookAtViewConeMotive checkForUpdate(MergedBelief _newEntry,
 			LookAtViewConeMotive _existingMotive) {
-		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
-				.create(MergedBelief.class, _newEntry);
+		// CASTIndependentFormulaDistributionsBelief<MergedBelief> belief =
+		// CASTIndependentFormulaDistributionsBelief
+		// .create(MergedBelief.class, _newEntry);
+		//
+		// if (!coneHasBeenLookedAt(belief)) {
+		// log("ViewCone belief is still not looked at, so leaving motive unchanged.");
+		// return _existingMotive;
+		// } else {
+		// log("ViewCone belief has been looked at, so removing motive.");
+		// m_myCones.remove(_existingMotive.coneAddr);
+		// scheduleForDeletion(_existingMotive.coneAddr);
+		// return null;
+		// }
 
-		if (!coneHasBeenLookedAt(belief)) {
-			log("ViewCone belief is still not looked at, so leaving motive unchanged.");
-			return _existingMotive;
-		} else {
-			log("ViewCone belief has been looked at, so removing motive.");
-			m_myCones.remove(_existingMotive.coneAddr);
-			scheduleForDeletion(_existingMotive.coneAddr);
-			return null;
-		}
+		// let the planner determine completion
+		return _existingMotive;
 	}
 
 	@Override
