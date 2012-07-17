@@ -5,7 +5,7 @@
   (:types
     Robot - agent
     VisualObject ProtoObject ViewCone ConceptName - object
-    ColorName ShapeName IdentName Visibility - ConceptName
+    ColorName ShapeName ObjecttypeName Visibility - ConceptName
   )
 
   (:constants
@@ -25,8 +25,8 @@
     COMPACT - ShapeName
     ELONGATED - ShapeName
 
-    UNKNOWN_IDENT - IdentName
-    UNDETERMINED_OBJECTTYPE - IdentName
+    UNKNOWN_OBJECTTYPE - ObjecttypeName
+    UNDETERMINED_OBJECTTYPE - ObjecttypeName
 
     VISIBLE - Visibility
     WAS-VISIBLE - Visibility
@@ -47,11 +47,11 @@
 
     (allow-polar-color-question ?v - VisualObject ?c - ColorName ?r - Robot)
     (allow-polar-shape-question ?v - VisualObject ?s - ShapeName ?r - Robot)
-    (allow-polar-objecttype-question ?v - VisualObject ?t - IdentName ?r - Robot)
+    (allow-polar-objecttype-question ?v - VisualObject ?t - ObjecttypeName ?r - Robot)
 
     (allow-autonomous-color-learning ?v - VisualObject ?c - ColorName ?r - Robot)
     (allow-autonomous-shape-learning ?v - VisualObject ?s - ShapeName ?r - Robot)
-    ;;(allow-autonomous-objecttype-learning ?v - VisualObject ?t - IdentName ?r - Robot)
+    ;;(allow-autonomous-objecttype-learning ?v - VisualObject ?t - ObjecttypeName ?r - Robot)
 
     (looked-at ?vc - ViewCone)
 
@@ -66,7 +66,7 @@
 
     (object-refering-color-question-answered ?v - VisualObject ?c - ColorName)
     (object-refering-shape-question-answered ?v - VisualObject ?s - ShapeName)
-    (object-refering-objecttype-question-answered ?v - VisualObject ?t - IdentName)
+    (object-refering-objecttype-question-answered ?v - VisualObject ?t - ObjecttypeName)
 
     (exclude-color-description ?r - Robot)
     (exclude-shape-description ?r - Robot)
@@ -90,9 +90,9 @@
     (convinced-of-shape-threshold ?r - Robot) - number
     (believe-in-shape-threshold ?r - Robot) - number
 
-    (objecttype ?v - VisualObject) - IdentName
+    (objecttype ?v - VisualObject) - ObjecttypeName
     (objecttype-prob ?v - VisualObject) - number
-    (attributed-objecttype ?v - VisualObject) - IdentName
+    (attributed-objecttype ?v - VisualObject) - ObjecttypeName
     (polar-question-objecttype-threshold ?r - Robot) - number
     (learn-autonomous-objecttype-threshold ?r - Robot) - number
     (convinced-of-objecttype-threshold ?r - Robot) - number
@@ -111,7 +111,7 @@
 
     (polar-color-question-answered ?v - VisualObject) - ColorName
     (polar-shape-question-answered ?v - VisualObject) - ShapeName
-    (polar-objecttype-question-answered ?v - VisualObject) - IdentName
+    (polar-objecttype-question-answered ?v - VisualObject) - ObjecttypeName
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -241,7 +241,7 @@
     )
   )
 
-  (:derived (allow-polar-objecttype-question ?v - VisualObject ?t - IdentName ?r - Robot)
+  (:derived (allow-polar-objecttype-question ?v - VisualObject ?t - ObjecttypeName ?r - Robot)
     (and
       (= (objecttype ?v) ?t)
       (>= (objecttype-prob ?v) (polar-question-objecttype-threshold ?r))
@@ -265,7 +265,7 @@
     )
   )
 
-  ;;(:derived (allow-autonomous-objecttype-learning ?v - VisualObject ?t - IdentName ?r - Robot)
+  ;;(:derived (allow-autonomous-objecttype-learning ?v - VisualObject ?t - ObjecttypeName ?r - Robot)
   ;;  (and
   ;;    (>= (objecttype-prob ?v) (learn-autonomous-shape-threshold ?r))
   ;;    (= (objecttype ?v) ?t)
@@ -344,7 +344,6 @@
       )
     :effect 
       (and
-        ;;(assign (attributed-color ?v) (color ?v))
         (assign (attributed-color ?v) UNDETERMINED_COLOR)
         (is-potential-object-in-question ?v)
         (increase (total-cost) 3)
@@ -356,7 +355,6 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        ;;(forall (?c - ColorName) (or (= ?c UNKNOWN_COLOR) (not (= (attributed-color ?v) ?c))))
         (not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
         (is-object-in-question ?v)
         (not (= (presence ?v) REMOVED))
@@ -380,7 +378,6 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
-        ;;(forall (?s - ShapeName) (or (= ?s UNKNOWN_SHAPE) (not (= (attributed-shape ?v) ?s))))
         (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
         (is-object-in-question ?v)
         (not (= (presence ?v) REMOVED))
@@ -392,7 +389,6 @@
       )
     :effect 
       (and
-        ;;(assign (attributed-shape ?v) (shape ?v))
         (assign (attributed-shape ?v) UNDETERMINED_SHAPE)
         (is-potential-object-in-question ?v)
         (increase (total-cost) 3)
@@ -404,7 +400,6 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        ;;(forall (?s - ShapeName) (or (= ?s UNKNOWN_SHAPE) (not (= (attributed-shape ?v) ?s))))
         (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
         (is-object-in-question ?v)
         (not (= (presence ?v) REMOVED))
@@ -423,46 +418,22 @@
       )
   )
 
-;;  (:action ask-for-an-objects-objecttype-general
-;;    :agent (?r - Robot)
-;;    :parameters (?v - VisualObject)
-;;    :precondition
-;;      (and
-;;        (not (= (presence ?v) REMOVED))
-;;        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-;;        (or
-;;          (= (currently-points-at ?r) ?v)
-;;          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-;;        )
-;;      )
-;;    :effect 
-;;      (and 
-;;        (assign (attributed-objecttype ?v) (objecttype ?v))
-;;        (is-potential-object-in-question ?v)
-;;        (increase (total-cost) 2)
-;;      )
-;;  )
-
-;;  (:action ask-for-an-objects-objecttype-polar
-;;    :agent (?r - Robot)
-;;    :parameters (?v - VisualObject ?t - IdentName)
-;;   :precondition
-;;      (and
-;;        (not (= (presence ?v) REMOVED))
-;;        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-;;        (allow-polar-objecttype-question ?v ?t ?r)
-;;        (or
-;;          (= (currently-points-at ?r) ?v)
-;;          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-;;        )
-;;      )
-;;    :effect 
-;;      (and 
-;;        (assign (attributed-objecttype ?v) ?t)
-;;        (is-potential-object-in-question ?v)
-;;        (increase (total-cost) 1)
-;;      )
-;;  )
+  (:action assert-objecttype-is-known
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject)
+    :precondition
+      (and
+        (not (exists (?o - ObjecttypeName) (= (attributed-objecttype ?v) ?o)))
+        (is-object-in-question ?v)
+        (not (= (presence ?v) REMOVED))
+        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+      )
+    :effect 
+      (and 
+        (assign (attributed-objecttype ?v) UNDETERMINED_OBJECTTYPE)
+        (increase (total-cost) 10)
+      )
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;                   LEARNING              ;;;;;;;;;;;;;;;;;;;;;;;
@@ -546,32 +517,20 @@
 
   (:action learn-objecttype
     :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - IdentName)
+    :parameters (?v - VisualObject ?t - ObjecttypeName)
     :precondition 
-      ;;(or
-        (and
-          (not (objecttype-learned ?v))
-          (= (attributed-objecttype ?v) ?t)
-          (not (= ?t UNKNOWN_IDENT))
-          (exists (?p - ProtoObject) 
-            (and 
-              (= (po-is-associated-with ?p) ?v)
-              (= (target-object (current-viewcone ?r)) ?p)
-            )
+      (and
+        (not (objecttype-learned ?v))
+        (= (attributed-objecttype ?v) ?t)
+        (not (= ?t UNKNOWN_OBJECTTYPE))
+        (exists (?p - ProtoObject) 
+          (and 
+            (= (po-is-associated-with ?p) ?v)
+            (= (target-object (current-viewcone ?r)) ?p)
           )
-          (is-object-in-question ?v)
         )
-        ;;(and
-        ;;  (allow-autonomous-objecttype-learning ?v ?t ?r)
-        ;;  (not (objecttype-learned ?v))
-        ;;  (exists (?p - ProtoObject) 
-        ;;    (and 
-        ;;      (= (po-is-associated-with ?p) ?v)
-        ;;      (= (target-object (current-viewcone ?r)) ?p)
-        ;;    )
-        ;;  )
-        ;;)
-      ;;)
+        (is-object-in-question ?v)
+      )
     :effect 
       (and
         (objecttype-learned ?v)
@@ -625,10 +584,6 @@
       )
     :effect 
       (and
-        ;;(forall (?v1 - VisualObject) (not (is-potential-object-in-question ?v1)))
-        ;;(assign (attributed-color ?v) UNDETERMINED_COLOR)          
-        ;;(assign (attributed-shape ?v) UNDETERMINED_SHAPE)
-        ;;(assign (attributed-objecttype ?v) UNDETERMINED_OBJECTTYPE)
         (not (is-potential-object-in-question ?v))
         (increase (total-cost) 2)
       )
@@ -690,7 +645,7 @@
 
   (:action verify-reference-by-describing-its-objecttype
     :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - IdentName)
+    :parameters (?v - VisualObject ?t - ObjecttypeName)
     :precondition 
       (and
         (>= (objecttype-prob ?v) (believe-in-objecttype-threshold ?r))
@@ -871,7 +826,7 @@
 
   (:action answer-global-objecttype-question-convinced
     :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - IdentName)
+    :parameters (?v - VisualObject ?t - ObjecttypeName)
     :precondition
       (and
         (is-object-in-question ?v)
@@ -887,7 +842,7 @@
 
   (:action answer-global-objecttype-question-believing
     :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - IdentName)
+    :parameters (?v - VisualObject ?t - ObjecttypeName)
     :precondition
       (and
         (is-object-in-question ?v)
@@ -904,14 +859,14 @@
 
   (:action answer-global-objecttype-question-unknown
     :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - IdentName)
+    :parameters (?v - VisualObject ?t - ObjecttypeName)
     :precondition
       (and
         (is-object-in-question ?v)
         (< (objecttype-prob ?v) (believe-in-objecttype-threshold ?r))
         (or
           (= (objecttype ?v) ?t)
-          (= ?t UNKNOWN_IDENT)
+          (= ?t UNKNOWN_OBJECTTYPE)
         )
       )
     :effect
@@ -1051,7 +1006,7 @@
 
   (:action answer-polar-objecttype-question-positively
     :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - IdentName)
+    :parameters (?v - VisualObject ?t - ObjecttypeName)
     :precondition
       (and
         (is-object-in-question ?v)
@@ -1069,7 +1024,7 @@
 
   (:action answer-polar-objecttype-question-believing
     :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - IdentName)
+    :parameters (?v - VisualObject ?t - ObjecttypeName)
     :precondition
       (and
         (is-object-in-question ?v)
@@ -1088,7 +1043,7 @@
 
   (:action answer-polar-objecttype-question-negatively
     :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - IdentName)
+    :parameters (?v - VisualObject ?t - ObjecttypeName)
     :precondition
       (or
         (and
@@ -1150,7 +1105,7 @@
 
   (:action answer-object-refering-objecttype-question
     :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - IdentName)
+    :parameters (?v - VisualObject ?t - ObjecttypeName)
     :precondition
       (and
         (not (= (presence ?v) REMOVED))
@@ -1214,28 +1169,4 @@
         (increase (total-cost) 1)
       )
   )
-
-  ;; (:action unlearn-objecttype
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?t - IdentName)
-  ;;   :precondition 
-  ;;     (and
-  ;;       (not (objecttype-unlearned ?v))
-  ;;       (not (= (attributed-objecttype ?v) (objecttype ?v)))
-  ;;       (not (= ?t UNKNOWN_IDENT))
-  ;;       (exists (?p - ProtoObject) 
-  ;;         (and 
-  ;;           (= (po-is-associated-with ?p) ?v)
-  ;;           (= (target-object (current-viewcone ?r)) ?p)
-  ;;         )
-  ;;       )
-  ;;       (is-object-in-question ?v)
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (objecttype-unlearned ?v)
-  ;;       (increase (total-cost) 1)
-  ;;     )
-  ;; )
-
 )
