@@ -404,17 +404,17 @@ bool StereoServer::getCameraParameters(int side, Video::CameraParameters& camPar
 // correctly visible in camera with camPars[0], but invisible in camera with
 // camPars[1].  CameraParameters returned by getCameraParameters() seem to work
 // better.
-bool StereoServer::isPointVisible(const cogx::Math::Vector3& point)
+bool StereoServer::isPointVisible(const cogx::Math::Vector3& point, double borderRatio)
 {
   Video::CameraParameters camPars;
 
-  if (!getCameraParameters(LEFT, camPars) || ! Video::isPointVisible(camPars, point)) {
+  if (!getCameraParameters(LEFT, camPars) || ! Video::isPointVisible(camPars, point, borderRatio)) {
       //log("Point is NOT visible in camera %d", camPars.id);
       return false;
   }
   //log("Point is visible in camera %d", camPars.id);
 
-  if (!getCameraParameters(RIGHT, camPars) || ! Video::isPointVisible(camPars, point)) {
+  if (!getCameraParameters(RIGHT, camPars) || ! Video::isPointVisible(camPars, point, borderRatio)) {
       //log("Point is NOT visible in camera %d", camPars.id);
       return false;
   }
