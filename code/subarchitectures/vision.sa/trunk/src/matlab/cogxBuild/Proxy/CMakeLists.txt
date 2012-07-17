@@ -19,6 +19,7 @@ if (NOT BUILD_SA_VISION_VISLEARNER_FAKE)
       VisualLearnerProxy.cpp
       #AffordanceLearnerProxy.cpp
       Enumerator.cpp
+      LoggerProxy.cpp
       )
    SET(HEADERS initlib.h RecogniserP.h)
    add_library(VisualLearnerProxy SHARED ${SOURCES})
@@ -35,10 +36,14 @@ endif (NOT BUILD_SA_VISION_VISLEARNER_FAKE)
 
 
 if (BUILD_SA_VISION_VISLEARNER_FAKE)
+
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
    SET(SOURCES 
       fake/VisualLearnerProxy.cpp
       #fake/AffordanceLearnerProxy.cpp
       Enumerator.cpp
+      LoggerProxy.cpp
       )
    add_library(VisualLearnerProxy_fake SHARED ${SOURCES})
    target_link_libraries(VisualLearnerProxy_fake)

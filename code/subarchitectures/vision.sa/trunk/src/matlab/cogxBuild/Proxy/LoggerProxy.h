@@ -1,6 +1,9 @@
 #ifndef _PROXY_LOGGERPROXY_H_500569D9_
 #define _PROXY_LOGGERPROXY_H_500569D9_
 
+#include <string>
+#include <cstdio>
+
 namespace matlab {
 
 class CLoggerProxy
