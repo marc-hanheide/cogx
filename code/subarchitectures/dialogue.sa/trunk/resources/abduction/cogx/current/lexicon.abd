@@ -17,6 +17,13 @@ valid_objecttype(thing, cerealbox, cerealbox).
 valid_objecttype(thing, teabox, teabox).
 valid_objecttype(thing, drinkcan, drinkcan).
 
+general_objecttype(thing, object).
+general_objecttype(thing, thing).
+
+fancy_verbalisation(cerealbox, [cereal, box]).
+fancy_verbalisation(teabox, [tea, box]).
+fancy_verbalisation(drinkcan, [drink, can]).
+
 valid_material(_, cornflakes, cornflakes).
 valid_material(_, cookies, cookies).
 
