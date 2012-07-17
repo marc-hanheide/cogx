@@ -47,6 +47,9 @@ SETVAR SOIFilter_Params=<multiline>
     # Left camera from the fine point cloud server; used by the internal grabber for debugging
     %(SOIFilter_UseVideoserver)
 
+    # Points outside this view border are considered out-of-view
+    --invisible-border-ratio 0.1
+
     # stuff
     --displayserver "display.srv"
     --ptzserver "%(ptzServerComponent)"
