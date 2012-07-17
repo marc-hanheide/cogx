@@ -120,7 +120,7 @@ class CASTState(object):
             self.prob_state.set(f)
         self.objects |= self.generated_objects
         
-        self.state = self.prob_state.determinized_state(0.05, self.config.uncertainty_threshold)
+        self.state = self.prob_state.determinized_state(self.config.lower_uncertainty_threshold, self.config.uncertainty_threshold)
         log.debug("time to state determinisation: %.2f", time.time() - t0)
 
         self.consistent = self.check_consistency(self.state)
@@ -308,7 +308,7 @@ class CASTState(object):
             
     def generate_init_facts(self, problem, oldstate=None):
         log.debug("Generating initial facts")
-        cstate = self.prob_state.determinized_state(0.05, self.config.uncertainty_threshold)
+        cstate = self.prob_state.determinized_state(self.config.lower_uncertainty_threshold, self.config.uncertainty_threshold)
 
         generated_facts = {}
         generated_objects = set()
@@ -659,7 +659,7 @@ class CASTState(object):
             self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
             #self.prob_state.apply_init_rules(domain = self.domain)
             #self.generated_objects = set(problem.objects) - self.objects
-            self.state = self.prob_state.determinized_state(0.05, self.config.uncertainty_threshold)
+            self.state = self.prob_state.determinized_state(self.config.lower_uncertainty_threshold, self.config.uncertainty_threshold)
 
 
     def to_problem(self, slice_goals, deterministic=True, raw_problem=False):
@@ -671,7 +671,7 @@ class CASTState(object):
             opt_func = None
 
         if raw_problem:
-            det_state = self.raw_state.determinized_state(0.05, self.config.uncertainty_threshold)
+            det_state = self.raw_state.determinized_state(self.config.lower_uncertainty_threshold, self.config.uncertainty_threshold)
             prob_state = self.raw_state
             objects = self.raw_objects
         else:
