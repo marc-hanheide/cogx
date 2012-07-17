@@ -17,6 +17,7 @@ module execution {
 			bool armIsResting;
 			bool excludeColor;
 			bool excludeShape;
+			bool isInRobotInitiatedMode;
 	};
 
     module actions {

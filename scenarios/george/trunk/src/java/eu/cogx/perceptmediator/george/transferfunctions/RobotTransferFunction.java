@@ -33,6 +33,8 @@ public class RobotTransferFunction extends
 	public static final String ARM_IN_RESTING_POSITION_PRED = "arm-in-resting-position";
 	public static final String CURRENT_VIEWCONE_ID = "current-viewcone";
 	public static final String NO_VIEWCONE_CONSTANT = "no_viewcone";
+	public static final String IS_IN_ROBOT_INITIATED_MODE = "is-in-robot-initiated-mode";
+
 	static Logger logger = Logger.getLogger(RobotTransferFunction.class);
 
 	public RobotTransferFunction(ManagedComponent component,
@@ -62,13 +64,17 @@ public class RobotTransferFunction extends
 							.getAsFormula());
 		}
 
-		result.put(ARM_IN_RESTING_POSITION_PRED, BoolFormula.create(from.armIsResting)
-				.getAsFormula());
-		
-		
-		result.put("exclude-color-description", BoolFormula.create(from.excludeColor).getAsFormula());
-		result.put("exclude-shape-description", BoolFormula.create(from.excludeShape).getAsFormula());
-		
+		result.put(ARM_IN_RESTING_POSITION_PRED,
+				BoolFormula.create(from.armIsResting).getAsFormula());
+
+		result.put(IS_IN_ROBOT_INITIATED_MODE,
+				BoolFormula.create(from.isInRobotInitiatedMode).getAsFormula());
+
+		result.put("exclude-color-description",
+				BoolFormula.create(from.excludeColor).getAsFormula());
+		result.put("exclude-shape-description",
+				BoolFormula.create(from.excludeShape).getAsFormula());
+
 		return result;
 	}
 
