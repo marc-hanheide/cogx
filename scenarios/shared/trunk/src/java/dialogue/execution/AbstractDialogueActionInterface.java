@@ -20,6 +20,7 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import castutils.castextensions.WMEventQueue;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
@@ -28,6 +29,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretationStatus;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer;
 import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
@@ -37,6 +39,7 @@ import de.dfki.lt.tr.dialogue.intentions.inst.FeatureAscriptionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.OpenFeatureQuestionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
 import eu.cogx.beliefs.slice.MergedBelief;
+import eu.cogx.beliefs.slice.VerifiedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
 import execution.components.AbstractActionInterface;
 import execution.slice.Action;
@@ -475,16 +478,36 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 			// TODO what if the answer is a negation?
 
-			String feature = _ii.stringContent.get("asserted-feature");
-			String value = _ii.stringContent.get("asserted-value");
-			try {
+			// TODO do all this via a RichIntention just like input intentions
 
-				((AbstractDialogueActionInterface<?>) getComponent())
-						.addFeature(getAction().beliefAddress, "attributed-"
-								+ feature, value);
+			WorkingMemoryPointer verifiedAncestorPtr = BeliefUtils
+					.recurseAncestorsForType(getComponent(),
+							getAction().beliefAddress,
+							CASTUtils.typeName(VerifiedBelief.class));
 
-			} catch (SubarchitectureComponentException e) {
-				logException(e);
+			if (verifiedAncestorPtr == null) {
+				warn("eek, verified was null");
+			} else {
+				log("adding attibution to verified belief ancestor at: "
+						+ CASTUtils.toString(verifiedAncestorPtr.address));
+
+				String feature = _ii.stringContent.get("asserted-feature");
+				String value = _ii.stringContent.get("asserted-value");
+				try {
+					VerifiedBelief belief = getComponent().getMemoryEntry(
+							verifiedAncestorPtr.address, VerifiedBelief.class);
+					CASTIndependentFormulaDistributionsBelief<VerifiedBelief> pb = CASTIndependentFormulaDistributionsBelief
+							.create(VerifiedBelief.class, belief);
+					BeliefUtils.addFeature(pb, feature, value);
+					BeliefUtils.addFeature(pb, feature + "-prob",
+							new FloatFormula(-1, 1.0f));
+					BeliefUtils.addFeature(pb, "attributed-" + feature, value);
+					getComponent().overwriteWorkingMemory(
+							verifiedAncestorPtr.address, pb.get());
+
+				} catch (SubarchitectureComponentException e) {
+					logException(e);
+				}
 			}
 			return TriBool.TRITRUE;
 		}
