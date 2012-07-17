@@ -50,6 +50,10 @@ public abstract class ComponentActionExecutor<ActionClass extends Action>
 	protected void println(Object _o) {
 		m_component.println(_o);
 	}
+	
+	protected void warn(Object _o) {
+		m_component.getLogger().warn(_o, m_component.getLogAdditions());
+	}
 
 	protected WorkingMemoryAddress newWorkingMemoryAddress() {
 		return new WorkingMemoryAddress(getComponent().newDataID(),
