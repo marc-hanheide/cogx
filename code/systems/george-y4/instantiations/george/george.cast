@@ -264,7 +264,13 @@ IFOPTALL(%(feature_options), visualization)
 
    # main_camera_id is defined by xxx/cameras-xxx.incl
    IFNEQ(%(main_camera_id),)
-       CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" --videoname "videoserver" --camid "%(main_camera_id)"
+       SETVAR VirtualSceneParams=<multiline>
+           --v11n-objects "video.viewer.0"
+           --videoname "videoserver"
+           --camid "%(main_camera_id)"
+           --label-color "blue"
+       </multiline>
+       CPP MG scene.2d VirtualScene2D %(VirtualSceneParams)
    ENDIF
 
    VARDEFAULT dialogue_v11n_presets=%(CURRENT_DIR)/dialogPresets.txt
