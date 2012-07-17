@@ -25,7 +25,7 @@ switch req
       
       
       showRec(ansYes,ansPy,rCpcx,f, division_at);
-      displayTR(ansYes,ansPy,avu,g);
+      displayTR(ansYes,ansPy,avu,g,f);
       displayG(Figs.LRguiR.main,'GR');
    case 2 %update
       avwp=avw(find(avw(:,2)>0),:);
