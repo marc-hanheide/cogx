@@ -95,7 +95,7 @@ void VisualLearner::CMyDisplayClient::createViews()
   ss << "<pre style='margin-left: 1em;'>BUILD_SA_VISION_VISLEARNER_FAKE=OFF</pre>";
   setActiveHtml("VisLearner.FAKE", "info", ss.str());
 #else
-  std::vector<std::string> models({ "mC1", "mC2", "mC3", "mC4", "mC5" });
+  std::vector<std::string> models({ "mC0", "mC1", "mC2", "mC3", "mC4", "mC5" });
   for (auto sm : models) {
     ss << "<input type='button' value='Load model " << sm << "' "
       << "@@ONCLICK@@('" << sm << "');\" /><br>";
