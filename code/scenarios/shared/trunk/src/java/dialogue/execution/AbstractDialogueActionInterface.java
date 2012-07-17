@@ -36,7 +36,7 @@ import de.dfki.lt.tr.dialogue.intentions.RichIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.FeatureAscriptionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.OpenFeatureQuestionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
-import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
 import execution.components.AbstractActionInterface;
 import execution.slice.Action;
@@ -698,7 +698,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 						pii.intentions.get(remainingCorrectAddr),
 						remainingCorrectAddr);
 			}
-			
+
 			return TriBool.TRITRUE;
 
 			// <de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention>
@@ -932,7 +932,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 				// record that we have looked at it
 
 				BeliefUtils.addFeature(getComponent(),
-						getAction().beliefAddress, GroundedBelief.class,
+						getAction().beliefAddress, MergedBelief.class,
 						answeredPredictate, getAction().value);
 
 			} catch (CASTException e) {
@@ -1122,10 +1122,10 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			String _feature, String _value, double _prob)
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException, UnknownSubarchitectureException {
-		GroundedBelief belief = getMemoryEntry(_action.beliefAddress,
-				GroundedBelief.class);
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, belief);
+		MergedBelief belief = getMemoryEntry(_action.beliefAddress,
+				MergedBelief.class);
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> pb = CASTIndependentFormulaDistributionsBelief
+				.create(MergedBelief.class, belief);
 
 		FormulaDistribution fd = FormulaDistribution.create();
 		fd.add(_value, _prob);
