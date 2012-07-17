@@ -219,6 +219,11 @@ if (BUILD_SA_VISION_VIEWCONE_COSTS)
 add_subdirectory (src/c++/vision/components/ViewConeMoveCostGenerator)
 endif (BUILD_SA_VISION_VIEWCONE_COSTS)
 
+option(BUILD_SA_VISION_TEST_PROJECTION "build tester for correct stereo/kinect/mono projections" NO)
+if (BUILD_SA_VISION_TEST_PROJECTION )
+add_subdirectory (src/c++/vision/components/TestProjection)
+endif (BUILD_SA_VISION_TEST_PROJECTION )
+
 if(BUILD_PYTHON_COMPONENTS)
    add_subdirectory (src/python)
 endif(BUILD_PYTHON_COMPONENTS)
