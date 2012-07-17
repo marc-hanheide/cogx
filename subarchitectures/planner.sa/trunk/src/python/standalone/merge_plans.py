@@ -107,6 +107,7 @@ def merge_plans(_plans, init_state, final_state):
         if new.type != old.type:
             return False
         for f in virtual_facts[new]:
+            # print "      ",f, d.get(f.svar, f.value)
             if d.get(f.svar, f.value) != f.value:
                 # print "mismatch:", f, d[f.svar]
                 return False
@@ -171,6 +172,8 @@ def merge_plans(_plans, init_state, final_state):
 
             if n.action.name == 'init' or n.is_virtual():
                 for f in n.effects:
+                    if f.svar.modality == pddl.mapl.commit:
+                        f = state.Fact(f.svar.nonmodal(), f.svar.modal_args[0])
                     add_virtual_object_facts(f)
             if n.action.name.startswith("__knowledge"):
                 collapse_knowledge_effects(topo_plan, p, n)
