@@ -13,6 +13,8 @@ TASKS_ID = "planner.tasks"
 STATE_ID = "planner.state"
 
 STYLE = """
+tr {font-size: 16px}
+
 tr.sat {background-color: #88FF88}
 tr.unsat {background-color: #FF6666}
 
@@ -110,7 +112,7 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
         if state_info == TaskStateInfoEnum.PLANNING_DT:
             return "Decision theoretic planner is working"
         if state_info == TaskStateInfoEnum.WAITING_FOR_ACTION:
-            return "Waiting for action executon to finish"
+            return "Waiting for action execution to finish"
         if state_info == TaskStateInfoEnum.WAITING_FOR_CONSISTENT_STATE:
             return "Waiting for world state to become consistent"
         if state_info == TaskStateInfoEnum.WAITING_FOR_EFFECT:
