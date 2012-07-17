@@ -7,11 +7,12 @@
 #define VISUALLEARNERPROXY_YGO3EQK8
 
 #include "Enumerator.h"
+#include "LoggerProxy.h"
 #include <vector>
 
 namespace matlab {
 
-// Recognise attributes in an image stored in a protoobject.
+   // Recognise attributes in an image stored in a protoobject.
 // Returns recognized attributes (label/superConcept/probability) and gains for learning.
 extern void VL_recognise_attributes(
       const VisionData::ProtoObject &Object,

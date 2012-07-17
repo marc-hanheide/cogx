@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <string>
 #include <cv.h>
+#include <sstream>
 #include <highgui.h>
 #include <VisionData.hpp>
 #include "../../../c++/vision/VisionUtils.h"
@@ -22,6 +23,20 @@ using namespace std;
 using namespace VisionData;
 
 namespace matlab {
+
+#include "LoggerMacro.h"
+
+static CLoggerProxy* plog = new CLoggerProxy();
+void CLoggerProxy::setLogger(CLoggerProxy& logger)
+{
+   if (plog)
+      delete plog;
+   plog = &logger;
+}
+CLoggerProxy& CLoggerProxy::getLogger()
+{
+   return *plog;
+}
 
 static void addLabels(mwArray &ans, double weight, vector<string> &labels, vector<double> &probs)
 {
@@ -52,6 +67,7 @@ static void copyLabels(const mwArray &ans, vector<string> &labels, vector<double
 
 void VL_LoadAvModels(const char* filename)
 {
+   DEBUG("VL_LoadAvModels");
    CheckInit();
    mwArray fname (filename);
    LRloadAVmodels(fname);
@@ -59,6 +75,7 @@ void VL_LoadAvModels(const char* filename)
 
 void VL_LoadAvModels_from_configured_dir(const char* filename)
 {
+   DEBUG("VL_LoadAvModels_from_configured_dir");
    CheckInit();
    mwArray mwConfDir;
    getGlobalArray(1, mwConfDir, "Dirs", "Dirs.models");
@@ -83,6 +100,7 @@ void VL_setClfStartConfig(const std::string& absConfigPath)
 void VL_recognise_attributes(const ProtoObject &Object, vector<string> &labels,
       vector<int> &labelConcepts, vector<double> &probs, vector<double> &gains)
 {
+   DEBUG("VL_recognise_attributes");
    CheckInit();
 
 #if 0 /* DEBUG */
@@ -107,11 +125,12 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<string> &labels,
    mwArray dims = pts3d.GetDimensions();
    int dim0 = dims.Get(mwSize(1), 1);
    int dim1 = dims.Get(mwSize(1), 2);
-   printf("**** ML: converted pts3d size: %dx%d\n", dim0, dim1);
+   //printf("**** ML: converted pts3d size: %dx%d\n", dim0, dim1);
+   DEBUG("ML: converted pts3d size: " << dim0 << "x" << dim1);
    dims = image.GetDimensions();
    dim0 = dims.Get(mwSize(1), 1);
    dim1 = dims.Get(mwSize(1), 2);
-   printf("**** ML: converted image size: %dx%d\n", dim0, dim1);
+   DEBUG("ML: converted image size: " << dim0 << "x" << dim1);
 #endif /* END-DEBUG */
 
    // Extract features and recognise.
@@ -140,6 +159,7 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<string> &labels,
 
 void VL_update_model(ProtoObject &Object, std::vector<string>& labels, std::vector<double>& weights)
 {
+   DEBUG("VL_update_model");
    CheckInit();
    mwArray image, mask, pts3d;
    protoObjectToMwArray(Object, image, mask, pts3d);
@@ -155,7 +175,9 @@ void VL_update_model(ProtoObject &Object, std::vector<string>& labels, std::vect
       int row = 1;
       for (unsigned i = 0; i < labels.size(); i++) {
         if (weights[i] > 0) {
-           avw(row, 1) =  (double) Enumerator.getEnum(labels[i]);
+           double en = (double) Enumerator.getEnum(labels[i]);
+           DEBUG("VisualLearner will LEARN " << labels[i] << "(" << ")" << trunc(en)); 
+           avw(row, 1) =  (double) en;
            avw(row, 2) =  (double) weights[i];
            row++;
         }
@@ -168,7 +190,9 @@ void VL_update_model(ProtoObject &Object, std::vector<string>& labels, std::vect
       int row = 1;
       for (unsigned i = 0; i < labels.size(); i++) {
         if (weights[i] < 0) {
-           avw(row, 1) =  (double) Enumerator.getEnum(labels[i]);
+           double en = (double) Enumerator.getEnum(labels[i]);
+           DEBUG("VisualLearner will UNLEARN " << labels[i] << "(" << trunc(en) << ")"); 
+           avw(row, 1) =  (double) en;
            avw(row, 2) =  (double) -weights[i];
            row++;
         }
@@ -179,6 +203,7 @@ void VL_update_model(ProtoObject &Object, std::vector<string>& labels, std::vect
 
 void VL_introspect(vector<string>& labels, vector<int>& labelConcepts, vector<double>& gains)
 {
+   DEBUG("VL_introspect");
    CheckInit();
    mwArray newGains;
    cogxVisualLearner_introspect(1, newGains);
@@ -196,7 +221,8 @@ void VL_introspect(vector<string>& labels, vector<int>& labelConcepts, vector<do
       labelConcepts.push_back(labelConceptMap[strLabel]);
       gains.push_back(fgain);
 
-      printf(" ... label '%s' gain %lf\n", strLabel.c_str(), fgain);
+      //printf(" ... label '%s' gain %lf\n", strLabel.c_str(), fgain);
+      DEBUG(" ... label '" << strLabel << "' gain " << fgain);
    }
 }
 

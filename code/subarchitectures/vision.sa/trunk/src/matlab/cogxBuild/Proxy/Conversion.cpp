@@ -13,6 +13,7 @@
 
 #include "MatlabHelper.h"
 #include "Conversion.h"
+#include "LoggerMacro.h"
 
 using namespace std;
 using namespace VisionData;
@@ -22,6 +23,7 @@ namespace matlab {
 
 void protoObjectToMwArray(const ProtoObject &Object, mwArray &image, mwArray &mask, mwArray &points3d)
 {
+   DEBUG("protoObjectToMwArray");
    // Convert image patch
    image = CMatlabHelper::iplImage2array(&(Object.image.data[0]), 
          Object.image.width, Object.image.height, 3, 1); // WISH: number of channels in image
@@ -36,11 +38,11 @@ void protoObjectToMwArray(const ProtoObject &Object, mwArray &image, mwArray &ma
    int npts = Object.points.size();
    const int ncol = 6;
    if (npts < 1) {
-      printf("**** not enough points\n");
+      INFO("**** not enough points");
       points3d = mwArray();
    }
    else {
-      printf("**** we have %d 3D points\n", npts);
+      INFO("**** we have " << npts << " 3D points");
       // x, y, z, r, g, b
       mwSize dimensions[2] = {npts, ncol};
       points3d = mwArray(2, dimensions, mxDOUBLE_CLASS, mxREAL);
@@ -65,8 +67,8 @@ void protoObjectToMwArray_Patches(const ProtoObject &Object, mwArray &patches)
    int nRows = nPatch + 1;
    const int nCol = 6;
 
-   typeof(Object.surfacePatches.begin()) itPatch;
-   for(itPatch = Object.surfacePatches.begin(); itPatch != Object.surfacePatches.end(); itPatch++) {
+   //typeof(Object.surfacePatches.begin()) itPatch;
+   for(auto itPatch = Object.surfacePatches.begin(); itPatch != Object.surfacePatches.end(); itPatch++) {
       nRows += itPatch->points.size();
    } 
    mwSize dimensions[2] = {nRows, nCol};
@@ -87,7 +89,7 @@ void protoObjectToMwArray_Patches(const ProtoObject &Object, mwArray &patches)
    writeinfo(iHeadRow, nPatch, 1);
    iHeadRow++;
 
-   for(itPatch = Object.surfacePatches.begin(); itPatch != Object.surfacePatches.end(); itPatch++) {
+   for(auto itPatch = Object.surfacePatches.begin(); itPatch != Object.surfacePatches.end(); itPatch++) {
       int npts = itPatch->points.size();
       writeinfo(iHeadRow, npts, iRow);
       iHeadRow++;
