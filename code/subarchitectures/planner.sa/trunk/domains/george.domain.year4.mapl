@@ -119,7 +119,7 @@
     (polar-shape-question-answered ?v - VisualObject) - ShapeName
     (polar-objecttype-question-answered ?v - VisualObject) - ObjecttypeName
 
-    (is-object-referenced-by-george ?r - Robot) -VisualObject
+    (is-object-referenced-by-george ?r - Robot) - VisualObject
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -544,7 +544,7 @@
           (= (attributed-shape ?v) ?s)
           (not (= ?s UNKNOWN_SHAPE))
           (is-looking-and-eventually-pointing-at ?r ?v)
-          (is-object-referenced-by-george ?v)
+          (= (is-object-referenced-by-george ?r) ?v)
         )
 
         ;;autonomous learning case
