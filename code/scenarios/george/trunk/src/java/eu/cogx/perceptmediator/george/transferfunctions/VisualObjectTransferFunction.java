@@ -12,16 +12,13 @@ import org.apache.log4j.Logger;
 import VisionData.VisualObject;
 import VisionData.VisualObjectPresence;
 import cast.architecture.ManagedComponent;
-import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
-import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.BoolFormula;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.beliefs.utils.BeliefUtils;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleTransferFunction;
 
 /**
@@ -44,19 +41,19 @@ public class VisualObjectTransferFunction extends
 		super(component, logger, GroundedBelief.class);
 	}
 
-	@Override
-	public GroundedBelief create(WorkingMemoryAddress idToCreate,
-			WorkingMemoryChange wmc, VisualObject from) {
-		// add this the first time
-
-		GroundedBelief belief = super.create(idToCreate, wmc, from);
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, belief);
-		BeliefUtils.addFeature(gb, "attributed-color", "UNDETERMINED_COLOR");
-		BeliefUtils.addFeature(gb, "attributed-shape", "UNDETERMINED_SHAPE");
-		BeliefUtils.addFeature(gb, "attributed-shape", "UNDETERMINED_IDENT");
-		return belief;
-	}
+//	@Override
+//	public GroundedBelief create(WorkingMemoryAddress idToCreate,
+//			WorkingMemoryChange wmc, VisualObject from) {
+//		// add this the first time
+//
+//		GroundedBelief belief = super.create(idToCreate, wmc, from);
+//		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
+//				.create(GroundedBelief.class, belief);
+////		BeliefUtils.addFeature(gb, "attributed-color", "UNDETERMINED_COLOR");
+////		BeliefUtils.addFeature(gb, "attributed-shape", "UNDETERMINED_SHAPE");
+////		BeliefUtils.addFeature(gb, "attributed-shape", "UNKNOWN_IDENT");
+//		return belief;
+//	}
 
 	@Override
 	protected Map<String, FormulaProbPair> getFeatureValueMapping(
