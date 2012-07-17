@@ -96,11 +96,16 @@ public class InterpretedIntentionMotiveGenerator extends
 	}
 
 	@Override
-	protected String getAscriptionGoalString(String feature, boolean learn,
-			String groundedBeliefID) {
-
-		return VisualObjectMotiveGenerator.beliefPredicateGoal(
-				getAscriptionPredicate(feature, learn), groundedBeliefID);
+	protected String getAscriptionGoalString(String feature, String value,
+			boolean learn, String groundedBeliefID) {
+		String predicate = getAscriptionPredicate(feature, learn);
+		if (learn) {
+			return VisualObjectMotiveGenerator.beliefPredicateGoal(predicate,
+					groundedBeliefID);
+		} else {
+			return VisualObjectMotiveGenerator.beliefFunctionGoal(predicate,
+					groundedBeliefID, value);
+		}
 	}
 
 	/**

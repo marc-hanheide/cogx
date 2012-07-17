@@ -233,8 +233,13 @@ public class VisionActionInterface extends
 			try {
 
 				println("adding feature to belief");
-				getComponent().addFeature(getAction().beliefAddress,
-						m_concept + m_featurePostfix, true);
+				if (m_weight == LEARN_WEIGHT) {
+					getComponent().addFeature(getAction().beliefAddress,
+							m_concept + m_featurePostfix, true);
+				} else {
+					getComponent().addFeature(getAction().beliefAddress,
+							m_concept + m_featurePostfix, getAction().value);
+				}
 				println("added");
 				// Thread.sleep(500000);
 
@@ -249,11 +254,14 @@ public class VisionActionInterface extends
 		}
 	}
 
+	private static final int LEARN_WEIGHT = 1;
+	private static final int UNLEARN_WEIGHT = -1;
+
 	public static class LearnColourExecutor extends
 			LearnInstructionExecutor<LearnColour> {
 
 		public LearnColourExecutor(ManagedComponent _component) {
-			super(_component, LearnColour.class, "color", 1,
+			super(_component, LearnColour.class, "color", LEARN_WEIGHT,
 					LEARNED_FEATURE_POSTFIX);
 		}
 	}
@@ -262,7 +270,7 @@ public class VisionActionInterface extends
 			LearnInstructionExecutor<LearnShape> {
 
 		public LearnShapeExecutor(ManagedComponent _component) {
-			super(_component, LearnShape.class, "shape", 1,
+			super(_component, LearnShape.class, "shape", LEARN_WEIGHT,
 					LEARNED_FEATURE_POSTFIX);
 		}
 
@@ -272,7 +280,7 @@ public class VisionActionInterface extends
 			LearnInstructionExecutor<LearnIdentity> {
 
 		public LearnIdentityExecutor(ManagedComponent _component) {
-			super(_component, LearnIdentity.class, "objecttype", 1,
+			super(_component, LearnIdentity.class, "objecttype", LEARN_WEIGHT,
 					LEARNED_FEATURE_POSTFIX);
 		}
 	}
@@ -281,7 +289,7 @@ public class VisionActionInterface extends
 			LearnInstructionExecutor<UnlearnColour> {
 
 		public UnlearnColourExecutor(ManagedComponent _component) {
-			super(_component, UnlearnColour.class, "color", -1,
+			super(_component, UnlearnColour.class, "color", UNLEARN_WEIGHT,
 					UNLEARNED_FEATURE_POSTFIX);
 		}
 	}
@@ -290,7 +298,7 @@ public class VisionActionInterface extends
 			LearnInstructionExecutor<UnlearnShape> {
 
 		public UnlearnShapeExecutor(ManagedComponent _component) {
-			super(_component, UnlearnShape.class, "shape", -1,
+			super(_component, UnlearnShape.class, "shape", UNLEARN_WEIGHT,
 					UNLEARNED_FEATURE_POSTFIX);
 		}
 
@@ -300,8 +308,8 @@ public class VisionActionInterface extends
 			LearnInstructionExecutor<UnlearnIdentity> {
 
 		public UnlearnIdentityExecutor(ManagedComponent _component) {
-			super(_component, UnlearnIdentity.class, "objecttype", -1,
-					"-unlearned");
+			super(_component, UnlearnIdentity.class, "objecttype",
+					UNLEARN_WEIGHT, "-unlearned");
 		}
 	}
 
