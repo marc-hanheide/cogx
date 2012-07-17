@@ -63,7 +63,7 @@ class FakeCASTState(cast_state.CASTState):
         # print map(str, self.objects)
             
         # print "objects:",  map(str,self.objects)
-        self.state = self.prob_state.determinized_state(0.05, self.config.uncertainty_threshold)
+        self.state = self.prob_state.determinized_state(self.config.lower_uncertainty_threshold, self.config.uncertainty_threshold)
         log.debug("time to state determinisation: %.2f", time.time() - t0)
 
         self.consistent = self.check_consistency(self.state)
