@@ -61,6 +61,7 @@ SOIFilter::SOIFilter()
 #ifdef FEAT_TRACK_ARM
   m_minArmDistance = 0.3;
 #endif
+  m_borderRatio = 0.1;
 
 #ifdef FEAT_VISUALIZATION
   m_segmenter.pDisplay = &m_display;
@@ -126,6 +127,16 @@ void SOIFilter::configure(const map<string,string> & _config)
     istringstream str(it->second);
     str >> camId;
   }
+
+  // 0.0 - point is visible if it's anywhere in the view
+  // 0.1 - isPointVisible works on a 10% narrower view
+  if((it = _config.find("--invisible-border-ratio")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> m_borderRatio;
+  }
+  if (m_borderRatio < 0) m_borderRatio = 0;
+  if (m_borderRatio > 1) m_borderRatio = 1;
 
 #ifdef FEAT_VISUALIZATION
   m_bShowProtoObjects = false;
@@ -743,7 +754,7 @@ bool SOIFilter::isCameraStable(unsigned long milliSeconds)
 
 bool SOIFilter::isPointVisible(const cogx::Math::Vector3 &pos)
 {
-  return m_coarsePointCloud.isPointVisible(pos);
+  return m_coarsePointCloud.isPointVisible(pos, m_borderRatio);
 
   // OLD
   //Video::CameraParameters params;
