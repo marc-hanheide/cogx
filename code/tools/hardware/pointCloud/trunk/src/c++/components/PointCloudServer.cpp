@@ -107,9 +107,9 @@ bool PointCloudServerI::isPointInViewCone(const cogx::Math::Vector3& point, cons
 }
 
 // @author: mmarko
-bool PointCloudServerI::isPointVisible(const cogx::Math::Vector3& point, const Ice::Current&)
+bool PointCloudServerI::isPointVisible(const cogx::Math::Vector3& point, double borderRatio, const Ice::Current&)
 {
-  return ptCloudSrv->isPointVisible(point);
+  return ptCloudSrv->isPointVisible(point, borderRatio);
 }
 
 void PointCloudServerI::getRangePoints(Laser::Scan2d &KRdata, const Ice::Current&)
@@ -282,11 +282,11 @@ void PointCloudServer::receiveCameraParameters(const cdl::WorkingMemoryChange & 
 
 
 // @author: mmarko
-bool PointCloudServer::isPointVisible(const cogx::Math::Vector3& point)
+bool PointCloudServer::isPointVisible(const cogx::Math::Vector3& point, double borderRatio)
 {
   if (camPars.size() < 1) return false;
   for(size_t i = 0; i < camPars.size(); i++) {
-    if (! Video::isPointVisible(camPars[i], point)) {
+    if (! Video::isPointVisible(camPars[i], point, borderRatio)) {
       //log("Point is NOT visible in camera %d", camPars[i].id);
       return false;
     }

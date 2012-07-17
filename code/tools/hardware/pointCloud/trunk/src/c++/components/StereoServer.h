@@ -149,7 +149,7 @@ public:
   void getDisparityImage(int imgWidth, Video::Image& image);
   bool getCameraParameters(int side, Video::CameraParameters& camPars);
   void receiveImages(const std::vector<Video::Image>& images);
-  virtual bool isPointVisible(const cogx::Math::Vector3&);
+  virtual bool isPointVisible(const cogx::Math::Vector3&, double borderRatio);
 };
 
 }

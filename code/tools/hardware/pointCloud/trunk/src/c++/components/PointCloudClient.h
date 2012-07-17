@@ -59,7 +59,7 @@ public:
   bool isPointInViewCone(const cogx::Math::Vector3&);
 
   // @brief Check if the point is visible by all cameras that generate the point cloud.
-  bool isPointVisible(const cogx::Math::Vector3&);
+  bool isPointVisible(const cogx::Math::Vector3&, double borderRatio=0.0);
 };
 
 }
