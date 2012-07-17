@@ -288,21 +288,31 @@ private final Class<Via> m_viaCls;
 	public void mergeDist(IndependentFormulaDistributions dom, IndependentFormulaDistributions sub,
 		IndependentFormulaDistributions result) throws InterruptedException {
 		
+		
+		
 		for (Entry<String, FormulaDistribution> entry : dom.entrySet()) {
 			// if the current key is in the set of keys to ignore, we ignore it!
+			logger.debug("Procesing feature " + entry.getKey());
+			
 			if (ignoredKeys.contains(entry.getKey())) {
 				logger.debug("ignore feature " + entry.getKey());
 				continue;
 			}
+/*			if (sub.get(entry.getKey()).getDistribution().firstValue().isProposition()) {
+				//WMSimpleMerger.debug("sub-color '" + sub.get(entry.getKey()).getDistribution().getMostLikely().getProposition() + "'");
+				logger.debug("sub-color '" + sub.get(entry.getKey()).getDistribution().firstValue().getProposition() + "'");
+			} else
+				logger.debug("sub-color val not a proposition");*/
+			
 			if (entry.getValue().getDistribution().getMaxProb() > 0.9) {
 				result.put(entry.getKey(), entry.getValue());
-				logger.debug("add " + entry.getKey() + " from dom");
+				logger.debug("add(1) " + entry.getKey() + " from dom");
 			}
 			else if(entry.getValue().getDistribution().firstValue().isProposition() &&
-					entry.getValue().getDistribution().getMostLikely().getProposition().equals(
-						sub.get(entry.getKey()).getDistribution().getMostLikely().getProposition())) {
+					entry.getValue().getDistribution().firstValue().getProposition().equals(
+						sub.get(entry.getKey()).getDistribution().firstValue().getProposition())) {
 				result.put(entry.getKey(), entry.getValue());
-				logger.debug("add " + entry.getKey() + " from dom");
+				logger.debug("add(2) " + entry.getKey() + " from dom");
 			}
 		}
 		
@@ -314,14 +324,14 @@ private final Class<Via> m_viaCls;
 			}
 			if (dom.get(entry.getKey()) == null) {
 				result.put(entry.getKey(), entry.getValue());
-				logger.debug("add " + entry.getKey() + " from sub");
+				logger.debug("add(1) " + entry.getKey() + " from sub");
 			}
 			else if (entry.getValue().getDistribution().firstValue().isProposition() &&
-					!dom.get(entry.getKey()).getDistribution().getMostLikely().getProposition().equals(
+					!dom.get(entry.getKey()).getDistribution().firstValue().getProposition().equals(
 									entry.getValue().getDistribution().getMostLikely().getProposition())  &&
 					dom.get(entry.getKey()).getDistribution().getMaxProb() < 0.1) {
 				result.put(entry.getKey(), entry.getValue());
-				logger.debug("add " + entry.getKey() + " from sub");
+				logger.debug("add(2) " + entry.getKey() + " from sub");
 			}
 		}
 	}
