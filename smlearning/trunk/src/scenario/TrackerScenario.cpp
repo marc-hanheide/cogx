@@ -40,10 +40,9 @@ TrackerScenarioPredictionSingle::TrackerScenarioPredictionSingle (golem::Scene &
 	denormalization = denormalize<float>;
 }
 
-TrackerScenarioPredictionEnsemble::TrackerScenarioPredictionEnsemble (golem::Scene &scene) : TrackerScenario (scene)
+TrackerScenarioPredictionEnsemble::TrackerScenarioPredictionEnsemble (golem::Scene &scene) : TrackerScenarioPredictionSingle (scene)
 {
-	normalization = normalize<float>;
-	denormalization = denormalize<float>;
+	currentRegion = NULL;
 }
 
 TrackerScenario::~TrackerScenario ()
@@ -94,6 +93,50 @@ void TrackerScenarioPredictionSingle::init (boost::program_options::variables_ma
 	cryssmex.averageModelVectors ();
 
 	
+}
+
+void TrackerScenarioPredictionEnsemble::init (boost::program_options::variables_map vm)
+{
+	TrackerScenario::init (vm);
+
+	// Set feature selection method
+	featureSelectionMethod = vm["featuresel"].as<feature_selection>();
+	
+	boost::regex regfile_re ("(.*_final)\\.reg");
+	boost::cmatch matches;
+	string prefix = vm["prefix"].as<string>();
+	// cout << matches.size() << endl;
+	fs::path p(prefix);
+	if(!exists(p)) {
+		cerr<<p.leaf()<<" does not exist." << endl;
+		exit (-1);
+	}
+
+	fs::directory_iterator dir_iter (p), dir_end;
+	for (;dir_iter != dir_end; ++dir_iter)
+	{
+		string dirstring (dir_iter->leaf().c_str());
+		char *dirchar = (char *)dirstring.c_str();
+		if (boost::regex_match ((const char*)dirchar, matches, regfile_re))
+		{
+			GNGSMRegion region;
+			string regionFileName (matches[1].first, matches[1].second);
+			cout << dir_iter->leaf() << endl;
+			cout << regionFileName << endl;
+			if (region.readData (prefix + regionFileName)) {
+				cout << "region data correctly read..." << endl << "======" << endl;
+			}
+			else {
+				cerr << "Error by readying region data..." << endl;
+				exit(-1);
+			}
+			regions[region.index] = region;
+			regions[region.index].cryssmex.setStateQuantizer (prefix + regionFileName + "_cryssmex_cvq_final.qnt");
+			regions[region.index].cryssmex.setSSM (prefix + regionFileName + "_cryssmex_ssm_final.ssm");
+			regions[region.index].cryssmex.averageModelVectors ();
+
+		}
+	}
 }
 
 bool TrackerScenario::create(const TrackerScenario::Desc& desc) {
@@ -191,7 +234,10 @@ void TrackerScenarioPredictionSingle::postprocess (golem::SecTmReal elapsedTime)
 		CriticalSectionWrapper csw (cs);
 		LearningData::Chunk chunk;
 		writeChunk (chunk);
-		learningData.currentChunkSeq.push_back (chunk);
+		if (!isnan(chunk.object.obRoll) && !isnan(chunk.object.obPitch) && !isnan(chunk.object.obYaw))
+			learningData.currentChunkSeq.push_back (chunk);
+		else
+			return;
 		
 		FeatureVector inputVector;
 		LearningData::load_cryssmexinput (inputVector, chunk, featureSelectionMethod, normalization, learningData.featLimits);
@@ -211,6 +257,44 @@ void TrackerScenarioPredictionSingle::postprocess (golem::SecTmReal elapsedTime)
 
 	updateObjectPoseSimulation ();
 
+}
+
+void TrackerScenarioPredictionEnsemble::postprocess (golem::SecTmReal elapsedTime)
+{
+	if (_concreteActor == NULL)
+		return;
+	if (!tracker_th->running ())
+		return;
+	if (bStart)
+	{
+		if (object == NULL)
+			return;
+		CriticalSectionWrapper csw(cs);
+		LearningData::Chunk chunk;
+		writeChunk (chunk);
+		if (!isnan(chunk.object.obRoll) && !isnan(chunk.object.obPitch) && !isnan(chunk.object.obYaw))
+			learningData.currentChunkSeq.push_back (chunk);
+		else
+			return;
+
+		FeatureVector inputVector;
+		LearningData::load_cryssmexinput (inputVector, chunk, featureSelectionMethod, normalization, learningData.featLimits);
+
+		pair<int,string> result = currentRegion->cryssmex.parseInput (inputVector);
+		if (result.first >= 0)
+		{
+			FeatureVector predictedVector = currentRegion->cryssmex.getQntMvMapVector(result.first);
+			if (predictedVector.size() > 0)
+			{
+
+				if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction || featureSelectionMethod == _mcobpose_obpose_sft ) //suitable for Mealy machines
+					learningData.get_pfPose_from_cryssmexquantization (predictedVector, 0, denormalization);
+
+				else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
+					learningData.get_pfPose_from_cryssmexquantization (predictedVector, learningData.efVectorSize, denormalization);
+			}
+		}
+	}
 }
 
 void TrackerScenario::closeGripper(Katana300Arm &arm) {
@@ -287,6 +371,26 @@ void TrackerScenario::initMovement()
 	cout << "Horizontal direction angle: " << arm->getHorizontalAngle() << " degrees" << endl;
 
 }
+
+void TrackerScenarioPredictionEnsemble::initMovement ()
+{
+	TrackerScenario::initMovement ();
+
+	LearningData::Chunk chunk;
+	chunk.action.pushDuration = arm->getPushDuration ();
+	chunk.action.horizontalAngle = arm->getHorizontalAngle ();
+	chunk.action.effectorPose = target.pos;
+	chunk.action.effectorPose.R.toEuler (chunk.action.efRoll, chunk.action.efPitch, chunk.action.efYaw);
+	chunk.action.endEffectorPose = end;
+	chunk.action.endEffectorPose.R.toEuler (chunk.action.endEfRoll, chunk.action.endEfPitch, chunk.action.endEfYaw);
+	
+	LearningData::write_chunk_to_featvector (chunk.action.featureVector, chunk, normalization, learningData.featLimits, _end_effector_pos | _effector_pos /*| _action_params*/ );
+	int regionIdx = GNGSMRegion::getSMRegion (regions, chunk.action.featureVector);
+	assert (regionIdx != -1);
+	currentRegion = &regions[regionIdx];
+
+}
+
 
 void TrackerScenario::initExperiment ()
 {
@@ -404,14 +508,14 @@ void TrackerScenarioPredictionSingle::run (int argc, char* argv[])
 		arm->setCollisionDetection(false);
 		//move finger to initial position
 		arm->moveFingerToStartPose(context);
+		//update avg error in prediction
+		updateAvgError ();
 		if (iteration!=numSequences-1)
 		{
 			// wait for key
 			evContinue.wait ();
 			evContinue.set(false);
 		}
-		//update avg error in prediction
-		updateAvgError ();
 		learningData.currentPredictedPfSeq.clear();
 		arm->moveFingerToStartPose(context);
 		cout << "Iteration " << iteration << " finished." << endl; 
@@ -459,7 +563,6 @@ void TrackerScenarioPredictionSingle::updateAvgError ()
 	}
 }
 
-
 void TrackerScenario::finish() {
 	// m_tracker.release();
 	// delete m_tracker;
@@ -483,9 +586,18 @@ void TrackerScenario::keyboardHandler(unsigned char key, int x, int y) {
 	case 'u': case 'U':
 		context.getMessageStream()->write(Message::LEVEL_INFO, "DISCARDED\n");
 		if (data.size() > 0)
-			data.erase (data.end() - 1);
+			data.pop_back ();
 		iteration--;
 		evContinue.set(true);
+		break;
+	}
+}
+
+void TrackerScenarioPredictionSingle::keyboardHandler(unsigned char key, int x, int y) {
+	TrackerScenario::keyboardHandler (key, x, y);
+	switch (key) {
+	case 'u': case 'U':
+		avgerrors.pop_back ();
 		break;
 	}
 }
@@ -520,7 +632,6 @@ void TrackerScenarioPredictionSingle::render ()
 	boundsRenderer.renderWire (objectLocalBounds->begin (), objectLocalBounds->end());
 
 }
-
 
 bool XMLData(TrackerScenario::Desc &val, XMLContext* xmlcontext, Context *context) {
 	// XMLData ((Scenario::Desc&)val, xmlcontext, context);
