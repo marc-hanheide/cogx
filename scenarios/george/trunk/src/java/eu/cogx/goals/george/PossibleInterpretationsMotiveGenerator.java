@@ -195,7 +195,7 @@ public class PossibleInterpretationsMotiveGenerator
 
 		excludeFeatureFromReference(_feature);
 
-		return "(exists (?v - VisualObject) (and (= (" + predicate + " ?v) "
+		return "(exists (?v - VisualObject) (and (is-object-in-question ?v)(= (" + predicate + " ?v) "
 				+ _hypothesis + ")))";
 
 	}
@@ -222,7 +222,7 @@ public class PossibleInterpretationsMotiveGenerator
 
 		String predicate = CASTUtils.concatenate("global-", _feature,
 				"-question-answered");
-		return "(exists (?v - VisualObject) (and (" + predicate + " ?v)))";
+		return "(exists (?v - VisualObject) (and (is-object-in-question ?v)(" + predicate + " ?v)))";
 	}
 
 	@Override
@@ -231,7 +231,7 @@ public class PossibleInterpretationsMotiveGenerator
 
 		excludeFeatureFromReference(_feature);
 
-		return "(exists (?v - VisualObject) (and ("
+		return "(exists (?v - VisualObject) (and (is-object-in-question ?v)("
 				+ getAscriptionPredicate(_feature, _learn) + " ?v)))";
 	}
 
