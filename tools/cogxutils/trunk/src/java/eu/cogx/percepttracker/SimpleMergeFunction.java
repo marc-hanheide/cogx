@@ -292,7 +292,7 @@ private final Class<Via> m_viaCls;
 		
 		for (Entry<String, FormulaDistribution> entry : dom.entrySet()) {
 			// if the current key is in the set of keys to ignore, we ignore it!
-			logger.debug("Procesing feature " + entry.getKey());
+			logger.debug("Processing feature " + entry.getKey());
 			
 			if (ignoredKeys.contains(entry.getKey())) {
 				logger.debug("ignore feature " + entry.getKey());
@@ -302,9 +302,9 @@ private final Class<Via> m_viaCls;
 				//WMSimpleMerger.debug("sub-color '" + sub.get(entry.getKey()).getDistribution().getMostLikely().getProposition() + "'");
 				logger.debug("sub-color '" + sub.get(entry.getKey()).getDistribution().firstValue().getProposition() + "'");
 			} else
-				logger.debug("sub-color val not a proposition");*/
-			
-			if (entry.getValue().getDistribution().getMaxProb() > 0.9) {
+				logger.debug("sub-color val not a proposition");
+*/		
+			if (entry.getValue().getDistribution().getMaxProb() > 0.9 || sub.get(entry.getKey()) == null) {
 				result.put(entry.getKey(), entry.getValue());
 				logger.debug("add(1) " + entry.getKey() + " from dom");
 			}
