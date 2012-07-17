@@ -66,6 +66,25 @@ public class BeliefUtils {
 	 */
 	public static WorkingMemoryPointer recurseAncestorsForType(
 			ManagedComponent _component, WorkingMemoryAddress _beliefAddress,
+			Class<? extends Ice.Object> _cls) throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
+		return recurseAncestorsForType(_component, _beliefAddress,
+				CASTUtils.typeName(_cls));
+	}
+
+	/**
+	 * Goes through all ancestors of a belief until it finds one with a matching
+	 * type.
+	 * 
+	 * @param _component
+	 * @param _beliefAddress
+	 * @param _type
+	 * @return
+	 * @throws DoesNotExistOnWMException
+	 * @throws UnknownSubarchitectureException
+	 */
+	public static WorkingMemoryPointer recurseAncestorsForType(
+			ManagedComponent _component, WorkingMemoryAddress _beliefAddress,
 			String _type) throws DoesNotExistOnWMException,
 			UnknownSubarchitectureException {
 		dBelief belief = null;
