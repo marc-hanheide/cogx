@@ -9,6 +9,7 @@
 #ifndef PLANE_POPOUT_H
 #define PLANE_POPOUT_H
 
+#include <pthread.h>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 
 #include <opencv2/highgui/highgui.hpp>
@@ -140,6 +141,8 @@ private:
     pclA::PlanePopout* m_planePopout;
     static IceUtil::Mutex m_planePopoutMutex; // global lock because of libqhull thread-un-safety
     static int m_componentCount;       // lock only if componentCount > 1
+    bool cameraMoving;
+    IceUtil::Mutex m_cameraMovingMutex; // global lock because of libqhull thread-un-safety
 
     /**
      * a SOI not seen for this time will be deleted from WM
@@ -175,6 +178,7 @@ private:
     void GetPlaneAndSOIs();
     void TrackSOIs();
     void DisplayInTG();
+    void onChange_CameraMotion(const cdl::WorkingMemoryChange & _wmc);
     // void SaveHistogramImg(CvHistogram* hist, std::string str);
 
 #ifdef FEAT_VISUALIZATION

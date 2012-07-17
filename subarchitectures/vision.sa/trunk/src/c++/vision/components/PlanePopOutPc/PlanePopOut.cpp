@@ -363,6 +363,7 @@ PlanePopOut::PlanePopOut()
     par.delta = 0.18;
     m_planePopout = new pclA::PlanePopout(par);
     m_componentCount++;
+    cameraMoving = false;
 }
 
 PlanePopOut::~PlanePopOut()
@@ -464,6 +465,15 @@ void PlanePopOut::start()
     addChangeFilter(createLocalTypeFilter<VisionData::GetStableSoisCommand>(cdl::ADD),
 	    new MemberFunctionChangeReceiver<PlanePopOut>(this,
 		&PlanePopOut::onAdd_GetStableSoisCommand));
+
+
+    addChangeFilter(createGlobalTypeFilter<Video::CameraMotionState>(cdl::ADD),
+	new MemberFunctionChangeReceiver<PlanePopOut>(this,
+	    &PlanePopOut::onChange_CameraMotion));
+
+    addChangeFilter(createGlobalTypeFilter<Video::CameraMotionState>(cdl::OVERWRITE),
+	new MemberFunctionChangeReceiver<PlanePopOut>(this,
+	    &PlanePopOut::onChange_CameraMotion));
 }
 
 #ifdef FEAT_VISUALIZATION
@@ -866,58 +876,69 @@ void PlanePopOut::runComponent()
 	    paceMaker.sync();
 	    realRate.tick();
 
-	    try {
-		GetImageData();
-	    }
-	    catch (exception& e) {
-		error(" *** PPO GetImageData HAS CRASHED *** with: '%s'", e.what());
-	    }
-	    try {
-		GetPlaneAndSOIs();
-	    }
-	    catch (exception& e) {
-		error(" *** PPO GetPlaneANdSOIs HAS CRASHED *** with: '%s'", e.what());
-	    }
-	    try {
-		TrackSOIs();
-	    }
-	    catch (exception& e) {
-		error(" *** PPO TrackSOIs HAS CRASHED *** with: '%s'", e.what());
-	    }
+            // get camera moving status (and save locally) 
+            bool camMov = false;
+            {
+              auto_ptr<IceUtil::Mutex::Lock> lock =
+                auto_ptr<IceUtil::Mutex::Lock>(new IceUtil::Mutex::Lock(m_cameraMovingMutex));
+              camMov = cameraMoving;
+            }
+	    // only do processing if the camera is static
+            if(!camMov)
+	    {
+		try {
+		    GetImageData();
+		}
+		catch (exception& e) {
+		    error(" *** PPO GetImageData HAS CRASHED *** with: '%s'", e.what());
+		}
+		try {
+		    GetPlaneAndSOIs();
+		}
+		catch (exception& e) {
+		    error(" *** PPO GetPlaneANdSOIs HAS CRASHED *** with: '%s'", e.what());
+		}
+		try {
+		    TrackSOIs();
+		}
+		catch (exception& e) {
+		    error(" *** PPO TrackSOIs HAS CRASHED *** with: '%s'", e.what());
+		}
 
 #ifdef FEAT_VISUALIZATION
-	    if (m_bSendImage) {
-		if (tmSendImage.isTimeoutReached()) {
-		    SendImage();
-		    tmSendImage.restart();
+		if (m_bSendImage) {
+		    if (tmSendImage.isTimeoutReached()) {
+			SendImage();
+			tmSendImage.restart();
+		    }
 		}
-	    }
 
-	    if (tmSendStatus.isTimeoutReached()) {
-		ostringstream ss;
-		ss.precision(4); // set the _maximum_ precision
-		ss << "<h3>PlanePopOut (" << getComponentID() << ") processing rate</h3>";
-		ss << "current: " << realRate.getRate() << " tests/s<br>";
-		ss << "from start: " << realRate.getTotalRate() << " tests/s<br>";
-		m_display.setHtml("INFO", "ppo.rate/" + getComponentID(), ss.str());
-		tmSendStatus.restart();
-	    }
+		if (tmSendStatus.isTimeoutReached()) {
+		    ostringstream ss;
+		    ss.precision(4); // set the _maximum_ precision
+		    ss << "<h3>PlanePopOut (" << getComponentID() << ") processing rate</h3>";
+		    ss << "current: " << realRate.getRate() << " tests/s<br>";
+		    ss << "from start: " << realRate.getTotalRate() << " tests/s<br>";
+		    m_display.setHtml("INFO", "ppo.rate/" + getComponentID(), ss.str());
+		    tmSendStatus.restart();
+		}
 
-	    if (m_bSendPoints) {
-		if (tmSendPoints.isTimeoutReached()) {
-		    SendPoints(m_bColorByLabel);
-		    tmSendPoints.restart();
+		if (m_bSendPoints) {
+		    if (tmSendPoints.isTimeoutReached()) {
+			SendPoints(m_bColorByLabel);
+			tmSendPoints.restart();
+		    }
 		}
-	    }
-	    if (m_bSendPlaneGrid) {
-		if (tmSendPlaneGrid.isTimeoutReached()) {
-		    SendPlaneGrid();
-		    tmSendPlaneGrid.restart();
+		if (m_bSendPlaneGrid) {
+		    if (tmSendPlaneGrid.isTimeoutReached()) {
+			SendPlaneGrid();
+			tmSendPlaneGrid.restart();
+		    }
 		}
-	    }
 #endif
-	    if (doDisplay)
-		DisplayInTG();
+		if (doDisplay)
+		    DisplayInTG();
+	    }
 	}
     }
     catch (exception& e) {
@@ -1328,6 +1349,18 @@ void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChang
     cmd.succeed();
     debug("PlanePopOut: GetStableSoisCommand found %d SOIs.", cmd.pcmd->sois.size());
 }
+
+void PlanePopOut::onChange_CameraMotion(const cdl::WorkingMemoryChange & _wmc)
+{
+  Video::CameraMotionStatePtr pcms = getMemoryEntry<Video::CameraMotionState>(_wmc.address);
+  if(pcms->camid == camId)
+  {
+    auto_ptr<IceUtil::Mutex::Lock> lock = auto_ptr<IceUtil::Mutex::Lock>(new IceUtil::Mutex::Lock(m_cameraMovingMutex));
+    cameraMoving = pcms->bMoving;
+    log("Camera %d moving: %s", int(camId), cameraMoving ? "YES" : "NO");
+  }
+} 
+
 
 #if 0
 void PlanePopOut::SaveHistogramImg(CvHistogram* hist, string str)
