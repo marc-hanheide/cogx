@@ -67,6 +67,7 @@ private:
    double m_outputWidth;
    double m_outputHeight;
    std::string m_objectList;  // param: list of v11n objects to merge into the scene
+   std::string m_labelColor;  // param: label color for visual objects
 
    std::string m_videoServerName; // param: video server for transformations (3D->2D)
    int m_camid;                   // param: camera id for transformations (3D->2D)
