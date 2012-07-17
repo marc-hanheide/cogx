@@ -60,7 +60,6 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		public void workingMemoryChanged(WorkingMemoryChange _wmc)
 				throws CASTException {
 
-			println("InterpretedIntentionMotiveGenerator.monitorForObjectVisibility() - UPDATE");
 
 			// if belief is deleted then delete motive and remove filter
 			if (_wmc.operation == WorkingMemoryOperation.DELETE) {
