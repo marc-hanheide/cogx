@@ -203,6 +203,7 @@ public:
 
   SOIPointCloudClient m_coarsePointCloud;
   SOIPointCloudClient m_finePointCloud;
+  double m_borderRatio; // border for PCL::isPointVisible()
 
 private:
   bool m_bSameSource;
