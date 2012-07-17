@@ -1,6 +1,9 @@
 
 PROJECT(VisualLearnerProxy)
 if (NOT BUILD_SA_VISION_VISLEARNER_FAKE)
+
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
    # Matlab headers are required to build the proxy
    find_package(MatlabCompiler)
    include_directories( ${MATLAB_INCLUDE_DIR} )

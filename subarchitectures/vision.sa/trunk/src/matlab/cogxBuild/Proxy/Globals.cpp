@@ -3,6 +3,7 @@
 #include "initlib.h"
 #include "MatlabHelper.h"
 #include "libVisualLearnerCtf.h"
+#include "LoggerMacro.h"
 
 using namespace std;
 
@@ -16,17 +17,17 @@ class CInitializer
 {
 public:
    CInitializer() {
-      printf("VisualLearnerProxy initializing\n");
+      INFO("VisualLearnerProxy initializing\n");
       InitVisualLearnerLib();
 
-      printf("ClfStartConfig='%s'\n", ClfStartConfig.c_str());
+      INFO("ClfStartConfig='" << ClfStartConfig << "'");
 
       // Load global variables 
       mwArray clfConfig(ClfStartConfig.c_str());
       CLFstart(clfConfig);
    }
    ~CInitializer() {
-      printf("VisualLearnerProxy terminating\n");
+      INFO("VisualLearnerProxy terminating\n");
       TermVisualLearnerLib();
    }
 
@@ -49,7 +50,7 @@ public:
          }
       }
       catch (...) {
-         printf(" **** FAILED to extract from Matlab: Coma.avNames, Coma.SCC\n");
+         WARN(" **** FAILED to extract from Matlab: Coma.avNames, Coma.SCC");
          Enumerator.clear();
          Enumerator.addMapping("red", 1);
          Enumerator.addMapping("green", 2);

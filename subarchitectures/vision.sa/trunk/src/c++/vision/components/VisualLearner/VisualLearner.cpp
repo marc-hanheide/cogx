@@ -29,9 +29,39 @@ static string descAddr(const cdl::WorkingMemoryAddress &addr)
   return res;
 }
 
+class CMatlabProxyLogger: public matlab::CLoggerProxy
+{
+public:
+  VisualLearner *pComponent;
+  CMatlabProxyLogger() { pComponent = nullptr; }
+  void trace(const std::string &text) /*override*/
+  {
+    if (pComponent) pComponent->debug(text);
+  }
+  void debug(const std::string &text) /*override*/
+  {
+    if (pComponent) pComponent->log(text);
+  }
+  void info(const std::string &text) /*override*/
+  {
+    if (pComponent) pComponent->println(text);
+  }
+  void warn(const std::string &text) /*override*/
+  {
+    if (pComponent) pComponent->error(text);
+  }
+  void error(const std::string &text) /*override*/
+  {
+    if (pComponent) pComponent->error(text);
+  }
+};
+CMatlabProxyLogger logger;
+
 VisualLearner::VisualLearner()
 {
   m_ClfConfigFile = "";
+  logger.pComponent = this;
+  matlab::CLoggerProxy::setLogger(logger);
 }
 
 VisualLearner::~VisualLearner()
