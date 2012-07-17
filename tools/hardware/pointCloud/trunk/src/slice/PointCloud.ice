@@ -33,7 +33,8 @@ module PointCloud {
     bool isPointInViewCone(cogx::Math::Vector3 point);
 
     // Check if the point is visible by all cameras that generate the point cloud.
-    bool isPointVisible(cogx::Math::Vector3 point);
+    // @p borderRatio - amount of border that is outside of the view (default 0.0, max 1.0)
+    bool isPointVisible(cogx::Math::Vector3 point, double borderRatio);
   };
 
 };
