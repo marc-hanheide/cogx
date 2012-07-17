@@ -133,7 +133,7 @@ public class PossibleInterpretationsMotiveGenerator
 			if (motive instanceof TutorInitiativeLearningMotive) {
 				TutorInitiativeLearningMotive tilm = (TutorInitiativeLearningMotive) motive;
 				for (WorkingMemoryAddress reference : potentialReferenceList) {
-				
+
 					removeLearningEffect(reference, tilm.assertedFeature,
 							tilm.assertedLearn);
 				}
@@ -195,8 +195,8 @@ public class PossibleInterpretationsMotiveGenerator
 
 		excludeFeatureFromReference(_feature);
 
-		return "(exists (?v - VisualObject) (and (is-object-in-question ?v)(= (" + predicate + " ?v) "
-				+ _hypothesis + ")))";
+		return "(exists (?v - VisualObject) (and (is-object-in-question ?v)(= ("
+				+ predicate + " ?v) " + _hypothesis + ")))";
 
 	}
 
@@ -222,12 +222,13 @@ public class PossibleInterpretationsMotiveGenerator
 
 		String predicate = CASTUtils.concatenate("global-", _feature,
 				"-question-answered");
-		return "(exists (?v - VisualObject) (and (is-object-in-question ?v)(" + predicate + " ?v)))";
+		return "(exists (?v - VisualObject) (and (is-object-in-question ?v)("
+				+ predicate + " ?v)))";
 	}
 
 	@Override
-	protected String getAscriptionGoalString(String _feature, boolean _learn,
-			String _groundedBeliefID) {
+	protected String getAscriptionGoalString(String _feature, String _value,
+			boolean _learn, String _groundedBeliefID) {
 
 		excludeFeatureFromReference(_feature);
 
@@ -238,7 +239,6 @@ public class PossibleInterpretationsMotiveGenerator
 	@Override
 	protected void motiveWasCompleted(TutorInitiativeMotive _motive)
 			throws SubarchitectureComponentException {
-
 
 		PossibleInterpretedIntentions _pii = getMemoryEntry(
 				_motive.referenceEntry, PossibleInterpretedIntentions.class);

@@ -536,18 +536,18 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		String value = decoded.getFeatureValue();
 		boolean learn = decoded.isPositive();
 
-		if(feature.equals("objecttype") && !learn) {
+		if (feature.equals("objecttype") && !learn) {
 			log("no motive for objecttype unlearning");
 			return null;
 		}
-		
+
 		TutorInitiativeLearningMotive motive = VisualObjectMotiveGenerator
 				.newMotive(TutorInitiativeLearningMotive.class, null,
 						getCASTTime());
 
 		String goalString = conjoinGoalStrings(new String[] {
 				getAdditionalGoals(),
-				getAscriptionGoalString(feature, learn,
+				getAscriptionGoalString(feature, value, learn,
 						aboutBeliefAddress(_intention).id) });
 
 		// HACK used later for adding attribution to all possible referentss
@@ -562,12 +562,12 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 				+ motive.informationGain);
 
 		// HACK or NOT-HACK? add attributed feature into ground belief
-//		addAttribution(aboutBeliefAddress(_intention), feature, value, learn);
+		// addAttribution(aboutBeliefAddress(_intention), feature, value,
+		// learn);
 
 		return motive;
 
 	}
-
 
 	protected String getAscriptionPredicate(String feature, boolean learn) {
 
@@ -579,7 +579,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	}
 
 	protected abstract String getAscriptionGoalString(String feature,
-			boolean learn, String groundedBeliefID);
+			String value, boolean learn, String groundedBeliefID);
 
 	/**
 	 * Get the id of the belief that this intention is "about".
@@ -650,29 +650,29 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		motive.potentiallyReferencedObjectBeliefs = _beliefAddresses;
 	}
 
-//	protected void addAttribution(WorkingMemoryAddress _beliefAddr,
-//			String _feature, String _value, boolean _polarity)
-//			throws DoesNotExistOnWMException, ConsistencyException,
-//			PermissionException, UnknownSubarchitectureException {
-//
-//		// if (false) {
-//		String attributionPredication = "attributed-" + _feature;
-//		println("adding attribution: (" + attributionPredication + " " + _value
-//				+ ")");
-//
-//		// addStringFeature(_beliefAddr, attributionPredication,
-//		// _value);
-//
-//		// keep dBelief here to allow switches between different subclasses,
-//		// e.g. Merged or Merged
-//		BeliefUtils.addFeature(this, _beliefAddr, dBelief.class,
-//				attributionPredication, _value);
-//
-//		// planning won't work without this in place anyway, but it probably
-//		// isn't required on faster machines
-//		sleepComponent(250);
-//		// }
-//	}
+	// protected void addAttribution(WorkingMemoryAddress _beliefAddr,
+	// String _feature, String _value, boolean _polarity)
+	// throws DoesNotExistOnWMException, ConsistencyException,
+	// PermissionException, UnknownSubarchitectureException {
+	//
+	// // if (false) {
+	// String attributionPredication = "attributed-" + _feature;
+	// println("adding attribution: (" + attributionPredication + " " + _value
+	// + ")");
+	//
+	// // addStringFeature(_beliefAddr, attributionPredication,
+	// // _value);
+	//
+	// // keep dBelief here to allow switches between different subclasses,
+	// // e.g. Merged or Merged
+	// BeliefUtils.addFeature(this, _beliefAddr, dBelief.class,
+	// attributionPredication, _value);
+	//
+	// // planning won't work without this in place anyway, but it probably
+	// // isn't required on faster machines
+	// sleepComponent(250);
+	// // }
+	// }
 
 	// @Override
 	// protected TutorInitiativeMotive checkForUpdate(
@@ -903,7 +903,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			InterpretedIntention _ii) {
 
 		_component.println("executing accept effect");
-		
+
 		RichIntention decoded = AbstractDialogueActionInterface
 				.extractRichIntention(_ii);
 
