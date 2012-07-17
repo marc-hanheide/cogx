@@ -36,6 +36,12 @@ namespace cast {
  */
 void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
 {
+  struct _local_ {
+    std::atomic<long>& c;
+    _local_(std::atomic<long>& _c) : c(_c) { c++; }
+    ~_local_() { c--; }
+  } locker(mAddCount);
+
   long retryMs = 1000;
   if (pEvent->pRetry) {
     log("SOIFilter::handle_add_soi, RETRY %ld", pEvent->pRetry->retryCount);
