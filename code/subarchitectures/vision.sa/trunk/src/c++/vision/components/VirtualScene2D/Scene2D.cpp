@@ -375,7 +375,7 @@ void CScene2D::drawVisualObject(const cast::cdl::WorkingMemoryAddress& objaddr,
    // }
 
    p.fontname("sans-serif");
-   p.pencolorname("yellow");
+   p.pencolorname("magenta");
    p.fframedtext(x0, YY(y0+h0/2+dy), objaddr.id);
    dy += true_size;
    if (ident != "") {
