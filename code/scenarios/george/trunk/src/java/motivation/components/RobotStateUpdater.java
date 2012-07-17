@@ -2,7 +2,6 @@ package motivation.components;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.Motive;

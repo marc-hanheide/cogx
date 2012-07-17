@@ -1,6 +1,5 @@
 package eu.cogx.goals.george;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,7 +26,6 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.core.CASTData;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
@@ -59,7 +57,6 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		@Override
 		public void workingMemoryChanged(WorkingMemoryChange _wmc)
 				throws CASTException {
-
 
 			// if belief is deleted then delete motive and remove filter
 			if (_wmc.operation == WorkingMemoryOperation.DELETE) {
@@ -109,30 +106,25 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			}
 		});
 
-		// addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-		// BaseIntention.class, WorkingMemoryOperation.ADD),
-		// new WorkingMemoryChangeReceiver() {
-		//
-		// @Override
-		// public void workingMemoryChanged(WorkingMemoryChange _wmc)
-		// throws CASTException {
-		// logIntention(getMemoryEntry(_wmc.address,
-		// BaseIntention.class));
-		//
-		// }
-		// });
+		addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(MergedBelief.class),
+				new WorkingMemoryChangeReceiver() {
 
-		// addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-		// TutorInitiativeMotive.class, WorkingMemoryOperation.DELETE),
-		// new WorkingMemoryChangeReceiver() {
-		//
-		// @Override
-		// public void workingMemoryChanged(WorkingMemoryChange _wmc)
-		// throws CASTException {
-		// println("SOMEONE DELETED MY INTENTION");
-		// println(CASTUtils.toString(_wmc));
-		// }
-		// });
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+
+						MergedBelief mb = getMemoryEntry(_wmc.address,
+								MergedBelief.class);
+						if (mb.type.equalsIgnoreCase("robot")) {
+							m_robotBeliefAddr = _wmc.address;
+							println("stored robot belief address: "
+									+ CASTUtils.toString(m_robotBeliefAddr));
+							removeChangeFilter(this);
+						}
+					}
+				});
+
 	}
 
 	// TODO HACK sanitise between Dora and George
@@ -141,29 +133,9 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	// TODO HACK sanitise between Dora and George
 	@Override
 	protected WorkingMemoryAddress getRobotBeliefAddr() {
-		if (m_robotBeliefAddr == null) {
-			List<CASTData<MergedBelief>> groundedBeliefs = new ArrayList<CASTData<MergedBelief>>();
-			try {
-				getMemoryEntriesWithData(MergedBelief.class, groundedBeliefs,
-						"binder", 0);
-			} catch (UnknownSubarchitectureException e) {
-				logException(e);
-				return null;
-			}
 
-			for (CASTData<MergedBelief> beliefEntry : groundedBeliefs) {
-				if (beliefEntry.getData().type.equalsIgnoreCase("robot")) {
-					m_robotBeliefAddr = new WorkingMemoryAddress(
-							beliefEntry.getID(), "binder");
-					break;
-				}
-			}
-			if (m_robotBeliefAddr == null) {
-				getLogger().warn("unable to find belief '" + "robot" + "'");
-			}
-		}
+		assert (m_robotBeliefAddr != null);
 		return m_robotBeliefAddr;
-
 	}
 
 	protected String getAdditionalGoals() throws DoesNotExistOnWMException,

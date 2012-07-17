@@ -169,7 +169,6 @@ public class ModelStatusMotiveGenerator extends
 		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(MergedBelief.class, _newEntry);
 
-		FormulaDistribution fd;
 		String concept = getConcept(belief);
 		String value = getMostPromising(belief);
 		double gain = getModelGain(belief);
