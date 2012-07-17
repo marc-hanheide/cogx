@@ -387,7 +387,7 @@ public class VisionActionInterface extends
 			m_viewStateAddress = new WorkingMemoryAddress(newDataID(),
 					getSubarchitectureID());
 			Robot rbt = new Robot(_viewconePtr, m_armIsRestingInitially, false,
-					false);
+					false, false);
 			addToWorkingMemory(m_viewStateAddress, rbt);
 		} else {
 			lockEntry(m_viewStateAddress, WorkingMemoryPermissions.LOCKEDODR);
