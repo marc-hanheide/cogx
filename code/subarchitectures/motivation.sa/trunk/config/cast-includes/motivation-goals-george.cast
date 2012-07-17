@@ -5,12 +5,13 @@ OPTDEFAULT Motivation_George_Options=<multiline>
 # year 4
 JAVA MG gg.po 		eu.cogx.goals.george.ProtoObjectMotiveGenerator
 JAVA MG gg.vo 		eu.cogx.goals.george.VisualObjectMotiveGenerator
-JAVA MG gg.ii 		eu.cogx.goals.george.InterpretedIntentionMotiveGenerator --log 
-JAVA MG gg.pii 		eu.cogx.goals.george.PossibleInterpretationsMotiveGenerator --log
+JAVA MG gg.ii 		eu.cogx.goals.george.InterpretedIntentionMotiveGenerator 
+JAVA MG gg.pii 		eu.cogx.goals.george.PossibleInterpretationsMotiveGenerator 
 IFOPTANY(%(Motivation_George_Options), model-status-generator)
    JAVA MG gg.ms 	eu.cogx.goals.george.ModelStatusMotiveGenerator
 ENDIF
-JAVA MG gg.la 		eu.cogx.goals.george.LookAroundMotiveGenerator --log
+JAVA MG gg.la 		eu.cogx.goals.george.LookAroundMotiveGenerator 
+JAVA MG rbt-updater     motivation.components.RobotStateUpdater
 
 # Choose automatic or manual filtering
 #VARDEFAULT MotiveFileManagerGoalFilter=automatic
@@ -22,4 +23,3 @@ ENDIF
 IFEQ(%(MotiveFileManagerGoalFilter), automatic)
     JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "LimitTriesFilter,DriveHierarchyFilter,RestartDelayFilter" --recheck-interval 5000 --max-tries 2
 ENDIF
-
