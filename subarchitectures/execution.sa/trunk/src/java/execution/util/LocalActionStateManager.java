@@ -247,28 +247,36 @@ public class LocalActionStateManager extends Thread {
 			while (m_component.isRunning() && m_executorQueue != null
 					&& !m_executorQueue.isEmpty()) {
 
-				try {
-					ExecutorWrapper executorWrapper = m_executorQueue.poll();
-					assert (executorWrapper != null); // should never be
-					ActionExecutor<?> executor = executorWrapper.m_first;
-					assert (executor != null);
+				ExecutorWrapper executorWrapper = m_executorQueue.poll();
+				assert (executorWrapper != null); // should never be
+				ActionExecutor<?> executor = executorWrapper.m_first;
+				assert (executor != null);
 
-					if (executor.isBlockingAction()) {
-						TriBool executionSuccess = executor.execute();
+				if (executor.isBlockingAction()) {
+					TriBool executionSuccess = executor.execute();
 
-						// need to lock to protect from other updates
-						m_component.lockComponent();
+					// need to lock to protect from other updates
+					m_component.lockComponent();
+					try {
 						actionCompleted(executionSuccess,
 								executorWrapper.m_address,
 								executorWrapper.m_second);
+					} catch (Exception e) {
+						m_component.logException(
+								"Error while executing blocking action", e);
+					} finally {
 						m_component.unlockComponent();
-
-					} else {
-						executor.execute(new ExecutionCallback(executorWrapper));
 					}
-				} catch (CASTException e) {
-					m_component.println(e.message);
-					e.printStackTrace();
+
+				} else {
+					try {
+						executor.execute(new ExecutionCallback(executorWrapper));
+					} catch (Exception e) {
+						m_component
+								.logException(
+										"Error while triggering execution of non-blocking action",
+										e);
+					}
 				}
 
 			}
