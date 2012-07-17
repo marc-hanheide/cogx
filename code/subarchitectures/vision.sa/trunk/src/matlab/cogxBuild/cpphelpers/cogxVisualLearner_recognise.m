@@ -66,7 +66,7 @@ function [rCpcx,gain] = cogxVisualLearner_recognise(X, B, pts3d)
       
       division_at = size(avu{1},1)-1 ;
       showRec(ansYes,ansPy,rCpcx,f,division_at);
-      displayTR(ansYes,ansPy,avu,g);
+      displayTR(ansYes,ansPy,avu,g,f); %!!DS!!
       displayG(Figs.LRguiR.main,'GR');                 
       
       disp(['MATLAB: cogxVisualLearner_recognise DONE']);

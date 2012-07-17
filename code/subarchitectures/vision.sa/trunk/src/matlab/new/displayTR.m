@@ -1,4 +1,4 @@
-function displayTR(ansYes,ansPy,avu,g)
+function displayTR(ansYes,ansPy,avu,g,f)
 
 global Coma Disp Settings
 
@@ -42,6 +42,7 @@ if Settings.Disp.TR
         fprintf(fid, '</table> ') ;
       end
    end
+   fprintf(fid, '\nF:[ %4.2f  %4.2f  %4.2f  %4.2f  %4.2f  %4.2f ]\n', f(1), f(2), f(3), f(4), f(5), f(6));
    
    fclose(fid);
    
