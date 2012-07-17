@@ -134,17 +134,24 @@ inline double projectSize(const CameraParameters &cam, const Vector3 &w,
  * Returns true if a 3D point given in world coordinates should be visible by a
  * camera (not taking into account occlusions).
  *
- * Checks whether projected lies in fron of camera and point falls within image
+ * Checks whether projected lies in front of camera and point falls within image
  * size.
+ *
+ * @param cam  camera paramenters
+ * @param w  point to check
+ * @param borderRatio  size of the border to ignore in the check, in ratio of the image size
+ *                     (default = 0.0, i.e. no border, 0.5 would mean all border)
  */
-inline bool isPointVisible(const CameraParameters &cam, const Vector3 &w)
+inline bool isPointVisible(const CameraParameters &cam, const Vector3 &w, double borderRatio = 0.)
 {
   Vector3 p = transformInverse(cam.pose, w);
   if(p.z > 0.)
   {
     Vector2 q = vector2(cam.fx*p.x/p.z + cam.cx, cam.fy*p.y/p.z + cam.cy);
-    return (int)round(q.x) >= 0 && (int)round(q.x) < cam.width &&
-           (int)round(q.y) >= 0 && (int)round(q.y) < cam.height;
+    double borderX = (double)cam.width*borderRatio;
+    double borderY = (double)cam.height*borderRatio;
+    return (int)round(q.x) >= 0 + (int)borderX && (int)round(q.x) < cam.width - (int)borderX &&
+           (int)round(q.y) >= 0 + (int)borderY && (int)round(q.y) < cam.height - (int)borderY;
   }
   else
   {
