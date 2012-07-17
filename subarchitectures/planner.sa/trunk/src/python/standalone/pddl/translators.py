@@ -643,7 +643,7 @@ class ObjectFluentNormalizer(Translator):
                 return effects.ConditionalEffect(cond, results[0], temp_scope)
             elif isinstance(eff, effects.UniversalEffect):
                 #Terms that contain quantified variables must be handled inside the quantifier
-                temp_scope = self.create_temp_scope(eff, termdict, domain)
+                temp_scope = self.create_temp_scope(eff.parent, termdict, domain)
                 subdict = self.dependent_terms(termdict, eff.args)
                 if not subdict:
                     return eff.copy(new_parts=results, new_scope=temp_scope)
