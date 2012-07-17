@@ -71,6 +71,7 @@ CScene2D::CScene2D()
    m_objectList = "video.viewer";
    m_videoServerName = "";
    m_camid = -1;
+   m_labelColor = "magenta";
 }
 
 void CScene2D::configure(const std::map<std::string,std::string> & _config)
@@ -89,6 +90,10 @@ void CScene2D::configure(const std::map<std::string,std::string> & _config)
    if ((it = _config.find("--camid")) != _config.end()) {
       istringstream is(it->second);
       is >> m_camid;
+   }
+
+   if ((it = _config.find("--label-color")) != _config.end()) {
+      m_labelColor = it->second;
    }
 
    if ( (m_videoServerName != "") != (m_camid >= 0) ) {
@@ -375,7 +380,7 @@ void CScene2D::drawVisualObject(const cast::cdl::WorkingMemoryAddress& objaddr,
    // }
 
    p.fontname("sans-serif");
-   p.pencolorname("magenta");
+   p.pencolorname(m_labelColor.c_str());
    p.fframedtext(x0, YY(y0+h0/2+dy), objaddr.id);
    dy += true_size;
    if (ident != "") {
