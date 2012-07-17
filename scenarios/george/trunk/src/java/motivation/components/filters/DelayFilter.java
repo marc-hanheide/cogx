@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import motivation.slice.LearnObjectFeatureMotive;
-import motivation.slice.LookAtViewConeMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.RobotNonSituatedMotive;
@@ -43,6 +42,8 @@ public class DelayFilter implements MotiveFilter {
 		Integer delay = m_delayMap.get(motive.getClass());
 		MotivePriority priority = MotivePriority.UNSURFACE;
 
+		long currentSystemTime = System.currentTimeMillis();
+		
 		// is there a delay configured for this class of motive at all?
 		if (delay == null) {
 			priority = MotivePriority.NORMAL;
@@ -59,7 +60,7 @@ public class DelayFilter implements MotiveFilter {
 			// if there is a post-delay window active for this class
 			if (postDelay != null) {
 				// if we're still in the window, activate the motive
-				if (System.currentTimeMillis() < postDelay) {
+				if (currentSystemTime < postDelay) {
 					priority = MotivePriority.NORMAL;
 				} else {
 					// if we're out of the window, do nothing
@@ -70,6 +71,8 @@ public class DelayFilter implements MotiveFilter {
 			// Now see if there is currently a delay for this specific motive
 			Long target = m_activeDelays.get(motive.getClass());
 
+			
+			
 			// If this motive has not yet been delayed
 			if (target == null) {
 
@@ -78,18 +81,21 @@ public class DelayFilter implements MotiveFilter {
 					m_component.log("delaying surfacing of "
 							+ motive.getClass() + " for " + delay + "ms");
 					m_activeDelays.put(motive.getClass(),
-							System.currentTimeMillis() + delay);
+							currentSystemTime + delay);
 				}
 
 			}
 			// else if the delay has been created and now exceeded
-			else if (target < System.currentTimeMillis()) {
+			else if (target < currentSystemTime ) {
 				m_component.log("surfacing " + motive.getClass()
 						+ " after delay of " + delay + "ms");
 				priority = MotivePriority.NORMAL;
 				m_activeDelays.remove(motive.getClass());
-				m_postDelays.put(motive.getClass(), System.currentTimeMillis()
+				m_postDelays.put(motive.getClass(),currentSystemTime
 						+ getPostDelayWindow(motive.getClass()));
+			} else {
+				m_component.log("continuing delay of " + motive.getClass()
+						+ " for another " + (target - currentSystemTime) + "ms");
 			}
 		}
 		return priority;
@@ -115,7 +121,8 @@ public class DelayFilter implements MotiveFilter {
 
 	@Override
 	public void configure(Map<String, String> arg0) {
-		int postDialogueDelay = 15000;
+
+		int postDialogueDelay = 25000;
 
 		m_delayMap.put(LearnObjectFeatureMotive.class, postDialogueDelay);
 
