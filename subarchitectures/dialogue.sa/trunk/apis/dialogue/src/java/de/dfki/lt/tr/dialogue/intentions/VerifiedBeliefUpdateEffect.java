@@ -51,8 +51,9 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 					"will set the following features in the verified belief: {\n"
 							+ s + "}");
 
-			WorkingMemoryPointer verifiedBeliefWMP = BeliefUtils.recurseAncestorsForType(component, aboutBeliefAddr, VerifiedBelief.class);
-			
+			WorkingMemoryPointer verifiedBeliefWMP = BeliefUtils
+					.recurseAncestorsForType(component, aboutBeliefAddr,
+							VerifiedBelief.class);
 
 			if (verifiedBeliefWMP != null) {
 
@@ -93,11 +94,17 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 						component.log("setting " + feature + " -> " + value
 								+ String.format(" @ p=%.2f", prob));
 
-						FormulaDistribution distr = verifiedBelief.getContent()
-								.get(feature);
-						if (distr == null) {
-							distr = FormulaDistribution.create();
-						}
+						// Not allowing more than one value
+
+						// FormulaDistribution distr =
+						// verifiedBelief.getContent()
+						// .get(feature);
+						// if (distr == null) {
+						// distr = FormulaDistribution.create();
+						// }
+
+						FormulaDistribution distr = FormulaDistribution
+								.create();
 						distr.add(value, prob);
 						verifiedBelief.getContent().put(feature, distr);
 
