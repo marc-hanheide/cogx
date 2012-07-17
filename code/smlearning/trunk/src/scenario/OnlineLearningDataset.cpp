@@ -112,7 +112,10 @@ void OnlineLearningDataset::run (int argc, char* argv[])
 		updateCurrentRegion ();
 		currentRegion->data.push_back (learningData.currentChunkSeq);
 		updateLearners (iteration);
-		cout << "Iteration " << iteration << " completed!" << endl;	}
+		cout << "Iteration " << iteration << " completed!" << endl;
+	}
+	//write obtained data into a binary file
+	writeData (true);
 }
 
 } // namespace smlearning
