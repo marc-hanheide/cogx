@@ -8,14 +8,12 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
-import de.dfki.lt.tr.dialogue.util.VerbalisationUtils;
-import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.beliefs.slice.VerifiedBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
 
 /**
  * General update effect that sets belief values. Very similar to
@@ -59,18 +57,8 @@ public class FeatureValueUpdateEffect implements CASTEffect {
 					"will set the following features in the verified belief: {\n"
 							+ s + "}");
 
-			MergedBelief mergedBelief = component.getMemoryEntry(
-					aboutBeliefAddr, MergedBelief.class);
-			CASTBeliefHistory hist = (CASTBeliefHistory) mergedBelief.hist;
-			WorkingMemoryPointer verifiedBeliefWMP = null;
-
-			for (WorkingMemoryPointer ancestor : hist.ancestors) {
-				if (ancestor.type.equals(VerifiedBelief.class.getName())) {
-					verifiedBeliefWMP = ancestor;
-					break;
-				}
-			}
-
+			WorkingMemoryPointer verifiedBeliefWMP = BeliefUtils.recurseAncestorsForType(component, aboutBeliefAddr, VerifiedBelief.class);
+			
 			if (verifiedBeliefWMP != null) {
 
 				component.log("found verified belief ancestor, updating");
