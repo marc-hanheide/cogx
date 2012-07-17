@@ -56,7 +56,6 @@
 
     (is-object-in-question ?v - VisualObject)
     (is-potential-object-in-question ?v - VisualObject)
-    (is-object-referenced-by-george ?v - VisualObject)
 
     (is-looking-at ?r - Robot ?v - VisualObject)
     (is-looking-and-eventually-pointing-at ?r - Robot ?v - VisualObject)
@@ -119,6 +118,8 @@
     (polar-color-question-answered ?v - VisualObject) - ColorName
     (polar-shape-question-answered ?v - VisualObject) - ShapeName
     (polar-objecttype-question-answered ?v - VisualObject) - ObjecttypeName
+
+    (is-object-referenced-by-george ?r - Robot) -VisualObject
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -355,8 +356,8 @@
     :effect 
       (and
         (assign (attributed-color ?v) UNDETERMINED_COLOR)
-        (is-object-referenced-by-george ?v)
-        (update (is-object-referenced-by-george ?v) true)
+        (assign (is-object-referenced-by-george ?r) ?v)
+        (update (is-object-referenced-by-george ?r) ?v)
         (increase (total-cost) 2)
       )
   )
@@ -374,8 +375,8 @@
     :effect 
       (and
         (assign (attributed-color ?v) ?c)
-        (is-object-referenced-by-george ?v)
-        (update (is-object-referenced-by-george ?v) true)
+        (assign (is-object-referenced-by-george ?r) ?v)
+        (update (is-object-referenced-by-george ?r) ?v)
         (increase (total-cost) 1)
       )
   )
@@ -392,8 +393,8 @@
     :effect 
       (and
         (assign (attributed-shape ?v) UNDETERMINED_SHAPE)
-        (is-object-referenced-by-george ?v)
-        (update (is-object-referenced-by-george ?v) true)
+        (assign (is-object-referenced-by-george ?r) ?v)
+        (update (is-object-referenced-by-george ?r) ?v)
         (increase (total-cost) 2)
       )
   )
@@ -411,8 +412,8 @@
     :effect 
       (and
         (assign (attributed-shape ?v) ?s)
-        (is-object-referenced-by-george ?v)
-        (update (is-object-referenced-by-george ?v) true)
+        (assign (is-object-referenced-by-george ?r) ?v)
+        (update (is-object-referenced-by-george ?r) ?v)
         (increase (total-cost) 1)
       )
   )
@@ -497,11 +498,12 @@
         ;;attributed case (robot initiated)
         (and
           (is-in-robot-initiated-mode ?r)
+          (not (= ?v VISUAL_OBJECT_DUMMY))
           (not (color-learned ?v))
           (= (attributed-color ?v) ?c)
           (not (= ?c UNKNOWN_COLOR))
           (is-looking-and-eventually-pointing-at ?r ?v)
-          (is-object-referenced-by-george ?v)
+          (= (is-object-referenced-by-george ?r) ?v)
         )
 
         ;;autonomous learning case
@@ -537,6 +539,7 @@
         ;;attributed case (robot initiated)
         (and
           (is-in-robot-initiated-mode ?r)
+          (not (= ?v VISUAL_OBJECT_DUMMY))
           (not (shape-learned ?v))
           (= (attributed-shape ?v) ?s)
           (not (= ?s UNKNOWN_SHAPE))
