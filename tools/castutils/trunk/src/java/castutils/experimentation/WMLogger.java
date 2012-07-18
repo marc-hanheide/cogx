@@ -80,7 +80,8 @@ public class WMLogger extends ManagedComponent {
 	public <T extends Ice.ObjectImpl> void register(Class<T> type) {
 		getLogger().trace("register listeners");
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(type,
-				WorkingMemoryOperation.ADD), new LoggingChangeReceiver<T>(type), ChangeReceiverPriority.HIGH);
+				WorkingMemoryOperation.ADD),
+				new LoggingChangeReceiver<T>(type), ChangeReceiverPriority.HIGH);
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(type,
 				WorkingMemoryOperation.DELETE), new LoggingChangeReceiver<T>(
 				type), ChangeReceiverPriority.HIGH);
@@ -100,39 +101,41 @@ public class WMLogger extends ManagedComponent {
 		public LoggingChangeReceiver(Class<T> specClass) {
 			super();
 			this.specClass = specClass;
-			this.logger = Logger.getLogger("WMLogger."+specClass.getCanonicalName());
+			this.logger = Logger.getLogger("WMLogger."
+					+ specClass.getCanonicalName());
 		}
 
 		@Override
 		public synchronized void workingMemoryChanged(WorkingMemoryChange _wmc)
 				throws CASTException {
 			try {
-			T m;
-			String wmcXML = IceXMLSerializer.toXMLString(_wmc);
-			String contentXML = "";
-			switch (_wmc.operation) {
-			case ADD:
-			case OVERWRITE:
-				m = getMemoryEntry(_wmc.address, specClass);
-				contentXML = IceXMLSerializer.toXMLString(m);
-				break;
+				T m;
+				String wmcXML = IceXMLSerializer.toXMLString(_wmc);
+				String contentXML = "";
+				switch (_wmc.operation) {
+				case ADD:
+				case OVERWRITE:
+					m = getMemoryEntry(_wmc.address, specClass);
+					contentXML = IceXMLSerializer.toXMLString(m);
+					break;
 
-			case DELETE:
-				contentXML = "";
-				break;
+				case DELETE:
+					contentXML = "";
+					break;
 
-			default:
-				getLogger().warn(
-						"WMChange operation ignored in WMLogger: "
-								+ _wmc.operation);
-				break;
+				default:
+					getLogger().warn(
+							"WMChange operation ignored in WMLogger: "
+									+ _wmc.operation);
+					break;
+				}
+				logger.debug("<WM_OP><WMC>" + wmcXML + "</WMC><CONTENT>"
+						+ contentXML + "</CONTENT></WM_OP>");
+
+			} catch (CASTException e) {
+				logger.debug("CASTException caught: ", e);
 			}
-			logger.debug("<WM_OP><WMC>"+wmcXML+"</WMC><CONTENT>" + contentXML+"</CONTENT></WM_OP>");
-
-		} catch(CASTException e) {
-			logger.warn("CASTException caught: ", e);
 		}
-		} 
 	}
 
 }
