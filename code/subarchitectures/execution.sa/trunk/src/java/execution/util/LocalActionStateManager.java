@@ -262,8 +262,10 @@ public class LocalActionStateManager extends Thread {
 								executorWrapper.m_address,
 								executorWrapper.m_second);
 					} catch (Exception e) {
-						m_component.logException(
-								"Error while executing blocking action", e);
+						m_component
+								.getLogger()
+								.debug("Exception caught while executing blocking action, probably due to cancellation",
+										e, m_component.getLogAdditions());
 					} finally {
 						m_component.unlockComponent();
 					}
