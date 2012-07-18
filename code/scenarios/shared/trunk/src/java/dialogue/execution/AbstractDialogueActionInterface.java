@@ -471,7 +471,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			// Handle matched response looking like this:
 			// [33m[gg.ii: asserted-value -> red][0m
 			// [33m[gg.ii: subtype -> answer][0m
-			// [33m[gg.ii: asserted-polarity -> pos][0m
+			// [33m[gg.ii: asserted-polarity -> pos][0m or neg
 			// [33m[gg.ii: asserted-feature -> color][0m
 			// [33m[gg.ii: type -> assertion][0m
 			// [33m[gg.ii: ][0m
@@ -493,21 +493,39 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 				String feature = _ii.stringContent.get("asserted-feature");
 				String value = _ii.stringContent.get("asserted-value");
+
+				VerifiedBelief belief = getComponent().getMemoryEntry(
+						verifiedAncestorPtr.address, VerifiedBelief.class);
+				CASTIndependentFormulaDistributionsBelief<VerifiedBelief> pb = CASTIndependentFormulaDistributionsBelief
+						.create(VerifiedBelief.class, belief);
+				double prob = 1.0;
+
+				if (_ii.stringContent.get("asserted-polarity").equals("neg")) {
+					prob = 0;
+					//TODO add unlearning goal
+				}
+
+				FormulaDistribution distr = FormulaDistribution.create();
+				distr.add(value, prob);
+				pb.getContent().put(feature, distr);
+
+				distr = FormulaDistribution.create();
+				distr.add(new FloatFormula(-1, 1.0f), 1);
+				pb.getContent().put(feature + "-prob", distr);
+
+				distr = FormulaDistribution.create();
+				distr.add(value, prob);
+				pb.getContent().put("attributed-" + feature, distr);
+
 				try {
-					VerifiedBelief belief = getComponent().getMemoryEntry(
-							verifiedAncestorPtr.address, VerifiedBelief.class);
-					CASTIndependentFormulaDistributionsBelief<VerifiedBelief> pb = CASTIndependentFormulaDistributionsBelief
-							.create(VerifiedBelief.class, belief);
-					BeliefUtils.addFeature(pb, feature, value);
-					BeliefUtils.addFeature(pb, feature + "-prob",
-							new FloatFormula(-1, 1.0f));
-					BeliefUtils.addFeature(pb, "attributed-" + feature, value);
+
 					getComponent().overwriteWorkingMemory(
 							verifiedAncestorPtr.address, pb.get());
 
 				} catch (SubarchitectureComponentException e) {
 					logException(e);
 				}
+
 			}
 			return TriBool.TRITRUE;
 		}
