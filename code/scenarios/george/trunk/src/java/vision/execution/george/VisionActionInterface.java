@@ -475,11 +475,18 @@ public class VisionActionInterface extends
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
-						Motive mtv = getMemoryEntry(_wmc.address, Motive.class);
-
-						if (mtv.status == MotiveStatus.ACTIVE) {
-							m_activeMotive = mtv.getClass();
+						try {
+							Motive mtv = getMemoryEntry(_wmc.address,
+									Motive.class);
+							if (mtv.status == MotiveStatus.ACTIVE) {
+								m_activeMotive = mtv.getClass();
+							}
+						} catch (CASTException e) {
+							getLogger()
+									.debug("Minor annoyance when update active motive",
+											e, getLogAdditions());
 						}
+
 					}
 				});
 
