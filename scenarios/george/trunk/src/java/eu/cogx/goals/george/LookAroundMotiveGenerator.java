@@ -58,13 +58,12 @@ public class LookAroundMotiveGenerator extends
 		public void run() {
 			try {
 				lockComponent();
-
 				// get robot struct
 				assert (m_robotAddress != null);
 				Robot rbt = getMemoryEntry(m_robotAddress, Robot.class);
 				if (rbt.currentViewCone.address.equals(m_toDelete)) {
 					log("cone in use, rescheduling deletion");
-					scheduleForDeletion(this);
+					scheduleForDeletion(m_toDelete);
 				} else {
 					deleteFromWorkingMemory(m_toDelete);
 				}
@@ -73,6 +72,7 @@ public class LookAroundMotiveGenerator extends
 						"Problem when performing scheduled deletion. You can ignore this",
 						e);
 			} finally {
+				log("unlocking");
 				unlockComponent();
 			}
 		}
@@ -110,6 +110,8 @@ public class LookAroundMotiveGenerator extends
 						logException(e);
 					}
 				}
+			} else {
+				println("my cones not empty");
 			}
 
 			unlockComponent();
@@ -169,6 +171,7 @@ public class LookAroundMotiveGenerator extends
 
 	public LookAroundMotiveGenerator() {
 		super(VC_TYPE, LookAtViewConeMotive.class, MergedBelief.class);
+		monitorMotivesForDeletion(true);
 	}
 
 	@Override
@@ -204,7 +207,7 @@ public class LookAroundMotiveGenerator extends
 
 		// check for something to do every 20 seconds
 		// TODO make initial delay and repeat configurable
-		m_executor.scheduleWithFixedDelay(new GetCones(), 20, 20,
+		m_executor.scheduleWithFixedDelay(new GetCones(), 40, 2,
 				TimeUnit.SECONDS);
 
 	}
@@ -327,6 +330,7 @@ public class LookAroundMotiveGenerator extends
 
 	private void scheduleForDeletion(WorkingMemoryAddress coneAddr) {
 		log("scheduling cone for deletion: " + CASTUtils.toString(coneAddr));
+		m_myCones.remove(coneAddr);
 		scheduleForDeletion(new DeleteViewCone(coneAddr));
 	}
 
