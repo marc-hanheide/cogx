@@ -6,8 +6,8 @@ package eu.cogx.percepttracker;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -15,23 +15,16 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.core.CASTUtils;
 import castutils.castextensions.PointerMap;
-import castutils.castextensions.WMView;
 import castutils.castextensions.ValueNotAvailableException;
+import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentBasicDistributions;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.ProbFormula;
-
-import eu.cogx.beliefs.slice.VerifiedBelief;
 
 /**
  * this is a generic matcher that matches any
