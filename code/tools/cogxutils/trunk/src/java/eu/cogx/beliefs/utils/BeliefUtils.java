@@ -187,10 +187,16 @@ public class BeliefUtils {
 
 	public static <BeliefClass extends dBelief> void addFeature(
 			CASTIndependentFormulaDistributionsBelief<BeliefClass> _belief,
-			String _feature, String _value) {
+			String _feature, String _value, double _prob) {
 		FormulaDistribution fd = FormulaDistribution.create();
-		fd.add(_value, 1);
+		fd.add(_value, _prob);
 		_belief.getContent().put(_feature, fd);
+	}
+
+	public static <BeliefClass extends dBelief> void addFeature(
+			CASTIndependentFormulaDistributionsBelief<BeliefClass> _belief,
+			String _feature, String _value) {
+		addFeature(_belief, _feature, _value, 1);
 	}
 
 	public static <BeliefClass extends dBelief> void addFeature(
