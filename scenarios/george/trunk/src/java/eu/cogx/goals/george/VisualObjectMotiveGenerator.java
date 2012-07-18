@@ -20,6 +20,7 @@ import cast.core.CASTData;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
+import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
 import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.perceptmediator.george.transferfunctions.VisualObjectTransferFunction;
@@ -60,59 +61,19 @@ public class VisualObjectMotiveGenerator extends
 		monitorMotivesForDeletion(true);
 	}
 
-	@Override
-	protected void motiveWasCompleted(LearnObjectFeatureMotive _motive)
-			throws SubarchitectureComponentException {
-
-		// if dialogue was involved, then the belief may have been marked as a
-		// referent. this needs cleaning up...
-//
-//		println("why on earth am I getting called?!");
-//		AbstractInterpretedIntentionMotiveGenerator.unmarkReferent(this,
-//				_motive.referenceEntry, _motive);
-
-	}
-
-	private boolean motiveFeatureLearnt(String _featureKey,
-			String _featureLearntPredicate, LearnObjectFeatureMotive _motive,
-			CASTIndependentFormulaDistributionsBelief<MergedBelief> _belief) {
-		return _motive.feature.equals(_featureKey)
-				&& _belief.getContent().containsKey(_featureLearntPredicate);
-	}
 
 	@Override
 	protected LearnObjectFeatureMotive checkForUpdate(MergedBelief _newEntry,
 			LearnObjectFeatureMotive _motive) {
-		if (_motive.feature == null) {
-			getLogger().warn("LearnObjectFeatureMotive.feature is null",
-					getLogAdditions());
+
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
+				.create(MergedBelief.class, _newEntry);
+
+		// delete motive if object is no longer visible
+		if (!visualObjectIsVisible(belief)) {
 			return null;
 		} else {
-
-			CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
-					.create(MergedBelief.class, _newEntry);
-
-			// delete motive if object is no longer visible
-			if (!visualObjectIsVisible(belief)) {
-				return null;
-			}
-			// if the motive's feature is now present in the belief then mark as
-			// completed
-//			else if ((m_colourEnabled && motiveFeatureLearnt(COLOUR_KEY,
-//					COLOUR_LEARNT_KEY, _motive, belief))
-//					|| (m_shapeEnabled && motiveFeatureLearnt(SHAPE_KEY,
-//							SHAPE_LEARNT_KEY, _motive, belief))
-//					|| (m_identityEnabled && motiveFeatureLearnt(IDENTITY_KEY,
-//							IDENTITY_LEARNT_KEY, _motive, belief))
-//					|| (motiveFeatureLearnt(COLOUR_KEY, COLOUR_UNLEARNT_KEY,
-//							_motive, belief))) {
-//				_motive.status = MotiveStatus.COMPLETED;
-//
-//				return _motive;
-//			}
-			else {
-				return _motive;
-			}
+			return _motive;
 		}
 
 	}
@@ -267,7 +228,8 @@ public class VisualObjectMotiveGenerator extends
 
 		LearnObjectFeatureMotive result = null;
 
-		if (!_belief.getContent().containsKey(_featureLearntPredicate)) {
+		if (!attributeIsTrue(_featureLearntPredicate, _belief)) {
+
 			log("ProtoObject belief is not linked to VisualObject, so generating motive.");
 			result = newLearnObjectFeatureMotive(_wma);
 			result.goal = new Goal(100f, -1, conjoinGoalStrings(new String[] {
@@ -279,6 +241,23 @@ public class VisualObjectMotiveGenerator extends
 		}
 		return result;
 
+	}
+
+	private boolean attributeIsTrue(String _featureLearntPredicate,
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> _belief) {
+		boolean attributeIs = false;
+		FormulaDistribution fd = _belief.getContent().get(
+				_featureLearntPredicate);
+		if (fd != null) {
+			try {
+				boolean attributeValue = fd.getDistribution().getMostLikely()
+						.getBoolean();
+				attributeIs = (attributeValue == true);
+			} catch (BeliefInvalidQueryException e) {
+				logException(e);
+			}
+		}
+		return attributeIs;
 	}
 
 	private LearnObjectFeatureMotive generateUnlearnFeatureMotive(
