@@ -63,10 +63,11 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 			if (result.compareTo(m.priority) < 0) {
 				result = m.priority;
 			}
-
 		}
 		return result;
 	}
+
+	
 
 	private boolean checkAgain = true;
 	protected Future<PlanProxy> executionFuture = null;

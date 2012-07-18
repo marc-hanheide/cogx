@@ -17,13 +17,23 @@ import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPermissions;
 import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
-import eu.cogx.planner.facade.PlannerFacade;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
 public class Scheduler extends AbstractScheduler {
+
+	protected static boolean containsUnsurfaced(
+			Map<WorkingMemoryAddress, Motive> possibleGoals) {
+		for (Motive m : possibleGoals.values()) {
+			// if the motive has a higher priority then we have so far
+			if (m.status == MotiveStatus.UNSURFACED) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -46,6 +56,7 @@ public class Scheduler extends AbstractScheduler {
 						+ " surfaced goals.");
 				log("we currently have " + activeGoals.size()
 						+ " active goals.");
+
 				if (executionFuture != null
 						&& (executionFuture.isDone() || executionFuture
 								.isCancelled())) {
@@ -138,7 +149,18 @@ public class Scheduler extends AbstractScheduler {
 					log("maxExecutePriority=" + maxExecutePriority.name());
 					MotivePriority maxSurfacePriority = getMaxPriority(surfacedGoals);
 					log("maxSurfacePriority=" + maxSurfacePriority.name());
-					if (maxExecutePriority.compareTo(maxSurfacePriority) < 0) {
+
+					println("active size: " + activeGoals.size());
+					println("surfaced size: " + surfacedGoals.size());
+
+					if (containsUnsurfaced(activeGoals)
+							|| activeGoals.size() == 0) {
+						if (!executionFuture.isDone()) {
+							executionFuture.cancel(true);
+						}
+						log("deactivated all currently executing goals as some were unsurfaced, let's check again");
+						continue;
+					} else if (maxExecutePriority.compareTo(maxSurfacePriority) < 0) {
 						// if there are surfaced motives that are of same or
 						// high priority than the activated ones we have to
 						// reschedule.
@@ -149,10 +171,6 @@ public class Scheduler extends AbstractScheduler {
 						setStatus(activeGoals, MotiveStatus.SURFACED);
 						log("deactiveated all currently executed goals, let's check again");
 						continue;
-					}
-					// now check for opportunities:
-					{
-						log("check if there are opportunities... NOT IMPLEMENTED YET, so we continue execution");
 					}
 
 				}
