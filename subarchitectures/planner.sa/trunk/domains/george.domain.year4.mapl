@@ -22,6 +22,8 @@
     YELLOW - ColorName
     ORANGE - ColorName    
     BLACK - ColorName    
+    PINK - ColorName    
+    WHITE - ColorName    
 
     UNKNOWN_SHAPE - ShapeName
     UNDETERMINED_SHAPE - ShapeName
