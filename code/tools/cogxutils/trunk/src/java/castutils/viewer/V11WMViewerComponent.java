@@ -3,11 +3,11 @@
  */
 package castutils.viewer;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.text.DecimalFormat;
 
 import si.unilj.fri.cogx.v11n.core.DisplayClient;
 import Ice.ObjectImpl;
@@ -18,11 +18,11 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
+import castutils.castextensions.IceXMLSerializer;
 import castutils.castextensions.WMEntrySet;
 import castutils.castextensions.WMEntrySet.ChangeHandler;
 import castutils.viewer.plugins.DefaultXMLInfo;
 import castutils.viewer.plugins.Plugin;
-import castutils.castextensions.IceXMLSerializer;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
@@ -61,7 +61,9 @@ public class V11WMViewerComponent extends ManagedComponent {
 					Vector<Object> row = new Vector<Object>();
 					// mark additions
 					if (wmc.operation == WorkingMemoryOperation.ADD)
-						row.add("<b>*" + timeFormat.format(now.s + now.us * 1e-6) + "</b>");
+						row.add("<b>*"
+								+ timeFormat.format(now.s + now.us * 1e-6)
+								+ "</b>");
 					else
 						row.add("" + timeFormat.format(now.s + now.us * 1e-6));
 					row.add(addrToString(wmc.address));
@@ -77,32 +79,38 @@ public class V11WMViewerComponent extends ManagedComponent {
 						logString += "<td>" + o.toString() + "</td>";
 					}
 					if (addGenericCol) {
-					  if (omittedFields != null) {
+						if (omittedFields != null) {
 							// @author: mmarko
-							// Don't serialize the fileds listed in omittedFields.
-							StringTokenizer st = new StringTokenizer(omittedFields);
+							// Don't serialize the fileds listed in
+							// omittedFields.
+							StringTokenizer st = new StringTokenizer(
+									omittedFields);
 							while (st.hasMoreTokens()) {
 								String fieldName = st.nextToken();
-								IceXMLSerializer.omitField(newEntry.getClass(), fieldName);
+								IceXMLSerializer.omitField(newEntry.getClass(),
+										fieldName);
 							}
 							omittedFields = null;
-					  }
+						}
 						String genericText = (String) genericPlugin.toVector(
 								newEntry).get(0);
 						if (genericText.length() < 500)
-						  logString += "<td>" + genericText + "</td>";
+							logString += "<td>" + genericText + "</td>";
 						else {
-							logString += "<td class='largeinfo'><div class='top'>" + genericText + "</div></td>";
+							logString += "<td class='largeinfo'><div class='top'>"
+									+ genericText + "</div></td>";
 							if (!foundLargeGeneric) {
 								foundLargeGeneric = true;
 								if (addGenericCol && !compactGenericCol) {
-									setHtml(v11nObject, "999_info",
+									setHtml(v11nObject,
+											"999_info",
 											"(use the --compact option to reduce the size of the generic column; use --omit-fields to hide some fields)");
 								}
 							}
 						}
 						if (logGenericCol)
-						  getLogger().debug(CASTUtils.toString(wmc) + genericText);
+							getLogger().debug(
+									CASTUtils.toString(wmc) + genericText);
 					}
 					setHtml(v11nObject, v11part, "<tr>" + logString + "</tr>");
 					break;
@@ -113,9 +121,8 @@ public class V11WMViewerComponent extends ManagedComponent {
 
 			} catch (Exception e) {
 				getLogger()
-						.warn(
-								"there was an exception in the viewer but we happily ignore that for now: ",
-								e);
+						.debug("there was an exception in the viewer but we happily ignore that for now: ",
+								e, getLogAdditions());
 			}
 		}
 
@@ -124,19 +131,19 @@ public class V11WMViewerComponent extends ManagedComponent {
 		}
 
 		private void initDisplay() {
- 			v11nObject = "wm." + getComponentID();
+			v11nObject = "wm." + getComponentID();
 
 			if (compactGenericCol) {
 				String style = "<style>"
-					+ "td.largeinfo { height: 20em; }"
-					+ "td.largeinfo div.top { height: 100%; overflow: auto; background: lightgray; font-size: 90%; }"
-					+ "</style>";
+						+ "td.largeinfo { height: 20em; }"
+						+ "td.largeinfo div.top { height: 100%; overflow: auto; background: lightgray; font-size: 90%; }"
+						+ "</style>";
 				setHtmlHead(v11nObject, "000_table-style", style);
 			}
 
 			String tableHdr = "<table frame=\"border\" border=\"1\" rules=\"all\">"
-				+ "<tr><th>NEW?</th><th>address</th><th>type</th>"
-				+ "<th>info1</th><th>info2</th><th>info3</th><th>info4</th></tr>";
+					+ "<tr><th>NEW?</th><th>address</th><th>type</th>"
+					+ "<th>info1</th><th>info2</th><th>info3</th><th>info4</th></tr>";
 
 			setHtml(v11nObject, "010_table-header", tableHdr);
 			setHtml(v11nObject, "100_table-end", "</table>");
@@ -213,7 +220,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 		}
 		// space delimited list of fields to omit in generic col
 		if (arg0.get("--omit-fields") != null) {
-		  omittedFields = arg0.get("--omit-fields");
+			omittedFields = arg0.get("--omit-fields");
 		}
 		displayClient.configureDisplayClient(arg0);
 	}
@@ -227,7 +234,8 @@ public class V11WMViewerComponent extends ManagedComponent {
 	protected void start() {
 		entrySet.start();
 		displayClient.connectIceClient(this);
-		//displayClient.installEventReceiver(); // no callbacks => receiver not needed
+		// displayClient.installEventReceiver(); // no callbacks => receiver not
+		// needed
 		displayClient.initDisplay();
 	}
 
