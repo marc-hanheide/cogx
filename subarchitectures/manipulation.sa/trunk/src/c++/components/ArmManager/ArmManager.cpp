@@ -161,7 +161,7 @@ void ArmManager::destroy()
 
 Pose3 ArmManager::pointingPose(const Pose3 objPose)
 {
-  Pose3 pointingPose = objPose;
+  /*Pose3 pointingPose = objPose;
 
   double dist = sqrt(sqr(pointingPose.pos.x) + sqr(pointingPose.pos.y));
   double fact = (dist - m_pointingOffsetHor)/dist;
@@ -179,7 +179,31 @@ Pose3 ArmManager::pointingPose(const Pose3 objPose)
   pointingPose.rot.m11 = m_pointingOffsetHor/tan;
   pointingPose.rot.m12 = sin/tan;
   pointingPose.rot.m21 = -sin/tan;
-  pointingPose.rot.m22 = m_pointingOffsetHor/tan;
+  pointingPose.rot.m22 = m_pointingOffsetHor/tan;*/
+  Pose3 pointingPose;
+  setIdentity(pointingPose);
+  pointingPose.pos = objPose.pos;
+  double dist = sqrt(sqr(pointingPose.pos.x) + sqr(pointingPose.pos.y));
+  double fact = (dist - m_pointingOffsetHor)/dist;
+  pointingPose.pos.x *= fact;
+  pointingPose.pos.y *= fact;
+  pointingPose.pos.z += m_pointingOffsetVer;
+  Vector3 y = objPose.pos;
+  y.z = 0.;
+  normalise(y);
+  Vector3 z = vector3(0., 0., 1.);
+  Vector3 x = cross(y, z);
+  pointingPose.rot.m00 = x.x;
+  pointingPose.rot.m10 = x.y;
+  pointingPose.rot.m20 = x.z;
+
+  pointingPose.rot.m01 = y.x;
+  pointingPose.rot.m11 = y.y;
+  pointingPose.rot.m21 = y.z;
+
+  pointingPose.rot.m02 = z.x;
+  pointingPose.rot.m12 = z.y;
+  pointingPose.rot.m22 = z.z;
 
   return pointingPose;
 }

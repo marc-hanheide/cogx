@@ -337,11 +337,12 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 
     if(manipulator.getConfiguration().isEnabledTableObstacleHack()) {
       // safety obstacle for tables
+      // NOTE: final review table in BHAM is 74 cm high
       BoxShapeDesc safety = new BoxShapeDescI();
       safety.dimensions.v1 = 1;
       safety.dimensions.v2 = 1;
-      safety.dimensions.v3 = 0.25;
-      safety.localPose.p = new Vec3(1.3, 0, -baseHeight/2 + 0.25);
+      safety.dimensions.v3 = 0.37;
+      safety.localPose.p = new Vec3(1.3, 0, -baseHeight/2 + 0.37);
       robot.shapes[2] = safety;
     }
 
