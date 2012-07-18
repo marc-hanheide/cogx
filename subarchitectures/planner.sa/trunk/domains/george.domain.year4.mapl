@@ -123,6 +123,7 @@
 
     (is-object-referenced-by-george ?r - Robot) - VisualObject
     (autonomous-color-learning-announced ?v - VisualObject) - ColorName
+    (autonomous-shape-learning-announced ?v - VisualObject) - ShapeName
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -569,6 +570,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (is-in-robot-initiated-mode ?r)
         (allow-autonomous-color-learning ?v ?c ?r)
         (not (color-learned ?v))
         (not (exists (?c1 - ColorName) (= (attributed-color ?v) ?c1)))
@@ -622,15 +624,33 @@
     :precondition
       ;;autonomous learning case
       (and
-        (allow-autonomous-shape-learning ?v ?s ?r)
-        (not (shape-learned ?v))
-        (not (exists (?s1 - ShapeName) (= (attributed-shape ?v) ?s1)))
-        (is-looking-at ?r ?v)
+        (= (autonomous-shape-learning-announced ?v) ?s)
       )
     :effect 
       (and
 	(shape-learned ?v)
+        (assign (autonomous-shape-learning-announced ?v) UNDETERMINED_SHAPE)
+        (update (autonomous-shape-learning-announced ?v) UNDETERMINED_SHAPE)
 	(increase (total-cost) 1)
+      )
+  )
+
+  (:action announce-autonomous-shape-learning
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (is-in-robot-initiated-mode ?r)
+        (allow-autonomous-shape-learning ?v ?s ?r)
+        (not (shape-learned ?v))
+        (not (exists (?s1 - ShapeName) (= (attributed-shape ?v) ?s1)))
+        (is-looking-and-eventually-pointing-at ?r ?v)
+      )
+    :effect
+      (and
+        (assign (autonomous-shape-learning-announced ?v) ?s)
+        (update (autonomous-shape-learning-announced ?v) ?s)
+        (increase (total-cost) 1)
       )
   )
 
