@@ -111,7 +111,7 @@ public class LookAroundMotiveGenerator extends
 					}
 				}
 			} else {
-				println("my cones not empty");
+				log("my cones not empty");
 			}
 
 			unlockComponent();
@@ -207,7 +207,7 @@ public class LookAroundMotiveGenerator extends
 
 		// check for something to do every 20 seconds
 		// TODO make initial delay and repeat configurable
-		m_executor.scheduleWithFixedDelay(new GetCones(), 40, 2,
+		m_executor.scheduleWithFixedDelay(new GetCones(), 20, 20,
 				TimeUnit.SECONDS);
 
 	}
