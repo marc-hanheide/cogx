@@ -34,7 +34,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer;
-import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
+import de.dfki.lt.tr.dialogue.util.VerbalisationUtils;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
 import de.dfki.lt.tr.dialogue.intentions.RichIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.FeatureAscriptionIntention;
@@ -47,6 +47,7 @@ import execution.components.AbstractActionInterface;
 import execution.slice.Action;
 import execution.slice.ConfidenceLevel;
 import execution.slice.TriBool;
+import execution.slice.actions.AnnounceAutonomousFeatureLearning;
 import execution.slice.actions.AnswerOpenQuestion;
 import execution.slice.actions.AnswerPolarQuestion;
 import execution.slice.actions.AskForColour;
@@ -91,6 +92,21 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 	public AbstractDialogueActionInterface(Class<BeliefType> _beliefCls) {
 		super(_beliefCls);
+	}
+
+	public static class AnnounceAutonomousLearningExecutor extends
+			BlockingActionExecutor<AnnounceAutonomousFeatureLearning> {
+		public AnnounceAutonomousLearningExecutor(ManagedComponent _component) {
+			super(_component, AnnounceAutonomousFeatureLearning.class);
+		}
+
+		@Override
+		public TriBool execute() {
+			VerbalisationUtils.verbaliseString(getComponent(),
+					"I know this object is " + getAction().value
+							+ ". I'll update my model");
+			return TriBool.TRITRUE;
+		}
 	}
 
 	public abstract static class IntentionDialogueAction<T extends Action>
@@ -1419,6 +1435,13 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 							AskForObjectWithFeatureValue.class,
 							new ComponentActionFactory<AskForObjectWithFeatureValue, AskForObjectWithFeatureExecutor>(
 									this, AskForObjectWithFeatureExecutor.class));
+
+			m_actionStateManager
+					.registerActionType(
+							AnnounceAutonomousFeatureLearning.class,
+							new ComponentActionFactory<AnnounceAutonomousFeatureLearning, AnnounceAutonomousLearningExecutor>(
+									this,
+									AnnounceAutonomousLearningExecutor.class));
 
 			// // TODO replace this with one of Marc's magic thingys
 			// WorkingMemoryChangeReceiver updater = new
