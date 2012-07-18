@@ -126,7 +126,7 @@ public class RobotStateUpdater extends ManagedComponent implements
 				if (mtv.status == MotiveStatus.ACTIVE
 						|| mtv.status == MotiveStatus.SURFACED) {
 					motiveSurfaced(_wmc.address, _wmc.type);
-				} else {
+				} else if (_wmc.operation != WorkingMemoryOperation.ADD) {
 					motiveUnsurfaced(_wmc.address, _wmc.type);
 				}
 			} catch (DoesNotExistOnWMException e) {

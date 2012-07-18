@@ -136,38 +136,43 @@ public class DriveHierarchyFilter implements MotiveFilter,
 		// level should be the maximum represented one there, else reset to
 		// unknown.
 
-		int newLevel = DriveHierarchy.UNKNOWN_CLASS_VALUE;
-		for (Motive mtv : map.values()) {
-			// ignore motives that are done or impossible
-			if (!ignoreThis(mtv)) {
-				newLevel = Math.min(
-						m_driveHierarchy.getPriority(mtv.getClass()), newLevel);
-			}
-		}
+		// m_component.println("checking on deactivation");
 
-		if (newLevel != m_activeLevel) {
-			m_activeLevel = newLevel;
-			if (m_activeLevel != DriveHierarchy.UNKNOWN_CLASS_VALUE) {
-				m_component
-						.println("after completion, switching active level to "
-								+ m_activeLevel);
-			} else {
-				m_component
-						.println("after completion, switching active level to allow all");
+		// int newLevel = DriveHierarchy.UNKNOWN_CLASS_VALUE;
+		// for (Motive mtv : map.values()) {
+		// // ignore motives that are done or impossible, and the one that just
+		// changed
+		// if (!ignoreThis(mtv) && !newEntry.thisEntry.equals(mtv.thisEntry)) {
+		//
+		// m_component.println("checking on deactivation: " + mtv.getClass());
+		//
+		// newLevel = Math.min(
+		// m_driveHierarchy.getPriority(mtv.getClass()), newLevel);
+		// }
+		// }
 
-			}
+		// if (newLevel != m_activeLevel) {
+		// m_activeLevel = newLevel;
+		// if (m_activeLevel != DriveHierarchy.UNKNOWN_CLASS_VALUE) {
+		// m_component
+		// .println("after completion, switching active level to "
+		// + m_activeLevel);
+		// } else {
+		m_component
+				.println("after completion, switching active level to allow all");
 
-			m_display.updateActiveLevel(m_activeLevel);
+		// }
 
+		m_activeLevel = DriveHierarchy.UNKNOWN_CLASS_VALUE;
+		m_display.updateActiveLevel(m_activeLevel);
+
+		try {
 			// trigger recheck after level change
 			m_component.checkAll();
-
-			try {
-				m_component.checkAll();
-			} catch (CASTException e) {
-				m_component.logException(e);
-			}
+		} catch (CASTException e) {
+			m_component.logException(e);
 		}
+		// }
 
 	}
 

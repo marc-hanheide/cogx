@@ -27,13 +27,9 @@ public class GeorgePassThroughFilter extends AbstractManualSelectFilter {
 
 	protected class OnOffFilterPanel extends FilterPanel {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-
 		public OnOffFilterPanel(Class<? extends Motive> type) {
 			super(type);
+			this.setPreferredSize(new Dimension(200, 50));
 		}
 
 		@Override
