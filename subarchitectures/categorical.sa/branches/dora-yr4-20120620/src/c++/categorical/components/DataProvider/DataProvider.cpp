@@ -802,7 +802,14 @@ void CategoricalDataProvider::findLaserScan(const cast::cdl::CASTTime& refT, Cat
 cast::cdl::CASTTime CategoricalDataProvider::outputLaserScan(const cast::cdl::CASTTime& refT)
 {
   // Generate CategoricalData::LaserScan
-  CategoricalData::LaserScanPtr scan = new CategoricalData::LaserScan();
+  CategoricalData::LaserScanPtr scan;
+  try { scan = getMemoryEntry<CategoricalData::LaserScan>(_laserScanId);
+  }
+  catch (DoesNotExistOnWMException e) {
+    getLogger()->warn("caught CASTException in outputLaserScan(): "+ std::string(e.what()));
+    return getCASTTime();
+  }
+
   if (_useLaser)
   {
     // Acquiring scan
