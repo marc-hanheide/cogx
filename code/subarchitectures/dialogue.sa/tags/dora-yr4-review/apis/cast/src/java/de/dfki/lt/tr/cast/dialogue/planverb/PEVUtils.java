@@ -202,7 +202,7 @@ public class PEVUtils {
 					&& !sentences[i+1].startsWith("and") 
 					&& !sentences[i+1].startsWith("but")
 					&& !sentences[i+1].startsWith("in order to")
-					) text += ".\n";
+					) text += ". \n";
 			else text += " ";
 		}
 		text = text + sentences[sentences.length-1] + ".";
@@ -214,7 +214,7 @@ public class PEVUtils {
 		matchPatterns.add("(to the )(place|placeholder) ([a-z]+)( )([ a-z0-9]*?)(because I wanted to )(go|move) ([ a-z0-9]*?)(to the )(place|placeholder)( [a-z]+)([ a-z]+)");
 		replacePatterns.add("$1$2 $3$4$5$6reach $10$11");
 
-		matchPatterns.add("(!![ a-zA-Z0-9]+\\.\n)+");
+		matchPatterns.add("(!![ a-zA-Z0-9]+\\. \n)+");
 		replacePatterns.add("my plan was to visit several other places, after which ");
 		
 		matchPatterns.add("(someone|somebody)([ a-zA-Z0-9]+?)(someone|somebody)");
