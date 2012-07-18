@@ -21,6 +21,7 @@ import cast.core.CASTData;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
+import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.perceptmediator.george.transferfunctions.VisualObjectTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
@@ -41,6 +42,8 @@ public class VisualObjectMotiveGenerator extends
 	public static final String COLOUR_KEY = "color";
 	public static final String COLOUR_LEARNT_KEY = COLOUR_KEY
 			+ LEARNT_POSTFIX_KEY;
+	public static final String COLOUR_UNLEARNT_KEY = COLOUR_KEY
+			+ VisionActionInterface.UNLEARNED_FEATURE_POSTFIX;
 	public static final String SHAPE_KEY = "shape";
 	public static final String SHAPE_LEARNT_KEY = SHAPE_KEY
 			+ LEARNT_POSTFIX_KEY;
@@ -64,7 +67,7 @@ public class VisualObjectMotiveGenerator extends
 
 		// if dialogue was involved, then the belief may have been marked as a
 		// referent. this needs cleaning up...
-		
+
 		println("why on earth am I getting called?!");
 		AbstractInterpretedIntentionMotiveGenerator.unmarkReferent(this,
 				_motive.referenceEntry, _motive);
@@ -96,18 +99,56 @@ public class VisualObjectMotiveGenerator extends
 			}
 			// if the motive's feature is now present in the belief then mark as
 			// completed
-			else if ((m_colourEnabled && motiveFeatureLearnt(COLOUR_KEY,
-					COLOUR_LEARNT_KEY, _motive, belief))
-					|| (m_shapeEnabled && motiveFeatureLearnt(SHAPE_KEY,
-							SHAPE_LEARNT_KEY, _motive, belief))
-					|| (m_identityEnabled && motiveFeatureLearnt(IDENTITY_KEY,
-							IDENTITY_LEARNT_KEY, _motive, belief))) {
-				_motive.status = MotiveStatus.COMPLETED;
-				return _motive;
-			} else {
+//			else if ((m_colourEnabled && motiveFeatureLearnt(COLOUR_KEY,
+//					COLOUR_LEARNT_KEY, _motive, belief))
+//					|| (m_shapeEnabled && motiveFeatureLearnt(SHAPE_KEY,
+//							SHAPE_LEARNT_KEY, _motive, belief))
+//					|| (m_identityEnabled && motiveFeatureLearnt(IDENTITY_KEY,
+//							IDENTITY_LEARNT_KEY, _motive, belief))
+//					|| (motiveFeatureLearnt(COLOUR_KEY, COLOUR_UNLEARNT_KEY,
+//							_motive, belief))) {
+//				_motive.status = MotiveStatus.COMPLETED;
+//
+//				return _motive;
+//			}
+			else {
 				return _motive;
 			}
 		}
+
+	}
+
+	@Override
+	protected LearnObjectFeatureMotive checkForAdditionAfterUpdate(
+			WorkingMemoryAddress _addr, MergedBelief _newEntry) {
+
+		try {
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
+					.create(MergedBelief.class, _newEntry);
+
+			FormulaDistribution fd = belief.getContent().get(
+					AbstractDialogueActionInterface.MOTIVE_TRANSFER);
+
+			if (fd != null) {
+				println("doing the new transfer thing");
+				String predicate = fd.getDistribution().getMostLikely()
+						.getProposition();
+				fd = belief.getContent().get(
+						AbstractDialogueActionInterface.MOTIVE_TRANSFER_VALUE);
+				String value = fd.getDistribution().getMostLikely()
+						.getProposition();
+				LearnObjectFeatureMotive motive = generateUnlearnFeatureMotive(
+						predicate, _addr, belief, value);
+				if (motive != null) {
+					return motive;
+				}
+
+			}
+		} catch (SubarchitectureComponentException e) {
+			logException(e);
+		}
+
+		return null;
 
 	}
 
@@ -126,7 +167,9 @@ public class VisualObjectMotiveGenerator extends
 				.getProposition();
 
 		return presenceValue
-				.equals(VisualObjectTransferFunction.PRESENCE_VISIBLE);
+				.equals(VisualObjectTransferFunction.PRESENCE_VISIBLE)
+				|| presenceValue
+						.equals(VisualObjectTransferFunction.PRESENCE_WAS_VISIBLE);
 	}
 
 	@Override
@@ -166,6 +209,7 @@ public class VisualObjectMotiveGenerator extends
 						newAdditions.add(motive);
 					}
 				}
+
 			}
 		} catch (SubarchitectureComponentException e) {
 			logException(e);
@@ -234,6 +278,26 @@ public class VisualObjectMotiveGenerator extends
 			log("goal is " + result.goal.goalString + " with inf-gain "
 					+ result.informationGain);
 		}
+		return result;
+
+	}
+
+	private LearnObjectFeatureMotive generateUnlearnFeatureMotive(
+			String _featureLearntPredicate, WorkingMemoryAddress _wma,
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> _belief,
+			String _value) throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
+
+		log("ProtoObject belief is not linked to VisualObject, so generating motive.");
+		LearnObjectFeatureMotive result = newLearnObjectFeatureMotive(_wma);
+		result.goal = new Goal(100f, -1, conjoinGoalStrings(new String[] {
+				VisualObjectMotiveGenerator.beliefFunctionGoal(
+						_featureLearntPredicate, _belief.getId(), _value),
+				getAdditionalGoals() }), false);
+		result.feature = _featureLearntPredicate.substring(0,
+				_featureLearntPredicate.indexOf('-'));
+		log("goal is " + result.goal.goalString + " with inf-gain "
+				+ result.informationGain);
 		return result;
 
 	}
