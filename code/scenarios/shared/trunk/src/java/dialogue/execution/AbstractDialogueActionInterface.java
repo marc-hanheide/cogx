@@ -469,14 +469,14 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 				Map<String, WorkingMemoryAddress> _addressContent) {
 			super.addAddressContent(_addressContent);
 
-			// also flag grounded belief with reference potential
-			try {
-				((AbstractDialogueActionInterface<?>) getComponent())
-						.addFeature(getAction().beliefAddress,
-								IS_POTENTIAL_OBJECT_IN_QUESTION, true);
-			} catch (SubarchitectureComponentException e) {
-				logException(e);
-			}
+//			// also flag grounded belief with reference potential
+//			try {
+//				((AbstractDialogueActionInterface<?>) getComponent())
+//						.addFeature(getAction().beliefAddress,
+//								IS_POTENTIAL_OBJECT_IN_QUESTION, true);
+//			} catch (SubarchitectureComponentException e) {
+//				logException(e);
+//			}
 		}
 
 		/**
