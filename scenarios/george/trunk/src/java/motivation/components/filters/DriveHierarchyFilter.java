@@ -52,6 +52,7 @@ public class DriveHierarchyFilter implements MotiveFilter,
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 
 		Class<? extends Motive> motiveCls = motive.getClass();
+
 		int priority = m_driveHierarchy.getPriority(motiveCls);
 		if (priority == DriveHierarchy.UNKNOWN_CLASS_VALUE) {
 			m_component.getLogger().warn("Unknown motive class: " + motiveCls,
@@ -87,7 +88,7 @@ public class DriveHierarchyFilter implements MotiveFilter,
 			} catch (CASTException e) {
 				m_component.logException(e);
 			}
-			return MotivePriority.UNSURFACE;
+			return motive.priority ;
 		}
 
 	}
@@ -160,13 +161,12 @@ public class DriveHierarchyFilter implements MotiveFilter,
 	private final DriveHierarchyDisplayClient m_display = new DriveHierarchyDisplayClient();
 
 	private class DriveHierarchyDisplayClient extends DisplayClient {
+
 		public void updateActiveLevel(int _level) {
 			if (_level == DriveHierarchy.UNKNOWN_CLASS_VALUE) {
-				m_display.setHtml("drive.filter", "001",
-						"Waiting for any input ");
+				setHtml("motive.filter", "001", "Waiting for any input ");
 			} else {
-				m_display.setHtml("drive.filter", "001", "Active level is "
-						+ _level);
+				setHtml("motive.filter", "001", "Active level is " + _level);
 			}
 		}
 	}
