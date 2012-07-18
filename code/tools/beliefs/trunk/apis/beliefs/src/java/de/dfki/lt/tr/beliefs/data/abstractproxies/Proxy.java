@@ -55,7 +55,7 @@ public abstract class Proxy<T extends Ice.Object> {
 //			_logger.warn("Proxy: tried to cast "
 //					+ content.getClass().getName() + " into "
 //					+ _proxyFor.getName() + " which is not valid!", e);
-			_logger.warn("Proxy: tried to cast "
+			_logger.debug("Proxy: tried to cast "
 					+ content.getClass().getName() + " into "
 					+ _proxyFor.getName() + " which is not valid!");
 
