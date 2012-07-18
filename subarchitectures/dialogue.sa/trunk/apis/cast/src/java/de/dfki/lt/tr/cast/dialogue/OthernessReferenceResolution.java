@@ -136,7 +136,7 @@ extends AbstractReferenceResolutionComponent<OthernessReferenceResolver> {
                         if (CogXReferringUtils.canBeReferredTo(bel)) {
                             if (!wma.equals(lastMentioned)) {
                                 getLogger().trace("belief " + wmaToString(wma) + " is a POSSIBLE REFERENT");
-                                result.add(new EpistemicReferenceHypothesis(epst, new PointerFormula(0, wma, ""), 3.0));
+                                result.add(new EpistemicReferenceHypothesis(epst, new PointerFormula(0, wma, ""), 10.0));
                             }
                             else {
                                 getLogger().trace("belief " + wmaToString(wma) + " not eligible: this is what we talked about last");
