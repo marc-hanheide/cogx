@@ -276,6 +276,26 @@ public class MotiveFilterManager extends ManagedComponent {
 
 				});
 
+		motives.setStateChangeHandler(new MotiveStateTransition(
+				MotiveStatus.ACTIVE, MotiveStatus.WILDCARD),
+				new WMView.ChangeHandler<Motive>() {
+
+					@Override
+					public void entryChanged(
+							Map<WorkingMemoryAddress, Motive> map,
+							WorkingMemoryChange wmc, Motive newEntry,
+							Motive oldEntry) throws CASTException {
+
+						for (WMView.ChangeHandler<Motive> handler : m_completionHandlers) {
+							// dispatch to others
+							handler.entryChanged(map, wmc, newEntry, oldEntry);
+						}
+					}
+
+				});
+
+				
+		
 		// register a handler for activated motives. this should be before
 		// starting filters in case they also add filters in their start methods
 		// (so this component gets to act first)
