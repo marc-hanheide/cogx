@@ -1292,11 +1292,21 @@
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
-      ;; always tutor initiated!
-      (and
-        (not (= ?c UNKNOWN_COLOR))
-        (is-looking-at ?r ?v)
-        (is-object-in-question ?v)
+      (or
+        ;;tutor initiated
+        (and
+          (not (= ?c UNKNOWN_COLOR))
+          (is-looking-at ?r ?v)
+          (is-object-in-question ?v)
+        )
+
+        ;;robot initiated (happens as result to a "no" answer to a polar question of the robot)
+        (and
+          (is-in-robot-initiated-mode ?r)
+          (not (= ?c UNKNOWN_COLOR))
+          (is-looking-and-eventually-pointing-at ?r ?v)
+          (= (is-object-referenced-by-george ?r) ?v)
+        )
       )
     :effect 
       (and
@@ -1309,11 +1319,21 @@
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition 
-      ;; always tutor initiated!
-      (and
-        (not (= ?s UNKNOWN_SHAPE))
-        (is-looking-at ?r ?v)
-        (is-object-in-question ?v)
+      (or
+        ;;tutor initiated
+        (and
+          (not (= ?s UNKNOWN_SHAPE))
+          (is-looking-at ?r ?v)
+          (is-object-in-question ?v)
+        )
+
+        ;;robot initiated (happens as result to a "no" answer to a polar question of the robot)
+        (and
+          (is-in-robot-initiated-mode ?r)
+          (not (= ?s UNKNOWN_SHAPE))
+          (is-looking-and-eventually-pointing-at ?r ?v)
+          (= (is-object-referenced-by-george ?r) ?v)
+        )
       )
     :effect 
       (and
