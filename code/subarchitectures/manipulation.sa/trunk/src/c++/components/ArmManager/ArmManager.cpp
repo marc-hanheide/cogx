@@ -180,19 +180,32 @@ Pose3 ArmManager::pointingPose(const Pose3 objPose)
   pointingPose.rot.m12 = sin/tan;
   pointingPose.rot.m21 = -sin/tan;
   pointingPose.rot.m22 = m_pointingOffsetHor/tan;*/
+
+  // NOTE: this is a bit hacky for now
   Pose3 pointingPose;
   setIdentity(pointingPose);
+
   pointingPose.pos = objPose.pos;
   double dist = sqrt(sqr(pointingPose.pos.x) + sqr(pointingPose.pos.y));
-  double fact = (dist - m_pointingOffsetHor)/dist;
-  pointingPose.pos.x *= fact;
-  pointingPose.pos.y *= fact;
+  double distCorr = dist - m_pointingOffsetHor;;
+  const double maxDist = 0.3;
+  const double minZ = 0.8;
+  pointingPose.pos.x /= dist;
+  pointingPose.pos.y /= dist;
+  if(distCorr > maxDist)
+    distCorr = maxDist;
+  pointingPose.pos.x *= distCorr;
+  pointingPose.pos.y *= distCorr;
   pointingPose.pos.z += m_pointingOffsetVer;
+  if(pointingPose.pos.z < minZ)
+    pointingPose.pos.z = minZ;
+
   Vector3 y = objPose.pos;
   y.z = 0.;
   normalise(y);
   Vector3 z = vector3(0., 0., 1.);
   Vector3 x = cross(y, z);
+
   pointingPose.rot.m00 = x.x;
   pointingPose.rot.m10 = x.y;
   pointingPose.rot.m20 = x.z;
