@@ -120,6 +120,7 @@
     (polar-objecttype-question-answered ?v - VisualObject) - ObjecttypeName
 
     (is-object-referenced-by-george ?r - Robot) - VisualObject
+    (autonomous-color-learning-announced ?v - VisualObject) - ColorName
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -290,13 +291,10 @@
 
   ;; is-object-in-question is used if the tutor talks about some object and we need to find out about which
   (:derived (is-object-in-question ?v - VisualObject)
-    ;(or
-      (and
-        (is-potential-object-in-question ?v)
-        (not (exists (?v1 - VisualObject) (and (= (presence ?v1) VISIBLE) (not (= ?v ?v1)) (is-potential-object-in-question ?v1))))
-      )
-      ;(not (exists (?v1 - VisualObject) (and (= (presence ?v1) VISIBLE) (is-potential-object-in-question ?v1))))
-    ;)
+    (and
+      (is-potential-object-in-question ?v)
+      (not (exists (?v1 - VisualObject) (and (= (presence ?v1) VISIBLE) (not (= ?v ?v1)) (is-potential-object-in-question ?v1))))
+    )
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -358,7 +356,7 @@
         (assign (attributed-color ?v) UNDETERMINED_COLOR)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
-        (increase (total-cost) 2)
+        (increase (total-cost) 4)
       )
   )
 
@@ -377,7 +375,7 @@
         (assign (attributed-color ?v) ?c)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
-        (increase (total-cost) 1)
+        (increase (total-cost) 3)
       )
   )
 
@@ -395,7 +393,7 @@
         (assign (attributed-shape ?v) UNDETERMINED_SHAPE)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
-        (increase (total-cost) 2)
+        (increase (total-cost) 4)
       )
   )
 
@@ -414,9 +412,44 @@
         (assign (attributed-shape ?v) ?s)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
-        (increase (total-cost) 1)
+        (increase (total-cost) 3)
       )
   )
+
+  ;; (:action ask-for-an-objects-shape-general-reference-by-describing-its-color
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?c - ColorName)
+  ;;   :precondition
+  ;;     (and
+  ;;       (is-in-robot-initiated-mode ?r)
+  ;;       (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
+ 
+  ;;       ;;we have a strong belief on this objects color
+  ;;       (>= (color-prob ?v) (believe-in-color-threshold ?r))
+  ;;       (= (color ?v) ?c)
+
+  ;;       ;;all other objects are either removed from the scene
+  ;;       ;;or we know they have another color
+  ;;       (forall 
+  ;;         (?v1 - VisualObject)
+  ;;         (or 
+  ;;           (= ?v ?v1)
+  ;;           (= (presence ?v1) REMOVED)
+  ;;           (and
+  ;;             (>= (color-prob ?v1) (believe-in-color-threshold ?r))
+  ;;             (not (= ?c (color ?v1)))
+  ;;           )
+  ;;         )
+  ;;       )
+  ;;     )
+  ;;   :effect 
+  ;;     (and
+  ;;       (assign (attributed-color ?v) UNDETERMINED_COLOR)
+  ;;       (assign (is-object-referenced-by-george ?r) ?v)
+  ;;       (update (is-object-referenced-by-george ?r) ?v)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;                 ASSERTIONS              ;;;;;;;;;;;;;;;;;;;;;;;
@@ -485,7 +518,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (or
-        ;;attributed case (tutor initiated)
+        ;;tutor initiated
         (and
           (not (is-in-robot-initiated-mode ?r))
 	  (not (color-learned ?v))
@@ -495,7 +528,7 @@
           (is-object-in-question ?v)
         )
 
-        ;;attributed case (robot initiated)
+        ;;robot initiated
         (and
           (is-in-robot-initiated-mode ?r)
           (not (= ?v VISUAL_OBJECT_DUMMY))
@@ -505,19 +538,46 @@
           (is-looking-and-eventually-pointing-at ?r ?v)
           (= (is-object-referenced-by-george ?r) ?v)
         )
-
-        ;;autonomous learning case
-        (and
-          (allow-autonomous-color-learning ?v ?c ?r)
-          (not (color-learned ?v))
-          (not (exists (?c1 - ColorName) (= (attributed-color ?v) ?c1)))
-          (is-looking-at ?r ?v)
-        )
       )
     :effect 
       (and
 	(color-learned ?v)
+	(increase (total-cost) 10)
+      )
+  )
+
+  (:action learn-color-autonomously
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (= (autonomous-color-learning-announced ?v) ?c)
+      )
+    :effect 
+      (and
+	(color-learned ?v)
+        (assign (autonomous-color-learning-announced ?v) UNDETERMINED_COLOR)
+        (update (autonomous-color-learning-announced ?v) UNDETERMINED_COLOR)
 	(increase (total-cost) 1)
+      )
+  )
+
+  (:action announce-autonomous-color-learning
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (allow-autonomous-color-learning ?v ?c ?r)
+        (not (color-learned ?v))
+        (not (exists (?c1 - ColorName) (= (attributed-color ?v) ?c1)))
+        (is-looking-and-eventually-pointing-at ?r ?v)
+        ;(is-looking-at ?r ?v)
+      )
+    :effect
+      (and
+        (assign (autonomous-color-learning-announced ?v) ?c)
+        (update (autonomous-color-learning-announced ?v) ?c)
+        (increase (total-cost) 1)
       )
   )
 
@@ -526,7 +586,7 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (or
-        ;;attributed case (tutor initiated)
+        ;;tutor initiated
         (and
           (not (is-in-robot-initiated-mode ?r))
 	  (not (shape-learned ?v))
@@ -536,7 +596,7 @@
           (is-object-in-question ?v)
         )
 
-        ;;attributed case (robot initiated)
+        ;;robot initiated
         (and
           (is-in-robot-initiated-mode ?r)
           (not (= ?v VISUAL_OBJECT_DUMMY))
@@ -546,14 +606,24 @@
           (is-looking-and-eventually-pointing-at ?r ?v)
           (= (is-object-referenced-by-george ?r) ?v)
         )
+      )
+    :effect 
+      (and
+	(shape-learned ?v)
+	(increase (total-cost) 10)
+      )
+  )
 
-        ;;autonomous learning case
-        (and
-          (allow-autonomous-shape-learning ?v ?s ?r)
-          (not (shape-learned ?v))
-          (not (exists (?s1 - ShapeName) (= (attributed-shape ?v) ?s1)))
-          (is-looking-at ?r ?v)
-        )
+    (:action learn-shape-autonomously
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      ;;autonomous learning case
+      (and
+        (allow-autonomous-shape-learning ?v ?s ?r)
+        (not (shape-learned ?v))
+        (not (exists (?s1 - ShapeName) (= (attributed-shape ?v) ?s1)))
+        (is-looking-at ?r ?v)
       )
     :effect 
       (and
