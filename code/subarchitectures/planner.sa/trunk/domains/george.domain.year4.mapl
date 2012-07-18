@@ -374,42 +374,42 @@
       )
   )
 
-  (:action ask-for-an-objects-shape-general
-    :agent (?r - Robot)
-    :parameters (?v - VisualObject)
-    :precondition
-      (and
-        (is-in-robot-initiated-mode ?r)
-        (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
-        (is-looking-and-eventually-pointing-at ?r ?v)
-      )
-    :effect 
-      (and
-        (assign (attributed-shape ?v) UNDETERMINED_SHAPE)
-        (assign (is-object-referenced-by-george ?r) ?v)
-        (update (is-object-referenced-by-george ?r) ?v)
-        (increase (total-cost) 4)
-      )
-  )
+  ;; (:action ask-for-an-objects-shape-general
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject)
+  ;;   :precondition
+  ;;     (and
+  ;;       (is-in-robot-initiated-mode ?r)
+  ;;       (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
+  ;;       (is-looking-and-eventually-pointing-at ?r ?v)
+  ;;     )
+  ;;   :effect 
+  ;;     (and
+  ;;       (assign (attributed-shape ?v) UNDETERMINED_SHAPE)
+  ;;       (assign (is-object-referenced-by-george ?r) ?v)
+  ;;       (update (is-object-referenced-by-george ?r) ?v)
+  ;;       (increase (total-cost) 4)
+  ;;     )
+  ;; )
 
-  (:action ask-for-an-objects-shape-polar
-    :agent (?r - Robot)
-    :parameters (?v - VisualObject ?s - ShapeName)
-    :precondition
-      (and
-        (is-in-robot-initiated-mode ?r)
-        (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
-        (is-looking-and-eventually-pointing-at ?r ?v)
-        (allow-polar-shape-question ?v ?s ?r)
-      )
-    :effect 
-      (and
-        (assign (attributed-shape ?v) ?s)
-        (assign (is-object-referenced-by-george ?r) ?v)
-        (update (is-object-referenced-by-george ?r) ?v)
-        (increase (total-cost) 3)
-      )
-  )
+  ;; (:action ask-for-an-objects-shape-polar
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?s - ShapeName)
+  ;;   :precondition
+  ;;     (and
+  ;;       (is-in-robot-initiated-mode ?r)
+  ;;       (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
+  ;;       (is-looking-and-eventually-pointing-at ?r ?v)
+  ;;       (allow-polar-shape-question ?v ?s ?r)
+  ;;     )
+  ;;   :effect 
+  ;;     (and
+  ;;       (assign (attributed-shape ?v) ?s)
+  ;;       (assign (is-object-referenced-by-george ?r) ?v)
+  ;;       (update (is-object-referenced-by-george ?r) ?v)
+  ;;       (increase (total-cost) 3)
+  ;;     )
+  ;; )
 
   ;; (:action ask-for-an-objects-shape-general-reference-by-describing-its-color
   ;;   :agent (?r - Robot)
