@@ -32,6 +32,7 @@ import de.dfki.lt.tr.dialogue.slice.asr.Noise;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,6 +44,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
@@ -101,13 +103,25 @@ implements ActionListener {
 	{
 		super("Dialogue Window");
 		// Create the area where the utterances appear
-		utterances = new JTextArea (10,50);
+		utterances = new JTextArea (10,30);
 		utterances.setMargin(new Insets(5,5,5,5));
 		utterances.setEditable(false);
+    utterances.setLineWrap(true);
+    utterances.setWrapStyleWord(true);
 		JScrollPane utterancesScrollPane = new JScrollPane(utterances);
+    utterancesScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+    utterances.setAutoscrolls(true);
+				
+    //autoscroll
+		DefaultCaret caret = (DefaultCaret) utterances.getCaret();
+    caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		
-		inputField = new JTextField(50);
+		inputField = new JTextField(30);
 		inputField.addActionListener(this);
+		
+		Font bigger_font = new Font("SansSerif", Font.BOLD, 20);
+    utterances.setFont(bigger_font);
+    inputField.setFont(bigger_font);
 		
 		// Add the text field and the utterances to the frame
 		Container contentPane = getContentPane();
