@@ -1,0 +1,224 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+###########################
+## SYNTACTIC DEFINITIONS ##
+###########################
+
+  def n(args)         { n<15> [T CASE NUM PERS NFORM args] }
+  def np(args)        { np<15>[T CASE NUM PERS NFORM args] }
+   
+  def from-n(args)    { n<~15> [T args] }
+  def from-np(args)   { np<~15>[T args] }
+ 
+  # This is a 'case' marked np, like the 'with the ball' in 'play with the ball'
+  # verbs can specify what marking they recieve. See Markers.ccg for the oblique family
+  
+  def obl(mrk, args)  { obl<15>[T MARK=mrk args] }
+ 
+   
+##########################
+## SEMANTIC DEFINITIONS ##
+##########################
+
+  def ENTITY(args)      { T:entity(args) }
+  def OWNER(args)       { <Owner>(O:entity args) }
+   
+
+##############
+## FAMILIES ##
+##############
+
+  ## Family Building Macros ##
+  	
+  def n-cat(args, sem)         { n() args   :   ENTITY( sem) ; }
+  def np-cat(args, sem)        { np() args  :   ENTITY( sem) ; }
+ 
+  ## The Families ##
+ 
+  family Noun          { entry: n-cat (               , *         )  }
+  
+  # July 24, took out contextualized readings at GJ's request, didn't like em popping up in questions
+  #
+  family Noun+of-np-    { entry: n-cat ( / obl_ma(of, Questionable=no)  , * <Owner>(A:entity) ) }
+                      #   entry: n-cat (                                , * <Owner>(A:entity context) ) }
+  family Noun+of-n-     { entry: n-cat ( / obln_ma(of, Questionable=no) , * <Owner>(A:entity) )  }
+                      #   entry: n-cat (                                , * <Owner>(A:entity context) )  }
+  family Noun+number-   { entry: n-cat ( / number[N] , * <Id>(N:number-cardinal) )  } 
+
+  family Bare-np       { entry: np-cat(              , *        )  }
+ 
+  family Bare-np+of-np { entry: np-cat( / obl_ma(of, Questionable=no)   , * <Owner>(A) )  }
+
+  # These handle, e.g. 'the green', acting as a full referring expression.
+  #
+  family Context-np+modifier           { entry: np-cat ( , context MODIFIER(*) ) }
+  family Context-n+modifier            { entry: n-cat  ( , context MODIFIER(*) ) }
+
+  family Event-np                      { entry: s<10>[T] : T:event(*) ; }  # given index T to allow adding nominal marcos
+  
+  # The ugliness here is due to the fact that semantically, the number from the owner
+  # must be specified lexically, .i.e. 'mine' should have <Owner>( I ^ sg) and 'ours' <Owner>( I ^ pl)
+  # Therefore the <Owner> must have the variable T, not the 'owned', and thus other features must
+  # be specified here.
+  # The two entries are do to the fact that every owned-np is ambigous between singular and plural 
+  #	
+  family Owned-np      { entry: np<16>[T2 s-sg CASE 3rd full]     :  T2:entity(context SG() <Owner>(T *) UNIQUE() SPECIFIC );
+                         entry: np<16>[T2 s-pl CASE 3rd full]     :  T2:entity(context PL() <Owner>(T *) VARIABLE() UNSPECIFIC() ); }
+
+  # This is really a determiner, but the dictionary macro 'pronoun' below uses this, and dets have been defined yet...
+  #
+  family Owner-pro     { entry: np<~16>[T2 3rd] /^ n<16>[T2 s-sg]      :  T2:entity( <Owner>(T *) SG() UNIQUE() SPECIFIC()       );
+                         entry: np<~16>[T2 3rd] /^ n<16>[T2 s-pl-sp]   :  T2:entity( <Owner>(T *) PL() UNIQUE() SPECIFIC()       ); 
+                         entry: np<~16>[T2 3rd] /^ n<16>[T2 s-pl-unsp] :  T2:entity( <Owner>(T *) PL() UNIQUE() UNSPECIFIC()     ); }
+
+  # Negation and Coordination #  
+
+  family Negation-np-(indexRel=polarity)  { entry:  from-np() \ np() :  ENTITY( NEG()  )   ;}
+  family Coord-np-       { entry:  np(COM=yes) / np[N]  \* np[F COM=no]   : T( * <First>(F) ^ <Next>(N) ) ;}
+  family Coord-n-        { entry:  n(COM=yes)  / n[N]   \* n[F COM=no]    : T( * <First>(F) ^ <Next>(N) ) ;}
+
+
+###########
+## RULES ##
+###########
+
+	
+  # These essentially act as determiners, turning plural and mass nouns into np 
+  # with the appropriate semantic marking
+  
+  rule { typechange: n(s-pl-unsp)     =>  from-np(3rd)       :  ENTITY( VARIABLE() UNSPECIFIC() ) ; } 
+ # rule { typechange: n(s-pl-sp)       =>  from-np(3rd)       :  ENTITY( VARIABLE() SPECIFIC() ) ; }
+ # rule { typechange: n(s-mass)        =>  from-np(3rd s-sg)  :  ENTITY( VARIABLE() UNCOUNTABLE() ) ; } 
+
+  # This rule is for handling Compound Nouns. It turns any random noun into a pre-n modifier 
+  # The two nominals are marked with the appropriate CC-TYPE values allowing the restriction 
+  # of, e.g. 'the left ball' as compound (see types-word-classes.ccg)
+
+  # NOTE: Could (should?) extend this idea for handling multi-word expressions...
+    
+  rule { typechange: n[T2 full compound-1st]     =>  from-n(cc-none) /* n(compound-head)  :  ENTITY( <Compound>(T2) ) ; } 
+
+  
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+  # Basic nouns, regular and irr
+  #
+  def  noun(sing, class, args)       {  noun-irr(sing, pluralize(sing), class, args) }
+  def _noun(prd, sing, class, args) { _noun-irr(prd, sing, pluralize(sing), class, args) }
+  
+  def  noun-irr (sing, plur, class, args) { _noun-irr(sing, sing, plur, class, args) } 
+  def _noun-irr(prd, sing, plur, class, args) {
+    word sing.-noun-n:Noun(class, pred=prd) {
+      sing :  s-sg full args;
+      plur :  s-pl-unsp full args;
+    }
+  }
+  
+
+  # Basic nouns with argument (of-np or of-n) , regular and irr
+  #
+  def  noun+(arg, sing, class, args)      {  noun-irr+(arg, sing, pluralize(sing), class, args) }
+  def _noun+(arg, prd, sing, class, args) { _noun-irr+(arg, prd, sing, pluralize(sing), class, args) }
+
+  def  noun-irr+(arg, sing, plur, class, args) { _noun-irr+(arg, sing, sing, plur, class, args) }
+  def _noun-irr+(arg, prd, sing, plur, class, args) {
+   word sing.-noun-n-.arg:"Noun+".arg."-" (class, pred=prd) {
+      sing :  s-sg full args;
+      plur :  s-pl full args;
+    }
+  }
+
+  def  noun+of-n(sing, class, args)      {  noun-irr+of-n(sing, pluralize(sing), class, args) }
+  def _noun+of-n(prd, sing, class, args) { _noun-irr+of-n(prd, sing, pluralize(sing), class, args) }
+
+  def  noun-irr+of-n(sing, plur, class, args) { _noun-irr+of-n(sing, sing, plur, class, args) }
+  def _noun-irr+of-n(prd, sing, plur, class, args) {
+   word sing.-noun-n-of-n:Noun+of-n(class, pred=prd) {
+      sing :   s-sg full args;
+      plur :   s-pl full args;
+    }
+  }
+  
+  # Others
+  
+  def  noun-mass(form, class, args) { _noun-mass(form, form, class, args) }
+  def _noun-mass(prd, form, class, args) {
+    word form.-mass-n : Noun(class, pred=prd) {
+      form  :  s-mass  full args;
+    }
+  }
+
+  def name(form, class, args) { _name(form, form, class, args) }
+  def _name(prd, form, class, args) {
+    word form.-name:Bare-np(class, pred=prd) {
+      form :  s-sg 3rd full args;
+    }
+  }
+ 
+  def pronoun(prd, pers, num, nom-form, acc-form, owner, owned, class,) {
+    word prd.-pro-.pers-.num:Bare-np(class, pred=prd) {
+      nom-form :  pers s-.num nom pro num;
+      acc-form :  pers s-.num acc pro num;
+    }
+    word prd.-owner-.num:Owner-pro('entity', pred=prd) {
+      owner : num ;
+	}
+    word prd.-owned-.num:Owned-np('entity', pred=prd) {
+      owned : num ;
+	}
+  }
+
+
+ # I said THAT, I didn't do IT, etc. 
+ #
+ def context-s(form, args) {
+    word form.-deictic-pro-event : Event-np ('event', pred=context) {
+      form : fin-deictic m-class-none s-dependent args;    
+    }
+ }
+
+ # Context nouns and context nouns + modifiers (e.g. those three, the red, etc)
+ # are set to c-class n-4, meaning they can't interact with the n-n compound rule
+ # this blocks stupid readings for  'three balls' and for 'room 3'  
+ #
+ def context-n(form,class, args) {_context-n(form, form, class, args)}
+ def _context-n(prd, form, class, args) {
+    word form.-context-n : Noun (class, pred=context) {
+      form : args nf-ctxt n-4;    
+    }
+ }
+
+ # I don't want ONE. Given context pred
+ #
+ def context-np(form,class, args) {_context-np(form, form, class, args)}
+ def _context-np(prd, form, class, args) {
+    word form.-context-np : Bare-np (class, pred=context) {
+      form : 3rd args nf-ctxt;    
+    }
+ }
+
+ def context-n+modifier(form,class, args) {_context-n+modifier(form, form, class, args)}
+ def _context-n+modifier(prd, form, class, args) {
+    word form.prd.-context-n+modifier : Context-n+modifier (class, pred=prd) {
+      form : args nf-ctxt n-4;    
+    }
+ }
+
+ def context-np+modifier(form,class, args) {_context-np+modifier(form, form, class, args)}
+ def _context-np+modifier(prd, form, class, args) {
+    word form.prd.-context-n+modifierp : Context-np+modifier (class, pred=prd) {
+      form : 3rd args nf-ctxt;    
+    }
+ }
+
+  # Taken directly from Ben and Jasons' tiny.ccg grammar
+  # also used for third person present verbal forms (see verbs.ccg)
+  # 
+  def pluralize(word) {
+    ifmatch('^.*[aeiou][oy]$', word, word . s,
+      ifmatch('^.*([sxoy]|sh|ch)$', word, regsub('^(.*)y$', '\1i', word) . es,
+              word . s))
+  }
+

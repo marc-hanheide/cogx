@@ -1,0 +1,172 @@
+
+// QUESTIONS: Prompting humans for aid/information
+
+// Question: failure to determine what property can be ascertained in vision 
+// Goal: @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-PROPERTY)), e.g. q-color, q-shape, q-size
+// Variants: "what PROPERTY is the TARGET"
+// Example: @d1:dvp(<SpeechAct>clarification ^ <Modality>vision ^ <Target>(t:thing ^ box ^ <Salient>true) ^ <Content>(c1:q-color))
+
+:dvp ^ <SpeechAct>question ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-color)
+-> 
+#c1 =:ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(#t:) ^ 
+                    <Subject>#t: ^ 
+                    <Cop-Scope>(#c:quality ^ color) ^
+                    <Wh-Restr>(:specifier ^ what ^ 
+                               <Scope>(#c:)).
+
+
+:dvp ^ <SpeechAct>question ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-shape)
+-> 
+#c1 =:ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(#t:) ^ 
+                    <Subject>#t: ^ 
+                    <Cop-Scope>(#c:quality ^ shape) ^
+                    <Wh-Restr>(:specifier ^ what ^ 
+                               <Scope>(#c:)). 
+                               
+:dvp ^ <SpeechAct>question ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-size)
+-> 
+#c1 =:ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(#t:) ^ 
+                    <Subject>#t: ^ 
+                    <Cop-Scope>(#c:quality ^ size) ^
+                    <Wh-Restr>(:specifier ^ what ^ 
+                               <Scope>(#c:)).                                                               
+                                                              
+// Request for help: could you show me something 
+// Goal: 
+// Variants: 
+// Example: 
+
+:dvp ^ <SpeechAct>request ^ <Modality>vision ^ <Actor>(#y1:person ^ you) ^ <Content>(#c1:q-color ^ #value)
+-> 
+#c1 =:action-non-motion ^ show ^ 
+                        <Mood>int ^ 
+                        <Actor>(#y1:) ^ 
+                        <Modifier>(:modal ^ could) ^ 
+                        <Patient>(:thing ^ object ^ 
+                                  <Delimitation>existential ^ 
+                                  <Num>sg ^ 
+                                  <Quantification>specific ^ 
+                                  <Modifier>(:q-color ^ #value)) ^ 
+                        <Recipient>(:person ^ I ^ 
+                                    <Num>sg) ^ 
+                        <Subject>#y1:.
+
+
+:dvp ^ <SpeechAct>request ^ <Modality>vision ^ <Actor>(#y1:person ^ you) ^ <Content>(#c1:q-size ^ #value)
+-> 
+#c1 =:action-non-motion ^ show ^ 
+                        <Mood>int ^ 
+                        <Actor>(#y1:) ^ 
+                        <Modifier>(:modal ^ could) ^ 
+                        <Patient>(:thing ^ object ^ 
+                                  <Delimitation>existential ^ 
+                                  <Num>sg ^ 
+                                  <Quantification>specific ^ 
+                                  <Modifier>(:q-size ^ #value)) ^ 
+                        <Recipient>(:person ^ I ^ 
+                                    <Num>sg) ^ 
+                        <Subject>#y1:.
+
+:dvp ^ <SpeechAct>request ^ <Modality>vision ^ <Actor>(#y1:person ^ you) ^ <Content>(#c1:q-shape ^ #value)
+-> 
+#c1 =:action-non-motion ^ show ^ 
+                        <Mood>int ^ 
+                        <Actor>(#y1:) ^ 
+                        <Modifier>(:modal ^ could) ^ 
+                        <Patient>(:thing ^ object ^ 
+                                  <Delimitation>existential ^ 
+                                  <Num>sg ^ 
+                                  <Quantification>specific ^ 
+                                  <Modifier>(:q-shape ^ #value)) ^ 
+                        <Recipient>(:person ^ I ^ 
+                                    <Num>sg) ^ 
+                        <Subject>#y1:.
+
+
+// Clarification: check whether a property value as recognized in vision is correct
+// Goal: Goal: @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t) ^ <Content>(#c1:q-PROPERTY ^ #PROPVALUE)), e.g. q-color, q-shape, q-size
+// Variants: "is the PROPERTY of the TARGET PROPVALUE"
+// Example: @d1:dvp(<SpeechAct>clarification ^ <Modality>vision ^ <Target>(t:thing ^ box ^ <Salient>true) ^ <Content>(c1:q-color ^ blue))
+
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:thing) ^ <Content>(#c1:q-color ^ #c1value)
+ -> 
+#c1 = :ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(#c:entity ^ color ^ 
+                               <Delimitation>unique ^ 
+                               <Num>sg ^ 
+                               <Quantification>specific ^ 
+                               <Owner>(#t:)) ^ 
+                    <Cop-Scope>(#b:q-color ^ #c1value) ^ 
+                    <Subject>#c:.
+
+                                  
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:entity ^ context ) ^ <Content>(#c1:q-color ^ #c1value)
+ -> 
+#c1 = :ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(#t:) ^ 
+                    <Cop-Scope>(#b:q-color ^ #c1value) ^ 
+                    <Subject>#t:.                             
+                                  
+                   
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-size ^ #c1value)
+ -> 
+#c1 = :ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(#c:entity ^ size ^ 
+                               <Delimitation>unique ^ 
+                               <Num>sg ^ 
+                               <Quantification>specific ^ 
+                               <Owner>(#t:)) ^ 
+                    <Cop-Scope>(#b:q-size ^ #c1value) ^ 
+                    <Subject>#c:.
+
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:entity ^ context ) ^ <Content>(#c1:q-size ^ #c1value)
+ -> 
+#c1 = :ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(#t:) ^ 
+                    <Cop-Scope>(#b:q-size ^ #c1value) ^ 
+                    <Subject>#t:.      
+
+
+
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:) ^ <Content>(#c1:q-shape ^ #c1value)
+ -> 
+#c1 = :ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(#c:entity ^ shape ^ 
+                               <Delimitation>unique ^ 
+                               <Num>sg ^ 
+                               <Quantification>specific ^ 
+                               <Owner>(#t:)) ^ 
+                    <Cop-Scope>(#b:q-shape ^ #c1value) ^ 
+                    <Subject>#c:.
+                                  
+                                  
+:dvp ^ <SpeechAct>clarification ^ <Modality>vision ^ <Target>(#t:entity ^ context ) ^ <Content>(#c1:q-shape ^ #c1value)
+ -> 
+#c1 = :ascription ^ be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(#t:) ^ 
+                    <Cop-Scope>(#b:q-shape ^ #c1value) ^ 
+                    <Subject>#t:.    
+                                  
+                                  
+                                                              
