@@ -255,10 +255,7 @@ module execution {
       class LearnColour extends BeliefPlusStringAction {
       };
 
-      class AnnounceAutonomousColorLearning extends BeliefPlusStringAction {
-      };
-
-      class AnnounceAutonomousShapeLearning extends BeliefPlusStringAction {
+      class AnnounceAutonomousFeatureLearning extends BeliefPlusFeatureValueAction {
       };
 
       class LearnShape extends BeliefPlusStringAction {
