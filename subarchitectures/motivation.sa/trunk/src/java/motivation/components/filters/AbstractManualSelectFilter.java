@@ -8,7 +8,9 @@ import java.awt.event.ActionListener;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -33,7 +35,8 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 	Map<Class<? extends Motive>, AbstractManualSelectFilter.FilterPanel> panels = new LinkedHashMap<Class<? extends Motive>, AbstractManualSelectFilter.FilterPanel>();
 
 	/**
-	 * a map of all presets, with the name of the preset as key, and then a map of Motive type=>Priority to actually represent the respective preset
+	 * a map of all presets, with the name of the preset as key, and then a map
+	 * of Motive type=>Priority to actually represent the respective preset
 	 */
 	Map<String, Map<Class<? extends Motive>, MotivePriority>> presets = new LinkedHashMap<String, Map<Class<? extends Motive>, MotivePriority>>();
 
@@ -82,8 +85,8 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
-		private JSlider jSlider = null;
-		private Class<? extends Motive> type;
+		protected JSlider jSlider = null;
+		protected Class<? extends Motive> type;
 
 		public FilterPanel(Class<? extends Motive> type) {
 			super();
@@ -112,19 +115,19 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 				Dictionary<Integer, JComponent> labels;
 				labels = new Hashtable<Integer, JComponent>();
 				for (MotivePriority p : MotivePriority.values()) {
-					JLabel l=new JLabel(p.name());
+					JLabel l = new JLabel(p.name());
 					l.setFont(l.getFont().deriveFont(9f));
 					labels.put(p.ordinal(), l);
 				}
-//				
-//				labels.put(MotivePriority.UNSURFACE.ordinal(), new JLabel(
-//						MotivePriority.UNSURFACE.name()));
-//				labels.put(MotivePriority.LOW.ordinal(), new JLabel(
-//						MotivePriority.LOW.name()));
-//				labels.put(MotivePriority.NORMAL.ordinal(), new JLabel(
-//						MotivePriority.NORMAL.name()));
-//				labels.put(MotivePriority.HIGH.ordinal(), new JLabel(
-//						MotivePriority.HIGH.name()));
+				//
+				// labels.put(MotivePriority.UNSURFACE.ordinal(), new JLabel(
+				// MotivePriority.UNSURFACE.name()));
+				// labels.put(MotivePriority.LOW.ordinal(), new JLabel(
+				// MotivePriority.LOW.name()));
+				// labels.put(MotivePriority.NORMAL.ordinal(), new JLabel(
+				// MotivePriority.NORMAL.name()));
+				// labels.put(MotivePriority.HIGH.ordinal(), new JLabel(
+				// MotivePriority.HIGH.name()));
 				jSlider.setLabelTable(labels);
 				jSlider.setPaintTicks(true);
 				jSlider.setPaintLabels(true);
@@ -150,7 +153,7 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 		for (FilterPanel p : panels.values()) {
-			if (motive.getClass().equals(p.getType()))
+			if (motive.getClass().isAssignableFrom(p.getType()))
 				return p.getPriority();
 		}
 		return MotivePriority.UNSURFACE;
@@ -180,7 +183,7 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 			jContentPane = new JPanel();
 			jContentPane.setLayout(new GridLayout(0, 1));
 			jContentPane.add(getJMotivesPanel());
-			//jMotivesPanel.add(getJButtonUpdate());
+			// jMotivesPanel.add(getJButtonUpdate());
 		}
 		return jContentPane;
 	}
@@ -241,22 +244,35 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 
 	private JPanel getPresetPanel() {
 		JPanel presetPanel = new JPanel();
-		//presetPanel.add(new JLabel("presets:"));
+		// presetPanel.add(new JLabel("presets:"));
 		GridLayout gridLayout = new GridLayout(0, 3);
 		gridLayout.setHgap(5);
 		gridLayout.setVgap(5);
 		presetPanel.setLayout(gridLayout);
-		
-		JButton nullButton = new JButton("unsurface all");
+
+		JButton nullButton = new JButton("unsurface/restore all");
 		nullButton.addActionListener(new ActionListener() {
+
+			private LinkedList<Integer> m_savedValues = new LinkedList<Integer>();
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					for (FilterPanel p : panels.values()) {
-						p.getSlider().setValue(0);
+					if (m_savedValues.isEmpty()) {
+						for (FilterPanel p : panels.values()) {
+							m_savedValues.add(p.getSlider().getValue());
+							p.getSlider().setValue(0);
+						}
+					} else {
+						Iterator<Integer> i = m_savedValues.iterator();
+						for (FilterPanel p : panels.values()) {
+							p.getSlider().setValue(i.next());
+						}
+						m_savedValues.clear();
 					}
-					if (component != null)
+					if (component != null) {
 						component.checkAll();
+					}
 				} catch (CASTException e1) {
 					component.logException(e1);
 				}
