@@ -46,7 +46,8 @@ void MLNRefResolutionClient::newConstraints(const cdl::WorkingMemoryChange & _wm
 	vector<ConstraintPtr>::iterator it;
 	vector<ConstraintPtr> constraints = req->constraints;
 	for(it=constraints.begin(); it != constraints.end(); it++) {
-		if(m_supportedConstraintTypes.find((*it)->feature) != m_supportedConstraintTypes.end())
+		if(m_supportedConstraintTypes.find((*it)->feature) != m_supportedConstraintTypes.end() &&
+				m_supportedConstraintValues.find((*it)->value) != m_supportedConstraintValues.end())
 			m_currentConstraints.push_back((*it)->feature + "_constraint(A_" + (*it)->value + ")");
 	}
 	
@@ -81,6 +82,15 @@ void MLNRefResolutionClient::configure(const map<string,string> & _config)
 	
 	  while(getline(ss, token, ',')) {
 	       m_supportedConstraintTypes.insert(token);
+	  }
+	}
+	
+	if ((it = _config.find("--vals")) != _config.end()) {
+		stringstream ss(it->second);
+		string token;
+	
+	  while(getline(ss, token, ',')) {
+	       m_supportedConstraintValues.insert(token);
 	  }
 	}
 /* 
