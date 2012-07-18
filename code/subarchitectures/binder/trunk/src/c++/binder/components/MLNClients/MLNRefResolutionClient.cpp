@@ -6,6 +6,8 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "MLNRefResolutionClient.h"
 
+#define DEFAULT_SAMPLES 400
+
 /**
  * The function called to create a new instance of our component.
  */
@@ -76,6 +78,8 @@ void MLNRefResolutionClient::configure(const map<string,string> & _config)
     
   map<string,string>::const_iterator it;
   
+  m_minSamples = DEFAULT_SAMPLES;
+  
   if ((it = _config.find("--keys")) != _config.end()) {
 		stringstream ss(it->second);
 		string token;
@@ -86,6 +90,15 @@ void MLNRefResolutionClient::configure(const map<string,string> & _config)
 	}
 	
 	if ((it = _config.find("--vals")) != _config.end()) {
+		stringstream ss(it->second);
+		string token;
+	
+	  while(getline(ss, token, ',')) {
+	       m_supportedConstraintValues.insert(token);
+	  }
+	}
+	
+		if ((it = _config.find("--nsamp")) != _config.end()) {
 		stringstream ss(it->second);
 		string token;
 	
@@ -214,7 +227,7 @@ string MLNRefResolutionClient::getBeliefId(string atom)
 		lnt = atom.find_first_of(')') - p1;
 		
 	string id = atom.substr(p1, lnt);
-	debug("Belief Id '%s'", id.c_str());
+//	debug("Belief Id '%s'", id.c_str());
 		
 	if(id.find(':') != string::npos)
 		return id;

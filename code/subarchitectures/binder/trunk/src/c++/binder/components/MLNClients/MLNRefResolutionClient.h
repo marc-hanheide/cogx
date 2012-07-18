@@ -30,6 +30,8 @@ class MLNRefResolutionClient : public AbsMLNClient
 
   std::set<std::string> m_supportedConstraintTypes;
   std::set<std::string> m_supportedConstraintValues;
+  
+  int m_minSamples;
     
   std::vector<EpistemicReferenceHypothesisPtr> getHypothesisList(InferredResultPtr infRes);
   

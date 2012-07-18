@@ -7,9 +7,9 @@
 #include "MLNEngine.h"
 
 #define DEFAULT_INSTANCE_TYPE "belief"
-#define DEFAULT_INFERENCE_STEPS 50
+#define DEFAULT_INFERENCE_STEPS 200
 #define DEFAULT_INFERENCE_PAUSE 200
-#define DEFAULT_MAX_SAMPLES 4000
+#define DEFAULT_MAX_SAMPLES 1000
 /**
  * The function called to create a new instance of our component.
  */
