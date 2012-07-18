@@ -55,6 +55,8 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 					.recurseAncestorsForType(component, aboutBeliefAddr,
 							VerifiedBelief.class);
 
+                        String repStr = "";
+
 			if (verifiedBeliefWMP != null) {
 
 				component.log("found verified belief ancestor, updating");
@@ -63,7 +65,7 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 						verifiedBeliefWMP.address, VerifiedBelief.class);
 				CASTIndependentFormulaDistributionsBelief<VerifiedBelief> verifiedBelief = CASTIndependentFormulaDistributionsBelief
 						.create(VerifiedBelief.class, vb);
-
+                                
 				// update the verified belief in memory
 				for (String feature : featuresToSet.keySet()) {
 
@@ -108,6 +110,8 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 						distr.add(value, prob);
 						verifiedBelief.getContent().put(feature, distr);
 
+                                                repStr = ", " + (isPositive ? "" : "not ") + value;
+                                                
 						// BeliefUtils.addFeature(verifiedBelief, feature,
 						// featuresToSet.get(feature));
 
@@ -129,7 +133,7 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 				component.overwriteWorkingMemory(verifiedBeliefWMP.address,
 						verifiedBelief.get());
 
-				VerbalisationUtils.verbaliseString(component, "ok");
+				VerbalisationUtils.verbaliseString(component, "ok" + repStr);
 
 			}
 		} catch (CASTException e) {
