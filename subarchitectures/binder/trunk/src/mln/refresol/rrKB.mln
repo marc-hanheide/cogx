@@ -28,13 +28,13 @@ resolution(t_belief)
 // this keeps the size of the network managable even if the number of possible
 // private beliefs (|bel|) is significantly larger than 	
 
--7 color(b, c) v !belief(b)
--3 shape(b,s) v !belief(b)
--7 objecttype(b, t) v !belief(b)
+-15 color(b, c) v !belief(b)
+-7 shape(b,s) v !belief(b)
+-15 objecttype(b, t) v !belief(b)
 
--7  color_constraint(a1)
--3 shape_constraint(a1)
--7  type_constraint(a1)
+-15  color_constraint(a1)
+-7 shape_constraint(a1)
+-15  type_constraint(a1)
 
 // 0       prv_belief(p) ^ color(p,P_red) ^ color_constraint(A_red) => resolution(p)
 // RGB Colors
