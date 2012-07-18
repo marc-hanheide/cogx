@@ -619,6 +619,9 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		}
 
 		motive.potentiallyReferencedObjectBeliefs = _beliefAddresses;
+		//HACK to see if this stops the planner picking a single object
+		sleepComponent(3000);
+	
 	}
 
 	// protected void addAttribution(WorkingMemoryAddress _beliefAddr,
