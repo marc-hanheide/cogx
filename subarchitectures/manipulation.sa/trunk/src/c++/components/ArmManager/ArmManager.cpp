@@ -56,7 +56,7 @@ void ArmManager::start()
   m_repeat_arm_movement = false;
   m_pointing_now = false;
   m_pointingOffsetVer = POINTING_OFFSET_VER;
-  m_pointingOffsetHor = POINTING_OFFSET_VER;
+  m_pointingOffsetHor = POINTING_OFFSET_HOR;
 
   //  addChangeFilter(createGlobalTypeFilter<VisualObject>(cdl::ADD),
   //    new MemberFunctionChangeReceiver<ArmManager>(this, &ArmManager::receiveNewObject));
