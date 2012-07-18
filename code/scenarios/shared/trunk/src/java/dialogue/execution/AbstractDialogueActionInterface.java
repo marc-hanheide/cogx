@@ -7,6 +7,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.JOptionPane;
 
+import vision.execution.george.VisionActionInterface;
+
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.ConsistencyException;
@@ -79,7 +81,9 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 	protected static final String INTENTION_TYPE_KEY = "type";
 
-	// private GroundedToSharedBeliefMap m_groundedToShared;
+	public static final String MOTIVE_TRANSFER = "motive-transfer";
+	public static final String MOTIVE_TRANSFER_VALUE = MOTIVE_TRANSFER
+			+ "-value";
 
 	boolean madeup;
 
@@ -502,7 +506,10 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 				if (_ii.stringContent.get("asserted-polarity").equals("neg")) {
 					prob = 0;
-					//TODO add unlearning goal
+					// HACK add unlearning goal via belief
+					BeliefUtils.addFeature(pb, MOTIVE_TRANSFER, feature
+							+ VisionActionInterface.UNLEARNED_FEATURE_POSTFIX);
+					BeliefUtils.addFeature(pb, MOTIVE_TRANSFER_VALUE, value);
 				}
 
 				FormulaDistribution distr = FormulaDistribution.create();
