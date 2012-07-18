@@ -34,6 +34,7 @@ import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntention;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntentionProofInterpreter;
 import de.dfki.lt.tr.dialogue.interpret.MaximumReadingsTerminationCondition;
+import de.dfki.lt.tr.dialogue.interpret.PossibleReadingsFilter;
 import de.dfki.lt.tr.dialogue.interpret.ResultCombinator;
 import de.dfki.lt.tr.dialogue.interpret.ResultGatherer;
 import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeAction;
@@ -251,6 +252,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 
 				if (!listIpret.isEmpty()) {
 					PossibleInterpretedIntentions pii = createPossibleInterpretedIntentions(translatorFactory, listIpret);
+					getLogger().debug("before pruning:\n" + possibleInterpretedIntentionsToString(pii));
 					pii = prunePossibleInterpretedIntentions(pii);
 					
 					//set status if single interpretation
@@ -360,12 +362,19 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 
 			// this is the case we can handle
 			getLogger().debug("okay, this seems to be an open/polar question -> we should be able to handle multiple intentions here");
+
+                        PossibleReadingsFilter filter = new PossibleReadingsFilter(getLogger());
+                        
+                        
+                        
+                        newPii = filter.filterForAboutness(pii, iint);
 		}
 		else {
 			// we cannot handle anything else: prrrune!
 			getLogger().debug("this is not an open/polar question -> will prune the PossibleInterpretedIntentions to be sure");
 			newPii = extractFromRoot(addr, pii);
 		}
+                
 		getLogger().debug("pruning finished");
 		return newPii;
 	}
