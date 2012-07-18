@@ -698,7 +698,6 @@
       )
     :effect 
       (and
-        ;(forall (?v1 - VisualObject) (not (is-potential-object-in-question ?v1)))
 	(not (is-potential-object-in-question ?v))
         (increase (total-cost) 2)
       )
@@ -710,6 +709,7 @@
     :precondition 
       (and
         (is-potential-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (not (exclude-color-description ?r))
         (>= (color-prob ?v) (believe-in-color-threshold ?r))
         (= (color ?v) ?c)
@@ -725,14 +725,12 @@
             (and
               (>= (color-prob ?v1) (believe-in-color-threshold ?r))
               (not (= ?c (color ?v1)))
-              ;(not (= (color ?v1) UNDETERMINED_COLOR))
             )
           )
         )
       )
     :effect 
       (and
-        ;(forall (?v1 - VisualObject) (not (is-potential-object-in-question ?v1)))
 	(not (is-potential-object-in-question ?v))
         (increase (total-cost) 1)
       )
@@ -744,6 +742,7 @@
     :precondition 
       (and
         (is-potential-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (not (exclude-shape-description ?r))
         (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
         (= (shape ?v) ?s)
@@ -759,14 +758,12 @@
             (and
               (>= (shape-prob ?v1) (believe-in-shape-threshold ?r))
               (not (= ?s (shape ?v1)))
-              ;(not (= (shape ?v1) UNDETERMINED_SHAPE))
             )
           )
         )
       )
     :effect 
       (and
-        ;(forall (?v1 - VisualObject) (not (is-potential-object-in-question ?v1)))
 	(not (is-potential-object-in-question ?v))
         (increase (total-cost) 1)
       )
@@ -778,6 +775,7 @@
     :precondition 
       (and
         (is-potential-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (not (exclude-objecttype-description ?r))
         (>= (objecttype-prob ?v) (believe-in-objecttype-threshold ?r))
         (= (objecttype ?v) ?t)
@@ -793,7 +791,6 @@
             (and
               (>= (objecttype-prob ?v1) (believe-in-objecttype-threshold ?r))
               (not (= ?t (objecttype ?v1)))
-              ;(not (= (objecttype ?v1) UNDETERMINED_SHAPE))
             )
           )
         )
