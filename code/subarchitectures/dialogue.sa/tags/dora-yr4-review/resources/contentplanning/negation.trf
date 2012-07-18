@@ -1,0 +1,6 @@
+// negative polarity
+
+// If an assertion is rejected, polarity of sentence is negative ("It's not X")
+:dvp ^ <SpeechAct>assertion ^ <Relation>reject ^ <Polarity>(#p1:)
+->
+#p1 = neg.

@@ -1,0 +1,302 @@
+\sect{Incrementality}
+
+A driving factor motivating the development of Moloko was the need for incrementality in utterance parsing. This is essential for its use as a component in the broader context of incremental situated dialogue processing. At each 'step' in the flow of interaction, we want to be able to get as much meaning out of our linguistic representation as possible. In our context, these 'steps' boil down to words and thus what we want are word-by-word linguistic representations which are both integrated with what came before, and projective (or predicative) of what could come next.\footnote{as the moloko grammar is a 'pure' generative grammar, it cannot make any predictions beyond what could possibly come. To get at what is more (or most) likely to come, the possible readings outputted by Moloko must be augmented with other sources of knowledge (statistical expectations, predictions/preferences based on some element of physical or  discourse/interactional context  etc)}.These two dimensions of incrementality, 'back-integration' and 'forward-projection' , will be discussed in turn. Following this, a number of illustrative parses will be given, discussing step-by-step how incrementality is achieved. This will hopefully give a taste of how these principles have impacted the design of the grammar.
+
+\subsect{Back-Integration}
+
+The integration of the 'now' with the 'before' can be separated into issues of syntactic integration and issues of semantic integration. The first are concerned with parsability--we never want the parser to complain because it 'doesn't know yet' if a particular reading could be possible. Instead, the grammar should be designed so that at each point, all the possible readings can parse. The second is concerned with the structure of the current semantic representation. We do not want multiple semantic chunks which must 'wait' to be combined. Instead, whenever possible, we want semantic readings which consist of only a single semantic structure, with each sub-structure connected in a way licensed by the grammar.
+
+\subsect{Forward-Projection}
+
+Moloko was designed to optimize the following maxim: 'words should tell you what they expect as soon as they can';  in other words 'project early'. Translated into a grammar design principle, whenever possible, the first word in a construction projects its dependencies. This provides the maximal amount of information in terms of what could come next both syntactically (in terms of 'rightward' dependents) and semantically (in terms of 'unfilled roles'). We have already seen how this impacted the treatment of mood. Note, that again we see a crucial difference between dependents and modifiers. Modifiers are not projected, and when encountered may lead to an increase in the number of parses instead of the typical decrease in parses as more 'information' becomes incrementally available (see e.g. step 6 below).
+
+\subsection{Some Illustrations}
+
+\subsubsection{Example 1: \emph{the man put a ball on the table}}
+First, consider the incremental parsing for this straight forward indicative sentence: \\  
+
+\begin{verbatim}
+Step 1:  the
+
+Parse 1: np/^n : 
+  @x1(
+      <Delimination>unique ^ 
+      <Num>sg ^ 
+      <Quantification>specific)
+
+Parse 2: s/(s\!np/np)/^np/^n : 
+  @x1:event(
+            <Mood>ind ^ 
+            <Fronted>(x2 ^ 
+                      <Delimination>unique ^ 
+                      <Num>sg ^ 
+                      <Quantification>specific) ^ 
+            <Subject>x3)
+
+Parse 3: s/(s\!np)/^n : 
+  @x1:event(
+            <Mood>ind ^ 
+            <Subject>(x2 ^ 
+                      <Delimination>unique ^ 
+                      <Num>sg ^ 
+                      <Quantification>specific))
+\end{verbatim}
+In addition to these 3 parses, there are those corresponding to the plural readings of \emph{the}.\footnote{ although we can implement the 'filling-in' of underspecifed values at the level of syntactic features and semantic sorts, this cannot be done properly at the level of semantic features.}Clearly, as this is the first word in the utterance there is nothing to back-integrate into.\footnote{this of course says nothing about incremental discourse parsing, which is handled in a separate module outside of Moloko.}However, from even this first word there is a massive amount of projection. First, at the immediate level, \emph{the}  begins building a \catg{np}  encoding an entity which we know is unique and specific. It projects an \catg{n\id{T}} , with T expected to add the proposition(the 'semantic head' of this modification relation).  Moving upwards, the \catg{np} combines with the two indicative clause rules to begin building a clause/event with T filling the role of \diam{Subject} or \diam{Fronted}. The appropriate clausal elements (verb-phrase and subject then verb-phrase-'missing'-a-rightward-np-dependent) are projected as well, though critically, after this nominal.
+\begin{verbatim}
+
+Step 2: the man
+
+Parse 1: np: 
+  @m1:person(man ^
+      <Delimination>unique ^ 
+      <Num>sg ^ 
+      <Quantification>specific)
+
+Parse 2: s/(s\!np/np)/^np: 
+  @x1:event(
+            <Mood>ind ^ 
+            <Fronted>(m1:person ^ man ^ 
+                      <Delimination>unique ^ 
+                      <Num>sg ^ 
+                      <Quantification>specific) ^ 
+            <Subject>x3)
+
+Parse 3: s/(s\!np) : 
+  @x1:event(
+            <Mood>ind ^ 
+            <Subject>(m1:person ^ man ^ 
+                      <Delimination>unique ^ 
+                      <Num>sg ^ 
+                      <Quantification>specific))
+\end{verbatim}
+First, because \emph{man} is singular, all three of the plural readings are lost. In the remaining three singular readings, we see that \emph{man} has satisfied the projected noun and added its prop to the entity, back-integrating perfectly both syntactically and semantically. Note that at this point because \emph{man}  has no dependents it make no projections and we have a potentially complete np and its corresponding entity. This, of course, does not prohibit further rightward modification (the man on the table, the man that I told you about, etc) but as this is optional, it does not figure into the parse of the utterance.\footnote{in this way, CCG is quite different from PS based formalisms, where we would in fact get a number of 'np-bar' readings at this point, projecting these possible modifications. If we want somehow to model this 'linguistic knowledge' about the possibility of the rightward modification of nps, it would have to be handled somehow}
+\begin{verbatim}
+Step 3: the man put
+
+Parse: s/pp/np : 
+  @p1:action(put ^ 
+             <Mood>ind ^ 
+             <Tense>past ^ 
+             <Actor>(m1:person ^ man ^ 
+                     <Delimination>unique ^ 
+                     <Num>sg ^ 
+                     <Quantification>specific) ^ 
+             <Patient>x1:entity ^ 
+             <Result>x2:m-whereto ^ 
+             <Subject>m1:person)
+\end{verbatim}
+Note that all but the standard indicative parses have been lost, in both cases because \emph{put} did not fit with what was expected: nothing for the \catg{np}  parse and a second \catg{np} (i.e. the \diam{Subject} ) for the fronted parse. The verb \emph{put} has exerted its control over the entire clause, massively increasing the syntactic and semantic complexity of the parse.\footnote{these properties are no doubt what have lead to the traditional treatment of the main verb as \emph{the} clausal head, both syntactically and semantically (including mood). In section \ref{sec-Mood} we motivate our decision to consider clausal constructions as an additional 'major contributor' to the clause.} It has filled in the proposition of the event and added the semantic \diam{Tense} feature. It has also added its participant roles. The \diam{Actor} role has been filled by the man (m1) via co-indexing, and the \diam{Patient} and \diam{Result} slots will be filled by the semantic objects corresponding to the projected syntactic complements \catg{\fwdsl{}np} and {\fwdsl{}pp} correspondingly. Note that the semantic sorts of these semantic objects are available (entity and whereto). At this point then, we have some very useful information about what we expect to come in the remainder of the utterance. This is, of course, still provisional. We may end up receiving less information (a fragment) or more likely, more information (additional modifications \emph{the man put it on the table \underline{yesterday} \underline{when you weren't here}}, etc)
+\begin{verbatim}
+Step 4: the man put a
+
+Parse: s/pp/^n : 
+  @p1:action(put ^ 
+             <Mood>ind ^ 
+             <Tense>past ^ 
+             <Actor>(m1:person ^ man ^ 
+                     <Delimination>unique ^ 
+                     <Num>sg ^ 
+                     <Quantification>specific) ^ 
+             <Patient>(x1:entity ^ 
+                       <Delimination>existential ^ 
+                       <Num>sg ^ 
+                       <Quantification>specific) ^ 
+             <Result>x2:m-whereto ^ 
+             <Subject>m1:person)
+\end{verbatim}
+The determiner \emph{a} begins building the \catg{np} which was projected in step 3. It is integrated syntactically ( {\fwdsl{}np} is 'replaced' with  {\fwdsl{\wedge}n}) and semantically (the entity filling the \diam{Patient} role is now marked to be existential, specific and singular). The only change in projection is that we are now expect a \cxx{n}{T}{sg} instead of a \cxx{np}{T}{sg-or-pl}.
+ \begin{verbatim}
+Step 5: the man put a ball 
+
+s/pp	.....
+ \end{verbatim}
+Nothing much interesting happens here. The patient entity is (provisionally) full, and the amount of projected material decreases, with now the pp expected 'next'.
+\begin{verbatim}
+Step 6: the man put a ball on
+
+Parse 1: s/pp/^np : 
+  @p1:action(put ^ 
+             <Mood>ind ^ 
+             <Tense>past ^ 
+             <Actor>(m1:person ^ man ^ ...)
+             <Patient>(b1:thing ^ ball ^ 
+                       <Delimination>existential ^ 
+                       <Num>sg ^ 
+                       <Quantification>specific ^ 
+                       <Modifier>(o1:m-location ^ on ^ 
+                                  <Anchor>x1)) ^ 
+             <Result>x2:m-whereto ^ 
+             <Subject>m1:person)
+Parse 2: s/^np : 
+  @p1:action(put ^ 
+             <Mood>ind ^ \id{T}
+             <Tense>past ^ 
+             <Actor>(m1:person ^ man ^ ...)
+             <Patient>(b1:thing ^ ball ^ 
+                       <Delimination>existential ^ 
+                       <Num>sg ^ 
+                       <Quantification>specific) ^ 
+             <Result>(o1:m-whereto ^ on ^ 
+                      <Anchor>x1) ^ 
+             <Subject>m1:person)
+ \end{verbatim}
+Encountering the word \emph{on} leads to two parses. This is due to a combination of factors. The preposition \emph{on} is lexically ambiguous between a dynamic whereto and a static locational reading and also between its function as dependent and modifier. The \diam{Result} role requires a whereto dependent (\catg{pp\id{M:m-whereto} \fwdsl{\wedge} np\id{A}} ) and the immediately preceding nominal (i.e. ball) is allowed to be locationally post-modified(\catg{pp \id{M:m-location} \fwdsl{\wedge} np\id{A} } which is transformed via rule into \catg{ n\id{T} \fwdsl{\wedge} np\id{A} \backsl{\star}n\id{T} }, see next illustration for more details) . These combinatorial possibilities result in parse 1 and 2 respectively. In the first case, the projected \catg{pp\id{R}} comp is saturated with R filling \emph{put}'s \diam{Result} role. In the latter, this expectation has been is temporally 'pushed back' in priority by the presence of this modifier. This reading is available for sentences like \emph{the man put \underline{the ball on the table} into the box}. In both cases, what is expected next is the \catg{np\id{A}} corresponding to \emph{on}'s \diam{Anchor} role
+\begin{verbatim}
+Step 7 and 8: the man put a ball on the table
+
+Parse 1: s/pp : 
+  @p1:action(put ^ 
+             <Mood>ind ^ 
+             <Tense>past ^ 
+             <Actor>(m1:person ^ man ^ ...)
+             <Patient>(b1:thing ^ ball ^ 
+                       <Delimination>existential ^ 
+                       <Num>sg ^ 
+                       <Quantification>specific ^ 
+                       <Modifier>(o1:m-location ^ on ^ 
+                                  <Anchor>(t1:thing ^ table ^ 
+                                           <Delimination>unique ^ 
+                                           <Num>sg ^ 
+                                           <Quantification>specific))) ^ 
+             <Result>x1:m-whereto ^ 
+             <Subject>m1:person)
+Parse 2: s : 
+  @p1:action(put ^ 
+             <Mood>ind ^ 
+             <Tense>past ^ 
+             <Actor>(m1:person ^ man ^ ...)
+             <Patient>(b1:thing ^ ball ^ 
+                       <Delimination>existential ^ 
+                       <Num>sg ^ 
+                       <Quantification>specific) ^ 
+             <Result>(o1:m-whereto ^ on ^ 
+                      <Anchor>(t1:thing ^ table ^ 
+                               <Delimination>unique ^ 
+                               <Num>sg ^ 
+                               <Quantification>specific)) ^ 
+             <Subject>m1:person)
+\end{verbatim}
+The words \emph{the} and \emph{table} combine to create an \catg{np\id{A}} with A satisfying this  \diam{Anchor} role. In the first parse, this finishes the projected dependencies resulting in a (potentially) complete \catg{s} reading. In the latter case, we essentially return to the parse in step 5, though this time with a modified patient. 
+
+\subsubsection{Example 2: \emph{ this big ball on the table}}
+As a second example, we will consider a parse involving the pre and post modification of a noun. As clause level projection has already been discussed, I will focus only on the parses which relate to the local building of this \catg{np}
+
+\begin{verbatim}
+step 1: this        
+
+Parse 1: np/^n : 
+  @x1(
+      <Delimination>unique ^ 
+      <Num>sg ^ 
+      <Proximity>proximal ^ 
+      <Quantification>specific)
+      
+Parse 2: np : 
+  @c1:entity(context ^ 
+             <Delimination>unique ^ 
+             <Num>sg ^ 
+             <Proximity>proximal ^ 
+             <Quantification>specific)
+
+Parse 3: s : 
+  @c1:event(context ^ 
+            <Proximity>proximal)
+\end{verbatim}      
+The word \emph{this} has a number of readings. The first is its determiner reading (c.f. step 1 parse 1 above). The second and third are its context entity and event readings (see section \ref{sec-Contextualized}). 
+\begin{verbatim}
+step 2: the big   
+
+Parse 1: np/^n : 
+  @x1:entity(
+             <Delimination>unique ^ 
+             <Num>sg ^ 
+             <Proximity>proximal ^ 
+             <Quantification>specific ^ 
+             <Modifier>(b1:q-size ^ big))
+\end{verbatim} 
+We can see that both in terms of back-integration and forward-projection this reading is behaving as we want it. The projected entity is further specified (modified) and we 'still' project a noun along with its associated nominal variable T and proposition. 
+
+In order to understand exactly how this reading is built, we must look a big more carefully at how adjectives like \emph{big} work. As discussed in () all adjectives begin as atomic categories. So, we have:\\
+
+\catg{adj[M]}   :  \atsign{b1}{size} (\prop{big} ) \\ \\
+This is then 'transformed' into a complex category, capable of modification, 
+via the following type-changing rule:\\
+
+\catg{adj[M]}   \arrow \catg{n\id{T} \fwdsl{} n\id{T} }  : \atsign{t1}{entity}(  \diam{Modifier}(m1) ) ) \\ \\
+This result is thus \\
+
+\catg{n\id{T} \fwdsl{} n\id{T} }  : \atsign{t1}{entity}(  \diam{Modifier}(b1:size \wand\ \prop{big}) )\\\\
+which via simple forward composition combines with step 1's \catg{np \fwdsl{hat} n} resulting in the step 2 above.
+\begin{verbatim}
+Step 3: the big ball
+
+Parse 1: np : 
+  @b1:thing(ball ^ 
+            <Delimination>unique ^ 
+            <Num>sg ^ 
+            <Proximity>proximal ^ 
+            <Quantification>specific ^ 
+            <Modifier>(b2:q-size ^ big))
+\end{verbatim}
+The readings here are parallel to those in step 2 of example 1. Again, the important thing is that we have a (potentially) complete np and entity.
+\begin{verbatim}
+Step 4: the big ball on 
+
+Parse 1: np/^np : 
+  @b1:thing(ball ^ 
+            <Delimination>unique ^ 
+            <Num>sg ^ 
+            <Proximity>proximal ^ 
+            <Quantification>specific ^ 
+            <Modifier>(b2:q-size ^ big) ^ 
+            <Modifier>(o1:m-location ^ on ^ 
+                       <Anchor>x1))
+
+\end{verbatim}
+Before investigating exactly how the complete reading from 3 was 'opened up' to allow further modification, we should notice that this reading is perfectly incremental. The preposition \emph{on} has attached itself to the entity as a locational modifier, and has appended its own syntactic projection creating the complex cat \catg{np\fwdsl{hat}np}. We have thus gone from a 'complete' reading back to an 
+syntactically and semantically 'unfinished' reading.
+
+To explain what has happened here, it is best to look at the derivational history of this reading. The word in parantheses specify where the derivational step comes from. This can be a lexical entry (lex), a type changing grammatical rule (gram) or a composition rule, e.g. (\ensuremath{>}) or (\ensuremath{>}B). 
+\begin{verbatim}
+   (lex)             this :- np/^n
+   (lex)             big :- adj
+   (gram)            tcr1: adj$1 => n/^n$1
+\end{verbatim}
+The \ensuremath{\$_{1}} here represents any potential dependencies that the \catg{adj} may bring along with it. We will see this in action a few steps down with \emph{on}
+\begin{verbatim}
+   (tcr1)           big :- n/^n
+   (lex)            ball :- n
+   (>)              big ball :- n
+\end{verbatim}
+Note that at this point, we have not actually integrated \emph{the} into the derivation yet. This does not violate incrementality, however, because we are actually 'in the middle' of a parse step. Incrementality is imposed on the output of a parse step, not on the process itself 
+\begin{verbatim}
+   (lex)          on :- pp/^np
+   (gram)         tcr2: pp$1 => n$1\*n
+   (tcr2)         on :- n/np\*n
+\end{verbatim}
+First, we have the lexical entry for \emph{on}, which as discussed above is \catg{pp\fwdsl{\wedge}np}, i.e. the atomic category plus its nominal dependency. Then, the rule named tcr2 comes into play, transforming the basic category into the complex category \catg{n\fwdsl{}np\backsl{\star}n} . The \ensuremath{\$_{1}}works here to take all of preposition's syntactic dependencies and place them in the correct location in the new complex category. In this case, as this is a post modifier, this is directly after the modifee (hence the ordering \catg{\fwdsl{}np\backsl{\star}n}).\footnote{remember due to the currying of CCG categories, the order in syntactic categories is the reverse of their linear realization.}This category should understood as: 'I want an \catg{n} directly (*) before me (this is the modifee), followed by a \catg{np} ( \emph{on}'s dependent), and then I'll give you back another \catg{n} (corresponding to the resulting now modified entity)
+\begin{verbatim}
+   (<)               big ball on :- n/np
+\end{verbatim}
+This first  requirement is met by \emph{big ball}, leaving the np.
+\begin{verbatim}
+   (>B)              the big ball on :- np/np
+\end{verbatim}
+Finally, \emph{the} comes back into play:  \catg{np\fwdsl{hat}n} +  \catg{n\fwdsl{}np} = \catg{np\fwdsl{}np} via \ensuremath{>}B
+\begin{verbatim}
+Step 5 and 6 : this big ball on the table  
+
+Parse 3: np : 
+  @b1:thing(ball ^ 
+            <Delimination>unique ^ 
+            <Num>sg ^ 
+            <Proximity>proximal ^ 
+            <Quantification>specific ^ 
+            <Modifier>(b2:q-size ^ big) ^ 
+            <Modifier>(o1:m-location ^ on ^ 
+                       <Anchor>(t1:thing ^ table ^ 
+                                <Delimination>unique ^ 
+                                <Num>sg ^ 
+                                <Quantification>specific)))
+\end{verbatim}
+The \diam{Anchor} role and \catg{\fwdsl{} np} dependent are filled by \emph{the table} resulting in yet another (potentially) complete \catg{np} / entity.

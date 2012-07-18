@@ -1,0 +1,6 @@
+lexicon.abd
+U.abd
+U-assertives.abd
+U-directives.abd
+U-expressives.abd
+G.abd

@@ -1,0 +1,2 @@
+propagation = CI[Say ^ <Object>(%1)]
+propagation2 = CI[Say ^ <Subject>(%1) ^ <Object>(%2)]

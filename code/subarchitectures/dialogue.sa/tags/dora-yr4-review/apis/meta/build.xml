@@ -1,0 +1,209 @@
+<!-- Inner build file for a module in DFKI "talking robots" APIs -->
+<project name="sdl api" default="compile" basedir=".">
+
+    <property name="build.sysclasspath" value="last" />
+
+	<!-- =================================================================== -->
+     <!-- Add JAR files to classpath                                          -->
+     <!-- =================================================================== -->
+     <path id="build.classpath">
+         <pathelement path="${ice.jar}"/>
+         <pathelement path="${cast.jar}"/>
+         <pathelement path="${antice.jar}"/>
+     </path>
+
+	
+	<!-- =================================================================== -->
+	<!-- Set up properties for process control                               -->
+	<!-- =================================================================== -->
+	 	
+	<!-- Controls where the output goes -->
+	<property name="output.dir" value="../../output/classes" />
+	
+	<!-- Controls what is compiled -->
+	<property name="src.dir" value="./src/java" />
+	<property name="generated.dir" value="./src-generated/java" />
+	
+	<property name="test.dir" value="./test/java"/> 
+	
+	
+	<!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
+	<taskdef name="slice2java" classname="Slice2JavaTask">
+	</taskdef>
+
+	<!-- Controls where the output of unit test goes -->  
+	
+	<property name="junit.data" value="reports/junit/data"/>
+	<property name="junit.html" value="reports/junit/html"/>
+	
+
+	<!-- Controls where the output of the source documentation goes -->
+
+	<property name="src.doc" value="doc/src"/>
+
+	<!-- Controls where the output of the unit test documentation goes -->
+
+	<property name="test.doc" value="doc/test"/>
+
+
+	<!-- Controls where the JAR archive goes -->
+
+	<property name="localjar.dir" value="../../jar"/>
+
+	<!-- =================================================================== -->
+	<!-- Set up classpath for unit testing                                   -->
+	<!-- =================================================================== -->
+	 
+	<!-- Use the main classpath as long as production and test code not separated -->
+	<path id="build.classpath.test">
+		<pathelement path="${build.classpath}"/> 
+		<pathelement path="${output.dir}" />
+	</path>
+	
+	
+	
+	<!-- =================================================================== -->
+	<!-- Preparation                                                         -->
+	<!-- =================================================================== -->
+	<target name="prepare"  description="any project-specific init">
+	  <mkdir dir="${output.dir}"/>
+	  <mkdir dir="${generated.dir}"/>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Expand libraries                                                    -->
+	<!-- =================================================================== -->
+
+    <target name="expandlibs" depends="prepare" if="build.dialogue_sa">
+           <echo message="Expanding external libraries for the binder to output/classes"/>
+           <!-- <unzip dest="${output.dir}" src="./lib/YOURJAR.jar"/> -->
+    </target>
+
+
+	<!-- =================================================================== -->
+	<!-- Source generation                                                   -->
+	<!-- =================================================== -->
+
+	<target name="slice">
+	</target>
+	
+	<!-- =================================================================== -->
+	<!-- Basic compilation                                                   -->
+	<!-- =================================================================== -->
+	<target name="compile" depends="compile-slice, compile-java-production, compile-java-testing" if="build.dialogue_sa"
+		description="compiles the production- and unit test source code, and runs the unit-tests">
+	</target>
+
+	
+	<target name="compile-slice">
+	</target>
+
+    <target name="compile-java-production" depends="expandlibs" if="build.dialogue_sa"
+    	description="compiles the production source code">
+        <javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" 
+        	optimize="${optimize}" debuglevel="lines,vars,source">
+               <classpath refid="build.classpath"/>
+        </javac>
+    </target>
+
+	<target name="compile-java-testing" depends="expandlibs" if="build.dialogue_sa"
+	description="compiles the unit test source code">
+	        <javac srcdir="${test.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" 
+	        	optimize="${optimize}" debuglevel="lines,vars,source">
+	               <classpath refid="build.classpath"/>
+	        </javac>
+	</target>
+
+ 
+
+	<!-- =================================================================== -->
+	<!-- JUnit4-based unit testing                                           -->
+	<!-- =================================================================== -->
+	
+	<target name="test" depends="-test-run,-test-report"/>
+		
+	<target name="-test-run">
+		<mkdir dir="${junit.data}"/>
+		<junit printsummary="yes" fork="true" haltonfailure="no">
+			<classpath>
+				<path refid="build.classpath"/>
+			</classpath>
+			<formatter type="xml"/>
+			<batchtest haltonfailure="no" todir="${junit.data}">
+				<fileset dir="test/java" includes="*/*/*/*/*/*/*Test.java"/>
+			</batchtest>
+		</junit>
+	</target>
+		
+	<target name="-test-report" depends="-test-run">
+		<mkdir dir="${junit.html}"/>
+		<junitreport todir="${junit.data}">
+			<fileset dir="${junit.data}" includes="TEST-*.xml"/>
+			<report format="frames" todir="${junit.html}"/>
+		</junitreport>
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Javadoc                                                             -->
+	<!-- =================================================================== -->
+
+	<target name="doc" depends="-src-doc"/>
+
+	<target name="-src-doc">
+	  <javadoc
+             destdir="${src.doc}"
+             author="true"
+             version="true"
+             use="true"
+             windowtitle="SDL API (release v1.1.2)">
+
+	    <fileset dir="${src.dir}" defaultexcludes="yes">
+	    </fileset>
+
+	    <doctitle><![CDATA[<h1>SDL API (release v1.1.2)</h1>]]></doctitle>
+	    <bottom><![CDATA[<i>Copyright &#169; 2004-2010 DFKI GmbH. All Rights Reserved.</i>]]></bottom>
+	  </javadoc>
+        </target>
+
+	<target name="-test-doc">
+	  <javadoc
+             destdir="${test.doc}"
+             author="true"
+             version="true"
+             use="true"
+             windowtitle="SDL API (release v1.1.2) - Unit test documentation">
+
+	    <fileset dir="${test.dir}" defaultexcludes="yes">
+	    </fileset>
+
+	    <doctitle><![CDATA[<h1>SDL API (release v1.1.2)</h1>]]></doctitle>
+	    <bottom><![CDATA[<i>Copyright &#169; 2004-2010 DFKI GmbH. All Rights Reserved.</i>]]></bottom>
+	  </javadoc>
+        </target>
+
+
+	<!-- =================================================================== -->
+	<!-- JAR creation                                                        -->
+	<!-- =================================================================== -->
+	
+	<target name="jar">
+	  <jar destfile="${localjar.dir}/sdl-v112.jar"
+	       basedir ="${output.dir}"
+	       excludes = "de/dfki/lt/tr/dialogue/*/*Test.class"
+          />
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Clean                                                             -->
+	<!-- =================================================================== -->
+	
+
+		<target name="clean">
+		        <delete file="${src.dir}/.depend"/>
+		        <delete dir="${generated.dir}"/>
+		</target>
+
+
+</project>
