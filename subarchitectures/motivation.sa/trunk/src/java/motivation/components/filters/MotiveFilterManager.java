@@ -106,6 +106,10 @@ public class MotiveFilterManager extends ManagedComponent {
 
 	}
 
+	public WMMotiveView getMotives() {
+		return motives;
+	}
+	
 	public void processChange(WorkingMemoryChange _wmc) {
 		// avoid self calls
 		if (_wmc.src.equals(getComponentID()))
@@ -123,7 +127,9 @@ public class MotiveFilterManager extends ManagedComponent {
 		try {
 			lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDO);
 			Motive motive = getMemoryEntry(_wmc.address, Motive.class);
+			
 			MotivePriority priority = checkMotive(motive, _wmc);
+			
 			// if we have to reprioritize
 			if (priority != motive.priority) {
 				switch (priority) {

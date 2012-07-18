@@ -440,10 +440,10 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 		for (Entry<WorkingMemoryAddress, Motive> m : copySet) {
 			Motive motive = m.getValue();
 
-			if (motive.status == MotiveStatus.ACTIVE || motive.status == MotiveStatus.SURFACED) {
-
+			// if (motive.status == MotiveStatus.ACTIVE || motive.status ==
+			// MotiveStatus.SURFACED) {
+			if (motive.status != MotiveStatus.COMPLETED) {
 				WorkingMemoryAddress wma = m.getKey();
-
 				try {
 					lockEntry(wma, WorkingMemoryPermissions.LOCKEDOD);
 					motive = getMemoryEntry(wma, Motive.class);
@@ -451,10 +451,8 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 							motive.goal.goalString)) {
 						log("flag achieved goal " + motive.goal.goalString);
 						motive.status = MotiveStatus.COMPLETED;
-					} else {
-						motive.status = MotiveStatus.SURFACED;
+						overwriteWorkingMemory(m.getKey(), motive);
 					}
-					overwriteWorkingMemory(m.getKey(), motive);
 				} catch (CASTException e) {
 					getLogger().warn(
 							"CASTException when deactivating goal: "
