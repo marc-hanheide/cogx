@@ -17,6 +17,8 @@ import execution.slice.actions.AskPolarColour;
 import execution.slice.actions.AskPolarIdentity;
 import execution.slice.actions.AskPolarShape;
 import execution.slice.actions.LearnColour;
+import execution.slice.actions.AnnounceAutonomousColorLearning;
+import execution.slice.actions.AnnounceAutonomousShapeLearning;
 import execution.slice.actions.LearnIdentity;
 import execution.slice.actions.LearnShape;
 import execution.slice.actions.PointToObject;
@@ -103,17 +105,29 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			assert _plannedAction.arguments.length == 3 : "ask-for-an-objects-objecttype-polar is expected to be of arity 2";
 			return createBeliefPlusStringAction(AskPolarIdentity.class,
 					_plannedAction.arguments[1], _plannedAction.arguments[2]);
-		} else if (_plannedAction.name.equals("learn-color")) {
+		} else if (_plannedAction.name.equals("learn-color") || _plannedAction.name.equals("learn-color-autonomously")) {
 
 			assert _plannedAction.arguments.length == 3 : "learn-color is expected to be of arity 3";
 			println("created a learn-color action");
 			return createBeliefPlusStringAction(LearnColour.class,
 					_plannedAction.arguments[1], _plannedAction.arguments[2]);
 
-		} else if (_plannedAction.name.equals("learn-shape")) {
+		} else if (_plannedAction.name.equals("learn-shape") || _plannedAction.name.equals("learn-shape-autonomously")) {
 
 			assert _plannedAction.arguments.length == 3 : "learn-shape is expected to be of arity 3";
 			return createBeliefPlusStringAction(LearnShape.class,
+					_plannedAction.arguments[1], _plannedAction.arguments[2]);
+
+		} else if (_plannedAction.name.equals("announce-autonomous-color-learning")) {
+
+			assert _plannedAction.arguments.length == 3 : "announce-autonomous-color-learning is expected to be of arity 3";
+			return createBeliefPlusStringAction(AnnounceAutonomousColorLearning.class,
+					_plannedAction.arguments[1], _plannedAction.arguments[2]);
+
+		} else if (_plannedAction.name.equals("announce-autonomous-shape-learning")) {
+
+			assert _plannedAction.arguments.length == 3 : "announce-autonomous-shape-learning is expected to be of arity 3";
+			return createBeliefPlusStringAction(AnnounceAutonomousShapeLearning.class,
 					_plannedAction.arguments[1], _plannedAction.arguments[2]);
 
 		} else if (_plannedAction.name.equals("learn-objecttype")) {
