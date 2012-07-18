@@ -1,13 +1,10 @@
 package motivation.components;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
-import motivation.util.WMMotiveView;
-import motivation.util.WMMotiveView.MotiveStateTransition;
 import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
@@ -18,74 +15,43 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTUtils;
-import castutils.castextensions.WMView.ChangeHandler;
 import execution.slice.Robot;
 
-public class RobotStateUpdater extends ManagedComponent {
+public class RobotStateUpdater extends ManagedComponent implements
+		WorkingMemoryChangeReceiver {
 
 	private static final boolean ROBOT_INITIATED_MODE = true;
 
-	private final HashMap<WorkingMemoryAddress, Class<? extends Motive>> m_activeMotives;
-	private final WMMotiveView m_motiveView;
+	private static final String ROBOT_INITIATED_TYPE = CASTUtils
+			.typeName(LearnObjectFeatureMotive.class);
+
+	private final HashMap<WorkingMemoryAddress, String> m_activeMotives;
 
 	public RobotStateUpdater() {
-		m_activeMotives = new HashMap<WorkingMemoryAddress, Class<? extends Motive>>();
-		m_motiveView = WMMotiveView.create(this);
+		m_activeMotives = new HashMap<WorkingMemoryAddress, String>();
 	}
 
 	@Override
 	protected void start() {
 
-		try {
+		addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(Robot.class),
+				new WorkingMemoryChangeReceiver() {
 
-			addChangeFilter(
-					ChangeFilterFactory.createGlobalTypeFilter(Robot.class),
-					new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+						m_robotAddress = _wmc.address;
+						removeChangeFilter(this);
+					}
+				});
 
-						@Override
-						public void workingMemoryChanged(
-								WorkingMemoryChange _wmc) throws CASTException {
-							m_robotAddress = _wmc.address;
-							removeChangeFilter(this);
-						}
-					});
+		addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(Motive.class), this);
 
-			m_motiveView.setStateChangeHandler(new MotiveStateTransition(
-					MotiveStatus.WILDCARD, MotiveStatus.SURFACED),
-					new ChangeHandler<Motive>() {
-
-						@Override
-						public void entryChanged(
-								Map<WorkingMemoryAddress, Motive> map,
-								WorkingMemoryChange wmc, Motive newEntry,
-								Motive oldEntry) throws CASTException {
-							motiveSurfaced(wmc, newEntry);
-						}
-					});
-
-			ChangeHandler<Motive> inactiveHandler = new ChangeHandler<Motive>() {
-				@Override
-				public void entryChanged(Map<WorkingMemoryAddress, Motive> map,
-						WorkingMemoryChange wmc, Motive newEntry,
-						Motive oldEntry) throws CASTException {
-					motiveUnsurfaced(wmc, newEntry);
-				}
-			};
-
-			m_motiveView.setStateChangeHandler(new MotiveStateTransition(
-					MotiveStatus.SURFACED, MotiveStatus.UNSURFACED),
-					inactiveHandler);
-
-			m_motiveView.setStateChangeHandler(new MotiveStateTransition(
-					MotiveStatus.WILDCARD, MotiveStatus.COMPLETED),
-					inactiveHandler);
-
-			m_motiveView.start();
-		} catch (UnknownSubarchitectureException e) {
-			logException(e);
-		}
 	}
 
 	private boolean m_isInRobotInitiatedMode = false;
@@ -95,16 +61,15 @@ public class RobotStateUpdater extends ManagedComponent {
 	}
 
 	private boolean activeMotivesContainRobotInitiated() {
-		
-		return m_activeMotives.values().contains(
-				LearnObjectFeatureMotive.class);
+
+		return m_activeMotives.values().contains(ROBOT_INITIATED_TYPE);
 	}
 
-	protected void motiveUnsurfaced(WorkingMemoryChange wmc, Motive newEntry)
+	protected void motiveUnsurfaced(WorkingMemoryAddress wmc, String motiveType)
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException, UnknownSubarchitectureException {
 
-		Class<? extends Motive> removed = m_activeMotives.remove(wmc.address);
+		String removed = m_activeMotives.remove(wmc);
 		if (removed == null) {
 			getLogger().error(
 					"Unsurfaced motive was not seen before: "
@@ -121,14 +86,13 @@ public class RobotStateUpdater extends ManagedComponent {
 	private void switchMode(boolean robotInitiatedMode)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
 			ConsistencyException, PermissionException {
-		
-		if(robotInitiatedMode) {
+
+		if (robotInitiatedMode) {
 			println("switching to robot initiated mode");
-		}
-		else {
+		} else {
 			println("switching OUT of robot initiated mode");
 		}
-		
+
 		assert (m_robotAddress != null);
 		lockEntry(m_robotAddress, WorkingMemoryPermissions.LOCKEDODR);
 		Robot rbt = getMemoryEntry(m_robotAddress, Robot.class);
@@ -138,15 +102,37 @@ public class RobotStateUpdater extends ManagedComponent {
 		m_isInRobotInitiatedMode = robotInitiatedMode;
 	}
 
-	protected void motiveSurfaced(WorkingMemoryChange wmc, Motive newEntry)
+	protected void motiveSurfaced(WorkingMemoryAddress wmc, String newEntry)
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException, UnknownSubarchitectureException {
-		println("motiveSurfaced: " + CASTUtils.toString(wmc.address) + " "
+		println("motiveSurfaced: " + CASTUtils.toString(wmc) + " "
 				+ newEntry.getClass());
-		m_activeMotives.put(wmc.address, newEntry.getClass());
+		m_activeMotives.put(wmc, newEntry);
 		if (!inRobotInitiatedMode() && activeMotivesContainRobotInitiated()) {
 			switchMode(ROBOT_INITIATED_MODE);
 		}
 	}
 
+	@Override
+	public void workingMemoryChanged(WorkingMemoryChange _wmc)
+			throws CASTException {
+
+		if (_wmc.operation != WorkingMemoryOperation.DELETE) {
+
+			try {
+				Motive mtv = getMemoryEntry(_wmc.address, Motive.class);
+				if (mtv.status == MotiveStatus.ACTIVE
+						|| mtv.status == MotiveStatus.SURFACED) {
+					motiveSurfaced(_wmc.address, _wmc.type);
+				} else {
+					motiveUnsurfaced(_wmc.address, _wmc.type);
+				}
+			} catch (DoesNotExistOnWMException e) {
+				motiveUnsurfaced(_wmc.address, _wmc.type);
+			}
+		} else {
+			motiveUnsurfaced(_wmc.address, _wmc.type);
+		}
+
+	}
 }
