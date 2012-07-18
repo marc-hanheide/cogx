@@ -864,6 +864,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (>= (color-prob ?v) (convinced-of-color-threshold ?r))
         (= (color ?v) ?c)
       )
@@ -882,6 +883,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (< (color-prob ?v) (convinced-of-color-threshold ?r))
         (>= (color-prob ?v) (believe-in-color-threshold ?r))
         (= (color ?v) ?c)
@@ -901,6 +903,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (< (color-prob ?v) (believe-in-color-threshold ?r))
         (= (color ?v) ?c)
       )
@@ -919,6 +922,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (>= (shape-prob ?v) (convinced-of-shape-threshold ?r))
         (= (shape ?v) ?s)
       )
@@ -937,6 +941,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (< (shape-prob ?v) (convinced-of-shape-threshold ?r))
         (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
         (= (shape ?v) ?s)
@@ -956,6 +961,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (< (shape-prob ?v) (believe-in-shape-threshold ?r))
         (= (shape ?v) ?s)
       )
@@ -974,6 +980,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (>= (objecttype-prob ?v) (convinced-of-objecttype-threshold ?r))
         (= (objecttype ?v) ?t)
       )
@@ -992,6 +999,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (< (objecttype-prob ?v) (convinced-of-objecttype-threshold ?r))
         (>= (objecttype-prob ?v) (believe-in-objecttype-threshold ?r))
         (= (objecttype ?v) ?t)
@@ -1011,6 +1019,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (< (objecttype-prob ?v) (believe-in-objecttype-threshold ?r))
         (or
           (= (objecttype ?v) ?t)
@@ -1038,6 +1047,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (>= (color-prob ?v) (convinced-of-color-threshold ?r))
         (= (color ?v) ?c)
       )
@@ -1056,6 +1066,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (< (color-prob ?v) (convinced-of-color-threshold ?r))
         (>= (color-prob ?v) (believe-in-color-threshold ?r))
         (= (color ?v) ?c)
@@ -1076,6 +1087,7 @@
       (or
         (and
           (is-object-in-question ?v)
+          (is-looking-at ?r ?v)
           (< (color-prob ?v) (believe-in-color-threshold ?r))
           (= (color ?v) ?c)
         )
@@ -1099,6 +1111,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (>= (shape-prob ?v) (convinced-of-shape-threshold ?r))
         (= (shape ?v) ?s)
       )
@@ -1117,6 +1130,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (< (shape-prob ?v) (convinced-of-shape-threshold ?r))
         (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
         (= (shape ?v) ?s)
@@ -1137,11 +1151,13 @@
       (or
         (and
           (is-object-in-question ?v)
+          (is-looking-at ?r ?v)
           (< (shape-prob ?v) (believe-in-shape-threshold ?r))
           (= (shape ?v) ?s)
         )
         (and
           (is-object-in-question ?v)
+          (is-looking-at ?r ?v)
           (not (= (shape ?v) ?s))
         )
       )
@@ -1160,6 +1176,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (>= (objecttype-prob ?v) (convinced-of-objecttype-threshold ?r))
         (= (objecttype ?v) ?t)
       )
@@ -1178,6 +1195,7 @@
     :precondition
       (and
         (is-object-in-question ?v)
+        (is-looking-at ?r ?v)
         (< (objecttype-prob ?v) (convinced-of-objecttype-threshold ?r))
         (>= (objecttype-prob ?v) (believe-in-objecttype-threshold ?r))
         (= (objecttype ?v) ?t)
@@ -1198,11 +1216,13 @@
       (or
         (and
           (is-object-in-question ?v)
+          (is-looking-at ?r ?v)
           (< (objecttype-prob ?v) (believe-in-objecttype-threshold ?r))
           (= (objecttype ?v) ?t)
         )
         (and
           (is-object-in-question ?v)
+          (is-looking-at ?r ?v)
           (not (= (objecttype ?v) ?t))
         )
       )
