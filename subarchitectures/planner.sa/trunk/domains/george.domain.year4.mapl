@@ -52,7 +52,6 @@
 
     (allow-autonomous-color-learning ?v - VisualObject ?c - ColorName ?r - Robot)
     (allow-autonomous-shape-learning ?v - VisualObject ?s - ShapeName ?r - Robot)
-    ;;(allow-autonomous-objecttype-learning ?v - VisualObject ?t - ObjecttypeName ?r - Robot)
 
     (looked-at ?vc - ViewCone)
 
@@ -99,7 +98,6 @@
     (objecttype-prob ?v - VisualObject) - number
     (attributed-objecttype ?v - VisualObject) - ObjecttypeName
     (polar-question-objecttype-threshold ?r - Robot) - number
-    (learn-autonomous-objecttype-threshold ?r - Robot) - number
     (convinced-of-objecttype-threshold ?r - Robot) - number
     (believe-in-objecttype-threshold ?r - Robot) - number
 
@@ -182,12 +180,6 @@
     :parameters (?r - Robot)
     :precondition (= (polar-question-objecttype-threshold ?r) UNKNOWN)
     :effect (assign (polar-question-objecttype-threshold ?r) 0.4)
-  )
-
-  (:init-rule set-learn-autonomous-objecttype-threshold
-    :parameters (?r - Robot)
-    :precondition (= (learn-autonomous-objecttype-threshold ?r) UNKNOWN)
-    :effect (assign (learn-autonomous-objecttype-threshold ?r) 0.98)
   )
 
   (:init-rule set-convinced-of-objecttype-threshold
@@ -1304,8 +1296,9 @@
         (and
           (is-in-robot-initiated-mode ?r)
           (not (= ?c UNKNOWN_COLOR))
-          (is-looking-and-eventually-pointing-at ?r ?v)
-          (= (is-object-referenced-by-george ?r) ?v)
+          (is-looking-at ?r ?v)
+          ;(is-looking-and-eventually-pointing-at ?r ?v)
+          ;(= (is-object-referenced-by-george ?r) ?v)
         )
       )
     :effect 
@@ -1331,8 +1324,9 @@
         (and
           (is-in-robot-initiated-mode ?r)
           (not (= ?s UNKNOWN_SHAPE))
-          (is-looking-and-eventually-pointing-at ?r ?v)
-          (= (is-object-referenced-by-george ?r) ?v)
+          (is-looking-at ?r ?v)
+          ;(is-looking-and-eventually-pointing-at ?r ?v)
+          ;(= (is-object-referenced-by-george ?r) ?v)
         )
       )
     :effect 
