@@ -104,12 +104,12 @@ public class ExecutorFacade extends CASTHelper {
 			component.overwriteWorkingMemory(planID, pt);
 		}
 		try {
-			getLogger().info("waiting a second as part of a big HACK!");
+			getLogger().debug("waiting a second as part of a big HACK!");
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			component.logException(e);
 		}
-		getLogger().info(
+		getLogger().debug(
 				"starting execution for planID " + CASTUtils.toString(planID));
 		FutureExecutionTask futureExecution = new FutureExecutionTask(planID);
 		executorService.execute(futureExecution);

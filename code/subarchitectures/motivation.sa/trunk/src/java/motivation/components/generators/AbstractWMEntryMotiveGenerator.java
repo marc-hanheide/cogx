@@ -5,6 +5,7 @@ package motivation.components.generators;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -128,6 +129,20 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 						} else {
 							assignCosts(motive);
 							overwriteWorkingMemory(correspondingWMA, motive);
+						}
+
+						motive = checkForAdditionAfterUpdate(wmc.address,
+								newEntry);
+
+						if (motive != null) {
+							insertNewGoal(motive);
+							List<WorkingMemoryAddress> motiveAddresses = bel2motivesMap
+									.get(wmc.address);
+							if (motiveAddresses == null) {
+								motiveAddresses = new LinkedList<WorkingMemoryAddress>();
+							}
+							motiveAddresses.add(motive.thisEntry);
+							bel2motivesMap.put(wmc.address, motiveAddresses);
 						}
 
 					} catch (CASTException e) {
@@ -306,12 +321,11 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 	protected WorkingMemoryAddress insertNewGoal(M motive)
 			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
 			UnknownSubarchitectureException {
-		
+
 		if (motive.thisEntry == null) {
-			motive.thisEntry = new WorkingMemoryAddress(
-					newDataID(), getSubarchitectureID());
+			motive.thisEntry = new WorkingMemoryAddress(newDataID(),
+					getSubarchitectureID());
 		}
-		
 
 		assignCosts(motive);
 		if (isMonitoringMotivesForCompletion()) {
@@ -333,6 +347,18 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 	protected abstract M checkForAddition(WorkingMemoryAddress addr, T newEntry);
 
 	protected abstract M checkForUpdate(T newEntry, M existingMotive);
+
+	/**
+	 * Used to allow overwrites to trigger new motives.
+	 * 
+	 * @param addr
+	 * @param newEntry
+	 * @return
+	 */
+	protected M checkForAdditionAfterUpdate(WorkingMemoryAddress addr,
+			T newEntry) {
+		return null;
+	}
 
 	/*
 	 * (non-Javadoc)
