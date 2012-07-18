@@ -2,10 +2,11 @@ package motivation.components.filters;
 
 import java.util.Map;
 
+import javax.swing.JOptionPane;
+
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
-import si.unilj.fri.cogx.v11n.core.DisplayClient;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
@@ -88,7 +89,7 @@ public class DriveHierarchyFilter implements MotiveFilter,
 			} catch (CASTException e) {
 				m_component.logException(e);
 			}
-			return motive.priority ;
+			return motive.priority;
 		}
 
 	}
@@ -104,11 +105,23 @@ public class DriveHierarchyFilter implements MotiveFilter,
 		m_component.addMotiveCompletionHandler(this);
 		m_display.connectIceClient(m_component);
 		m_display.updateActiveLevel(m_activeLevel);
+
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				while (true) {
+					JOptionPane.showMessageDialog(null, "kill all things");
+				}
+
+			}
+		});
 	}
 
 	@Override
 	public void configure(Map<String, String> _config) {
 		m_display.configureDisplayClient(_config);
+		m_display.setDriveHierarchy(m_driveHierarchy);
 	}
 
 	/**
@@ -158,16 +171,6 @@ public class DriveHierarchyFilter implements MotiveFilter,
 
 	}
 
-	private final DriveHierarchyDisplayClient m_display = new DriveHierarchyDisplayClient();
+	private final DelayFilterDisplayClient m_display = new DelayFilterDisplayClient();
 
-	private class DriveHierarchyDisplayClient extends DisplayClient {
-
-		public void updateActiveLevel(int _level) {
-			if (_level == DriveHierarchy.UNKNOWN_CLASS_VALUE) {
-				setHtml("motive.filter", "001", "Waiting for any input ");
-			} else {
-				setHtml("motive.filter", "001", "Active level is " + _level);
-			}
-		}
-	}
 }

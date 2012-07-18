@@ -114,7 +114,7 @@ public class DelayFilter implements MotiveFilter {
 //					.println("whoops, this probably did bad things in the past");
 //		}
 
-		m_display.updateDelayDisplay(currentSystemTime, m_activeDelays,
+		m_display.updateDelays(currentSystemTime, m_activeDelays,
 				m_postDelays, m_component.getMotives());
 
 		return priority;
@@ -144,12 +144,14 @@ public class DelayFilter implements MotiveFilter {
 
 		int postDialogueDelay = 15000;
 
+		int nonSituatedDelay = 30000;
+		
 		m_delayMap.put(LearnObjectFeatureMotive.class, postDialogueDelay);
 
 		m_postDelayWindowMap.put(LearnObjectFeatureMotive.class,
 				postDialogueDelay);
 
-		m_delayMap.put(RobotNonSituatedMotive.class, postDialogueDelay);
+		m_delayMap.put(RobotNonSituatedMotive.class, nonSituatedDelay);
 
 		// No delays here as the generator delays anyway
 		// m_delayMap.put(LookAtViewConeMotive.class, postDialogueDelay);

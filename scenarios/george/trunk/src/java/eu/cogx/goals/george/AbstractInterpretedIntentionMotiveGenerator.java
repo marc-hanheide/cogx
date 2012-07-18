@@ -757,7 +757,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	protected static void unmarkReferent(ManagedComponent _component,
 			WorkingMemoryAddress _beliefAddr,
 			CASTIndependentFormulaDistributionsBelief<MergedBelief> _gb,
-			ObjectReferencingIntentionMotive _completedMotive) {
+			Motive _completedMotive) {
 
 		try {
 
@@ -836,19 +836,15 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
 			ConsistencyException, PermissionException {
 
-		if (_completedMotive instanceof ObjectReferencingIntentionMotive) {
+		MergedBelief belief = _component.getMemoryEntry(_beliefAddr,
+				MergedBelief.class);
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> gb = CASTIndependentFormulaDistributionsBelief
+				.create(MergedBelief.class, belief);
 
-			MergedBelief belief = _component.getMemoryEntry(_beliefAddr,
-					MergedBelief.class);
-			CASTIndependentFormulaDistributionsBelief<MergedBelief> gb = CASTIndependentFormulaDistributionsBelief
-					.create(MergedBelief.class, belief);
+		// remove marking for reference
+		unmarkReferent(_component, _beliefAddr, gb, _completedMotive);
 
-			// remove marking for reference
-			unmarkReferent(_component, _beliefAddr, gb,
-					(ObjectReferencingIntentionMotive) _completedMotive);
-
-			_component.overwriteWorkingMemory(_beliefAddr, gb.get());
-		}
+		_component.overwriteWorkingMemory(_beliefAddr, gb.get());
 
 	}
 

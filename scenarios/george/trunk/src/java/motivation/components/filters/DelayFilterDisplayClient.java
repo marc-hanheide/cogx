@@ -23,14 +23,22 @@ class DelayFilterDisplayClient extends DisplayClient {
 	}
 
 	private static final PairComparator<Motive> MOTIVE_PAIR_COMPARATOR = new PairComparator<Motive>();
+	private DriveHierarchy m_driveHierarchy;
 
 	DelayFilterDisplayClient() {
 	}
 
-	
-//private static String 
-	
-	public void updateDelayDisplay(long _currentSystemTime,
+	// private static String
+
+	public void updateActiveLevel(int _level) {
+		if (_level == DriveHierarchy.UNKNOWN_CLASS_VALUE) {
+			setHtml("motive.filter", "001", "Waiting for any input ");
+		} else {
+			setHtml("motive.filter", "001", "Active level is " + _level);
+		}
+	}
+
+	public void updateDelays(long _currentSystemTime,
 			HashMap<Class<? extends Motive>, Long> _activationTimes,
 			HashMap<Class<? extends Motive>, Long> _postDelays,
 			WMMotiveView _motives) {
@@ -44,21 +52,28 @@ class DelayFilterDisplayClient extends DisplayClient {
 		for (WorkingMemoryAddress mtvAddr : _motives.keySet()) {
 			Motive mtv = _motives.get(mtvAddr);
 
-			Long delay = _activationTimes.get(mtv.getClass());
-			if (delay != null) {
-				motiveDelays.add(new Pair<Motive, Long>(mtv,
-						(delay - _currentSystemTime)));
+			Long activationTime = _activationTimes.get(mtv.getClass());
+			if (activationTime != null) {
+				long delay = (activationTime - _currentSystemTime);
+				if (delay > 0) {
+					motiveDelays.add(new Pair<Motive, Long>(mtv,
+							(activationTime - _currentSystemTime)));
+				}
 			}
 		}
 
 		Collections.sort(motiveDelays, MOTIVE_PAIR_COMPARATOR);
 
 		// LinkedList<String> rows = new LinkedList<String>();
-		String rows = "";
+		String rows = "<br/>";
 
 		for (Pair<Motive, Long> pair : motiveDelays) {
 			rows += pair.m_first.getClass() + " " + pair.m_second + "<br/>";
 		}
 		setHtml("motive.filter", "002", rows);
+	}
+
+	public void setDriveHierarchy(DriveHierarchy _driveHierarchy) {
+		m_driveHierarchy = _driveHierarchy;
 	}
 }

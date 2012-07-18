@@ -3,13 +3,12 @@ package eu.cogx.goals.george;
 import java.util.ArrayList;
 import java.util.List;
 
-import vision.execution.george.VisionActionInterface;
-
 import motivation.components.generators.AbstractBeliefMotiveGenerator;
 import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
+import vision.execution.george.VisionActionInterface;
 import VisionData.VisualObject;
 import autogen.Planner.Goal;
 import cast.DoesNotExistOnWMException;
@@ -67,10 +66,10 @@ public class VisualObjectMotiveGenerator extends
 
 		// if dialogue was involved, then the belief may have been marked as a
 		// referent. this needs cleaning up...
-
-		println("why on earth am I getting called?!");
-		AbstractInterpretedIntentionMotiveGenerator.unmarkReferent(this,
-				_motive.referenceEntry, _motive);
+//
+//		println("why on earth am I getting called?!");
+//		AbstractInterpretedIntentionMotiveGenerator.unmarkReferent(this,
+//				_motive.referenceEntry, _motive);
 
 	}
 
