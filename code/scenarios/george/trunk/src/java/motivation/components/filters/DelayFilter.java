@@ -6,6 +6,7 @@ import java.util.Map;
 import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
+import motivation.slice.MotiveStatus;
 import motivation.slice.RobotNonSituatedMotive;
 import cast.cdl.WorkingMemoryChange;
 
@@ -29,6 +30,8 @@ public class DelayFilter implements MotiveFilter {
 	protected final HashMap<Class<? extends Motive>, Long> m_postDelays;
 	protected MotiveFilterManager m_component;
 
+	final DelayFilterDisplayClient m_display = new DelayFilterDisplayClient();
+
 	public DelayFilter() {
 		m_delayMap = new HashMap<Class<? extends Motive>, Integer>();
 		m_activeDelays = new HashMap<Class<? extends Motive>, Long>();
@@ -39,65 +42,81 @@ public class DelayFilter implements MotiveFilter {
 	@Override
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 
-		Integer delay = m_delayMap.get(motive.getClass());
-		MotivePriority priority = MotivePriority.UNSURFACE;
-
+		// by default maintain priority
+		MotivePriority priority = motive.priority;
 		long currentSystemTime = System.currentTimeMillis();
-		
-		// is there a delay configured for this class of motive at all?
-		if (delay == null) {
-			priority = MotivePriority.NORMAL;
-			m_component.log("no delay for " + motive.getClass());
-		} else {
 
-			// there is a delay for this class
+		// only check unsurfaced motives for delays
+		if (motive.status == MotiveStatus.UNSURFACED) {
+			Integer delay = m_delayMap.get(motive.getClass());
+			priority = MotivePriority.UNSURFACE;
 
-			// if a motive of this class was previously surfaced then all are
-			// allowed to surface for the same amount of time as the delay after
-			// the fact
-
-			Long postDelay = m_postDelays.get(motive.getClass());
-			// if there is a post-delay window active for this class
-			if (postDelay != null) {
-				// if we're still in the window, activate the motive
-				if (currentSystemTime < postDelay) {
-					priority = MotivePriority.NORMAL;
-				} else {
-					// if we're out of the window, do nothing
-					m_postDelays.remove(motive.getClass());
-				}
-			}
-
-			// Now see if there is currently a delay for this specific motive
-			Long target = m_activeDelays.get(motive.getClass());
-
-			
-			
-			// If this motive has not yet been delayed
-			if (target == null) {
-
-				// if no post delay effect was generated
-				if (priority == MotivePriority.UNSURFACE) {
-					m_component.log("delaying surfacing of "
-							+ motive.getClass() + " for " + delay + "ms");
-					m_activeDelays.put(motive.getClass(),
-							currentSystemTime + delay);
-				}
-
-			}
-			// else if the delay has been created and now exceeded
-			else if (target < currentSystemTime ) {
-				m_component.log("surfacing " + motive.getClass()
-						+ " after delay of " + delay + "ms");
+			// is there a delay configured for this class of motive at all?
+			if (delay == null) {
 				priority = MotivePriority.NORMAL;
-				m_activeDelays.remove(motive.getClass());
-				m_postDelays.put(motive.getClass(),currentSystemTime
-						+ getPostDelayWindow(motive.getClass()));
+				m_component.log("no delay for " + motive.getClass());
 			} else {
-				m_component.log("continuing delay of " + motive.getClass()
-						+ " for another " + (target - currentSystemTime) + "ms");
+
+				// there is a delay for this class
+
+				// if a motive of this class was previously surfaced then all
+				// are
+				// allowed to surface for the same amount of time as the delay
+				// after
+				// the fact
+
+				Long postDelay = m_postDelays.get(motive.getClass());
+				// if there is a post-delay window active for this class
+				if (postDelay != null) {
+					// if we're still in the window, activate the motive
+					if (currentSystemTime < postDelay) {
+						priority = MotivePriority.NORMAL;
+					} else {
+						// if we're out of the window, do nothing
+						m_postDelays.remove(motive.getClass());
+					}
+				}
+
+				// Now see if there is currently a delay for this specific
+				// motive
+				Long target = m_activeDelays.get(motive.getClass());
+
+				// If this motive has not yet been delayed
+				if (target == null) {
+
+					// if no post delay effect was generated
+					if (priority == MotivePriority.UNSURFACE) {
+						m_component.log("delaying surfacing of "
+								+ motive.getClass() + " for " + delay + "ms");
+						m_activeDelays.put(motive.getClass(), currentSystemTime
+								+ delay);
+					}
+
+				}
+				// else if the delay has been created and now exceeded
+				else if (target < currentSystemTime) {
+					m_component.log("surfacing " + motive.getClass()
+							+ " after delay of " + delay + "ms");
+					priority = MotivePriority.NORMAL;
+					m_activeDelays.remove(motive.getClass());
+					m_postDelays.put(motive.getClass(), currentSystemTime
+							+ getPostDelayWindow(motive.getClass()));
+				} else {
+					m_component.log("continuing delay of " + motive.getClass()
+							+ " for another " + (target - currentSystemTime)
+							+ "ms");
+				}
 			}
-		}
+
+		} 
+//		else {
+//			m_component
+//					.println("whoops, this probably did bad things in the past");
+//		}
+
+		m_display.updateDelayDisplay(currentSystemTime, m_activeDelays,
+				m_postDelays, m_component.getMotives());
+
 		return priority;
 	}
 
@@ -117,12 +136,13 @@ public class DelayFilter implements MotiveFilter {
 
 	@Override
 	public void start() {
+		m_display.connectIceClient(m_component);
 	}
 
 	@Override
-	public void configure(Map<String, String> arg0) {
+	public void configure(Map<String, String> _config) {
 
-		int postDialogueDelay = 25000;
+		int postDialogueDelay = 15000;
 
 		m_delayMap.put(LearnObjectFeatureMotive.class, postDialogueDelay);
 
@@ -136,6 +156,7 @@ public class DelayFilter implements MotiveFilter {
 		// m_postDelayWindowMap.put(LookAtViewConeMotive.class,
 		// postDialogueDelay);
 
+		m_display.configureDisplayClient(_config);
 	}
 
 }

@@ -105,11 +105,13 @@ public class RobotStateUpdater extends ManagedComponent implements
 	protected void motiveSurfaced(WorkingMemoryAddress wmc, String newEntry)
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException, UnknownSubarchitectureException {
-		println("motiveSurfaced: " + CASTUtils.toString(wmc) + " "
-				+ newEntry.getClass());
-		m_activeMotives.put(wmc, newEntry);
-		if (!inRobotInitiatedMode() && activeMotivesContainRobotInitiated()) {
-			switchMode(ROBOT_INITIATED_MODE);
+		String put = m_activeMotives.put(wmc, newEntry);
+		if (put == null) {
+			println("motiveSurfaced: " + CASTUtils.toString(wmc) + " "
+					+ newEntry);
+			if (!inRobotInitiatedMode() && activeMotivesContainRobotInitiated()) {
+				switchMode(ROBOT_INITIATED_MODE);
+			}
 		}
 	}
 

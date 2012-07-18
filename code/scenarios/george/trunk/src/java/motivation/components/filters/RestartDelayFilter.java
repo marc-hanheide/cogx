@@ -29,7 +29,6 @@ public class RestartDelayFilter extends DelayFilter implements
 	public void configure(Map<String, String> arg0) {
 		// super is necessary
 		super.configure(arg0);
-
 	}
 
 	@Override
@@ -39,7 +38,6 @@ public class RestartDelayFilter extends DelayFilter implements
 		// get called at the correct point in the
 		m_component.addMotiveActivationHandler(this);
 		m_component.addMotiveCompletionHandler(this);
-
 	}
 
 	/**
