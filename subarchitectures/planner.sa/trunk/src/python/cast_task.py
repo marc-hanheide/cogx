@@ -420,7 +420,7 @@ class CASTTask(object):
             self.write_history()
             self.component.deliver_po_plan(self, po_plan)
         
-            self.component.verbalise("Oh, plan execution failed unexpectedly.  I'm searching for an explanation now.")
+            self.component.verbalise("Oh, plan execution failed.  I'm searching for an explanation now.")
             time.sleep(5)
 
         # print self.init_state.state
@@ -941,6 +941,11 @@ class CASTTask(object):
             self.update_status(TaskStateEnum.WAITING_FOR_ACTION, TaskStateInfoEnum.WAITING_FOR_ACTION)
         else:
             log.info("Plan is empty")
+            if self.write_old_history and plan:
+                po_plan = self.make_cast_poplan(plan, is_completed=True)
+                self.add_to_history(plan, po_plan, self.plan_state)
+                self.write_history()
+
             self.plan_log.append(planner_log.TaskStatusEntry(TaskStateEnum.COMPLETED))
             self.update_status(TaskStateEnum.COMPLETED, TaskStateInfoEnum.COMPLETED)
 
