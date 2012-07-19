@@ -166,9 +166,10 @@ void VL_update_model(ProtoObject &Object, std::vector<string>& labels, std::vect
            double en = (double) Enumerator.getEnum(labels[i]);
            if (en < 0) {
               ERROR("LEARN: Enumerator doesn't know '" << labels[i] << "'"); 
-              continue;
            }
-           DEBUG("VisualLearner will LEARN " << labels[i] << "(" << trunc(en) << ")"); 
+           else {
+              DEBUG("VisualLearner will LEARN " << labels[i] << "(" << trunc(en) << ")"); 
+           }
            avw(row, 1) =  (double) en;
            avw(row, 2) =  (double) weights[i];
            row++;
@@ -185,9 +186,10 @@ void VL_update_model(ProtoObject &Object, std::vector<string>& labels, std::vect
            double en = (double) Enumerator.getEnum(labels[i]);
            if (en < 0) {
               ERROR("UNLEARN: Enumerator doesn't know '" << labels[i] << "'"); 
-              continue;
            }
-           DEBUG("VisualLearner will UNLEARN " << labels[i] << "(" << trunc(en) << ")"); 
+           else {
+              DEBUG("VisualLearner will UNLEARN " << labels[i] << "(" << trunc(en) << ")"); 
+           }
            avw(row, 1) =  (double) en;
            avw(row, 2) =  (double) -weights[i];
            row++;
