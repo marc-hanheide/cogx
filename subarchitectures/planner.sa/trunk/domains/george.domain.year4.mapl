@@ -509,42 +509,6 @@
       )
   )
 
-  ;; (:action ask-for-an-objects-shape-general-reference-by-describing-its-color
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?c - ColorName)
-  ;;   :precondition
-  ;;     (and
-  ;;       (is-in-robot-initiated-mode ?r)
-  ;;       (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
- 
-  ;;       ;;we have a strong belief on this objects color
-  ;;       (>= (color-prob ?v) (believe-in-color-threshold ?r))
-  ;;       (= (color ?v) ?c)
-
-  ;;       ;;all other objects are either removed from the scene
-  ;;       ;;or we know they have another color
-  ;;       (forall 
-  ;;         (?v1 - VisualObject)
-  ;;         (or 
-  ;;           (= ?v ?v1)
-  ;;           (= (presence ?v1) REMOVED)
-  ;;           (and
-  ;;             (>= (color-prob ?v1) (believe-in-color-threshold ?r))
-  ;;             (not (= ?c (color ?v1)))
-  ;;           )
-  ;;         )
-  ;;       )
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (assign (attributed-color ?v) UNDETERMINED_COLOR)
-  ;;       (assign (is-object-referenced-by-george ?r) ?v)
-  ;;       (update (is-object-referenced-by-george ?r) ?v)
-  ;;       (not (last-action-was-head-movement))
-  ;;       (increase (total-cost) 1)
-  ;;     )
-  ;; )
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;                 ASSERTIONS              ;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -831,7 +795,7 @@
         (not (arm-in-resting-position ?r))
         (update (arm-in-resting-position ?r) false)
         (not (last-action-was-head-movement))
-        (increase (total-cost) 6)
+        (increase (total-cost) 1)
       )
   )
 
