@@ -117,15 +117,17 @@ understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
 
 polar_query_prop(Nom, color, PropValue) <-
 	i : sort(Nom, 'q-color'),
-	i : prop(Nom, PropValue).
+	i : prop(Nom, PropValue),
+	valid_color(PropValue).
 
 polar_query_prop(Nom, shape, PropValue) <-
 	i : sort(Nom, 'q-shape'),
-	i : prop(Nom, PropValue).
+	i : prop(Nom, PropValue),
+	valid_shape(PropValue).
 
-polar_query_prop(Nom, size, PropValue) <-
-	i : sort(Nom, 'q-size'),
-	i : prop(Nom, PropValue).
+%polar_query_prop(Nom, size, PropValue) <-
+%	i : sort(Nom, 'q-size'),
+%	i : prop(Nom, PropValue).
 
 % a TYPE
 polar_query_prop(Nom, objecttype, PropValue) <-
