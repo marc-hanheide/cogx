@@ -161,14 +161,17 @@ void VisualLearner::CMyDisplayClient::handleEvent(const Visualization::TEvent &e
   if (event.type == Visualization::evHtmlOnClick) {
     log("evHtmlOnClick on " + event.sourceId + " (" + event.objectId + ":" + event.partId + ")");
     string fname = event.sourceId + ".mat";
-    log("going to load model " + fname);
-    matlab::VL_LoadAvModels_from_configured_dir(fname.c_str());
-
-    // Introspect, write to VisualConceptModelStatus
-    pComponent->updateWmModelStatus();
+    pComponent->setModelToLoad(fname);
   }
 }
 #endif
+
+void VisualLearner::setModelToLoad(const std::string& filename)
+{
+  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_RrqMonitor);
+  mModelToLoad_Queue = filename;
+  m_RrqMonitor.notify();
+}
 
 void VisualLearner::onAdd_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
 {
@@ -260,18 +263,24 @@ void VisualLearner::runComponent()
     TWmAddressVector newRecogRqs;
     TWmAddressVector newLearnRqs;
     //TWmAddressVector newAffordanceRqs;
+    std::string newModelToLoad;
     {
       // SYNC: Lock the monitor
       IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_RrqMonitor);
       // SYNC: if queue empty, unlock the monitor and wait for notify() or timeout
-      if (m_RecogTaskId_Queue.size() < 1 && m_LearnTaskId_Queue.size() < 1) 
+      if (m_RecogTaskId_Queue.size() < 1 && m_LearnTaskId_Queue.size() < 1
+          && mModelToLoad_Queue == "") 
+      {
         m_RrqMonitor.timedWait(IceUtil::Time::seconds(2));
+      }
       // SYNC: Continue with a locked monitor
 
       newRecogRqs = m_RecogTaskId_Queue;
       m_RecogTaskId_Queue.clear();
       newLearnRqs = m_LearnTaskId_Queue;
       m_LearnTaskId_Queue.clear();
+      newModelToLoad = mModelToLoad_Queue;
+      mModelToLoad_Queue = "";
 #if 0
       newAffordanceRqs = m_AffordanceTaskId_Queue;
       m_AffordanceTaskId_Queue.clear();
@@ -347,6 +356,12 @@ void VisualLearner::runComponent()
           cmd.fail();
         }
       }
+    }
+
+    if (newModelToLoad != "") {
+      log("Going to load model " + newModelToLoad);
+      matlab::VL_LoadAvModels_from_configured_dir(newModelToLoad.c_str());
+      updateWmModelStatus();
     }
 
 #if 0
@@ -520,7 +535,6 @@ bool VisualLearner::updateModel(VisualLearningTaskPtr _pTask)
 
   matlab::VL_update_model(*pProtoObj, _pTask->labels, _pTask->weights);
 
-  // Introspect, write to VisualConceptModelStatus
   updateWmModelStatus();
 
   return true;
