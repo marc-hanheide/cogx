@@ -29,7 +29,8 @@ import cast.cdl.WorkingMemoryChange;
  */
 public class GeorgePassThroughFilter extends AbstractManualSelectFilter {
 
-	private final DelayFilterDisplayClient m_display = DelayFilterDisplayClient.getClient();
+	private final DelayFilterDisplayClient m_display = DelayFilterDisplayClient
+			.getClient();
 
 	protected class OnOffFilterPanel extends FilterPanel {
 
@@ -120,10 +121,11 @@ public class GeorgePassThroughFilter extends AbstractManualSelectFilter {
 			values.put(p.getType(), p.getPriority().ordinal());
 		}
 
-		m_display.setPassThroughState(values,  component.getMotives());
-		
-//		component.println("manual set: " + motive.getClass() + " " + priority);
-		
+		m_display.setPassThroughState(values, component.getMotives());
+
+		// component.println("manual set: " + motive.getClass() + " " +
+		// priority);
+
 		return priority;
 	}
 
