@@ -71,9 +71,8 @@ public class RobotStateUpdater extends ManagedComponent implements
 
 		String removed = m_activeMotives.remove(wmc);
 		if (removed == null) {
-			getLogger().error(
-					"Unsurfaced motive was not seen before: "
-							+ CASTUtils.toString(wmc), getLogAdditions());
+			log("Unsurfaced motive was not seen before: "
+					+ CASTUtils.toString(wmc));
 		}
 
 		if (inRobotInitiatedMode() && !activeMotivesContainRobotInitiated()) {
