@@ -611,7 +611,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 	public static class AskForIdentityValueDialogue extends
 			OpenFeatureQuestion<AskForIdentity> {
 		public AskForIdentityValueDialogue(ManagedComponent _component) {
-			super(_component, AskForIdentity.class, "identity");
+			super(_component, AskForIdentity.class, "objecttype");
 		}
 	}
 
@@ -1008,7 +1008,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 	public static class AskForIdentityPolarDialogue extends
 			PolarFeatureQuestion<AskPolarIdentity> {
 		public AskForIdentityPolarDialogue(ManagedComponent _component) {
-			super(_component, AskPolarIdentity.class, "identity");
+			super(_component, AskPolarIdentity.class, "objecttype");
 		}
 	}
 
@@ -1051,7 +1051,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			TriBool result = TriBool.TRIFALSE;
 			try {
 				((AbstractDialogueActionInterface<?>) getComponent())
-						.askForFeatureThenSetDirect("identity", getAction());
+						.askForFeatureThenSetDirect("objecttype", getAction());
 				result = TriBool.TRITRUE;
 
 			} catch (CASTException e) {
@@ -1130,7 +1130,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			try {
 
 				((AbstractDialogueActionInterface<?>) getComponent())
-						.askPolarFeatureThenSetDirect("identity", getAction());
+						.askPolarFeatureThenSetDirect("objecttype", getAction());
 				result = TriBool.TRITRUE;
 
 			} catch (CASTException e) {
