@@ -830,7 +830,7 @@
         (not (arm-in-resting-position ?r))
         (update (arm-in-resting-position ?r) false)
         (not (last-action-was-head-movement))
-        (increase (total-cost) 1)
+        (increase (total-cost) 6)
       )
   )
 
@@ -848,7 +848,7 @@
       (and
 	(not (is-potential-object-in-question ?v))
         (not (last-action-was-head-movement))
-        (increase (total-cost) 10)
+        (increase (total-cost) 2)
       )
   )
 
