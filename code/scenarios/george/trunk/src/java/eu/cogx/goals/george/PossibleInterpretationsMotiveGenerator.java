@@ -232,8 +232,15 @@ public class PossibleInterpretationsMotiveGenerator
 
 		excludeFeatureFromReference(_feature);
 
-		return "(exists (?v - VisualObject) (and (is-object-in-question ?v)("
-				+ getAscriptionPredicate(_feature, _learn) + " ?v)))";
+		if (_learn) {
+			return "(exists (?v - VisualObject) (and (is-object-in-question ?v)("
+					+ getAscriptionPredicate(_feature, _learn) + " ?v)))";
+		} else {
+			return "(exists (?v - VisualObject) (and (is-object-in-question ?v)(= ("
+					+ getAscriptionPredicate(_feature, _learn)
+					+ " ?v) "
+					+ _value + ")))";
+		}
 	}
 
 	@Override

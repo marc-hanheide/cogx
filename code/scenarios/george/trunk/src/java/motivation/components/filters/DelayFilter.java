@@ -8,7 +8,9 @@ import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
 import motivation.slice.RobotNonSituatedMotive;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.core.CASTUtils;
 
 /**
  * Delays motives based on their class. This means that once one motive of a
@@ -26,15 +28,16 @@ public class DelayFilter implements MotiveFilter {
 	// window of activation after a prior activation of the given class
 	protected final HashMap<Class<? extends Motive>, Integer> m_postDelayWindowMap;
 
-	protected final HashMap<Class<? extends Motive>, Long> m_activeDelays;
+	protected final HashMap<WorkingMemoryAddress, Long> m_activeDelays;
 	protected final HashMap<Class<? extends Motive>, Long> m_postDelays;
 	protected MotiveFilterManager m_component;
 
-	private final DelayFilterDisplayClient m_display = DelayFilterDisplayClient.getClient();
+	private final DelayFilterDisplayClient m_display = DelayFilterDisplayClient
+			.getClient();
 
 	public DelayFilter() {
 		m_delayMap = new HashMap<Class<? extends Motive>, Integer>();
-		m_activeDelays = new HashMap<Class<? extends Motive>, Long>();
+		m_activeDelays = new HashMap<WorkingMemoryAddress, Long>();
 		m_postDelays = new HashMap<Class<? extends Motive>, Long>();
 		m_postDelayWindowMap = new HashMap<Class<? extends Motive>, Integer>();
 	}
@@ -48,6 +51,7 @@ public class DelayFilter implements MotiveFilter {
 
 		// only check unsurfaced motives for delays
 		if (motive.status == MotiveStatus.UNSURFACED) {
+
 			Integer delay = m_delayMap.get(motive.getClass());
 			priority = MotivePriority.UNSURFACE;
 
@@ -79,7 +83,7 @@ public class DelayFilter implements MotiveFilter {
 
 				// Now see if there is currently a delay for this specific
 				// motive
-				Long target = m_activeDelays.get(motive.getClass());
+				Long target = m_activeDelays.get(motive.thisEntry);
 
 				// If this motive has not yet been delayed
 				if (target == null) {
@@ -87,8 +91,9 @@ public class DelayFilter implements MotiveFilter {
 					// if no post delay effect was generated
 					if (priority == MotivePriority.UNSURFACE) {
 						m_component.log("delaying surfacing of "
-								+ motive.getClass() + " for " + delay + "ms");
-						m_activeDelays.put(motive.getClass(), currentSystemTime
+								+ CASTUtils.toString(motive.thisEntry)
+								+ " for " + delay + "ms");
+						m_activeDelays.put(motive.thisEntry, currentSystemTime
 								+ delay);
 					}
 
@@ -98,7 +103,7 @@ public class DelayFilter implements MotiveFilter {
 					m_component.log("surfacing " + motive.getClass()
 							+ " after delay of " + delay + "ms");
 					priority = MotivePriority.NORMAL;
-					m_activeDelays.remove(motive.getClass());
+					m_activeDelays.remove(motive.thisEntry);
 					m_postDelays.put(motive.getClass(), currentSystemTime
 							+ getPostDelayWindow(motive.getClass()));
 				} else {
@@ -108,14 +113,14 @@ public class DelayFilter implements MotiveFilter {
 				}
 			}
 
-		} 
-//		else {
-//			m_component
-//					.println("whoops, this probably did bad things in the past");
-//		}
+		}
+		// else {
+		// m_component
+		// .println("whoops, this probably did bad things in the past");
+		// }
 
 		m_display.updateDelays(currentSystemTime, m_activeDelays,
-				m_postDelays, m_component.getMotives());
+				m_component.getMotives());
 
 		return priority;
 	}
@@ -145,7 +150,7 @@ public class DelayFilter implements MotiveFilter {
 		int postDialogueDelay = 15000;
 
 		int nonSituatedDelay = 30000;
-		
+
 		m_delayMap.put(LearnObjectFeatureMotive.class, postDialogueDelay);
 
 		m_postDelayWindowMap.put(LearnObjectFeatureMotive.class,

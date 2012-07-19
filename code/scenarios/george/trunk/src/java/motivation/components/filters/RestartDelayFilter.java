@@ -6,6 +6,7 @@ import motivation.slice.Motive;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.core.CASTUtils;
 import castutils.castextensions.WMView.ChangeHandler;
 
 /**
@@ -17,7 +18,7 @@ import castutils.castextensions.WMView.ChangeHandler;
  */
 public class RestartDelayFilter extends DelayFilter implements
 		ChangeHandler<Motive> {
-	
+
 	private final DriveHierarchy m_driveHierarchy = GeorgeDriveConfig
 			.getGeorgeDriveHierarchy();
 
@@ -55,16 +56,23 @@ public class RestartDelayFilter extends DelayFilter implements
 		if (activatedPriority != DriveHierarchy.UNKNOWN_CLASS_VALUE) {
 
 			// these are all the motives which are currently delayed
-			for (Class<? extends Motive> mtvCls : m_activeDelays.keySet()) {
+			for (WorkingMemoryAddress mtvAddr : m_activeDelays.keySet()) {
 
 				// if the delayed motive is of a lower priority than the
 				// activated motive
-				if (m_driveHierarchy.getPriority(mtvCls) < activatedPriority) {
-					// reset the delay to the original value
-					m_activeDelays.put(mtvCls, System.currentTimeMillis()
-							+ m_delayMap.get(mtvCls));
-					m_component.log("restarting delay of " + mtvCls
-							+ " due to activation of " + newEntry.getClass());
+
+				Motive mtv = map.get(mtvAddr);
+				if (mtv != null) {
+					Class<? extends Motive> mtvCls = mtv.getClass();
+					if (m_driveHierarchy.getPriority(mtvCls) < activatedPriority) {
+						// reset the delay to the original value
+						m_activeDelays.put(mtvAddr, System.currentTimeMillis()
+								+ m_delayMap.get(mtvCls));
+						m_component.log("restarting delay of "
+								+ CASTUtils.toString(mtvAddr)
+								+ " due to activation of "
+								+ newEntry.getClass());
+					}
 				}
 
 			}
