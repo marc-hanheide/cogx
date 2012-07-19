@@ -33,6 +33,7 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/log4j-server.in ${CMAKE_CURRENT_SOURC
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/standalone-planner.in ${CMAKE_CURRENT_SOURCE_DIR}/standalone-planner)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/universalIceClient.in ${CMAKE_CURRENT_SOURCE_DIR}/universalIceClient)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/submit-goal.in ${CMAKE_CURRENT_SOURCE_DIR}/submit-goal)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/download-vision-prebuilt.in ${CMAKE_CURRENT_SOURCE_DIR}/download-vision-prebuilt  @ONLY)
 INSTALL(PROGRAMS 
 	${CMAKE_CURRENT_SOURCE_DIR}/cast-client-start 
 	${CMAKE_CURRENT_SOURCE_DIR}/cast-server-start 
@@ -43,6 +44,7 @@ INSTALL(PROGRAMS
 	${CMAKE_CURRENT_SOURCE_DIR}/standalone-planner
 	${CMAKE_CURRENT_SOURCE_DIR}/universalIceClient
 	${CMAKE_CURRENT_SOURCE_DIR}/submit-goal
+	${CMAKE_CURRENT_SOURCE_DIR}/download-vision-prebuilt
 	DESTINATION ${BINDIR})
 
 
