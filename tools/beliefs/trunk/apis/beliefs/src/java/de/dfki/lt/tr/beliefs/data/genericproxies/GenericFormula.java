@@ -103,7 +103,7 @@ public class GenericFormula<T extends dFormula> extends Proxy<T> {
 	public int getInteger() throws BeliefInvalidQueryException {
 		if (!(_content instanceof IntegerFormula)) {
 			throw new BeliefInvalidQueryException(
-					"Cannot query [proposition] for formula: Formula not of type proposition");
+					"Cannot query [proposition] for formula: Formula not of type IntegerFormula");
 		} else {
 			return ((IntegerFormula) _content).val;
 		}
@@ -112,7 +112,7 @@ public class GenericFormula<T extends dFormula> extends Proxy<T> {
 	public double getDouble() {
 		if (!(_content instanceof FloatFormula)) {
 			throw new BeliefInvalidQueryException(
-					"Cannot query [proposition] for formula: Formula not of type proposition");
+					"Cannot query [proposition] for formula: Formula not of type FloatFormula");
 		} else {
 			return ((FloatFormula) _content).val;
 		}
@@ -121,7 +121,7 @@ public class GenericFormula<T extends dFormula> extends Proxy<T> {
 	public boolean getBoolean() {
 		if (!(_content instanceof BooleanFormula)) {
 			throw new BeliefInvalidQueryException(
-					"Cannot query [proposition] for formula: Formula not of type proposition");
+					"Cannot query [proposition] for formula: Formula not of type BooleanFormula");
 		} else {
 			return ((BooleanFormula) _content).val;
 		}
