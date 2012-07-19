@@ -16,6 +16,10 @@ implements PhonStringPreprocessor {
 		}
 
                 ps.wordSequence = CogXLexicon.simplifyObjectTypes(ps.wordSequence);
+
+                if (ps.wordSequence.startsWith("a ") || ps.wordSequence.startsWith("an ")) {
+                    ps.wordSequence = "it is " + ps.wordSequence;
+                }
 	}
 	
 }

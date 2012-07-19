@@ -92,7 +92,7 @@ extends AbstractDialogueComponent {
 						}
 						else {
 							getLogger().warn("no parse found");
-                                                        VerbalisationUtils.verbaliseString(getComponent(), "sorry I did not understand what you said");
+                                                        VerbalisationUtils.verbaliseString(getComponent(), "sorry , I did not understand what you said");
 						}
 					}
 

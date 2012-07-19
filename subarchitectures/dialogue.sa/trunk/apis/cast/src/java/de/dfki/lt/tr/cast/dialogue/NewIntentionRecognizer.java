@@ -284,7 +284,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 				}
 				else {
 					getLogger().warn("didn't get any interpretations at all!");
-                                        VerbalisationUtils.verbaliseString(committer, "sorry I did not understand what you meant");
+                                        VerbalisationUtils.verbaliseString(committer, "sorry , I did not understand what you meant");
 				}
 			}
 
