@@ -365,6 +365,7 @@
       (and
         (assign (attributed-color ?v) UNDETERMINED_COLOR)
         (color-requested ?v)
+        (update (color-requested ?v) true)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
         (not (last-action-was-head-movement))
@@ -387,6 +388,7 @@
       (and
         (assign (attributed-color ?v) ?c)
         (color-requested ?v)
+        (update (color-requested ?v) true)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
         (not (last-action-was-head-movement))
@@ -408,6 +410,7 @@
       (and
         (assign (attributed-shape ?v) UNDETERMINED_SHAPE)
         (shape-requested ?v)
+        (update (shape-requested ?v) true)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
         (not (last-action-was-head-movement))
@@ -430,6 +433,7 @@
       (and
         (assign (attributed-shape ?v) ?s)
         (shape-requested ?v)
+        (update (shape-requested ?v) true)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
         (not (last-action-was-head-movement))
@@ -451,6 +455,7 @@
       (and
         (assign (attributed-objecttype ?v) UNDETERMINED_OBJECTTYPE)
         (objecttype-requested ?v)
+        (update (objecttype-requested ?v) true)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
         (not (last-action-was-head-movement))
@@ -473,6 +478,7 @@
       (and
         (assign (attributed-objecttype ?v) ?t)
         (objecttype-requested ?v)
+        (update (objecttype-requested ?v) true)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
         (not (last-action-was-head-movement))
@@ -616,6 +622,7 @@
 	(color-learned ?v)
         (not (last-action-was-head-movement))
         (not (color-requested ?v))
+        (update (color-requested ?v) false)
 	(increase (total-cost) 10)
       )
   )
@@ -692,6 +699,7 @@
       (and
 	(shape-learned ?v)
         (not (shape-requested ?v))
+        (update (shape-requested ?v) false)
         (not (last-action-was-head-movement))
 	(increase (total-cost) 10)
       )
@@ -769,6 +777,7 @@
       (and
         (objecttype-learned ?v)
         (not (objecttype-requested ?v))
+        (update (objecttype-requested ?v) false)
         (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
