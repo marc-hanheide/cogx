@@ -61,7 +61,6 @@ public class VisualObjectMotiveGenerator extends
 		monitorMotivesForDeletion(true);
 	}
 
-
 	@Override
 	protected LearnObjectFeatureMotive checkForUpdate(MergedBelief _newEntry,
 			LearnObjectFeatureMotive _motive) {
