@@ -16,6 +16,7 @@ import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
@@ -23,6 +24,8 @@ import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
 import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.MergedBelief;
+import eu.cogx.beliefs.slice.VerifiedBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
 import eu.cogx.perceptmediator.george.transferfunctions.VisualObjectTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
@@ -71,10 +74,17 @@ public class VisualObjectMotiveGenerator extends
 		// delete motive if object is no longer visible
 		if (!visualObjectIsVisible(belief)) {
 			return null;
-		} else {
-			return _motive;
-		}
+		} else if (_motive.status == MotiveStatus.UNSURFACED) {
 
+			String feature = _motive.feature;
+			if (attributeIsConfident(feature, belief)) {
+				println("getting rid of goal as " + feature
+						+ " is confident already");
+				return null;
+			}
+
+		}
+		return _motive;
 	}
 
 	@Override
@@ -102,6 +112,31 @@ public class VisualObjectMotiveGenerator extends
 					return motive;
 				}
 
+				// now remove flags for verified belief
+				WorkingMemoryPointer verifiedAncestorPtr = BeliefUtils
+						.recurseAncestorsForType(this, _addr,
+								CASTUtils.typeName(VerifiedBelief.class));
+
+				if (verifiedAncestorPtr != null) {
+					VerifiedBelief verfiedBelief = getMemoryEntry(
+							verifiedAncestorPtr.address, VerifiedBelief.class);
+					CASTIndependentFormulaDistributionsBelief<VerifiedBelief> vb = CASTIndependentFormulaDistributionsBelief
+							.create(VerifiedBelief.class, verfiedBelief);
+					vb.getContent().remove(
+							AbstractDialogueActionInterface.MOTIVE_TRANSFER);
+					vb.getContent()
+							.remove(AbstractDialogueActionInterface.MOTIVE_TRANSFER_VALUE);
+					overwriteWorkingMemory(verifiedAncestorPtr.address,
+							vb.get());
+				}
+
+				// also remove from merged belief for safety
+				belief.getContent().remove(
+						AbstractDialogueActionInterface.MOTIVE_TRANSFER);
+				belief.getContent().remove(
+						AbstractDialogueActionInterface.MOTIVE_TRANSFER_VALUE);
+
+				overwriteWorkingMemory(_addr, belief.get());
 			}
 		} catch (SubarchitectureComponentException e) {
 			logException(e);
@@ -227,9 +262,9 @@ public class VisualObjectMotiveGenerator extends
 
 		LearnObjectFeatureMotive result = null;
 
-		if (!attributeIsTrue(_featureLearntPredicate, _belief)) {
+		if (!attributeIsTrue(_featureLearntPredicate, _belief)
+				&& !attributeIsConfident(_featureKey, _belief)) {
 
-			log("ProtoObject belief is not linked to VisualObject, so generating motive.");
 			result = newLearnObjectFeatureMotive(_wma);
 			result.goal = new Goal(100f, -1, conjoinGoalStrings(new String[] {
 					beliefPredicateGoal(_featureLearntPredicate, _belief),
@@ -240,6 +275,33 @@ public class VisualObjectMotiveGenerator extends
 		}
 		return result;
 
+	}
+
+	private boolean attributeIsConfident(String _featureKey,
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> _belief) {
+		boolean isConfident = false;
+		FormulaDistribution fd = _belief.getContent().get(_featureKey);
+		if (fd != null) {
+			try {
+				String attributeValue = fd.getDistribution().getMostLikely()
+						.getProposition();
+
+				float prob = fd.getDistribution().getMaxProb();
+
+				println("attribute: " + _featureKey + " at " + attributeValue
+						+ " prob " + prob);
+
+				isConfident = (prob >= 0.9);
+			} catch (BeliefInvalidQueryException e) {
+				logException(e);
+			}
+		} else {
+			getLogger().warn(
+					"feature " + _featureKey
+							+ " not present when generating motive",
+					getLogAdditions());
+		}
+		return isConfident;
 	}
 
 	private boolean attributeIsTrue(String _featureLearntPredicate,
