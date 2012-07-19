@@ -21,6 +21,7 @@ import cast.core.CASTData;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
+import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
 import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.MergedBelief;
@@ -95,8 +96,9 @@ public class VisualObjectMotiveGenerator extends
 			CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
 					.create(MergedBelief.class, _newEntry);
 
-			FormulaDistribution fd = belief.getContent().get(
-					AbstractDialogueActionInterface.MOTIVE_TRANSFER);
+			IndependentFormulaDistributions mergedContent = belief.getContent();
+			FormulaDistribution fd = mergedContent
+					.get(AbstractDialogueActionInterface.MOTIVE_TRANSFER);
 
 			if (fd != null) {
 				println("doing the new transfer thing");
@@ -122,20 +124,27 @@ public class VisualObjectMotiveGenerator extends
 							verifiedAncestorPtr.address, VerifiedBelief.class);
 					CASTIndependentFormulaDistributionsBelief<VerifiedBelief> vb = CASTIndependentFormulaDistributionsBelief
 							.create(VerifiedBelief.class, verfiedBelief);
-					vb.getContent().remove(
-							AbstractDialogueActionInterface.MOTIVE_TRANSFER);
-					vb.getContent()
+					IndependentFormulaDistributions verfiedContent = vb
+							.getContent();
+					verfiedContent
+							.remove(AbstractDialogueActionInterface.MOTIVE_TRANSFER);
+					verfiedContent
 							.remove(AbstractDialogueActionInterface.MOTIVE_TRANSFER_VALUE);
+					vb.setContent(verfiedContent);
+
 					overwriteWorkingMemory(verifiedAncestorPtr.address,
 							vb.get());
+				} else {
+					println("couldn't find verified anccestor for merged at: "
+							+ CASTUtils.toString(_addr));
 				}
 
 				// also remove from merged belief for safety
-				belief.getContent().remove(
-						AbstractDialogueActionInterface.MOTIVE_TRANSFER);
-				belief.getContent().remove(
-						AbstractDialogueActionInterface.MOTIVE_TRANSFER_VALUE);
-
+				mergedContent
+						.remove(AbstractDialogueActionInterface.MOTIVE_TRANSFER);
+				mergedContent
+						.remove(AbstractDialogueActionInterface.MOTIVE_TRANSFER_VALUE);
+				belief.setContent(mergedContent);
 				overwriteWorkingMemory(_addr, belief.get());
 			}
 		} catch (SubarchitectureComponentException e) {
