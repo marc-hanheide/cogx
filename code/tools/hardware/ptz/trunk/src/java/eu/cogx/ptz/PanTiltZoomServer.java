@@ -165,17 +165,17 @@ public class PanTiltZoomServer extends ManagedComponent {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void start() {
-		try {
+	 * {@inheritDoc		try {
 			ptzInterface = getIceServer(ptzServerComponent, PTZInterface.class,
 					PTZInterfacePrx.class);
 		} catch (CASTException e) {
 			throw new RuntimeException("failed to get ptz interface", e);
 		}
 		addPanTiltCommandListener();
+}
+	 */
+	@Override
+	protected void start() {
 	}
 
 	/**
@@ -183,6 +183,19 @@ public class PanTiltZoomServer extends ManagedComponent {
 	 */
 	@Override
 	protected void runComponent() {
+		debug("Trying to get PTZ interface");
+		try {
+			ptzInterface = getIceServer(ptzServerComponent, PTZInterface.class,
+					PTZInterfacePrx.class);
+		} catch (CASTException e) {
+			throw new RuntimeException("failed to get ptz interface", e);
+		}
+
+		debug("Installing PTZ WMI filters");
+		addPanTiltCommandListener();
+
+		debug("Running");
+
 		//lockComponent();
 		if (doTheShake) {
 			println("go through a sequence of commands to help with a pan-tilt player bug, that seems to choke when the pan-tilt is not at 0.0 at start up");
