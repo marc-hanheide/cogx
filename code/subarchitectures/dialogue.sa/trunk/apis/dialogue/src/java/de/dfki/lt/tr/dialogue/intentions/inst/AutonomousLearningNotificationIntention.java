@@ -30,6 +30,8 @@ public class AutonomousLearningNotificationIntention extends AbstractRichIntenti
 
         public static final String TYPE = "autonomous-notification";
         public static final String SKEY_LABEL = "label";
+
+        public static final AutonomousLearningNotificationIntention.Transcoder INSTANCE = new AutonomousLearningNotificationIntention.Transcoder();
         
         @Override
         protected void encodeContent(AutonomousLearningNotificationIntention rich, BaseIntention poor) {
