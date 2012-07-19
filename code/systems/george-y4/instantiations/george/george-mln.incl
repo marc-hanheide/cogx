@@ -32,7 +32,7 @@ SETVAR mlnEngine1_params=<multiline>
 </multiline>
 CPP MG mlnEngine1 MLNEngine %(mlnEngine1_params)
 
-CPP MG rrClient MLNRefResolutionClient --sa binder --inf-id mlnEngine1 --evd-ids mlnEngine1 --keys color,shape,type --vals red,green,blue,yellow,orange,pink,white,black,elongated,compact,teabox,cerealbox,mug,drinkcan,box,UNDETERMINED_OBJECTTYPE,UNDETERMINED_COLOR,UNDETERMINED_SHAPE
+CPP MG rrClient MLNRefResolutionClient --sa binder --inf-id mlnEngine1 --evd-ids mlnEngine1 --keys color,shape,type --vals red,green,blue,yellow,orange,pink,white,black,elongated,compact,teabox,cerealbox,mug,drinkcan,ball,block,noodle,milk,UNDETERMINED_OBJECTTYPE,UNDETERMINED_COLOR,UNDETERMINED_SHAPE
 
 ##### Monitors
 
