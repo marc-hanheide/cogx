@@ -25,16 +25,14 @@ import cast.core.CASTUtils;
 import castutils.castextensions.WMEventQueue;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
-import de.dfki.lt.tr.beliefs.slice.intentions.InterpretationStatus;
-import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
-import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
+import de.dfki.lt.tr.beliefs.slice.intentions.*;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer;
 import de.dfki.lt.tr.dialogue.util.VerbalisationUtils;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
 import de.dfki.lt.tr.dialogue.intentions.RichIntention;
+import de.dfki.lt.tr.dialogue.intentions.inst.AutonomousLearningNotificationIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.FeatureAscriptionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.OpenFeatureQuestionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
@@ -99,11 +97,25 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 		}
 
 		@Override
-		public TriBool execute() {
+		public TriBool execute() {                    
+                    WorkingMemoryAddress about = getAction().beliefAddress;
+                    String label = getAction().value;
+
+                    try {
+                        AutonomousLearningNotificationIntention aint = new AutonomousLearningNotificationIntention(about, label);
+                        BaseIntention bint = AutonomousLearningNotificationIntention.Transcoder.INSTANCE.tryEncode(aint);
+
+                        IntentionToAct itoa = new IntentionToAct(bint.stringContent, bint.addressContent);
+                    
+                        getComponent().addToWorkingMemory(newWorkingMemoryAddress(), itoa);
+                    }
+                    catch (Exception ex) {
+                        // this failed, let's go to the fallback solution...
 
 			VerbalisationUtils.verbaliseString(getComponent(),
-					"I know this object is " + getAction().value
+					"uh, I know this object is " + getAction().value
 							+ ". I'll update my model");
+                    }
 			return TriBool.TRITRUE;
 		}
 	}
