@@ -1,35 +1,45 @@
 package de.dfki.lt.tr.cast.dialogue;
 
-import cast.UnknownSubarchitectureException;
-import cast.cdl.CASTTime;
-import cast.cdl.WorkingMemoryAddress;
-import castutils.castextensions.WMView;
-import de.dfki.lt.tr.beliefs.slice.distribs.*;
-import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
-import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
-import de.dfki.lt.tr.cast.dialogue.AbstractReferenceResolutionComponent;
-import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
-import de.dfki.lt.tr.dialogue.ref.*;
-import de.dfki.lt.tr.dialogue.ref.util.ReferenceUtils;
-import de.dfki.lt.tr.dialogue.slice.time.Interval;
-import de.dfki.lt.tr.dialogue.slice.time.TimePoint;
-import de.dfki.lt.tr.dialogue.util.EpistemicStatusFactory;
-import eu.cogx.beliefs.slice.MergedBelief;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
-import org.cognitivesystems.binder.ref.VisualSalienceReferenceResolution.Resolver;
+
+import cast.UnknownSubarchitectureException;
+import cast.cdl.CASTTime;
+import cast.cdl.WorkingMemoryAddress;
+import castutils.castextensions.WMView;
+import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
+import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
+import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
+import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import de.dfki.lt.tr.cast.dialogue.VisualSalienceReferenceResolution.Resolver;
+import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
+import de.dfki.lt.tr.dialogue.ref.Constraint;
+import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolver;
+import de.dfki.lt.tr.dialogue.ref.util.ReferenceUtils;
+import de.dfki.lt.tr.dialogue.slice.time.Interval;
+import de.dfki.lt.tr.dialogue.slice.time.TimePoint;
+import de.dfki.lt.tr.dialogue.util.EpistemicStatusFactory;
+import eu.cogx.beliefs.slice.MergedBelief;
+
 
 public class VisualSalienceReferenceResolution
         extends AbstractReferenceResolutionComponent<Resolver> {
