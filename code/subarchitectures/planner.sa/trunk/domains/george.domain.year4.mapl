@@ -316,10 +316,13 @@
 
   (:derived (learning-possible)
     (exists (?v - VisualObject)
-      (or
-        (color-requested ?v)
-        (shape-requested ?v)
-        (objecttype-requested ?v)
+      (and
+        (not (= (presence ?v) REMOVED))
+        (or
+          (color-requested ?v)
+          (shape-requested ?v)
+          (objecttype-requested ?v)
+        )
       )
     )
   )
@@ -621,8 +624,6 @@
     :effect 
       (and
 	(color-learned ?v)
-        (assign (autonomous-color-learning-announced ?v) UNDETERMINED_COLOR)
-        (update (autonomous-color-learning-announced ?v) UNDETERMINED_COLOR)
         (not (last-action-was-head-movement))
 	(increase (total-cost) 1)
       )
@@ -698,8 +699,6 @@
     :effect 
       (and
 	(shape-learned ?v)
-        (assign (autonomous-shape-learning-announced ?v) UNDETERMINED_SHAPE)
-        (update (autonomous-shape-learning-announced ?v) UNDETERMINED_SHAPE)
         (not (last-action-was-head-movement))
 	(increase (total-cost) 1)
       )
