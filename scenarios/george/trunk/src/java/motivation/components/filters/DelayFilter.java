@@ -30,7 +30,7 @@ public class DelayFilter implements MotiveFilter {
 	protected final HashMap<Class<? extends Motive>, Long> m_postDelays;
 	protected MotiveFilterManager m_component;
 
-	final DelayFilterDisplayClient m_display = new DelayFilterDisplayClient();
+	private final DelayFilterDisplayClient m_display = DelayFilterDisplayClient.getClient();
 
 	public DelayFilter() {
 		m_delayMap = new HashMap<Class<? extends Motive>, Integer>();

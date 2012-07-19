@@ -22,31 +22,17 @@ import castutils.castextensions.WMView.ChangeHandler;
 public class DriveHierarchyFilter implements MotiveFilter,
 		ChangeHandler<Motive> {
 
+	int m_activeLevel = Integer.MAX_VALUE;
+
 	private MotiveFilterManager m_component;
+
+	private final DelayFilterDisplayClient m_display = DelayFilterDisplayClient.getClient();
 
 	private final DriveHierarchy m_driveHierarchy = GeorgeDriveConfig
 			.getGeorgeDriveHierarchy();
 
-	int m_activeLevel = Integer.MAX_VALUE;
-
 	public DriveHierarchyFilter() {
 
-	}
-
-	/**
-	 * Returns true if this motive should be ignored when setting drive up.
-	 * 
-	 * @param motive
-	 * @return
-	 */
-	private boolean ignoreThis(Motive motive) {
-		if (motive.status == MotiveStatus.COMPLETED) {
-			return true;
-		} else if (motive.status == MotiveStatus.IMPOSSIBLE) {
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 	@Override
@@ -92,30 +78,6 @@ public class DriveHierarchyFilter implements MotiveFilter,
 			return motive.priority;
 		}
 
-	}
-
-	@Override
-	public void setManager(MotiveFilterManager motiveFilterManager) {
-		m_component = motiveFilterManager;
-
-	}
-
-	@Override
-	public void start() {
-		m_component.addMotiveCompletionHandler(this);
-		m_display.connectIceClient(m_component);
-		m_display.updateActiveLevel(m_activeLevel);
-
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				while (true) {
-					JOptionPane.showMessageDialog(null, "kill all things");
-				}
-
-			}
-		});
 	}
 
 	@Override
@@ -176,6 +138,44 @@ public class DriveHierarchyFilter implements MotiveFilter,
 
 	}
 
-	private final DelayFilterDisplayClient m_display = new DelayFilterDisplayClient();
+	/**
+	 * Returns true if this motive should be ignored when setting drive up.
+	 * 
+	 * @param motive
+	 * @return
+	 */
+	private boolean ignoreThis(Motive motive) {
+		if (motive.status == MotiveStatus.COMPLETED) {
+			return true;
+		} else if (motive.status == MotiveStatus.IMPOSSIBLE) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public void setManager(MotiveFilterManager motiveFilterManager) {
+		m_component = motiveFilterManager;
+
+	}
+
+	@Override
+	public void start() {
+		m_component.addMotiveCompletionHandler(this);
+		m_display.connectIceClient(m_component);
+		m_display.updateActiveLevel(m_activeLevel);
+
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				while (true) {
+					JOptionPane.showMessageDialog(null, "kill all things");
+				}
+
+			}
+		});
+	}
 
 }
