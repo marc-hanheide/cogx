@@ -51,6 +51,10 @@
     (shape-learned ?v - VisualObject)
     (objecttype-learned ?v - VisualObject)
 
+    (color-requested ?v - VisualObject)
+    (shape-requested ?v - VisualObject)
+    (objecttype-requested ?v - VisualObject)
+
     (allow-polar-color-question ?v - VisualObject ?c - ColorName ?r - Robot)
     (allow-polar-shape-question ?v - VisualObject ?s - ShapeName ?r - Robot)
     (allow-polar-objecttype-question ?v - VisualObject ?t - ObjecttypeName ?r - Robot)
@@ -352,6 +356,7 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
+        (forall (?v1 - VisualObject) (or (= ?v ?v1) (and (not (color-requested ?v1)) (not (shape-requested ?v1))(not (objecttype-requested ?v1)))))
         (is-in-robot-initiated-mode ?r)
         (not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
         (is-looking-and-eventually-pointing-at ?r ?v)
@@ -359,6 +364,7 @@
     :effect 
       (and
         (assign (attributed-color ?v) UNDETERMINED_COLOR)
+        (color-requested ?v)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
         (not (last-action-was-head-movement))
@@ -371,6 +377,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (forall (?v1 - VisualObject) (or (= ?v ?v1) (and (not (color-requested ?v1)) (not (shape-requested ?v1))(not (objecttype-requested ?v1)))))
         (is-in-robot-initiated-mode ?r)
         (not (exists (?c1 - ColorName) (= (attributed-color ?v) ?c1)))
         (is-looking-and-eventually-pointing-at ?r ?v)
@@ -379,6 +386,7 @@
     :effect 
       (and
         (assign (attributed-color ?v) ?c)
+        (color-requested ?v)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
         (not (last-action-was-head-movement))
@@ -391,6 +399,7 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
+        (forall (?v1 - VisualObject) (or (= ?v ?v1) (and (not (color-requested ?v1)) (not (shape-requested ?v1))(not (objecttype-requested ?v1)))))
         (is-in-robot-initiated-mode ?r)
         (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
         (is-looking-and-eventually-pointing-at ?r ?v)
@@ -398,6 +407,7 @@
     :effect 
       (and
         (assign (attributed-shape ?v) UNDETERMINED_SHAPE)
+        (shape-requested ?v)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
         (not (last-action-was-head-movement))
@@ -410,6 +420,7 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
+        (forall (?v1 - VisualObject) (or (= ?v ?v1) (and (not (color-requested ?v1)) (not (shape-requested ?v1))(not (objecttype-requested ?v1)))))
         (is-in-robot-initiated-mode ?r)
         (not (exists (?s1 - ShapeName) (= (attributed-shape ?v) ?s1)))
         (is-looking-and-eventually-pointing-at ?r ?v)
@@ -418,6 +429,7 @@
     :effect 
       (and
         (assign (attributed-shape ?v) ?s)
+        (shape-requested ?v)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
         (not (last-action-was-head-movement))
@@ -430,6 +442,7 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
+        (forall (?v1 - VisualObject) (or (= ?v ?v1) (and (not (color-requested ?v1)) (not (shape-requested ?v1))(not (objecttype-requested ?v1)))))
         (is-in-robot-initiated-mode ?r)
         (not (exists (?t - ObjecttypeName) (= (attributed-objecttype ?v) ?t)))
         (is-looking-and-eventually-pointing-at ?r ?v)
@@ -437,6 +450,7 @@
     :effect 
       (and
         (assign (attributed-objecttype ?v) UNDETERMINED_OBJECTTYPE)
+        (objecttype-requested ?v)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
         (not (last-action-was-head-movement))
@@ -449,6 +463,7 @@
     :parameters (?v - VisualObject ?t - ObjecttypeName)
     :precondition
       (and
+        (forall (?v1 - VisualObject) (or (= ?v ?v1) (and (not (color-requested ?v1)) (not (shape-requested ?v1))(not (objecttype-requested ?v1)))))
         (is-in-robot-initiated-mode ?r)
         (not (exists (?t1 - ObjecttypeName) (= (attributed-objecttype ?v) ?t1)))
         (is-looking-and-eventually-pointing-at ?r ?v)
@@ -457,6 +472,7 @@
     :effect 
       (and
         (assign (attributed-objecttype ?v) ?t)
+        (objecttype-requested ?v)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
         (not (last-action-was-head-movement))
@@ -589,12 +605,17 @@
           (not (= ?c UNKNOWN_COLOR))
           (is-looking-and-eventually-pointing-at ?r ?v)
           (= (is-object-referenced-by-george ?r) ?v)
+          (or
+            (color-requested ?v)
+            (not (= ?c UNDETERMINED_COLOR))
+          )
         )
       )
     :effect 
       (and
 	(color-learned ?v)
         (not (last-action-was-head-movement))
+        (not (color-requested ?v))
 	(increase (total-cost) 10)
       )
   )
@@ -661,11 +682,16 @@
           (not (= ?s UNKNOWN_SHAPE))
           (is-looking-and-eventually-pointing-at ?r ?v)
           (= (is-object-referenced-by-george ?r) ?v)
+          (or
+            (shape-requested ?v)
+            (not (= ?s UNDETERMINED_SHAPE))
+          )
         )
       )
     :effect 
       (and
 	(shape-learned ?v)
+        (not (shape-requested ?v))
         (not (last-action-was-head-movement))
 	(increase (total-cost) 10)
       )
@@ -733,11 +759,16 @@
           (not (= ?t UNKNOWN_OBJECTTYPE))
           (is-looking-and-eventually-pointing-at ?r ?v)
           (= (is-object-referenced-by-george ?r) ?v)
+          (or
+            (objecttype-requested ?v)
+            (not (= ?t UNDETERMINED_OBJECTTYPE))
+          )
         )
       )
     :effect 
       (and
         (objecttype-learned ?v)
+        (not (objecttype-requested ?v))
         (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
