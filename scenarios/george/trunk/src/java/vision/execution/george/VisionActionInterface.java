@@ -36,6 +36,7 @@ import cast.cdl.WorkingMemoryPermissions;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import cogx.Math.Vector3;
+import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
 import eu.cogx.goals.george.LookAroundMotiveGenerator;
@@ -232,7 +233,6 @@ public class VisionActionInterface extends
 		protected void actionComplete() {
 			try {
 
-				println("adding feature to belief");
 				if (m_weight == LEARN_WEIGHT) {
 					getComponent().addFeature(getAction().beliefAddress,
 							m_concept + m_featurePostfix, true);
@@ -240,8 +240,13 @@ public class VisionActionInterface extends
 					getComponent().addFeature(getAction().beliefAddress,
 							m_concept + m_featurePostfix, getAction().value);
 				}
-				println("added");
-				// Thread.sleep(500000);
+
+				getComponent()
+						.addFeature(
+								getAction().beliefAddress,
+								m_concept
+										+ AbstractDialogueActionInterface.REQUESTED_POSTFIX,
+								false);
 
 			} catch (CASTException e) {
 				logException(e);
