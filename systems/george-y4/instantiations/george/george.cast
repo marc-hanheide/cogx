@@ -10,8 +10,8 @@ INCLUDE george-hosts.incl
 ###########################################################################
 # real or simulation(gazebo)
 VARDEFAULT simulator=gazebo
-VARDEFAULT hardware=simulation
-#SETVAR hardware=real
+#VARDEFAULT hardware=simulation
+SETVAR hardware=real
 
 IFEQ(%(hardware),real)
   OPTDEFAULT hardware_options=<multiline>
@@ -19,6 +19,7 @@ IFEQ(%(hardware),real)
     !kinect-video
     !video 
     !stereo
+    monovideo
     ptz
     ptz-wmcall
     cameramount
@@ -67,7 +68,7 @@ OPTDEFAULT test_options=<multiline>
 
 VARDEFAULT DisplayComponent=display.srv
 VARDEFAULT DisplayComponent2=display.srv.2
-IFEQ(%(DisplayHost),%(DisplayHost2))
+IFEQ(%(host:DisplayHost),%(host:DisplayHost2))
     SETVAR DisplayComponent2=%(DisplayComponent)
 ENDIF
 
@@ -123,7 +124,7 @@ IFOPTALL(%(feature_options), vision)
    IFOPTALL(%(feature_options), vision-mediators  binder)
       JAVA MG po-mediator eu.cogx.perceptmediator.components.ProtoObjectMediatorComponent --write-to-sa binder
       JAVA MG vc-mediator eu.cogx.perceptmediator.components.ViewConeMediatorComponent --write-to-sa binder
-      JAVA MG vcmc-mediator eu.cogx.perceptmediator.components.ViewConeMoveCostsMediatorComponent --write-to-sa binder
+      #JAVA MG vcmc-mediator eu.cogx.perceptmediator.components.ViewConeMoveCostsMediatorComponent --write-to-sa binder
       JAVA MG vo-mediator eu.cogx.perceptmediator.george.components.VisualObjectMediatorComponent  --write-to-sa binder
       JAVA MG vms-mediator eu.cogx.perceptmediator.george.components.ModelStatusMediator  --write-to-sa binder
       #INCLUDE includes/vision.sa/vision-mediators.cast
@@ -194,7 +195,7 @@ IFOPTALL(%(feature_options), planning)
 
    CPP MG Planner WMControl 
 
-   CPP MG fileviewer.cli FileMonitorDC --displayserver "%(DisplayComponent2)" --monitor "%(planner_monitor_files)"
+   CPP MG fileviewer.cli FileMonitorDC --displayserver "%(DisplayComponent)" --monitor "%(planner_monitor_files)"
 
    IFOPTALL(%(feature_options), manual-planning)
       JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
@@ -253,11 +254,10 @@ IFOPTALL(%(feature_options), visualization)
       SETVAR displaysrv2_param_redirect=--redirect-to-host %(host:DisplayHost2)
    ELSE
       SETVAR displaysrv_param_redirect=
-      SETVAR DisplayHost2=%(DisplayHost)
    ENDIF
    CPP MG display.srv DisplayServer %(displaysrv_param_redirect)
-   IFNEQ(%(DisplayHost),%(DisplayHost2))
-       CPP MG display.srv.2 DisplayServer %(displaysrv_param_redirect)
+   IFNEQ(%(host:DisplayHost),%(host:DisplayHost2))
+       CPP MG display.srv.2 DisplayServer %(displaysrv2_param_redirect)
    ENDIF
 
    JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact --omit-fields "content"
