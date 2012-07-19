@@ -110,7 +110,8 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 	public abstract static class IntentionDialogueAction<T extends Action>
 			extends NonBlockingActionExecutor<T> {
 
-		private static final int DLG_TIMEOUT = 30;
+		//seconds to wait for answer
+		private static final int DLG_TIMEOUT = 180;
 
 		private final int m_timeoutSeconds;
 		private final int m_pollFrequencyMilliseconds;
@@ -405,7 +406,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			extends BeliefIntentionDialogueAction<T> {
 
 		// how long to block the planner after reporting the answer
-		private static final int ANSWER_TIMEOUT_SECS = 5;
+		private static final int ANSWER_TIMEOUT_SECS = 2;
 
 		public FeatureValueQuestionAnswer(ManagedComponent _component,
 				Class<T> _cls) {
