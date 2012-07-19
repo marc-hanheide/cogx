@@ -610,7 +610,8 @@ void VisualLearner::updateWmModelStatus()
       stShape->gains.push_back(*pgain);
     }
     else {
-      println(" *** VisualLearner/updateWmModelStatus Invalid concept ID: %d", *pconcpt);
+      println(" *** VisualLearner/updateWmModelStatus Invalid concept ID: %d (label='%s')",
+          *pconcpt, plabel->c_str());
     }
   }
 
