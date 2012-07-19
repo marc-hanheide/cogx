@@ -329,7 +329,8 @@ void Scenario::initMovement()
 	Vec3 centerNormalVec =
 		computeNormalVector(
 				    Vec3 (positionTarget.v1, positionTarget.v2, positionTarget.v3),
-				    Vec3 (position.v1, position.v2, desc.descActorObject.center)
+				    Vec3 (position.v1, position.v2, object->getDescription().dimensions.v2*0.5)
+				    // Vec3 (position.v1, position.v2, desc.descActorObject.center)
 				    );
 	//and it's orthogonal
 	Vec3 centerOrthogonalVec = computeOrthogonalVec(centerNormalVec);

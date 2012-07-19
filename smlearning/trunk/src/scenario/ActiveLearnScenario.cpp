@@ -285,7 +285,8 @@ void ActiveLearnScenario::chooseAction () {
 void ActiveLearnScenario::calculateStartCoordinates() {
 	if (chosenAction != NULL)
 	{
-		target.pos = chosenAction->effectorPose;
+		// target.pos = chosenAction->effectorPose;
+		fromCartesianPose(target.pos, chosenAction->effectorPose.p, orientationTarget);
 		target.vel.setId(); // it doesn't move
 		
 		target.t = context.getTimer().elapsed() + arm->getDeltaAsync() + desc.descArmActor.minDuration; // i.e. the movement will last at least 5 sec
