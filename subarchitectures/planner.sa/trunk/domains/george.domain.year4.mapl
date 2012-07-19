@@ -80,6 +80,8 @@
     (exclude-color-description ?r - Robot)
     (exclude-shape-description ?r - Robot)
     (exclude-objecttype-description ?r - Robot)
+
+    (last-action-was-head-movement)
   )
 
   (:functions
@@ -311,11 +313,13 @@
     :precondition
       (and
         (= (current-viewcone ?r) ?vc1)
+        (not (last-action-was-head-movement))
       )
     :effect
       (and
         (assign (current-viewcone ?r) ?vc2)
         (looked-at ?vc2)
+        (last-action-was-head-movement)
       )
   )
 
@@ -334,6 +338,7 @@
     :effect
       (and
         (assign (po-is-associated-with ?p) VISUAL_OBJECT_DUMMY)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -356,6 +361,7 @@
         (assign (attributed-color ?v) UNDETERMINED_COLOR)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 4)
       )
   )
@@ -375,6 +381,7 @@
         (assign (attributed-color ?v) ?c)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 3)
       )
   )
@@ -393,6 +400,7 @@
         (assign (attributed-shape ?v) UNDETERMINED_SHAPE)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 4)
       )
   )
@@ -412,6 +420,7 @@
         (assign (attributed-shape ?v) ?s)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 3)
       )
   )
@@ -430,6 +439,7 @@
         (assign (attributed-objecttype ?v) UNDETERMINED_OBJECTTYPE)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 4)
       )
   )
@@ -449,6 +459,7 @@
         (assign (attributed-objecttype ?v) ?t)
         (assign (is-object-referenced-by-george ?r) ?v)
         (update (is-object-referenced-by-george ?r) ?v)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 3)
       )
   )
@@ -484,6 +495,7 @@
   ;;       (assign (attributed-color ?v) UNDETERMINED_COLOR)
   ;;       (assign (is-object-referenced-by-george ?r) ?v)
   ;;       (update (is-object-referenced-by-george ?r) ?v)
+  ;;       (not (last-action-was-head-movement))
   ;;       (increase (total-cost) 1)
   ;;     )
   ;; )
@@ -506,6 +518,7 @@
     :effect 
       (and 
         (assign (attributed-color ?v) UNDETERMINED_COLOR)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 10)
       )
   )      
@@ -524,6 +537,7 @@
     :effect 
       (and 
         (assign (attributed-shape ?v) UNDETERMINED_SHAPE)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 10)
       )
   )
@@ -542,6 +556,7 @@
     :effect 
       (and 
         (assign (attributed-objecttype ?v) UNDETERMINED_OBJECTTYPE)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 10)
       )
   )
@@ -579,6 +594,7 @@
     :effect 
       (and
 	(color-learned ?v)
+        (not (last-action-was-head-movement))
 	(increase (total-cost) 10)
       )
   )
@@ -595,6 +611,7 @@
 	(color-learned ?v)
         (assign (autonomous-color-learning-announced ?v) UNDETERMINED_COLOR)
         (update (autonomous-color-learning-announced ?v) UNDETERMINED_COLOR)
+        (not (last-action-was-head-movement))
 	(increase (total-cost) 1)
       )
   )
@@ -615,6 +632,7 @@
       (and
         (assign (autonomous-color-learning-announced ?v) ?c)
         (update (autonomous-color-learning-announced ?v) ?c)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -648,6 +666,7 @@
     :effect 
       (and
 	(shape-learned ?v)
+        (not (last-action-was-head-movement))
 	(increase (total-cost) 10)
       )
   )
@@ -665,6 +684,7 @@
 	(shape-learned ?v)
         (assign (autonomous-shape-learning-announced ?v) UNDETERMINED_SHAPE)
         (update (autonomous-shape-learning-announced ?v) UNDETERMINED_SHAPE)
+        (not (last-action-was-head-movement))
 	(increase (total-cost) 1)
       )
   )
@@ -684,6 +704,7 @@
       (and
         (assign (autonomous-shape-learning-announced ?v) ?s)
         (update (autonomous-shape-learning-announced ?v) ?s)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -717,6 +738,7 @@
     :effect 
       (and
         (objecttype-learned ?v)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -739,6 +761,7 @@
         (update (currently-points-at ?r) ?v)
         (not (arm-in-resting-position ?r))
         (update (arm-in-resting-position ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -755,6 +778,7 @@
     :effect 
       (and
 	(not (is-potential-object-in-question ?v))
+        (not (last-action-was-head-movement))
         (increase (total-cost) 2)
       )
   )
@@ -788,6 +812,7 @@
     :effect 
       (and
 	(not (is-potential-object-in-question ?v))
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -821,6 +846,7 @@
     :effect 
       (and
 	(not (is-potential-object-in-question ?v))
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -855,6 +881,7 @@
       (and
         ;(forall (?v1 - VisualObject) (not (is-potential-object-in-question ?v1)))
 	(not (is-potential-object-in-question ?v))
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -869,6 +896,7 @@
         (update (currently-points-at ?r) VISUAL_OBJECT_DUMMY)
         (arm-in-resting-position ?r)
         (update (arm-in-resting-position ?r) true)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -885,6 +913,7 @@
       (and 
      	(assign (object-of-desired-color-available ?r) ?c)
 	(update (object-of-desired-color-available ?r) ?c)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -897,6 +926,7 @@
       (and 
      	(assign (object-of-desired-shape-available ?r) ?s)
 	(update (object-of-desired-shape-available ?r) ?s)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -926,6 +956,7 @@
         (global-color-question-answered ?v)
         (update (exclude-shape-description ?r) false)
         (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -946,6 +977,7 @@
         (global-color-question-answered ?v)
         (update (exclude-shape-description ?r) false)
         (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -965,6 +997,7 @@
         (global-color-question-answered ?v)
         (update (exclude-shape-description ?r) false)
         (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -984,6 +1017,7 @@
         (global-shape-question-answered ?v)
         (update (exclude-color-description ?r) false)
         (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1004,6 +1038,7 @@
         (global-shape-question-answered ?v)
         (update (exclude-color-description ?r) false)
         (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1023,6 +1058,7 @@
         (global-shape-question-answered ?v)
         (update (exclude-color-description ?r) false)
         (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1042,6 +1078,7 @@
         (global-objecttype-question-answered ?v)
         (update (exclude-color-description ?r) false)
         (update (exclude-shape-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1062,6 +1099,7 @@
         (global-objecttype-question-answered ?v)
         (update (exclude-color-description ?r) false)
         (update (exclude-shape-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1084,6 +1122,7 @@
         (global-objecttype-question-answered ?v)
         (update (exclude-color-description ?r) false)
         (update (exclude-shape-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1109,6 +1148,7 @@
         (assign (polar-color-question-answered ?v) ?c)
         (update (exclude-shape-description ?r) false)
         (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1129,6 +1169,7 @@
         (assign (polar-color-question-answered ?v) ?c)
         (update (exclude-shape-description ?r) false)
         (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1154,6 +1195,7 @@
         (assign (polar-color-question-answered ?v) ?c)
         (update (exclude-shape-description ?r) false)
         (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 2)
       )
   )
@@ -1173,6 +1215,7 @@
         (assign (polar-shape-question-answered ?v) ?s)
         (update (exclude-color-description ?r) false)
         (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1193,6 +1236,7 @@
         (assign (polar-shape-question-answered ?v) ?s)
         (update (exclude-color-description ?r) false)
         (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1219,6 +1263,7 @@
         (assign (polar-shape-question-answered ?v) ?s)
         (update (exclude-color-description ?r) false)
         (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 2)
       )
   )
@@ -1238,6 +1283,7 @@
         (assign (polar-objecttype-question-answered ?v) ?t)
         (update (exclude-color-description ?r) false)
         (update (exclude-shape-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1258,6 +1304,7 @@
         (assign (polar-objecttype-question-answered ?v) ?t)
         (update (exclude-color-description ?r) false)
         (update (exclude-shape-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1284,6 +1331,7 @@
         (assign (polar-objecttype-question-answered ?v) ?t)
         (update (exclude-color-description ?r) false)
         (update (exclude-shape-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 2)
       )
   )
@@ -1306,7 +1354,8 @@
       (and
         (object-refering-color-question-answered ?v ?c)
         (update (exclude-shape-description ?r) false)
-        (update (exclude-objecttype-description ?r) false)   
+        (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1326,6 +1375,7 @@
         (object-refering-shape-question-answered ?v ?s)
         (update (exclude-color-description ?r) false)
         (update (exclude-objecttype-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1345,6 +1395,7 @@
         (object-refering-objecttype-question-answered ?v ?t)
         (update (exclude-color-description ?r) false)
         (update (exclude-shape-description ?r) false)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1377,6 +1428,7 @@
     :effect 
       (and
         (assign (color-unlearned ?v) ?c)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
@@ -1405,6 +1457,7 @@
     :effect 
       (and
         (assign (shape-unlearned ?v) ?s)
+        (not (last-action-was-head-movement))
         (increase (total-cost) 1)
       )
   )
