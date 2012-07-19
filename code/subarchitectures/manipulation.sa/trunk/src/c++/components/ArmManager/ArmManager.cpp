@@ -43,7 +43,7 @@ void ArmManager::configure(const map<string, string> &_config)
     corrAngle *= (3.14159/180.);
   }
 #ifdef FEAT_VISUALIZATION
-  m_display.configureDisplayClient(_config);
+  //m_display.configureDisplayClient(_config);
 #endif
 }
 
@@ -78,7 +78,7 @@ void ArmManager::start()
         &ArmManager::overwriteMoveToPose));
 
 #ifdef FEAT_VISUALIZATION
-  m_display.connectIceClient(*this);
+  //m_display.connectIceClient(*this);
 #endif
 }
 
@@ -197,6 +197,7 @@ Pose3 ArmManager::pointingPose(const Pose3 objPose)
   double distCorr = dist - m_pointingOffsetHor;;
   const double maxDist = 0.35;
   const double minZ = 0.8;
+  const double maxZ = 0.85;
   pointingPose.pos.x /= dist;
   pointingPose.pos.y /= dist;
   if(distCorr > maxDist)
@@ -206,6 +207,8 @@ Pose3 ArmManager::pointingPose(const Pose3 objPose)
   pointingPose.pos.z += m_pointingOffsetVer;
   if(pointingPose.pos.z < minZ)
     pointingPose.pos.z = minZ;
+  if(pointingPose.pos.z > maxZ)
+    pointingPose.pos.z = maxZ;
 
   // utter HACK to correct for mysterious pointing misalignment
   Math::Matrix33 R;
@@ -519,6 +522,7 @@ void ArmManager::overwriteMoveToPose(const cdl::WorkingMemoryChange & _wmc)
 }
 
 #ifdef FEAT_VISUALIZATION
+#if 0
 void ArmManager::sendPointingTarget(Pose3 &pose, double colR, double colG,
     double colB)
 {
@@ -541,6 +545,7 @@ void ArmManager::sendPointingTarget(Pose3 &pose, double colR, double colG,
   ss << "end\n";
   m_display.setLuaGlObject("PlanePopout.3D", guiid("pointing.target"), ss.str());
 }
+#endif
 #endif
 
 }

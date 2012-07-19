@@ -63,6 +63,7 @@ private:
   IceUtil::Monitor<IceUtil::Mutex> m_queueMonitor;
 
 #ifdef FEAT_VISUALIZATION
+#if 0
   class PABDisplayClient : public cogx::display::CDisplayClient
   {
   private:
@@ -82,6 +83,7 @@ private:
   std::string guiid(const std::string &myid) { return myid + "_" + getComponentID(); }
   void sendPointingTarget(Math::Pose3 &pose, double colR, double colG,
       double colB);
+#endif
 #endif
 
   ManipulationTaskStatus pointAtObject(cdl::WorkingMemoryAddress addr);
