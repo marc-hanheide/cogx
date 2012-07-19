@@ -16,6 +16,9 @@ public class CogXLexicon {
         objectTypes.add("cerealbox");
         objectTypes.add("teabox");
         objectTypes.add("drinkcan");
+        objectTypes.add("noodle");
+        objectTypes.add("milk");
+        objectTypes.add("bottle");
         
         return objectTypes.contains(s);
     }

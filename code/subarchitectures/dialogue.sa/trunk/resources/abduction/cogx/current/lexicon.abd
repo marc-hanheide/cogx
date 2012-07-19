@@ -17,13 +17,15 @@ valid_shape(compact).
 valid_shape(elongated).
 
 % object types
-%valid_objecttype(thing, box, box).
 valid_objecttype(thing, ball, ball).
 valid_objecttype(thing, mug, mug).
 valid_objecttype(thing, block, block).
 valid_objecttype(thing, cerealbox, cerealbox).
 valid_objecttype(thing, teabox, teabox).
 valid_objecttype(thing, drinkcan, drinkcan).
+valid_objecttype(thing, noodle, noodle).
+valid_objecttype(thing, milk, milk).
+valid_objecttype(thing, bottle, bottle).
 
 %-------------------------------------------------------------------------
 % General object types.
