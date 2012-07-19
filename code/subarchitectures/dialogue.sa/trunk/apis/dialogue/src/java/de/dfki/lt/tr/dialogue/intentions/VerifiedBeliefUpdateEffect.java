@@ -13,6 +13,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
+import de.dfki.lt.tr.dialogue.util.CogXLexicon;
 import de.dfki.lt.tr.dialogue.util.VerbalisationUtils;
 import eu.cogx.beliefs.slice.VerifiedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
@@ -110,7 +111,14 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 						distr.add(value, prob);
 						verifiedBelief.getContent().put(feature, distr);
 
-                                                repStr = ", " + (isPositive ? "" : "not ") + value;
+                                                repStr = ", " + (isPositive ? "" : "not ");
+                                                
+                                                if ("objecttype".equals(feature)) {
+                                                    repStr += "a " + CogXLexicon.beautifyObjectTypes(value);
+                                                }
+                                                else {
+                                                   repStr += value;
+                                                }
                                                 
 						// BeliefUtils.addFeature(verifiedBelief, feature,
 						// featuresToSet.get(feature));
