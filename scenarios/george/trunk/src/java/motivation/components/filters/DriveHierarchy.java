@@ -38,6 +38,10 @@ public class DriveHierarchy {
 		return priority;
 	}
 
+	public int size() {
+		return m_driveHierarchy.size();
+	}
+
 }
 
 
