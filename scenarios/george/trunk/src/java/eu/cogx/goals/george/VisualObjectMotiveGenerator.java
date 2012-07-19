@@ -32,7 +32,7 @@ public class VisualObjectMotiveGenerator extends
 	private static final String VO_TYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
 
-	private static final int MAX_EXECUTION_TIME = 30;
+	private static final int MAX_EXECUTION_TIME = 400;
 
 	private static final int MAX_PLANNING_TIME = 30;
 
