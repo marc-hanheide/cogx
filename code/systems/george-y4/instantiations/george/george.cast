@@ -10,8 +10,8 @@ INCLUDE george-hosts.incl
 ###########################################################################
 # real or simulation(gazebo)
 VARDEFAULT simulator=gazebo
-#VARDEFAULT hardware=simulation
-SETVAR hardware=real
+VARDEFAULT hardware=simulation
+#VARDEFAULT hardware=real
 
 IFEQ(%(hardware),real)
   OPTDEFAULT hardware_options=<multiline>
