@@ -52,6 +52,12 @@ function DialogueInteraction(ui)
   }
   this.ui.findChild('btSay').clicked.connect(this, this.onSay_clicked);
   this.ui.findChild('btClear').clicked.connect(this, this.onClear_clicked);
+  this.ui.findChild('btShowPresets').clicked.connect(this, this.onShowPresets_clicked);
+
+  var wg = this.ui.findChild('wgPresets');
+  if (wg != null) {
+    wg.setVisible(false);
+  }
 }
 
 DialogueInteraction.prototype.stringSelected = function(name)
@@ -86,6 +92,14 @@ DialogueInteraction.prototype.onSay_clicked = function()
 DialogueInteraction.prototype.onClear_clicked = function()
 {
   this.edHuman.clearEditText();
+}
+
+DialogueInteraction.prototype.onShowPresets_clicked = function()
+{
+  var wg = this.ui.findChild('wgPresets');
+  if (wg != null) {
+    wg.setVisible(! wg.visible);
+  }
 }
 
 DialogueInteraction.prototype.addSpokenText = function(text)

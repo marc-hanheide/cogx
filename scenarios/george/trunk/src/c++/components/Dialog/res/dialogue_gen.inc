@@ -47,7 +47,7 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget" native="true">
+       <widget class="QWidget" name="wgPresets" native="true">
         <property name="minimumSize">
          <size>
           <width>160</width>
@@ -417,6 +417,13 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="btShowPresets">
+       <property name="text">
+        <string>^</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>
@@ -502,6 +509,12 @@ function DialogueInteraction(ui)
   }
   this.ui.findChild('btSay').clicked.connect(this, this.onSay_clicked);
   this.ui.findChild('btClear').clicked.connect(this, this.onClear_clicked);
+  this.ui.findChild('btShowPresets').clicked.connect(this, this.onShowPresets_clicked);
+
+  var wg = this.ui.findChild('wgPresets');
+  if (wg != null) {
+    wg.setVisible(false);
+  }
 }
 
 DialogueInteraction.prototype.stringSelected = function(name)
@@ -536,6 +549,14 @@ DialogueInteraction.prototype.onSay_clicked = function()
 DialogueInteraction.prototype.onClear_clicked = function()
 {
   this.edHuman.clearEditText();
+}
+
+DialogueInteraction.prototype.onShowPresets_clicked = function()
+{
+  var wg = this.ui.findChild('wgPresets');
+  if (wg != null) {
+    wg.setVisible(! wg.visible);
+  }
 }
 
 DialogueInteraction.prototype.addSpokenText = function(text)

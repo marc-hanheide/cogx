@@ -43,7 +43,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget" native="true">
+       <widget class="QWidget" name="wgPresets" native="true">
         <property name="minimumSize">
          <size>
           <width>160</width>
@@ -410,6 +410,13 @@
       <widget class="QPushButton" name="btClear">
        <property name="text">
         <string>Clear</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btShowPresets">
+       <property name="text">
+        <string>^</string>
        </property>
       </widget>
      </item>
