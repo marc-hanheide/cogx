@@ -11,4 +11,5 @@ display="--display-server"
 golem="--golem=dummy"
 #cleanup="--cleanup-script=svnst.sh"
 #speech="--text2speech"
-./ccagent --rsync $peekabot  $player $gazebo $display $abducer $golem $cleanup $speech
+#build="--rsync --build"
+./ccagent $build $peekabot  $player $gazebo $display $abducer $golem $cleanup $speech
