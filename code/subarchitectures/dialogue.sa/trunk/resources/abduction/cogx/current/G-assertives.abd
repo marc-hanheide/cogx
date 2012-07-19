@@ -95,10 +95,10 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, type, 'autonomous-notification'),
 	i : int : string_content(IntAddr, label, Label),
-	i : int : address_content(IntAddr, about, _BeliefAddr),
+	i : int : address_content(IntAddr, about, BeliefAddr),
 
 %	? generate : reference_generation(BeliefAddr, no, yes, RelationRE, []),
-%	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, []),
+	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, []),
 
-	event : produce_text(['I', know, this, object, is, Label, '.', 'I', will, update, my, model]) / -1.0.
+	event : produce_text(['I', know, ObjectRE, is, Label, '.', 'I', will, update, my, model]) / -1.0.
 
