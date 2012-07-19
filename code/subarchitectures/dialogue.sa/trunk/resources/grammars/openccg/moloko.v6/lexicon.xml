@@ -118,6 +118,9 @@
     <member stem="teabox-noun-n" pred="teabox"/>
     <member stem="cerealbox-noun-n" pred="cerealbox"/>
     <member stem="drinkcan-noun-n" pred="drinkcan"/>
+    <member stem="noodle-noun-n" pred="noodle"/>
+    <member stem="milk-noun-n" pred="milk"/>
+    <member stem="bottle-noun-n" pred="bottle"/>
     <member stem="box2-noun-n" pred="box"/>
     <member stem="box3-noun-n" pred="box"/>
     <member stem="box4-noun-n" pred="box"/>
