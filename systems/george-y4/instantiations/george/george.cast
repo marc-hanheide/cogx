@@ -65,6 +65,12 @@ OPTDEFAULT test_options=<multiline>
     !tutor-driven-test
 </multiline>
 
+VARDEFAULT DisplayComponent=display.srv
+VARDEFAULT DisplayComponent2=display.srv.2
+IFEQ(%(DisplayHost),%(DisplayHost2))
+    SETVAR DisplayComponent2=%(DisplayComponent)
+ENDIF
+
 ###########################################################################
 
 HOST     [Main]
@@ -188,7 +194,7 @@ IFOPTALL(%(feature_options), planning)
 
    CPP MG Planner WMControl 
 
-   CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --monitor "%(planner_monitor_files)"
+   CPP MG fileviewer.cli FileMonitorDC --displayserver "%(DisplayComponent2)" --monitor "%(planner_monitor_files)"
 
    IFOPTALL(%(feature_options), manual-planning)
       JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
@@ -244,10 +250,15 @@ IFOPTALL(%(feature_options), visualization)
 
    IFOPTALL(%(feature_options), standalone-display)
       SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
+      SETVAR displaysrv2_param_redirect=--redirect-to-host %(host:DisplayHost2)
    ELSE
       SETVAR displaysrv_param_redirect=
+      SETVAR DisplayHost2=%(DisplayHost)
    ENDIF
    CPP MG display.srv DisplayServer %(displaysrv_param_redirect)
+   IFNEQ(%(DisplayHost),%(DisplayHost2))
+       CPP MG display.srv.2 DisplayServer %(displaysrv_param_redirect)
+   ENDIF
 
    JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact --omit-fields "content"
    JAVA MG mergedbeliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "eu.cogx.beliefs.slice.MergedBelief"  --generic-col --compact --omit-fields "content"

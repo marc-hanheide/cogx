@@ -12,5 +12,6 @@ HOSTNAME  Main           localhost
 
 HOSTNAME  PlayerHost     [Main]
 HOSTNAME  PeekabotHost   [Main]
-HOSTNAME  DisplayHost    [Main]
 HOSTNAME  AbducerHost    [Main]
+HOSTNAME  DisplayHost    [Main]
+HOSTNAME  DisplayHost2   [Main]

@@ -7,7 +7,7 @@ VARDEFAULT recognizer_labels=<multiline>
 </multiline>
 
 SETVAR ObjectRecognizer3D3_params=<multiline>
-   --displayserver "display.srv"
+   --displayserver "%(DisplayComponent2)"
    --videoname videoserver --camid "0"
    --labels "%(recognizer_labels)"
    --databasepath %(recognizer_model_dir)
