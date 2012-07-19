@@ -44,7 +44,8 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 verbalised_feature(color, color).
 verbalised_feature(shape, shape).
-verbalised_feature(objecttype, [kind, of, object]).
+%verbalised_feature(objecttype, [kind, of, object]).
+verbalised_feature(objecttype, []).
 verbalised_feature(identity, [kind, of, room]).
 
 %-------------------------------------------------------------------------
