@@ -163,6 +163,9 @@
   noun(teabox, thing,) 
   noun(cerealbox, thing,) 
   noun(drinkcan, thing,) 
+  noun(noodle, thing,) 
+  noun(milk, thing,) 
+  noun(bottle, thing,) 
 
   word box2-noun-n:Noun(thing, pred=box) { blocks :  s-sg full asr-correction; }
   word box3-noun-n:Noun(thing, pred=box) { ball :  s-sg full asr-correction; }

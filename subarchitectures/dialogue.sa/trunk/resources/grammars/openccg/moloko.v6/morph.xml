@@ -4163,6 +4163,12 @@
   <entry word="cerealboxes" macros="@s-pl-unsp @full" pos="Noun" stem="cerealbox-noun-n" class="thing" pred="cerealbox"/>
   <entry word="drinkcan" macros="@s-sg @full" pos="Noun" stem="drinkcan-noun-n" class="thing" pred="drinkcan"/>
   <entry word="drinkcans" macros="@s-pl-unsp @full" pos="Noun" stem="drinkcan-noun-n" class="thing" pred="drinkcan"/>
+  <entry word="noodle" macros="@s-sg @full" pos="Noun" stem="noodle-noun-n" class="thing" pred="noodle"/>
+  <entry word="noodles" macros="@s-pl-unsp @full" pos="Noun" stem="noodle-noun-n" class="thing" pred="noodle"/>
+  <entry word="milk" macros="@s-sg @full" pos="Noun" stem="milk-noun-n" class="thing" pred="milk"/>
+  <entry word="milks" macros="@s-pl-unsp @full" pos="Noun" stem="milk-noun-n" class="thing" pred="milk"/>
+  <entry word="bottle" macros="@s-sg @full" pos="Noun" stem="bottle-noun-n" class="thing" pred="bottle"/>
+  <entry word="bottles" macros="@s-pl-unsp @full" pos="Noun" stem="bottle-noun-n" class="thing" pred="bottle"/>
   <entry word="blocks" macros="@s-sg @full @asr-correction" pos="Noun" stem="box2-noun-n" class="thing" pred="box"/>
   <entry word="ball" macros="@s-sg @full @asr-correction" pos="Noun" stem="box3-noun-n" class="thing" pred="box"/>
   <entry word="books" macros="@s-sg @full @asr-correction" pos="Noun" stem="box4-noun-n" class="thing" pred="box"/>
