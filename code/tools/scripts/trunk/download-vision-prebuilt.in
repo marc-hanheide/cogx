@@ -1,0 +1,14 @@
+#!/bin/bash
+
+arch=glnxa64
+pack=libVisualLearnerCtf64.zip
+src=http://cogx.eu/data/cogx/prebuilt/$pack
+dest=@COGX_ROOT@/subarchitectures/vision.sa/prebuilt/VisualLearner
+
+#accept="--accept .so,.h,.txt"
+dirmode="--no-directories --no-host-directories"
+#wget --no-parent -r -l0 $dirmode $accept --directory-prefix $dest/$arch $src
+wget $dirmode --directory-prefix $dest/$arch $src
+cd $dest/$arch
+unzip -u $pack
+rm $pack
