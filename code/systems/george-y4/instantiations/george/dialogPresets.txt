@@ -21,24 +21,29 @@ Look left!
 Look right!
 
 [color]
-red
-green
+black
 blue
-yellow
+green
 orange
 pink
-black
+red
 white
+yellow
 
 [shape]
 compact
 elongated
 
 [type]
-mug
+ball
+block
+bottle
 cerealbox
-teabox
 drinkcan
+milk
+mug
+noodle
+teabox
 
 # cornflakes
 # box
