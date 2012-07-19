@@ -15,7 +15,7 @@
 #include <cast/architecture/ManagedComponent.hpp>
 
 #ifdef FEAT_VISUALIZATION
-//#include <CDisplayClient.hpp>
+#include <CDisplayClient.hpp>
 #endif
 
 #include <manipulation.hpp>
@@ -47,6 +47,7 @@ private:
   bool m_pointing_now;
   double m_pointingOffsetVer;
   double m_pointingOffsetHor;
+  double corrAngle;
 
   cdl::WorkingMemoryAddress m_pointedObjAddr;
 
@@ -62,27 +63,27 @@ private:
   IceUtil::Monitor<IceUtil::Mutex> m_queueMonitor;
 
 #ifdef FEAT_VISUALIZATION
-#if 0
   class PABDisplayClient : public cogx::display::CDisplayClient
   {
   private:
-  ArmManager *m_comp;
-  public:
-  cogx::display::CFormValues m_frmSettings;
+    //ArmManager *m_comp;
 
   public:
-  PABDisplayClient() { m_comp = 0; }
-  void setClientData(ArmManager *comp) { m_comp = comp; }
-  //void handleEvent(const Visualization::TEvent &event);
-  std::string getControlState(const std::string& ctrlId);
-  void handleForm(const std::string& id, const std::string& partId,
-  const std::map<std::string, std::string>& fields);
-  bool getFormData(const std::string& id, const std::string& partId,
-  std::map<std::string, std::string>& fields);
+    /*PABDisplayClient() { m_comp = 0; }
+    void setClientData(ArmManager *comp) { m_comp = comp; }
+    void handleEvent(const Visualization::TEvent &event);
+    std::string getControlState(const std::string& ctrlId);
+    void handleForm(const std::string& id, const std::string& partId,
+      const std::map<std::string, std::string>& fields);
+    bool getFormData(const std::string& id, const std::string& partId,
+      std::map<std::string, std::string>& fields);*/
   };
-  PABDisplayClient display;
+  PABDisplayClient m_display;
+  std::string guiid(const std::string &myid) { return myid + "_" + getComponentID(); }
+  void sendPointingTarget(Math::Pose3 &pose, double colR, double colG,
+      double colB);
 #endif
-#endif
+
   ManipulationTaskStatus pointAtObject(cdl::WorkingMemoryAddress addr);
   cogx::Math::Pose3 pointingPose(const cogx::Math::Pose3 objPose);
 

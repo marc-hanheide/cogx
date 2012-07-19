@@ -28,27 +28,26 @@ using namespace cogx::Math;
 namespace cogx
 {
 
-  ArmManager::ArmManager() : m_lastStatus(MCREQUESTED)
+ArmManager::ArmManager() : m_lastStatus(MCREQUESTED)
 {
-#ifdef FEAT_VISUALIZATION
-  //display.setClientData(this);
-#endif
+  corrAngle = 0.;
 }
 
 void ArmManager::configure(const map<string, string> &_config)
 {
   map<string,string>::const_iterator it;
-
-  if((it = _config.find("--playerhost")) != _config.end())
+  if((it = _config.find("--corrAngleDeg")) != _config.end())
   {
-    //  playerHost = it->second;
+    istringstream str(it->second);
+    str >> corrAngle;
+    corrAngle *= (3.14159/180.);
   }
-  if((it = _config.find("--playerport")) != _config.end())
-  {
-    //  istringstream str(it->second);
-    //  str >> playerPort;
-  }
+#ifdef FEAT_VISUALIZATION
+  m_display.configureDisplayClient(_config);
+#endif
 }
+
+#define ID_PART_3D_PO     "PO:"
 
 void ArmManager::start()
 {
@@ -77,6 +76,10 @@ void ArmManager::start()
   addChangeFilter(createGlobalTypeFilter<MoveArmToPose>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<ArmManager>(this,
         &ArmManager::overwriteMoveToPose));
+
+#ifdef FEAT_VISUALIZATION
+  m_display.connectIceClient(*this);
+#endif
 }
 
 
@@ -185,10 +188,14 @@ Pose3 ArmManager::pointingPose(const Pose3 objPose)
   Pose3 pointingPose;
   setIdentity(pointingPose);
 
+  log("objPose: %.3f %.3f %.3f", objPose.pos.x, objPose.pos.y, objPose.pos.z);
   pointingPose.pos = objPose.pos;
+#ifdef FEAT_VISUALIZATION
+//  sendPointingTarget(pointingPose, 0., 0., 1.);
+#endif
   double dist = sqrt(sqr(pointingPose.pos.x) + sqr(pointingPose.pos.y));
   double distCorr = dist - m_pointingOffsetHor;;
-  const double maxDist = 0.3;
+  const double maxDist = 0.35;
   const double minZ = 0.8;
   pointingPose.pos.x /= dist;
   pointingPose.pos.y /= dist;
@@ -200,6 +207,10 @@ Pose3 ArmManager::pointingPose(const Pose3 objPose)
   if(pointingPose.pos.z < minZ)
     pointingPose.pos.z = minZ;
 
+  // utter HACK to correct for mysterious pointing misalignment
+  Math::Matrix33 R;
+  Math::fromRotZ(R, corrAngle);
+  Math::mult(R, pointingPose.pos, pointingPose.pos);
   Vector3 y = objPose.pos;
   y.z = 0.;
   normalise(y);
@@ -218,6 +229,10 @@ Pose3 ArmManager::pointingPose(const Pose3 objPose)
   pointingPose.rot.m12 = z.y;
   pointingPose.rot.m22 = z.z;
 
+#ifdef FEAT_VISUALIZATION
+  //sendPointingTarget(pointingPose, 1., 0., 0.);
+#endif
+  log("pointingPose: %.3f %3.f %.3f", pointingPose.pos.x, pointingPose.pos.y, pointingPose.pos.z);
   return pointingPose;
 }
 
@@ -503,5 +518,30 @@ void ArmManager::overwriteMoveToPose(const cdl::WorkingMemoryChange & _wmc)
     log("m_halt_arm false");
 }
 
+#ifdef FEAT_VISUALIZATION
+void ArmManager::sendPointingTarget(Pose3 &pose, double colR, double colG,
+    double colB)
+{
+  ostringstream ss;
+  ss << "function render()\n";
+  ss << "glPushMatrix()\n";
+  ss << "glColor(colR, colG, colB)\n";
+
+  /*ss << "glTranslate("
+    << pose.pos.x << ","
+    << pose.pos.y << ","
+    << pose.pos.z << ")\n";
+  ss << "StdModel:box(0.05,0.05,0.05)\n";
+  ss << "glPopMatrix()\n";*/
+ 
+  ss << "glBegin(GL_POINTS)\n";
+  ss << "glPointSize(2.0)\n";
+  ss << "glVertex(" << pose.pos.x << "," << pose.pos.y << "," << pose.pos.z << ")";
+  ss << "glEnd()\n";
+  ss << "end\n";
+  m_display.setLuaGlObject("PlanePopout.3D", guiid("pointing.target"), ss.str());
 }
-// vim: set fileencoding=utf-8 sw=2 sts=4 ts=8 et :vim
+#endif
+
+}
+
