@@ -89,7 +89,7 @@ public class ModelStatusMotiveGenerator extends
 
 			String goal = createGoalString(concept, value);
 
-			result.goal = new Goal(100f, -1, goal, false);
+			result.goal = new Goal(-1, -1, goal, false);
 
 			log("goal is " + result.goal.goalString);
 		}

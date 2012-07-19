@@ -266,7 +266,7 @@ public class LookAroundMotiveGenerator extends
 					result.referenceEntry = _wma;
 					result.status = MotiveStatus.UNSURFACED;
 
-					result.goal = new Goal(100f, -1, "(" + LOOKED_AT + " '"
+					result.goal = new Goal(-1, -1, "(" + LOOKED_AT + " '"
 							+ coneBelief.getId() + "')", false);
 
 					log("goal is " + result.goal.goalString + " with inf-gain "

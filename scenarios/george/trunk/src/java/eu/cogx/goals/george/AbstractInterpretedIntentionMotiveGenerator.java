@@ -432,7 +432,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 				getPolarQuestionGoalString(_feature, _hypothesis,
 						_beliefAddress) });
 
-		motive.goal = new Goal(100f, -1, goalString, false);
+		motive.goal = new Goal(-1, -1, goalString, false);
 
 		log("goal is " + motive.goal.goalString + " with inf-gain "
 				+ motive.informationGain);
@@ -462,7 +462,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 				getAdditionalGoals(),
 				getOpenQuestionGoalString(_feature, _beliefAddress) });
 
-		motive.goal = new Goal(100f, -1, goalString, false);
+		motive.goal = new Goal(-1, -1, goalString, false);
 
 		log("goal is " + motive.goal.goalString + " with inf-gain "
 				+ motive.informationGain);
@@ -527,7 +527,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		motive.assertedLearn = learn;
 		// HACK END
 
-		motive.goal = new Goal(100f, -1, goalString, false);
+		motive.goal = new Goal(-1, -1, goalString, false);
 
 		log("goal is " + motive.goal.goalString + " with inf-gain "
 				+ motive.informationGain);

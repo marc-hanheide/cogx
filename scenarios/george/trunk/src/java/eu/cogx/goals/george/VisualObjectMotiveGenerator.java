@@ -19,6 +19,7 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
+import castutils.castextensions.IceXMLSerializer;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
@@ -57,7 +58,7 @@ public class VisualObjectMotiveGenerator extends
 
 	// TODO Add config options to set these
 	private boolean m_colourEnabled = true;
-	private boolean m_shapeEnabled = false;
+	private boolean m_shapeEnabled = true;
 	private boolean m_identityEnabled = true;
 
 	public VisualObjectMotiveGenerator() {
@@ -110,42 +111,46 @@ public class VisualObjectMotiveGenerator extends
 						.getProposition();
 				LearnObjectFeatureMotive motive = generateUnlearnFeatureMotive(
 						predicate, _addr, belief, value);
+
 				if (motive != null) {
+
+					// now remove flags for verified belief
+					WorkingMemoryPointer verifiedAncestorPtr = BeliefUtils
+							.recurseAncestorsForType(this, _addr,
+									CASTUtils.typeName(VerifiedBelief.class));
+
+					if (verifiedAncestorPtr != null) {
+						VerifiedBelief verfiedBelief = getMemoryEntry(
+								verifiedAncestorPtr.address,
+								VerifiedBelief.class);
+						CASTIndependentFormulaDistributionsBelief<VerifiedBelief> vb = CASTIndependentFormulaDistributionsBelief
+								.create(VerifiedBelief.class, verfiedBelief);
+						IndependentFormulaDistributions verfiedContent = vb
+								.getContent();
+						verfiedContent
+								.remove(AbstractDialogueActionInterface.MOTIVE_TRANSFER);
+						verfiedContent
+								.remove(AbstractDialogueActionInterface.MOTIVE_TRANSFER_VALUE);
+						vb.setContent(verfiedContent);
+
+						overwriteWorkingMemory(verifiedAncestorPtr.address,
+								vb.get());
+					} else {
+						println("couldn't find verified anccestor for merged at: "
+								+ CASTUtils.toString(_addr));
+					}
+
+					// also remove from merged belief for safety
+					mergedContent
+							.remove(AbstractDialogueActionInterface.MOTIVE_TRANSFER);
+					mergedContent
+							.remove(AbstractDialogueActionInterface.MOTIVE_TRANSFER_VALUE);
+					println(IceXMLSerializer.toXMLString(mergedContent.get()));
+					belief.setContent(mergedContent);
+					overwriteWorkingMemory(_addr, belief.get());
+
 					return motive;
 				}
-
-				// now remove flags for verified belief
-				WorkingMemoryPointer verifiedAncestorPtr = BeliefUtils
-						.recurseAncestorsForType(this, _addr,
-								CASTUtils.typeName(VerifiedBelief.class));
-
-				if (verifiedAncestorPtr != null) {
-					VerifiedBelief verfiedBelief = getMemoryEntry(
-							verifiedAncestorPtr.address, VerifiedBelief.class);
-					CASTIndependentFormulaDistributionsBelief<VerifiedBelief> vb = CASTIndependentFormulaDistributionsBelief
-							.create(VerifiedBelief.class, verfiedBelief);
-					IndependentFormulaDistributions verfiedContent = vb
-							.getContent();
-					verfiedContent
-							.remove(AbstractDialogueActionInterface.MOTIVE_TRANSFER);
-					verfiedContent
-							.remove(AbstractDialogueActionInterface.MOTIVE_TRANSFER_VALUE);
-					vb.setContent(verfiedContent);
-
-					overwriteWorkingMemory(verifiedAncestorPtr.address,
-							vb.get());
-				} else {
-					println("couldn't find verified anccestor for merged at: "
-							+ CASTUtils.toString(_addr));
-				}
-
-				// also remove from merged belief for safety
-				mergedContent
-						.remove(AbstractDialogueActionInterface.MOTIVE_TRANSFER);
-				mergedContent
-						.remove(AbstractDialogueActionInterface.MOTIVE_TRANSFER_VALUE);
-				belief.setContent(mergedContent);
-				overwriteWorkingMemory(_addr, belief.get());
 			}
 		} catch (SubarchitectureComponentException e) {
 			logException(e);
@@ -275,7 +280,7 @@ public class VisualObjectMotiveGenerator extends
 				&& !attributeIsConfident(_featureKey, _belief)) {
 
 			result = newLearnObjectFeatureMotive(_wma);
-			result.goal = new Goal(100f, -1, conjoinGoalStrings(new String[] {
+			result.goal = new Goal(-1, -1, conjoinGoalStrings(new String[] {
 					beliefPredicateGoal(_featureLearntPredicate, _belief),
 					getAdditionalGoals() }), false);
 			result.feature = _featureKey;
@@ -338,7 +343,7 @@ public class VisualObjectMotiveGenerator extends
 
 		log("ProtoObject belief is not linked to VisualObject, so generating motive.");
 		LearnObjectFeatureMotive result = newLearnObjectFeatureMotive(_wma);
-		result.goal = new Goal(100f, -1, conjoinGoalStrings(new String[] {
+		result.goal = new Goal(-1, -1, conjoinGoalStrings(new String[] {
 				VisualObjectMotiveGenerator.beliefFunctionGoal(
 						_featureLearntPredicate, _belief.getId(), _value),
 				getAdditionalGoals() }), false);
@@ -367,7 +372,6 @@ public class VisualObjectMotiveGenerator extends
 			result.priority = MotivePriority.UNSURFACE;
 			result.referenceEntry = _refEntry;
 			result.status = MotiveStatus.UNSURFACED;
-
 			return result;
 		} catch (Exception e) {
 			// should never happen
