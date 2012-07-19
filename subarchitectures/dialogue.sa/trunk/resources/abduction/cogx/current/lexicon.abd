@@ -2,10 +2,25 @@
 % LEXICON
 %-------------------------------------------------------------------------
 
+% colors
+valid_color(red).
+valid_color(green).
+valid_color(blue).
+valid_color(orange).
+valid_color(yellow).
+valid_color(pink).
+valid_color(black).
+valid_color(white).
+
+% shapes
+valid_shape(compact).
+valid_shape(elongated).
+
+% object types
 valid_objecttype(thing, box, box).
 valid_objecttype(thing, ball, ball).
 valid_objecttype(thing, mug, mug).
-
+valid_objecttype(thing, block, block).
 valid_objecttype(thing, schokomusli, schokomusli).
 valid_objecttype(thing, fruchtemusli, fruchtemusli).
 valid_objecttype(thing, weetabix, weetabix).
