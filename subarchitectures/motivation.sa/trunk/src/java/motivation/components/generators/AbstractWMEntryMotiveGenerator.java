@@ -85,6 +85,7 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 				break;
 			}
 			log("relevant OVERWRITE event: " + CASTUtils.toString(wmc));
+
 			List<WorkingMemoryAddress> correspondingWMAs = bel2motivesMap
 					.get(wmc.address);
 			if (correspondingWMAs == null) {
@@ -94,7 +95,9 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 				// need an explicit iterator to allow removal
 				for (Iterator<WorkingMemoryAddress> i = correspondingWMAs
 						.iterator(); i.hasNext();) {
+
 					WorkingMemoryAddress correspondingWMA = i.next();
+
 					try {
 						getLogger().debug(
 								"AbstractBeliefMotiveGenerator: locking and reading corresponding motive "
@@ -131,20 +134,6 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 							overwriteWorkingMemory(correspondingWMA, motive);
 						}
 
-						motive = checkForAdditionAfterUpdate(wmc.address,
-								newEntry);
-
-						if (motive != null) {
-							insertNewGoal(motive);
-							List<WorkingMemoryAddress> motiveAddresses = bel2motivesMap
-									.get(wmc.address);
-							if (motiveAddresses == null) {
-								motiveAddresses = new LinkedList<WorkingMemoryAddress>();
-							}
-							motiveAddresses.add(motive.thisEntry);
-							bel2motivesMap.put(wmc.address, motiveAddresses);
-						}
-
 					} catch (CASTException e) {
 						getLogger()
 								.warn("this is probably safe, particularly after a goal completion",
@@ -161,6 +150,21 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 							}
 					}
 				}
+			}
+
+			// now see if the overwrite has triggered new updates
+
+			M motive = checkForAdditionAfterUpdate(wmc.address, newEntry);
+
+			if (motive != null) {
+				insertNewGoal(motive);
+				List<WorkingMemoryAddress> motiveAddresses = bel2motivesMap
+						.get(wmc.address);
+				if (motiveAddresses == null) {
+					motiveAddresses = new LinkedList<WorkingMemoryAddress>();
+				}
+				motiveAddresses.add(motive.thisEntry);
+				bel2motivesMap.put(wmc.address, motiveAddresses);
 			}
 			break;
 		}
