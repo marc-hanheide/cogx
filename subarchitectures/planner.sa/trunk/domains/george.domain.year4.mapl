@@ -38,6 +38,7 @@
     DRINKCAN - ObjecttypeName
     BOX - ObjecttypeName
     BALL - ObjecttypeName
+    BLOCK - ObjecttypeName
 
     VISIBLE - Visibility
     WAS-VISIBLE - Visibility
