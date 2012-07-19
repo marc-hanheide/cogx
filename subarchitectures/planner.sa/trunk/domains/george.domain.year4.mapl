@@ -379,8 +379,8 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
-        (not (learning-possible))
         (is-in-robot-initiated-mode ?r)
+        (not (learning-possible))
         (not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
         (is-looking-and-eventually-pointing-at ?r ?v)
       )
@@ -591,17 +591,13 @@
 
         ;;robot initiated
         (and
-          (is-in-robot-initiated-mode ?r)
           (not (= ?v VISUAL_OBJECT_DUMMY))
           (not (color-learned ?v))
           (= (attributed-color ?v) ?c)
           (not (= ?c UNKNOWN_COLOR))
           (is-looking-and-eventually-pointing-at ?r ?v)
           (= (is-object-referenced-by-george ?r) ?v)
-          (or
-            (color-requested ?v)
-            (not (= ?c UNDETERMINED_COLOR))
-          )
+          (color-requested ?v)
         )
       )
     :effect 
@@ -671,17 +667,13 @@
 
         ;;robot initiated
         (and
-          (is-in-robot-initiated-mode ?r)
           (not (= ?v VISUAL_OBJECT_DUMMY))
           (not (shape-learned ?v))
           (= (attributed-shape ?v) ?s)
           (not (= ?s UNKNOWN_SHAPE))
           (is-looking-and-eventually-pointing-at ?r ?v)
           (= (is-object-referenced-by-george ?r) ?v)
-          ;(or
           (shape-requested ?v)
-          ;(not (= ?s UNDETERMINED_SHAPE))
-          ;)
         )
       )
     :effect 
@@ -751,17 +743,13 @@
 
         ;;robot initiated
         (and
-          (is-in-robot-initiated-mode ?r)
           (not (= ?v VISUAL_OBJECT_DUMMY))
           (not (objecttype-learned ?v))
           (= (attributed-objecttype ?v) ?t)
           (not (= ?t UNKNOWN_OBJECTTYPE))
           (is-looking-and-eventually-pointing-at ?r ?v)
           (= (is-object-referenced-by-george ?r) ?v)
-          ;(or
-            (objecttype-requested ?v)
-          ;  (not (= ?t UNDETERMINED_OBJECTTYPE))
-          ;)
+          (objecttype-requested ?v)
         )
       )
     :effect 
