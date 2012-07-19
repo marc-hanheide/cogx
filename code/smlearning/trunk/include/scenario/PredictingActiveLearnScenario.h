@@ -93,6 +93,8 @@ protected:
 	vector<double> avgclassiferrors;
 	/** current predicted output */
 	vector<string> currentPredictedOutput;
+	/** true if using sequence file for prediction */
+	bool useseqpred;
 
 }; // class
 

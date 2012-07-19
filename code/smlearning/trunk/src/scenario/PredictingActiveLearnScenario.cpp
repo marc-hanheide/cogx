@@ -15,6 +15,7 @@ PredictingActiveLearnScenario::PredictingActiveLearnScenario(golem::Scene &scene
 	normalization = normalize<Real>;
 	denormalization = denormalize<Real>;
 	currentRegion = NULL;
+	useseqpred = false;
 }
 
 PredictingActiveLearnScenario::~PredictingActiveLearnScenario() {
@@ -70,6 +71,10 @@ void PredictingActiveLearnScenario::init (boost::program_options::variables_map 
 			exit(-1);
 		}
 		enumerate_labels ();
+		if (vm.count("useseqpred"))
+		{
+			useseqpred = true;
+		}
 	}
 
 }
@@ -85,7 +90,7 @@ void PredictingActiveLearnScenario::chooseAction () {
 	Vec3 orientation		= object->getOrientation();
 
 	LearningData::Chunk chunk;
-	if (data.size() > 0)
+	if (useseqpred)
 	{
 		int index = static_cast<int>(floor(randomG.nextUniform (0.0, Real(data.size() - 1))));
 		// learningData.currentChunkSeq = data[index];
@@ -129,7 +134,8 @@ void PredictingActiveLearnScenario::chooseAction () {
 */
 void PredictingActiveLearnScenario::calculateStartCoordinates() {
 
-	target.pos = chosenAction.effectorPose;
+	// target.pos = chosenAction.effectorPose;
+	fromCartesianPose(target.pos, chosenAction.effectorPose.p, orientationTarget);
 	target.vel.setId(); // it doesn't move
 	target.t = context.getTimer().elapsed() + arm->getDeltaAsync() + desc.descArmActor.minDuration; // i.e. the movement will last at least 5 sec
 
@@ -151,6 +157,8 @@ void PredictingActiveLearnScenario::initMovement() {
 		computeNormalVector(
 				    Vec3 (target.pos.p.v1, target.pos.p.v2, target.pos.p.v3),
 				    Vec3 (position.v1, position.v2, object->getDescription().dimensions.v2*0.5)
+				    // Vec3 (position.v1, position.v2, desc.descActorObject.center)
+
 				    );
 
 	Vec3 centerOrthogonalVec = computeOrthogonalVec(centerNormalVec);
@@ -224,8 +232,8 @@ void PredictingActiveLearnScenario::enumerate_labels ()
 
 void PredictingActiveLearnScenario::updateOutputError ()
 {
-	if (data.size () > 0)
-	{
+	// if (data.size () > 0)
+	// {
 		if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_sft)
 			LearningData::label_seq (&learningData.currentChunkSeq, _rough_direction | _slide_flip_tilt);
 		else if (featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction)
@@ -270,7 +278,7 @@ void PredictingActiveLearnScenario::updateOutputError ()
 				avgclassiferrors.push_back (wrongclass_error);
 			}
 		}
-	}
+	// }
 	
 }
 
@@ -361,7 +369,7 @@ void PredictingActiveLearnScenario::run (int argc, char* argv[]) {
 	avgerror /= avgerrors.size();
 	cout << endl << "Avg Error: " << avgerror << endl;
 
-	if (data.size() > 0 && (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_sft || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction))
+	if (/*data.size() > 0 && */(featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_sft || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction))
 	{
 		double outputerror_percentage = 0.0;
 		for (unsigned int i=0; i<avgoutputerrors.size (); i++)
