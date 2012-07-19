@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
-
 import motivation.slice.AnalyzeProtoObjectMotive;
 import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.LookAtViewConeMotive;
@@ -18,6 +16,9 @@ import motivation.slice.Motive;
 import motivation.slice.RobotNonSituatedMotive;
 import motivation.slice.TutorInitiativeMotive;
 import motivation.util.WMMotiveView;
+
+import org.apache.log4j.Logger;
+
 import si.unilj.fri.cogx.v11n.core.DisplayClient;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
@@ -27,10 +28,10 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 	private static Logger m_logger = Logger
 			.getLogger(DelayFilterDisplayClient.class);
+
 	private static final ScheduledThreadPoolExecutor m_executor = new ScheduledThreadPoolExecutor(
 			1);
 
-	
 	private static class PairComparator<A> implements Comparator<Pair<A, Long>> {
 
 		@Override
@@ -45,7 +46,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 		@Override
 		public void run() {
 			try {
-				updateAll();
+				renderAll();
 			} catch (Throwable t) {
 				m_logger.warn("Nick, fix me", t);
 			}
@@ -100,6 +101,10 @@ public class DelayFilterDisplayClient extends DisplayClient {
 	private HashMap<Class<? extends Motive>, Long> m_postDelays;
 	private WMMotiveView m_motives;
 
+	private Map<WorkingMemoryAddress, Motive> m_activeGoals;
+
+	private int m_activeLevel = DriveHierarchy.UNKNOWN_CLASS_VALUE;
+
 	private static DelayFilterDisplayClient m_client;
 
 	// MASSIVE HACK with static
@@ -112,28 +117,27 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 	private DelayFilterDisplayClient() {
 		setupColours();
+		m_executor.scheduleAtFixedRate(new RenderThread(), 10000, 500,
+				TimeUnit.MILLISECONDS);
 	}
 
 	private static void endTable(StringBuilder _sb) {
 		_sb.append("</table");
 	}
 
-	public void setDriveHierarchy(DriveHierarchy _driveHierarchy) {
+	public synchronized void setDriveHierarchy(DriveHierarchy _driveHierarchy) {
 		m_driveHierarchy = _driveHierarchy;
 	}
 
-	public void setPassThroughState(
+	public synchronized void setPassThroughState(
 			HashMap<Class<? extends Motive>, Integer> _values,
 			WMMotiveView _motives) {
 
-		// synchronized (m_motives) {
 		m_passThroughValues = _values;
 		m_motives = _motives;
-		updateAll();
-		// }
 	}
 
-	private HashMap<WorkingMemoryAddress, Motive> renderPassThroughState(
+	private synchronized HashMap<WorkingMemoryAddress, Motive> renderPassThroughState(
 			HashMap<Class<? extends Motive>, Integer> _values,
 			WMMotiveView _m_motives) {
 
@@ -176,7 +180,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 		return passOn;
 	}
 
-	protected void setupColours() {
+	protected synchronized void setupColours() {
 		m_colourMap.put(AnalyzeProtoObjectMotive.class, EXPLORE);
 		m_colourMap.put(TutorInitiativeMotive.class, TUTOR_DRIVEN);
 		m_colourMap.put(LearnObjectFeatureMotive.class, ROBOT_SITUATED);
@@ -200,7 +204,8 @@ public class DelayFilterDisplayClient extends DisplayClient {
 		_sb.append("<table border=\"1\">");
 	}
 
-	public void updateActiveGoals(Map<WorkingMemoryAddress, Motive> _activeGoals) {
+	private synchronized void renderActiveGoals(
+			Map<WorkingMemoryAddress, Motive> _activeGoals) {
 		StringBuilder sb = startFilter();
 		startTable(sb);
 		if (!_activeGoals.isEmpty()) {
@@ -222,98 +227,109 @@ public class DelayFilterDisplayClient extends DisplayClient {
 		setHtml(DISPLAY_ID, ACTIVE_ID, sb.toString());
 	}
 
-	public void updateActiveLevel(int _level) {
-		if (_level == DriveHierarchy.UNKNOWN_CLASS_VALUE) {
+	public synchronized void updateActiveGoals(
+			Map<WorkingMemoryAddress, Motive> _activeGoals) {
+		m_activeGoals = _activeGoals;
+	}
+
+	public synchronized void updateActiveLevel(int _level) {
+		m_activeLevel = _level;
+	}
+
+	private synchronized void renderDriveHierarchy() {
+		if (m_activeLevel == DriveHierarchy.UNKNOWN_CLASS_VALUE) {
 			setHtml(DISPLAY_ID, DRIVE_HIERARCHY_ID, "Waiting for any input ");
 		} else {
-			setHtml(DISPLAY_ID, DRIVE_HIERARCHY_ID, "Active level is " + _level);
+			setHtml(DISPLAY_ID, DRIVE_HIERARCHY_ID, "Active level is "
+					+ m_activeLevel);
 		}
 	}
 
-	private void updateAll() {
-		synchronized (m_motives) {
+	private synchronized void renderAll() {
 
-			HashMap<WorkingMemoryAddress, Motive> passOn = null;
+		HashMap<WorkingMemoryAddress, Motive> passOn = null;
 
-			if (m_passThroughValues != null) {
-				passOn = renderPassThroughState(m_passThroughValues, m_motives);
-			}
-
-			if (m_activationTimes != null) {
-				passOn = renderDelays(m_currentSystemTime, m_activationTimes,
-						m_postDelays, passOn);
-			}
+		if (m_passThroughValues != null) {
+			passOn = renderPassThroughState(m_passThroughValues, m_motives);
 		}
+
+		if (m_activationTimes != null) {
+			passOn = renderDelays(m_currentSystemTime, m_activationTimes,
+					m_postDelays, passOn);
+		}
+
+		renderDriveHierarchy();
+
+		if (m_activeGoals != null) {
+			// TODO use passOn once it makes sense
+			renderActiveGoals(m_activeGoals);
+		}
+
 	}
 
-	private HashMap<WorkingMemoryAddress, Motive> renderDelays(
+	private synchronized HashMap<WorkingMemoryAddress, Motive> renderDelays(
 			long _currentSystemTime,
 			HashMap<Class<? extends Motive>, Long> _activationTimes,
 			HashMap<Class<? extends Motive>, Long> _postDelays,
 			HashMap<WorkingMemoryAddress, Motive> _motives) {
 		HashMap<WorkingMemoryAddress, Motive> passOn = new HashMap<WorkingMemoryAddress, Motive>();
-		synchronized (m_motives) {
-			// delay table, sorted from bottom (longest delayed) to top
-			// (shortest
-			// delay), undelayed or otherwise surfaced motives are not shown
+		// delay table, sorted from bottom (longest delayed) to top
+		// (shortest
+		// delay), undelayed or otherwise surfaced motives are not shown
 
-			ArrayList<Pair<Motive, Long>> motiveDelays = new ArrayList<Pair<Motive, Long>>(
-					_motives.size());
+		ArrayList<Pair<Motive, Long>> motiveDelays = new ArrayList<Pair<Motive, Long>>(
+				_motives.size());
 
-			for (WorkingMemoryAddress mtvAddr : _motives.keySet()) {
-				Motive mtv = _motives.get(mtvAddr);
+		for (WorkingMemoryAddress mtvAddr : _motives.keySet()) {
+			Motive mtv = _motives.get(mtvAddr);
 
-				Long activationTime = _activationTimes.get(mtv.getClass());
-				if (activationTime != null) {
-					long delay = (activationTime - _currentSystemTime);
-					if (delay > 0) {
-						motiveDelays.add(new Pair<Motive, Long>(mtv,
-								(activationTime - _currentSystemTime)));
-					} else {
-						passOn.put(mtvAddr, mtv);
-					}
+			Long activationTime = _activationTimes.get(mtv.getClass());
+			if (activationTime != null) {
+				long delay = (activationTime - _currentSystemTime);
+				if (delay > 0) {
+					motiveDelays.add(new Pair<Motive, Long>(mtv,
+							(activationTime - _currentSystemTime)));
+				} else {
+					passOn.put(mtvAddr, mtv);
 				}
 			}
+		}
 
-			Collections.sort(motiveDelays, MOTIVE_PAIR_COMPARATOR);
+		Collections.sort(motiveDelays, MOTIVE_PAIR_COMPARATOR);
 
-			StringBuilder sb = startFilter();
-			startTable(sb);
-			if (!motiveDelays.isEmpty()) {
-				for (Pair<Motive, Long> pair : motiveDelays) {
-					Motive mtv = pair.m_first;
-					Class<? extends Motive> mtvCls = mtv.getClass();
-					startRow(sb, mtvCls);
-					cell(sb, mtvCls.getSimpleName());
-					cell(sb, CASTUtils.toString(mtv.thisEntry));
-					cell(sb, pair.m_second);
-					cell(sb, mtv.goal.goalString);
-					endRow(sb);
-				}
-			} else {
-				startRow(sb);
-				cell(sb, "No delayed goals");
+		StringBuilder sb = startFilter();
+		startTable(sb);
+		if (!motiveDelays.isEmpty()) {
+			for (Pair<Motive, Long> pair : motiveDelays) {
+				Motive mtv = pair.m_first;
+				Class<? extends Motive> mtvCls = mtv.getClass();
+				startRow(sb, mtvCls);
+				cell(sb, mtvCls.getSimpleName());
+				cell(sb, CASTUtils.toString(mtv.thisEntry));
+				cell(sb, pair.m_second);
+				cell(sb, mtv.goal.goalString);
 				endRow(sb);
 			}
-			endTable(sb);
-			endFilter(sb);
-			setHtml(DISPLAY_ID, DELAYS_ID, sb.toString());
+		} else {
+			startRow(sb);
+			cell(sb, "No delayed goals");
+			endRow(sb);
 		}
+		endTable(sb);
+		endFilter(sb);
+		setHtml(DISPLAY_ID, DELAYS_ID, sb.toString());
 		return passOn;
 	}
 
-	public void updateDelays(long _currentSystemTime,
+	public synchronized void updateDelays(long _currentSystemTime,
 			HashMap<Class<? extends Motive>, Long> _activationTimes,
 			HashMap<Class<? extends Motive>, Long> _postDelays,
 			WMMotiveView _motives) {
 
-		synchronized (m_motives) {
-			m_currentSystemTime = _currentSystemTime;
-			m_activationTimes = _activationTimes;
-			m_postDelays = _postDelays;
-			m_motives = _motives;
-			updateAll();
-		}
+		m_currentSystemTime = _currentSystemTime;
+		m_activationTimes = _activationTimes;
+		m_postDelays = _postDelays;
+		m_motives = _motives;
 
 	}
 }
