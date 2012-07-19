@@ -222,6 +222,8 @@ public class PlanVerbalizer {
 		m_preLexicalSub.put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
 		m_preLexicalSub.put("m-cause", "m-condition");
 		m_preLexicalSub.put(":category ^ meetingroom", ":e-place ^ meetingroom");
+		m_preLexicalSub.put(":category ^ office", ":e-place ^ office");
+		m_preLexicalSub.put(":category ^ corridor", ":e-place ^ corridor");
 		m_preLexicalSub.put("container", "shelf");
 //		m_preLexicalSub.put("vision.sa\":thing ^ thing", "vision.sa\":person ^ PERSON");
 	}
@@ -382,41 +384,41 @@ public class PlanVerbalizer {
 
 		// realize each message
 		for (Message msg : messages) {
-			StringBuilder log_sb = new StringBuilder();
-			if (msg instanceof ProtoLFMessage) {
-
-				BasicLogicalForm finalLF = ((ProtoLFMessage) msg).getProtoLF();
-				
-				// surface realization
-				// perform lexical re-substitution after realization, before appending to the verbal report
-				String realization = m_realiser.realiseLF(finalLF);
-				log_sb.append("\n realizeLF() yielded: \n" + realization);
-
-				if (!realization.equals("")) {
-					output_sb.append(realization + "\n");
-				} else {
-					if (debug_lf_out) {
-						log_sb.append("\n appending original LF to output text.");
-						output_sb.append(finalLF.toString() + "\n");
-					} else {
-						log_sb.append("\n no realisation found for LF " + finalLF.toString());
-						output_sb.append("\n");
-					}
-				}
-			} else if (msg instanceof StringMessage) {
-				String outputText = ((StringMessage) msg).getText();
-				log_sb.append("\n appending current Message, which is a StringMessage: \n " + outputText);
-				// rhetorical markers are prepended to the subsequent sentence:
-				if (msg instanceof RhetoricalMarkerMessage) {
-					output_sb.append(outputText + " "); // no full stop + line break
-				} else output_sb.append(outputText + "\n");
-			}
-	    	log("**** " + log_sb.toString());
+			output_sb.append(realizeMessage(msg));
         }
     	return output_sb.toString();
 	}
 	  
+	public String realizeMessage(Message msg) {
+		if (msg instanceof ProtoLFMessage) {
 
+			BasicLogicalForm finalLF = ((ProtoLFMessage) msg).getProtoLF();
+			
+			// surface realization
+			// perform lexical re-substitution after realization, before appending to the verbal report
+			String realization = m_realiser.realiseLF(finalLF);
+
+			if (!realization.equals("")) {
+				return realization + "\n";
+			} else {
+				if (debug_lf_out) {
+					return finalLF.toString() + "\n";
+				} else {
+					return "\n";
+				}
+			}
+		} else if (msg instanceof StringMessage) {
+			String outputText = ((StringMessage) msg).getText();
+			// rhetorical markers are prepended to the subsequent sentence:
+			if (msg instanceof RhetoricalMarkerMessage) {
+				return (outputText + " "); // no full stop + line break
+			} else return (outputText + "\n");
+		} else {
+			return "";
+		}
+	}
+	
+	
 
 	/**
 	 * Accessor for the GBelief memory model.
