@@ -934,7 +934,7 @@
         (update (arm-in-resting-position ?r) true)
         (not (last-action-was-head-movement))
         (not (learning-possible))
-        (increase (total-cost) 1)
+        (increase (total-cost) 8)
       )
   )
 
