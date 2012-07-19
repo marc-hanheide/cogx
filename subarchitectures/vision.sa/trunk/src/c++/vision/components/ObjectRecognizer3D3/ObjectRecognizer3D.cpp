@@ -670,8 +670,14 @@ void ObjectRecognizer3D::receiveRecognitionCommand(const cdl::WorkingMemoryChang
       getMemoryEntry<ProtoObject>(visObj->protoObject->address.id);
 
   vector<P::ObjectLocation> objects;
-  recognize(image, protoObj->points, objects);
-
+  try
+  {
+    recognize(image, protoObj->points, objects);
+  }
+  catch(...)
+  {
+    log("some exception in learner/recognizer - ignoring");
+  }
   if(objects.size() > 0)
   {
     vector<string> labels;
@@ -796,7 +802,15 @@ bool ObjectRecognizer3D::learnObjectView(cast::cdl::WorkingMemoryAddress
   }
 
   log("learning new view for object '%s'", label.c_str());
-  bool succeed = learn(label, image, protoObj->points);
+  bool succeed = false;
+  try
+  {
+    succeed = learn(label, image, protoObj->points);
+  }
+  catch(...)
+  {
+    log("some exception in learner/recognizer - ignoring");
+  }
   if(succeed)
   {
     log("OK, learned a new view");
