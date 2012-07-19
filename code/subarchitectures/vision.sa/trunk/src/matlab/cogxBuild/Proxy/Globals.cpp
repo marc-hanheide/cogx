@@ -17,8 +17,9 @@ class CInitializer
 {
 public:
    CInitializer() {
-      INFO("VisualLearnerProxy initializing\n");
+      INFO("VisualLearnerProxy initializing");
       InitVisualLearnerLib();
+      DEBUG("InitVisualLearnerLib compelted.");
 
       INFO("ClfStartConfig='" << ClfStartConfig << "'");
 
@@ -27,11 +28,14 @@ public:
       CLFstart(clfConfig);
    }
    ~CInitializer() {
-      INFO("VisualLearnerProxy terminating\n");
+      INFO("VisualLearnerProxy terminating");
       TermVisualLearnerLib();
    }
 
    void initEnumeration() {
+      DEBUG("initializing Enumerator");
+#if 0
+      // This doesn't work when the model is empty!
       try {
          Enumerator.clear();
          labelConceptMap.clear();
@@ -46,23 +50,36 @@ public:
             string label((const char*)mws);
             Enumerator.addMapping(label, i+1);
             labelConceptMap[label] = concept;
-            printf(" ... %d .. %s .. c%d \n", i+1, label.c_str(), concept);
+            INFO(" ... id:" << (i+1) << " .. l:" << label << " .. c:" << concept);
          }
+         return;
       }
       catch (...) {
          WARN(" **** FAILED to extract from Matlab: Coma.avNames, Coma.SCC");
-         Enumerator.clear();
-         Enumerator.addMapping("red", 1);
-         Enumerator.addMapping("green", 2);
-         Enumerator.addMapping("blue", 3);
-         Enumerator.addMapping("yellow", 4);
-         Enumerator.addMapping("black", 5);
-         Enumerator.addMapping("white", 6);
-         Enumerator.addMapping("orange", 7);
-         Enumerator.addMapping("pink", 8);
-         Enumerator.addMapping("compact", 9);
-         Enumerator.addMapping("elongated", 10);
       }
+#endif
+      labelConceptMap.clear();
+      labelConceptMap["red"] = 1;
+      labelConceptMap["green"] = 1;
+      labelConceptMap["blue"] = 1;
+      labelConceptMap["yellow"] = 1;
+      labelConceptMap["orange"] = 1;
+      labelConceptMap["black"] = 1;
+      labelConceptMap["white"] = 1;
+      labelConceptMap["pink"] = 1;
+      labelConceptMap["compact"] = 2;
+      labelConceptMap["elongated"] = 2;
+      Enumerator.clear();
+      Enumerator.addMapping("red", 1);
+      Enumerator.addMapping("green", 2);
+      Enumerator.addMapping("blue", 3);
+      Enumerator.addMapping("yellow", 4);
+      Enumerator.addMapping("black", 5);
+      Enumerator.addMapping("white", 6);
+      Enumerator.addMapping("orange", 7);
+      Enumerator.addMapping("pink", 8);
+      Enumerator.addMapping("compact", 9);
+      Enumerator.addMapping("elongated", 10);
    }
 
 } *pInitializer=NULL;

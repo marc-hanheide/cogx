@@ -19,12 +19,12 @@
 #include "Globals.h"
 #include "Conversion.h"
 
+#include "LoggerMacro.h"
+
 using namespace std;
 using namespace VisionData;
 
 namespace matlab {
-
-#include "LoggerMacro.h"
 
 static void addLabels(mwArray &ans, double weight, vector<string> &labels, vector<double> &probs)
 {
@@ -164,6 +164,10 @@ void VL_update_model(ProtoObject &Object, std::vector<string>& labels, std::vect
       for (unsigned i = 0; i < labels.size(); i++) {
         if (weights[i] > 0) {
            double en = (double) Enumerator.getEnum(labels[i]);
+           if (en < 0) {
+              ERROR("LEARN: Enumerator doesn't know '" << labels[i] << "'"); 
+              continue;
+           }
            DEBUG("VisualLearner will LEARN " << labels[i] << "(" << trunc(en) << ")"); 
            avw(row, 1) =  (double) en;
            avw(row, 2) =  (double) weights[i];
@@ -179,6 +183,10 @@ void VL_update_model(ProtoObject &Object, std::vector<string>& labels, std::vect
       for (unsigned i = 0; i < labels.size(); i++) {
         if (weights[i] < 0) {
            double en = (double) Enumerator.getEnum(labels[i]);
+           if (en < 0) {
+              ERROR("UNLEARN: Enumerator doesn't know '" << labels[i] << "'"); 
+              continue;
+           }
            DEBUG("VisualLearner will UNLEARN " << labels[i] << "(" << trunc(en) << ")"); 
            avw(row, 1) =  (double) en;
            avw(row, 2) =  (double) -weights[i];
@@ -205,12 +213,16 @@ void VL_introspect(vector<string>& labels, vector<int>& labelConcepts, vector<do
       double label = newGains.Get(mwSize(2), i+1, 1);
       double fgain = newGains.Get(mwSize(2), i+1, 2);
       string strLabel = Enumerator.getName((int)label);
+      if (strLabel == "") {
+         WARN("No label for value " << (int)label << " that was returned by matlab (newGains).");
+         continue;
+      }
       labels.push_back(strLabel);
       labelConcepts.push_back(labelConceptMap[strLabel]);
       gains.push_back(fgain);
 
-      //printf(" ... label '%s' gain %lf\n", strLabel.c_str(), fgain);
-      DEBUG(" ... label '" << strLabel << "' gain " << fgain);
+      DEBUG(" ... label '" << strLabel << "', concept " << labelConceptMap[strLabel]
+            << ", gain " << fgain);
    }
 }
 
