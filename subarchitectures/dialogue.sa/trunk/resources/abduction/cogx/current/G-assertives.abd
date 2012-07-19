@@ -100,5 +100,5 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 %	? generate : reference_generation(BeliefAddr, no, yes, RelationRE, []),
 %	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, []),
 
-	event : produce_text(['I', am, sure, this, object, is, Label, '.', 'I', have, updated, my, models, accordingly]) / -1.0.
+	event : produce_text(['I', know, this, object, is, Label, '.', 'I', will, update, my, model]) / -1.0.
 
