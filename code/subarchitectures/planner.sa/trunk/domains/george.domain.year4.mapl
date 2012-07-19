@@ -59,8 +59,6 @@
     (shape-requested ?v - VisualObject)
     (objecttype-requested ?v - VisualObject)
 
-    (learning-possible)
-
     (allow-polar-color-question ?v - VisualObject ?c - ColorName ?r - Robot)
     (allow-polar-shape-question ?v - VisualObject ?s - ShapeName ?r - Robot)
     (allow-polar-objecttype-question ?v - VisualObject ?t - ObjecttypeName ?r - Robot)
@@ -314,19 +312,6 @@
     )
   )
 
-  (:derived (learning-possible)
-    (exists (?v - VisualObject)
-      (and
-        (not (= (presence ?v) REMOVED))
-        (or
-          (color-requested ?v)
-          (shape-requested ?v)
-          (objecttype-requested ?v)
-        )
-      )
-    )
-  )
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;                     ACTIONS                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -342,7 +327,6 @@
       (and
         (= (current-viewcone ?r) ?vc1)
         (not (last-action-was-head-movement))
-        (not (learning-possible))
       )
     :effect
       (and
@@ -363,7 +347,6 @@
       (and
         (= (current-viewcone ?r) ?vc)
         (= (target-object ?vc) ?p)
-        (not (learning-possible))
       )
     :effect
       (and
@@ -383,7 +366,6 @@
     :precondition
       (and
         (is-in-robot-initiated-mode ?r)
-        (not (learning-possible))
         (not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
         (is-looking-and-eventually-pointing-at ?r ?v)
       )
@@ -403,7 +385,6 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (not (learning-possible))
         (is-in-robot-initiated-mode ?r)
         (not (exists (?c1 - ColorName) (= (attributed-color ?v) ?c1)))
         (is-looking-and-eventually-pointing-at ?r ?v)
@@ -425,7 +406,6 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
-        (not (learning-possible))
         (is-in-robot-initiated-mode ?r)
         (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
         (is-looking-and-eventually-pointing-at ?r ?v)
@@ -446,7 +426,6 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (not (learning-possible))
         (is-in-robot-initiated-mode ?r)
         (not (exists (?s1 - ShapeName) (= (attributed-shape ?v) ?s1)))
         (is-looking-and-eventually-pointing-at ?r ?v)
@@ -468,7 +447,6 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
-        (not (learning-possible))
         (is-in-robot-initiated-mode ?r)
         (not (exists (?t - ObjecttypeName) (= (attributed-objecttype ?v) ?t)))
         (is-looking-and-eventually-pointing-at ?r ?v)
@@ -489,7 +467,6 @@
     :parameters (?v - VisualObject ?t - ObjecttypeName)
     :precondition
       (and
-        (not (learning-possible))
         (is-in-robot-initiated-mode ?r)
         (not (exists (?t1 - ObjecttypeName) (= (attributed-objecttype ?v) ?t1)))
         (is-looking-and-eventually-pointing-at ?r ?v)
@@ -579,7 +556,6 @@
         ;;tutor initiated
         (and
           (not (is-in-robot-initiated-mode ?r))
-	  (not (color-learned ?v))
           (= (attributed-color ?v) ?c)
           (not (= ?c UNKNOWN_COLOR))
           (is-looking-at ?r ?v)
@@ -589,7 +565,6 @@
         ;;robot initiated
         (and
           (not (= ?v VISUAL_OBJECT_DUMMY))
-          (not (color-learned ?v))
           (= (attributed-color ?v) ?c)
           (not (= ?c UNKNOWN_COLOR))
           (is-looking-and-eventually-pointing-at ?r ?v)
@@ -612,7 +587,6 @@
     :precondition
       (and
         (= (autonomous-color-learning-announced ?v) ?c)
-         (not (learning-possible))
       )
     :effect 
       (and
@@ -628,9 +602,7 @@
     :precondition
       (and
         (is-in-robot-initiated-mode ?r)
-        (not (learning-possible))
         (allow-autonomous-color-learning ?v ?c ?r)
-        (not (color-learned ?v))
         (not (exists (?c1 - ColorName) (= (attributed-color ?v) ?c1)))
         (is-looking-and-eventually-pointing-at ?r ?v)
         ;(is-looking-at ?r ?v)
@@ -652,7 +624,6 @@
         ;;tutor initiated
         (and
           (not (is-in-robot-initiated-mode ?r))
-	  (not (shape-learned ?v))
           (= (attributed-shape ?v) ?s)
           (not (= ?s UNKNOWN_SHAPE))
           (is-looking-at ?r ?v)
@@ -662,7 +633,6 @@
         ;;robot initiated
         (and
           (not (= ?v VISUAL_OBJECT_DUMMY))
-          (not (shape-learned ?v))
           (= (attributed-shape ?v) ?s)
           (not (= ?s UNKNOWN_SHAPE))
           (is-looking-and-eventually-pointing-at ?r ?v)
@@ -686,7 +656,6 @@
       ;;autonomous learning case
       (and
         (= (autonomous-shape-learning-announced ?v) ?s)
-        (not (learning-possible))
       )
     :effect 
       (and
@@ -702,7 +671,6 @@
     :precondition
       (and
         (is-in-robot-initiated-mode ?r)
-        (not (learning-possible))
         (allow-autonomous-shape-learning ?v ?s ?r)
         (not (shape-learned ?v))
         (not (exists (?s1 - ShapeName) (= (attributed-shape ?v) ?s1)))
@@ -725,7 +693,6 @@
          ;;tutor initiated
         (and
           (not (is-in-robot-initiated-mode ?r))
-          (not (objecttype-learned ?v))
           (= (attributed-objecttype ?v) ?t)
           (not (= ?t UNKNOWN_OBJECTTYPE))
           (is-looking-at ?r ?v)
@@ -735,7 +702,6 @@
         ;;robot initiated
         (and
           (not (= ?v VISUAL_OBJECT_DUMMY))
-          (not (objecttype-learned ?v))
           (= (attributed-objecttype ?v) ?t)
           (not (= ?t UNKNOWN_OBJECTTYPE))
           (is-looking-and-eventually-pointing-at ?r ?v)
@@ -764,7 +730,6 @@
         (not (= ?v VISUAL_OBJECT_DUMMY))
         (is-looking-at ?r ?v)
         (= (presence ?v) VISIBLE)
-        (not (learning-possible))
       )
     :effect
       (and
@@ -785,7 +750,6 @@
         (= (currently-points-at ?r) ?v)
         (is-looking-at ?r ?v)
         (is-potential-object-in-question ?v)
-        (not (learning-possible))
       )
     :effect 
       (and
@@ -805,7 +769,6 @@
         (not (exclude-color-description ?r))
         (>= (color-prob ?v) (believe-in-color-threshold ?r))
         (= (color ?v) ?c)
-        (not (learning-possible))
 
         ;;all other objects are either already eliminated from potential objects,
         ;;removed from the scene or we know they have another color
@@ -840,7 +803,6 @@
         (not (exclude-shape-description ?r))
         (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
         (= (shape ?v) ?s)
-        (not (learning-possible))
 
         ;;all other objects are either already eliminated from potential objects,
         ;;removed from the scene or we know they have another shape
@@ -875,7 +837,6 @@
         (not (exclude-objecttype-description ?r))
         (>= (objecttype-prob ?v) (believe-in-objecttype-threshold ?r))
         (= (objecttype ?v) ?t)
-        (not (learning-possible))
 
         ;;all other objects are either already eliminated from potential objects,
         ;;removed from the scene or we know they have another objecttype
@@ -911,7 +872,6 @@
         (arm-in-resting-position ?r)
         (update (arm-in-resting-position ?r) true)
         (not (last-action-was-head-movement))
-        (not (learning-possible))
         (increase (total-cost) 8)
       )
   )
@@ -923,7 +883,7 @@
   (:action ask-for-and-object-with-color
     :agent (?r - Robot)
     :parameters (?c - ColorName)
-    :precondition (and (not (learning-possible)))
+    :precondition (and)
     :effect 
       (and 
      	(assign (object-of-desired-color-available ?r) ?c)
@@ -936,7 +896,7 @@
   (:action ask-for-and-object-with-shape
     :agent (?r - Robot)
     :parameters (?s - ShapeName)
-    :precondition (and (not (learning-possible)))
+    :precondition (and)
     :effect 
       (and 
      	(assign (object-of-desired-shape-available ?r) ?s)
