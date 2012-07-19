@@ -143,7 +143,7 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 
 	}
 
-	private MotiveFilterManager component; // @jve:decl-index=0:
+	protected MotiveFilterManager component; // @jve:decl-index=0:
 
 	private JFrame jFrame = null; // @jve:decl-index=0:visual-constraint="1,21"
 	private JPanel jContentPane = null;
@@ -153,8 +153,13 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 		for (FilterPanel p : panels.values()) {
-			if (motive.getClass().isAssignableFrom(p.getType()))
+			if (p.getType().isAssignableFrom(motive.getClass())) {
 				return p.getPriority();
+			}
+			// else {
+			// component.println(p.getType() + " is NOT assignable from "
+			// + motive.getClass());
+			// }
 		}
 		return MotivePriority.UNSURFACE;
 	}

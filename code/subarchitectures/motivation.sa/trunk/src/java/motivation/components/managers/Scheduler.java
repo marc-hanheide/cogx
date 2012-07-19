@@ -6,6 +6,7 @@ package motivation.components.managers;
 import java.util.HashMap;
 import java.util.Map;
 
+import motivation.components.filters.DelayFilterDisplayClient;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
@@ -23,6 +24,18 @@ import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
  * 
  */
 public class Scheduler extends AbstractScheduler {
+
+	private final DelayFilterDisplayClient m_display = DelayFilterDisplayClient.getClient();
+
+	public Scheduler() {
+		super();
+	}
+
+	@Override
+	public void start() {
+		super.start();
+		m_display.connectIceClient(this);
+	}
 
 	protected static boolean containsUnsurfaced(
 			Map<WorkingMemoryAddress, Motive> possibleGoals) {
@@ -57,6 +70,9 @@ public class Scheduler extends AbstractScheduler {
 				log("we currently have " + activeGoals.size()
 						+ " active goals.");
 
+				
+				m_display.updateActiveGoals(activeGoals);
+				
 				if (executionFuture != null
 						&& (executionFuture.isDone() || executionFuture
 								.isCancelled())) {
