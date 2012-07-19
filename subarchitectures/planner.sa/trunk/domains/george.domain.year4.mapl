@@ -848,7 +848,7 @@
       (and
 	(not (is-potential-object-in-question ?v))
         (not (last-action-was-head-movement))
-        (increase (total-cost) 2)
+        (increase (total-cost) 10)
       )
   )
 
