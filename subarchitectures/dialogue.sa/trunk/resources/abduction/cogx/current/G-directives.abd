@@ -9,7 +9,7 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, feature, _Feature),
 	i : int : string_content(IntAddr, value, Value),
 
-	event : produce_text([show, me, something, Value, please]) / -1.0.
+	event : produce_text(['I', would, like, to, see, something, Value]) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
