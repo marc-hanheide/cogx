@@ -382,7 +382,7 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
       <widget class="QComboBox" name="edHuman">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>1</horstretch>
+         <horstretch>10</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
@@ -405,6 +405,12 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
      </item>
      <item>
       <widget class="QPushButton" name="btSay">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>&amp;Say</string>
        </property>
@@ -418,6 +424,12 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
      </item>
      <item>
       <widget class="QPushButton" name="btClear">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>Clear</string>
        </property>
@@ -425,6 +437,12 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
      </item>
      <item>
       <widget class="QPushButton" name="btShowPresets">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="maximumSize">
         <size>
          <width>32</width>
