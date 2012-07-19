@@ -221,10 +221,22 @@
     :effect (assign (color-prob ?v) 0)
   )
 
+  (:init-rule set-color
+    :parameters (?v - VisualObject)
+    :precondition (= (color ?v) UNKNOWN)
+    :effect (assign (color ?v) UNDETERMINED_COLOR)
+  )
+
   (:init-rule set-shape-prob
     :parameters (?v - VisualObject)
     :precondition (= (shape-prob ?v) UNKNOWN)
     :effect (assign (shape-prob ?v) 0)
+  )
+
+  (:init-rule set-shape
+    :parameters (?v - VisualObject)
+    :precondition (= (shape ?v) UNKNOWN)
+    :effect (assign (shape ?v) UNDETERMINED_SHAPE)
   )
 
   (:init-rule set-objecttype-prob
