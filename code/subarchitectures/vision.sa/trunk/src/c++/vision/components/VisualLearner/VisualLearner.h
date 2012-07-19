@@ -25,6 +25,7 @@ public:
    virtual void runComponent();
    virtual void configure(const std::map<std::string,std::string> & _config);
    virtual void start();
+   void setModelToLoad(const std::string& filename);
 
 #ifdef FEAT_VISUALIZATION
 private:
@@ -47,11 +48,14 @@ private:
 #endif
 
 private:
-   // Two request queues with a single monitor
+   // Request queues with a single monitor;  mModelToLoad_Queue is a 1-element queue
+   IceUtil::Monitor<IceUtil::Mutex> m_RrqMonitor;
    TWmAddressVector m_RecogTaskId_Queue;
    TWmAddressVector m_LearnTaskId_Queue;
    //TWmAddressVector m_AffordanceTaskId_Queue; // Affordance Recognition
-   IceUtil::Monitor<IceUtil::Mutex> m_RrqMonitor;
+   std::string mModelToLoad_Queue;
+
+   // WM Entries created only once
    cast::cdl::WorkingMemoryAddress m_addrColorStatus;
    cast::cdl::WorkingMemoryAddress m_addrShapeStatus;
 
