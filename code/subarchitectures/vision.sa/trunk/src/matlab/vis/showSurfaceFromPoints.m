@@ -5,6 +5,8 @@
 %
 function showSurfaceFromPoints( x, rgb3d, LRaxRoi )
 
+global Params
+
 N_max = min([100, size(x,1)]) ;
 if isempty(x)
     return ;
@@ -91,6 +93,7 @@ if ~isempty( LRaxRoi )
             grid(LRaxRoi,'off') ;
             box(LRaxRoi,'on') ;   
             view(LRaxRoi,[37, 42]) ;
+            view(LRaxRoi,[Params.D3view.az,Params.D3view.el]) ;
             set(LRaxRoi,'XTick',[]) ;
             set(LRaxRoi,'YTick',[]) ;
             set(LRaxRoi,'ZTick',[]) ;
@@ -103,6 +106,7 @@ end
 % view([-130, 30]) ;
 % view([-0, 60]) ;
 view([-163, 48]) ;
+view([16, -48]) ;
 box on ; 
 % view([-50, 20]) ; 
 axis equal;axis tight ;

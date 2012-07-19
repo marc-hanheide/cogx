@@ -10,6 +10,9 @@ function [F,rgb3d]=extAPfeatures(X,B,FV,pts3d)
 
 %features' variantS
 
+global Params
+    
+
 if nargin < 3
     FV=6;%5;%4;
 end;
@@ -64,22 +67,24 @@ else
         V0=reshape(HSV,IH*IW,1,3);
         V=V0(idxs,:);
         
-        %get median
-        medHSV=median(V)';
+        %get median or the largest mode
+        if Params.colorExt==1 %1: median
+            medHSV=median(V)';
+        else %2: main mode
+            idx = randperm(size(V,1)) ;
+            num_sel = min([100, length(idx) ]) ;
+            data = V(idx(1:num_sel),:) ;
+            %       N_max = min([size(V,1),100]) ;
+            %       idx = round(linspace(1,size(x,1),N_max)) ;
+            %       data = V(idx,:) ;
+            [clustCent,num_in_cluster] = getModesInData( data ) ;
+            if ~isempty(num_in_cluster)
+                medHSV = clustCent(:,1) ;
+            else
+                medHSV = median(V)';
+            end
+        end
         
-        % %       idx = randperm(size(V,1)) ;
-        % %       num_sel = min([100, length(idx) ]) ;
-        % %       data = V(idx(1:num_sel),:) ;
-        % % %       N_max = min([size(V,1),100]) ;
-        % % %       idx = round(linspace(1,size(x,1),N_max)) ;
-        % % %       data = V(idx,:) ;
-        % %       [clustCent,num_in_cluster] = getModesInData( data ) ;
-        % %       if ~isempty(num_in_cluster)
-        % %           medHSV = clustCent(:,1) ;
-        % %       else
-        % %          medHSV = median(V)';
-        % %       end
-        % medHSV = median(V)';
         if length(medHSV) == 3
             [hu,sa,in]=deal(medHSV(1),medHSV(2),medHSV(3));
         else
