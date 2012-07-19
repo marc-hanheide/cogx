@@ -1,4 +1,4 @@
-package org.cognitivesystems.binder.ref;
+package de.dfki.lt.tr.cast.dialogue;
 
 import cast.UnknownSubarchitectureException;
 import cast.cdl.CASTTime;
