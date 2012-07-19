@@ -29,6 +29,7 @@ public class CogXLexicon {
         simplifications.put("cereal box", "cerealbox");
         simplifications.put("box of cereals", "cerealbox");
         simplifications.put("drink can", "drinkcan");
+        simplifications.put("milk box", "milk");
 
         String result = s;
         for (Map.Entry<String, String> exp : simplifications.entrySet()) {
