@@ -373,8 +373,50 @@ resolution(t_belief)
 2       !objecttype(a1,P_milk) v !type_constraint(A_noodle) v !resolution(a1) v !belief(a1)
 -2.05			!objecttype(a1,P_milk) v !type_constraint(A_noodle) v resolution(a1) v !belief(a1)
 
+// bottle (assuming types 12345678)
 
+2.2				!objecttype(a1,P_bottle) v !type_constraint(A_bottle) v resolution(a1) v !belief(a1)
+-2.15			!objecttype(a1,P_bottle) v !type_constraint(A_bottle) v !resolution(a1) v !belief(a1)
 
+-2			!objecttype(a1,P_mug) v !type_constraint(A_bottle) v resolution(a1) v !belief(a1)
+1.8       !objecttype(a1,P_mug) v !type_constraint(A_bottle) v !resolution(a1) v !belief(a1)
+2.1       !objecttype(a1,P_bottle) v !type_constraint(A_mug) v !resolution(a1) v !belief(a1)
+-2			!objecttype(a1,P_bottle) v !type_constraint(A_mug) v resolution(a1) v !belief(a1)
+
+-2.2			!objecttype(a1,P_cerealbox) v !type_constraint(A_bottle) v resolution(a1) v !belief(a1)
+2.3       !objecttype(a1,P_cerealbox) v !type_constraint(A_bottle) v !resolution(a1) v !belief(a1)
+2       !objecttype(a1,P_bottle) v !type_constraint(A_cerealbox) v !resolution(a1) v !belief(a1)
+-2.05			!objecttype(a1,P_bottle) v !type_constraint(A_cerealbox) v resolution(a1) v !belief(a1)
+
+-2.05			!objecttype(a1,P_teabox) v !type_constraint(A_bottle) v resolution(a1) v !belief(a1)
+2       !objecttype(a1,P_teabox) v !type_constraint(A_bottle) v !resolution(a1) v !belief(a1)
+2       !objecttype(a1,P_bottle) v !type_constraint(A_teabox) v !resolution(a1) v !belief(a1)
+-2.1			!objecttype(a1,P_bottle) v !type_constraint(A_teabox) v resolution(a1) v !belief(a1)
+
+-2.2			!objecttype(a1,P_drinkcan) v !type_constraint(A_bottle) v resolution(a1) v !belief(a1)
+2.3       !objecttype(a1,P_drinkcan) v !type_constraint(A_bottle) v !resolution(a1) v !belief(a1)
+2       !objecttype(a1,P_bottle) v !type_constraint(A_drinkcan) v !resolution(a1) v !belief(a1)
+-2.05			!objecttype(a1,P_bottle) v !type_constraint(A_drinkcan) v resolution(a1) v !belief(a1)
+
+-2			!objecttype(a1,P_ball) v !type_constraint(A_bottle) v resolution(a1) v !belief(a1)
+1.8       !objecttype(a1,P_ball) v !type_constraint(A_bottle) v !resolution(a1) v !belief(a1)
+2.1       !objecttype(a1,P_bottle) v !type_constraint(A_ball) v !resolution(a1) v !belief(a1)
+-2			!objecttype(a1,P_bottle) v !type_constraint(A_ball) v resolution(a1) v !belief(a1)
+
+-2.2			!objecttype(a1,P_block) v !type_constraint(A_bottle) v resolution(a1) v !belief(a1)
+2.3       !objecttype(a1,P_block) v !type_constraint(A_bottle) v !resolution(a1) v !belief(a1)
+2       !objecttype(a1,P_bottle) v !type_constraint(A_block) v !resolution(a1) v !belief(a1)
+-2.05			!objecttype(a1,P_bottle) v !type_constraint(A_block) v resolution(a1) v !belief(a1)
+
+-2.2			!objecttype(a1,P_noodle) v !type_constraint(A_bottle) v resolution(a1) v !belief(a1)
+2.3       !objecttype(a1,P_noodle) v !type_constraint(A_bottle) v !resolution(a1) v !belief(a1)
+2       !objecttype(a1,P_bottle) v !type_constraint(A_noodle) v !resolution(a1) v !belief(a1)
+-2.05			!objecttype(a1,P_bottle) v !type_constraint(A_noodle) v resolution(a1) v !belief(a1)
+
+-2.2			!objecttype(a1,P_milk) v !type_constraint(A_bottle) v resolution(a1) v !belief(a1)
+2.3       !objecttype(a1,P_milk) v !type_constraint(A_bottle) v !resolution(a1) v !belief(a1)
+2       !objecttype(a1,P_bottle) v !type_constraint(A_milk) v !resolution(a1) v !belief(a1)
+-2.05			!objecttype(a1,P_bottle) v !type_constraint(A_milk) v resolution(a1) v !belief(a1)
 
 // -7.23121  resolution(a1)
 
