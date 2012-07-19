@@ -7,8 +7,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.JOptionPane;
 
-import vision.execution.george.VisionActionInterface;
-
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.ConsistencyException;
@@ -469,14 +467,14 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 				Map<String, WorkingMemoryAddress> _addressContent) {
 			super.addAddressContent(_addressContent);
 
-//			// also flag grounded belief with reference potential
-//			try {
-//				((AbstractDialogueActionInterface<?>) getComponent())
-//						.addFeature(getAction().beliefAddress,
-//								IS_POTENTIAL_OBJECT_IN_QUESTION, true);
-//			} catch (SubarchitectureComponentException e) {
-//				logException(e);
-//			}
+			// // also flag grounded belief with reference potential
+			// try {
+			// ((AbstractDialogueActionInterface<?>) getComponent())
+			// .addFeature(getAction().beliefAddress,
+			// IS_POTENTIAL_OBJECT_IN_QUESTION, true);
+			// } catch (SubarchitectureComponentException e) {
+			// logException(e);
+			// }
 		}
 
 		/**
@@ -524,7 +522,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 					prob = 0;
 					// HACK add unlearning goal via belief
 					BeliefUtils.addFeature(pb, MOTIVE_TRANSFER, feature
-							+ VisionActionInterface.UNLEARNED_FEATURE_POSTFIX);
+							+ "-unlearned");
 					BeliefUtils.addFeature(pb, MOTIVE_TRANSFER_VALUE, value);
 				}
 
