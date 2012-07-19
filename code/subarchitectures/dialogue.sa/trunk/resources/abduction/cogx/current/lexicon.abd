@@ -17,7 +17,7 @@ valid_shape(compact).
 valid_shape(elongated).
 
 % object types
-valid_objecttype(thing, box, box).
+%valid_objecttype(thing, box, box).
 valid_objecttype(thing, ball, ball).
 valid_objecttype(thing, mug, mug).
 valid_objecttype(thing, block, block).
