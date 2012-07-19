@@ -36,9 +36,11 @@
     CEREALBOX - ObjecttypeName
     MUG - ObjecttypeName
     DRINKCAN - ObjecttypeName
-    BOX - ObjecttypeName
     BALL - ObjecttypeName
     BLOCK - ObjecttypeName
+    NOODLE - ObjecttypeName
+    MILK - ObjecttypeName
+    BOTTLE - ObjecttypeName
 
     VISIBLE - Visibility
     WAS-VISIBLE - Visibility
