@@ -163,6 +163,9 @@ void VisualLearner::CMyDisplayClient::handleEvent(const Visualization::TEvent &e
     string fname = event.sourceId + ".mat";
     log("going to load model " + fname);
     matlab::VL_LoadAvModels_from_configured_dir(fname.c_str());
+
+    // Introspect, write to VisualConceptModelStatus
+    pComponent->updateWmModelStatus();
   }
 }
 #endif
@@ -594,13 +597,19 @@ void VisualLearner::updateWmModelStatus()
   vector<double> gains;
   matlab::VL_introspect(labels, labelConcepts, gains);
 
+  debug("Matlab returned:");
+  int count = 0;
   vector<string>::const_iterator plabel = labels.begin();
   vector<int>::const_iterator pconcpt = labelConcepts.begin();
   vector<double>::const_iterator pgain = gains.begin();
   for(; plabel != labels.end() && pconcpt != labelConcepts.end() && pgain != gains.end();
       plabel++, pconcpt++, pgain++)
   {
+    if (*plabel == "") continue;
+    ++count;
+
     // Concept mapping is done in Matlab
+    debug("label '%s', concept %d, gain %.3g", plabel->c_str(), *pconcpt, *pgain);
     if (*pconcpt == 1){ // color concept
       stColor->labels.push_back(*plabel);
       stColor->gains.push_back(*pgain);
@@ -614,6 +623,8 @@ void VisualLearner::updateWmModelStatus()
           *pconcpt, plabel->c_str());
     }
   }
+  if (!count) 
+    debug("Empty model status. Models are probably empty.");
 
   _l_::writeWmStatus(this, stColor, m_addrColorStatus);
   _l_::writeWmStatus(this, stShape, m_addrShapeStatus);
