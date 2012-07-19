@@ -47,14 +47,14 @@ public class VisualObjectMotiveGenerator extends
 	public static final String SHAPE_KEY = "shape";
 	public static final String SHAPE_LEARNT_KEY = SHAPE_KEY
 			+ LEARNT_POSTFIX_KEY;
-	public static final String IDENTITY_KEY = "identity";
+	public static final String IDENTITY_KEY = "objecttype";
 	public static final String IDENTITY_LEARNT_KEY = IDENTITY_KEY
 			+ LEARNT_POSTFIX_KEY;
 
 	// TODO Add config options to set these
 	private boolean m_colourEnabled = true;
 	private boolean m_shapeEnabled = false;
-	private boolean m_identityEnabled = false;
+	private boolean m_identityEnabled = true;
 
 	public VisualObjectMotiveGenerator() {
 		super(VO_TYPE, LearnObjectFeatureMotive.class, MergedBelief.class);
