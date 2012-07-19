@@ -388,7 +388,7 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
        </property>
        <property name="minimumSize">
         <size>
-         <width>200</width>
+         <width>192</width>
          <height>0</height>
         </size>
        </property>
@@ -411,6 +411,12 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="maximumSize">
+        <size>
+         <width>56</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>&amp;Say</string>
        </property>
@@ -429,6 +435,12 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>64</width>
+         <height>16777215</height>
+        </size>
        </property>
        <property name="text">
         <string>Clear</string>
