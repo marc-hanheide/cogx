@@ -293,7 +293,12 @@
 
   (:derived (is-looking-and-eventually-pointing-at ?r - Robot ?v - VisualObject)
     (and
-      (is-looking-at ?r ?v)
+      (exists (?p - ProtoObject)
+        (and 
+          (= (po-is-associated-with ?p) ?v)
+          (= (target-object (current-viewcone ?r)) ?p)
+        )
+      )
       (or
         (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (= (currently-points-at ?r) ?v)
@@ -937,7 +942,6 @@
       )
     :effect 
       (and
-        ;(forall (?v1 - VisualObject) (not (is-potential-object-in-question ?v1)))
 	(not (is-potential-object-in-question ?v))
         (not (last-action-was-head-movement))
         (increase (total-cost) 1)
@@ -1480,8 +1484,6 @@
           (is-in-robot-initiated-mode ?r)
           (not (= ?c UNKNOWN_COLOR))
           (is-looking-at ?r ?v)
-          ;(is-looking-and-eventually-pointing-at ?r ?v)
-          ;(= (is-object-referenced-by-george ?r) ?v)
         )
       )
     :effect 
@@ -1509,8 +1511,6 @@
           (is-in-robot-initiated-mode ?r)
           (not (= ?s UNKNOWN_SHAPE))
           (is-looking-at ?r ?v)
-          ;(is-looking-and-eventually-pointing-at ?r ?v)
-          ;(= (is-object-referenced-by-george ?r) ?v)
         )
       )
     :effect 
