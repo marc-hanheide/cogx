@@ -82,6 +82,8 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 	public static final String MOTIVE_TRANSFER_VALUE = MOTIVE_TRANSFER
 			+ "-value";
 
+	public static final String REQUESTED_POSTFIX = "-requested";
+
 	boolean madeup;
 
 	protected boolean m_fakeIt;
@@ -97,25 +99,28 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 		}
 
 		@Override
-		public TriBool execute() {                    
-                    WorkingMemoryAddress about = getAction().beliefAddress;
-                    String label = getAction().value;
+		public TriBool execute() {
+			WorkingMemoryAddress about = getAction().beliefAddress;
+			String label = getAction().value;
 
-                    try {
-                        AutonomousLearningNotificationIntention aint = new AutonomousLearningNotificationIntention(about, label);
-                        BaseIntention bint = AutonomousLearningNotificationIntention.Transcoder.INSTANCE.tryEncode(aint);
+			try {
+				AutonomousLearningNotificationIntention aint = new AutonomousLearningNotificationIntention(
+						about, label);
+				BaseIntention bint = AutonomousLearningNotificationIntention.Transcoder.INSTANCE
+						.tryEncode(aint);
 
-                        IntentionToAct itoa = new IntentionToAct(bint.stringContent, bint.addressContent);
-                    
-                        getComponent().addToWorkingMemory(newWorkingMemoryAddress(), itoa);
-                    }
-                    catch (Exception ex) {
-                        // this failed, let's go to the fallback solution...
+				IntentionToAct itoa = new IntentionToAct(bint.stringContent,
+						bint.addressContent);
 
-			VerbalisationUtils.verbaliseString(getComponent(),
-					"uh, I know this object is " + getAction().value
-							+ ". I'll update my model");
-                    }
+				getComponent().addToWorkingMemory(newWorkingMemoryAddress(),
+						itoa);
+			} catch (Exception ex) {
+				// this failed, let's go to the fallback solution...
+
+				VerbalisationUtils.verbaliseString(getComponent(),
+						"uh, I know this object is " + getAction().value
+								+ ". I'll update my model");
+			}
 			return TriBool.TRITRUE;
 		}
 	}
@@ -561,6 +566,25 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 				} catch (SubarchitectureComponentException e) {
 					logException(e);
+				}
+
+				// update merged belief directly with requested feature
+				if (!_ii.stringContent.get("asserted-polarity").equals("neg")) {
+					try {
+						MergedBelief mergedBelief = getComponent()
+								.getMemoryEntry(getAction().beliefAddress,
+										MergedBelief.class);
+						CASTIndependentFormulaDistributionsBelief<MergedBelief> mb = CASTIndependentFormulaDistributionsBelief
+								.create(MergedBelief.class, mergedBelief);
+
+						distr = FormulaDistribution.create();
+						distr.add(true, prob);
+						mb.getContent().put(feature + REQUESTED_POSTFIX, distr);
+						getComponent().overwriteWorkingMemory(
+								getAction().beliefAddress, mb.get());
+					} catch (SubarchitectureComponentException e) {
+						logException(e);
+					}
 				}
 
 			}
