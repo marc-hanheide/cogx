@@ -82,7 +82,7 @@
    ;; The result of applying the default knowledge.
    ;; E.g. category(r1) = kitchen AND (dora__in_room cornflakes kitchen) => (obj_exists cornflakes in kitchen)
    ;; Also see the rules below
-;;LF obj_exists => @{state_?block_?step:event}(context ^ <Mood>ind ^ <Tense>pres ^ <Subject>(=var_?block_?step:thing ^ =var ^ <Delimitation>variable ^ <Quantification>unspecific) ^ <Modifier>(often_?block_?step:m-frequency ^ often) ^ <Modifier>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)))
+;;LF p-obj_exists => @{state_?block_?step:event}(context ^ <Mood>ind ^ <Tense>pres ^ <Subject>(=var_?block_?step:thing ^ =var ^ <Delimitation>variable ^ <Quantification>unspecific) ^ <Modifier>(often_?block_?step:m-frequency ^ often) ^ <Modifier>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)))
    (obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room)) - boolean
    (p-obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room) ?c - category) - number
 
