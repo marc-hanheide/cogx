@@ -166,7 +166,7 @@ public class VisualSalienceReferenceResolution
                             FormulaProbPair fpp = fvs.values.get(0);
                             if (fpp.val instanceof ElementaryFormula) {
                                 ElementaryFormula formula = (ElementaryFormula) fpp.val;
-                                return "visible".equals(formula.prop);
+                                return "visible".equals(formula.prop) || "was-visible".equals(formula.prop);
                             }
                         }
                     }
