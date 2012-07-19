@@ -22,6 +22,7 @@ package de.dfki.lt.tr.dialogue.parseselection;
 
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parse.PackedLFs;
+import de.dfki.lt.tr.dialogue.util.CogXLexicon;
 import de.dfki.lt.tr.dialogue.util.LFPacking;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
 import java.util.Arrays;
@@ -81,6 +82,9 @@ public class SimpleParseSelector implements ParseSelector {
 			else if (lf.root.sort.startsWith("e-")) {
 				// fine as well
 			}
+                        else if (lf.root.prop != null && lf.root.prop.prop != null && CogXLexicon.isObjectType(lf.root.prop.prop)) {
+                            // fine as well (short answer to a objecttype question)
+                        }
 			else {
 				if (LFUtils.lfNominalGetFeature(lf.root, "Mood").isEmpty()) {
 					ok = false;

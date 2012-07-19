@@ -21,25 +21,26 @@ valid_objecttype(thing, box, box).
 valid_objecttype(thing, ball, ball).
 valid_objecttype(thing, mug, mug).
 valid_objecttype(thing, block, block).
-valid_objecttype(thing, schokomusli, schokomusli).
-valid_objecttype(thing, fruchtemusli, fruchtemusli).
-valid_objecttype(thing, weetabix, weetabix).
-valid_objecttype(thing, bircher, bircher).
-valid_objecttype(thing, toppas, toppas).
-valid_objecttype(thing, chocos, chocos).
-valid_objecttype(thing, darjeeling, darjeeling).
 valid_objecttype(thing, cerealbox, cerealbox).
 valid_objecttype(thing, teabox, teabox).
 valid_objecttype(thing, drinkcan, drinkcan).
 
+%-------------------------------------------------------------------------
+% General object types.
+
 general_objecttype(thing, object).
 general_objecttype(thing, thing).
+
+%-------------------------------------------------------------------------
 
 fancy_verbalisation(cerealbox, [cereal, box]).
 fancy_verbalisation(teabox, [tea, box]).
 fancy_verbalisation(drinkcan, [drink, can]).
 
-valid_material(_, cornflakes, cornflakes).
-valid_material(_, cookies, cookies).
+%-------------------------------------------------------------------------
+% Old stuff.
+
+%valid_material(_, cornflakes, cornflakes).
+%valid_material(_, cookies, cookies).
 
 %-------------------------------------------------------------------------
