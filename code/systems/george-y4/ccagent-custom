@@ -2,12 +2,13 @@
 
 world=instantiations/gazebo/test1.world 
 #world=instantiations/gazebo/george-01.world 
+
 #gazebo="--gazebo-world=$world --build"
 #player="--player=instantiations/player/cogx-platform-sim.cfg"
 #abducer="--abducer"
-#display="--display-server"
+display="--display-server"
 #peekabot="--peekabot"
-#golem="--golem=dummy"
+golem="--golem=dummy"
 #cleanup="--cleanup-script=svnst.sh"
 #speech="--text2speech"
 ./ccagent --rsync $peekabot  $player $gazebo $display $abducer $golem $cleanup $speech
