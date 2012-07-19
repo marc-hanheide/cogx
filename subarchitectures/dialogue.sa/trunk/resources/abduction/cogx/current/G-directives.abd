@@ -142,10 +142,10 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, type, 'question'),
 	i : int : string_content(IntAddr, subtype, 'verification'),
-	i : int : address_content(IntAddr, about, BeliefAddr),
+	i : int : address_content(IntAddr, about, _BeliefAddr),
 	i : int : address_content(IntAddr, 'verification-of', _IntSetAddr),
 
-	? generate : reference_generation(BeliefAddr, yes, no, _ObjectRE, []),
+%	? generate : reference_generation(BeliefAddr, yes, no, _ObjectRE, []),
 
 	event : produce_text([did, you, mean, this, object, '?']) / -1.0.
 
@@ -155,9 +155,24 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, type, 'question'),
 	i : int : string_content(IntAddr, subtype, 'verification'),
 	i : int : string_content(IntAddr, description, Description),
-	i : int : address_content(IntAddr, about, BeliefAddr),
+	i : int : address_content(IntAddr, about, _BeliefAddr),
 	i : int : address_content(IntAddr, 'verification-of', _IntSetAddr),
 
-	? generate : reference_generation(BeliefAddr, yes, no, _ObjectRE, []),
+%	? generate : reference_generation(BeliefAddr, yes, no, _ObjectRE, []),
+	beautify_description(Description, FullDescr),
 
-	event : produce_text([did, you, mean, the, Description, object, '?']) / -4.0.
+	event : produce_text([did, you, mean, FullDescr, '?']) / -10.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+beautify_description(Descr, [the, Descr, object]) <-
+	is_okay_description(Descr) / 5.0.
+
+beautify_description(Descr, [the, NiceType]) <-
+	valid_objecttype(_Sort, Descr, Type),
+	verbalised_objecttype(Type, NiceType).
+
+verbalised_objecttype(X, X) <-
+	vot_no_better_verbalisation_for(X) / 2.0.
+verbalised_objecttype(X, Y) <-
+	vot_fancy_verbalisation(X, Y).
