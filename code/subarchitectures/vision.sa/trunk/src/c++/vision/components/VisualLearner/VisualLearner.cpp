@@ -62,6 +62,7 @@ VisualLearner::VisualLearner()
   m_ClfConfigFile = "";
   logger.pComponent = this;
   matlab::CLoggerProxy::setLogger(logger);
+  m_display.setClientData(this);
 }
 
 VisualLearner::~VisualLearner()
@@ -361,7 +362,10 @@ void VisualLearner::runComponent()
     if (newModelToLoad != "") {
       log("Going to load model " + newModelToLoad);
       matlab::VL_LoadAvModels_from_configured_dir(newModelToLoad.c_str());
+      log("Going to update model status ");
+      sleepComponent(100);
       updateWmModelStatus();
+      log("Model status updated.");
     }
 
 #if 0
@@ -596,14 +600,22 @@ void VisualLearner::updateWmModelStatus()
       pComponent->addToWorkingMemory(addr, pStatus);
       pComponent->log("VisualConceptModelStatus added ... %s", descAddr(addr).c_str());
     }
+
+    static void clearWmStatusLabels(VisualConceptModelStatusPtr& pStatus)
+    {
+      pStatus->labels.clear();
+      pStatus->gains.clear();
+    }
   };
 
   debug("::updateWmModelStatus");
   VisualConceptModelStatusPtr stColor, stShape;
 
   _l_::getWmStatus(this, stColor, m_addrColorStatus);
+  _l_::clearWmStatusLabels(stColor);
   stColor->concept = "color";
   _l_::getWmStatus(this, stShape, m_addrShapeStatus);
+  _l_::clearWmStatusLabels(stShape);
   stShape->concept = "shape";
 
   vector<string> labels;
