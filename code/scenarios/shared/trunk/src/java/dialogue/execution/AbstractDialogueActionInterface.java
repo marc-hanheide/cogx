@@ -100,6 +100,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 		@Override
 		public TriBool execute() {
+
 			VerbalisationUtils.verbaliseString(getComponent(),
 					"I know this object is " + getAction().value
 							+ ". I'll update my model");
@@ -110,7 +111,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 	public abstract static class IntentionDialogueAction<T extends Action>
 			extends NonBlockingActionExecutor<T> {
 
-		//seconds to wait for answer
+		// seconds to wait for answer
 		private static final int DLG_TIMEOUT = 180;
 
 		private final int m_timeoutSeconds;
@@ -521,12 +522,14 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 				if (_ii.stringContent.get("asserted-polarity").equals("neg")) {
 					prob = 0;
-					// HACK add unlearning goal via belief
-					BeliefUtils.addFeature(pb, MOTIVE_TRANSFER, feature
-							+ "-unlearned");
-					BeliefUtils.addFeature(pb, MOTIVE_TRANSFER_VALUE, value);
+					if (!feature.equals("objecttype")) {
+						// HACK add unlearning goal via belief
+						BeliefUtils.addFeature(pb, MOTIVE_TRANSFER, feature
+								+ "-unlearned");
+						BeliefUtils
+								.addFeature(pb, MOTIVE_TRANSFER_VALUE, value);
+					}
 				}
-
 				FormulaDistribution distr = FormulaDistribution.create();
 				distr.add(value, prob);
 				pb.getContent().put(feature, distr);
