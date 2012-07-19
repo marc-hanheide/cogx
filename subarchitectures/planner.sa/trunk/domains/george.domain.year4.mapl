@@ -32,6 +32,11 @@
 
     UNKNOWN_OBJECTTYPE - ObjecttypeName
     UNDETERMINED_OBJECTTYPE - ObjecttypeName
+    TEABOX - ObjecttypeName
+    CEREALBOX - ObjecttypeName
+    MUG - ObjecttypeName
+    DRINKCAN - ObjecttypeName
+    BOX - ObjecttypeName
 
     VISIBLE - Visibility
     WAS-VISIBLE - Visibility
@@ -288,7 +293,7 @@
   (:derived (is-object-in-question ?v - VisualObject)
     (and
       (is-potential-object-in-question ?v)
-      (not (exists (?v1 - VisualObject) (and (= (presence ?v1) VISIBLE) (not (= ?v ?v1)) (is-potential-object-in-question ?v1))))
+      (not (exists (?v1 - VisualObject) (and (not (= (presence ?v1) REMOVED)) (not (= ?v ?v1)) (is-potential-object-in-question ?v1))))
     )
   )
 
@@ -361,7 +366,7 @@
     :precondition
       (and
         (is-in-robot-initiated-mode ?r)
-        (not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
+        (not (exists (?c1 - ColorName) (= (attributed-color ?v) ?c1)))
         (is-looking-and-eventually-pointing-at ?r ?v)
         (allow-polar-color-question ?v ?c ?r)
       )
@@ -374,42 +379,79 @@
       )
   )
 
-  ;; (:action ask-for-an-objects-shape-general
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject)
-  ;;   :precondition
-  ;;     (and
-  ;;       (is-in-robot-initiated-mode ?r)
-  ;;       (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
-  ;;       (is-looking-and-eventually-pointing-at ?r ?v)
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (assign (attributed-shape ?v) UNDETERMINED_SHAPE)
-  ;;       (assign (is-object-referenced-by-george ?r) ?v)
-  ;;       (update (is-object-referenced-by-george ?r) ?v)
-  ;;       (increase (total-cost) 4)
-  ;;     )
-  ;; )
+  (:action ask-for-an-objects-shape-general
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject)
+    :precondition
+      (and
+        (is-in-robot-initiated-mode ?r)
+        (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
+        (is-looking-and-eventually-pointing-at ?r ?v)
+      )
+    :effect 
+      (and
+        (assign (attributed-shape ?v) UNDETERMINED_SHAPE)
+        (assign (is-object-referenced-by-george ?r) ?v)
+        (update (is-object-referenced-by-george ?r) ?v)
+        (increase (total-cost) 4)
+      )
+  )
 
-  ;; (:action ask-for-an-objects-shape-polar
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?s - ShapeName)
-  ;;   :precondition
-  ;;     (and
-  ;;       (is-in-robot-initiated-mode ?r)
-  ;;       (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
-  ;;       (is-looking-and-eventually-pointing-at ?r ?v)
-  ;;       (allow-polar-shape-question ?v ?s ?r)
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (assign (attributed-shape ?v) ?s)
-  ;;       (assign (is-object-referenced-by-george ?r) ?v)
-  ;;       (update (is-object-referenced-by-george ?r) ?v)
-  ;;       (increase (total-cost) 3)
-  ;;     )
-  ;; )
+  (:action ask-for-an-objects-shape-polar
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (is-in-robot-initiated-mode ?r)
+        (not (exists (?s1 - ShapeName) (= (attributed-shape ?v) ?s1)))
+        (is-looking-and-eventually-pointing-at ?r ?v)
+        (allow-polar-shape-question ?v ?s ?r)
+      )
+    :effect 
+      (and
+        (assign (attributed-shape ?v) ?s)
+        (assign (is-object-referenced-by-george ?r) ?v)
+        (update (is-object-referenced-by-george ?r) ?v)
+        (increase (total-cost) 3)
+      )
+  )
+
+  (:action ask-for-an-objects-objecttype-general
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject)
+    :precondition
+      (and
+        (is-in-robot-initiated-mode ?r)
+        (not (exists (?t - ObjecttypeName) (= (attributed-objecttype ?v) ?t)))
+        (is-looking-and-eventually-pointing-at ?r ?v)
+      )
+    :effect 
+      (and
+        (assign (attributed-objecttype ?v) UNDETERMINED_OBJECTTYPE)
+        (assign (is-object-referenced-by-george ?r) ?v)
+        (update (is-object-referenced-by-george ?r) ?v)
+        (increase (total-cost) 4)
+      )
+  )
+
+  (:action ask-for-an-objects-objecttype-polar
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - ObjecttypeName)
+    :precondition
+      (and
+        (is-in-robot-initiated-mode ?r)
+        (not (exists (?t1 - ObjecttypeName) (= (attributed-objecttype ?v) ?t1)))
+        (is-looking-and-eventually-pointing-at ?r ?v)
+        (allow-polar-objecttype-question ?v ?t ?r)
+      )
+    :effect 
+      (and
+        (assign (attributed-objecttype ?v) ?t)
+        (assign (is-object-referenced-by-george ?r) ?v)
+        (update (is-object-referenced-by-george ?r) ?v)
+        (increase (total-cost) 3)
+      )
+  )
 
   ;; (:action ask-for-an-objects-shape-general-reference-by-describing-its-color
   ;;   :agent (?r - Robot)
@@ -610,7 +652,7 @@
       )
   )
 
-    (:action learn-shape-autonomously
+  (:action learn-shape-autonomously
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
@@ -650,13 +692,27 @@
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?t - ObjecttypeName)
     :precondition 
-       ;;only the attributed case for objecttypes, and only tutor initiated
-      (and
-        (not (objecttype-learned ?v))
-        (= (attributed-objecttype ?v) ?t)
-        (not (= ?t UNKNOWN_OBJECTTYPE))
-        (is-looking-at ?r ?v)
-        (is-object-in-question ?v)
+      (or
+         ;;tutor initiated
+        (and
+          (not (is-in-robot-initiated-mode ?r))
+          (not (objecttype-learned ?v))
+          (= (attributed-objecttype ?v) ?t)
+          (not (= ?t UNKNOWN_OBJECTTYPE))
+          (is-looking-at ?r ?v)
+          (is-object-in-question ?v)
+        )
+
+        ;;robot initiated
+        (and
+          (is-in-robot-initiated-mode ?r)
+          (not (= ?v VISUAL_OBJECT_DUMMY))
+          (not (objecttype-learned ?v))
+          (= (attributed-objecttype ?v) ?t)
+          (not (= ?t UNKNOWN_OBJECTTYPE))
+          (is-looking-and-eventually-pointing-at ?r ?v)
+          (= (is-object-referenced-by-george ?r) ?v)
+        )
       )
     :effect 
       (and
