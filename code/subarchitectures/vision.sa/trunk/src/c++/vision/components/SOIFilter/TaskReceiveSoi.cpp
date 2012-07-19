@@ -188,7 +188,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
       log("Angle to SOI: pan %g, tilt %g", dirDelta, tiltDelta);
 
 
-#if defined(FEAT_VISUALIZATION) && defined(HAS_LIBPLOT)
+#if 0 && defined(FEAT_VISUALIZATION) && defined(HAS_LIBPLOT)
       // draw the thing
       std::ostringstream ssvg;
       cogx::display::CSvgStringPlotter p(ssvg);
