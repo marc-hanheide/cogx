@@ -388,7 +388,7 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
        </property>
        <property name="minimumSize">
         <size>
-         <width>120</width>
+         <width>200</width>
          <height>0</height>
         </size>
        </property>
