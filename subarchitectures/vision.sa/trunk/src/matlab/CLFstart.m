@@ -132,6 +132,9 @@ checkInitVal('Disp.mTD', '[Dirs.disp ''mTD.html'']');
 checkInitVal('Params.THRs', '[.7 .5 .1]');
 checkInitVal('Params.FV', '6');
 checkInitVal('Params.MINCONF', '3');
+checkInitVal('Params.colorExt', '1');
+checkInitVal('Params.D3view.az', '37');
+checkInitVal('Params.D3view.el', '42');
 
 %Default conceptual mapping data
 checkInitVal('Coma.avNames', '{''red'';''green'';''blue'';''yellow'';''square'';''triangular'';''circular''}');
