@@ -821,6 +821,7 @@
       (and
         (not (= ?v VISUAL_OBJECT_DUMMY))
         (is-looking-at ?r ?v)
+        (= (presence ?v) VISIBLE)
         (not (learning-possible))
       )
     :effect
