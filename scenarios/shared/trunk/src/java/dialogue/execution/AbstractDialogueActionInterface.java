@@ -28,6 +28,7 @@ import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.intentions.*;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import de.dfki.lt.tr.cast.dialogue.IntentionUnpacker;
 import de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer;
 import de.dfki.lt.tr.dialogue.util.VerbalisationUtils;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
@@ -39,7 +40,6 @@ import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
 import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.beliefs.slice.VerifiedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
-import eu.cogx.goals.george.PossibleInterpretationsMotiveGenerator;
 import execution.components.AbstractActionInterface;
 import execution.slice.Action;
 import execution.slice.ConfidenceLevel;
@@ -1323,6 +1323,8 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 	private WorkingMemoryAddress m_lastAmbiguousPossibleIntentionsAddition;
 
+	public static final double DISAMBIGUATION_CONFIDENCE_THRESHOLD = 0.9;
+
 	// public static void main(String[] args) throws SecurityException,
 	// NoSuchMethodException {
 	//
@@ -1351,7 +1353,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 						PossibleInterpretedIntentions pii = getMemoryEntry(
 								_wmc.address,
 								PossibleInterpretedIntentions.class);
-						if (PossibleInterpretationsMotiveGenerator
+						if (AbstractDialogueActionInterface
 								.neeedsDisambiguation(pii)) {
 							m_lastAmbiguousPossibleIntentionsAddition = _wmc.address;
 						}
@@ -1510,6 +1512,25 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 	@Override
 	protected void configure(Map<String, String> _config) {
 		m_fakeIt = _config.containsKey("--fake-it");
+	}
+
+	public static boolean neeedsDisambiguation(
+			PossibleInterpretedIntentions _pii) {
+		// TODO something more principled
+
+		if (_pii.intentions.size() == 1) {
+			return false;
+		} else {
+
+			// for (InterpretedIntention ii : _pii.intentions.values()) {
+			// logIntention(ii);
+			// }
+
+			InterpretedIntention mostConfidentIntention = IntentionUnpacker
+					.getMostConfidentIntention(_pii);
+
+			return mostConfidentIntention.confidence < DISAMBIGUATION_CONFIDENCE_THRESHOLD;
+		}
 	}
 
 	/**
