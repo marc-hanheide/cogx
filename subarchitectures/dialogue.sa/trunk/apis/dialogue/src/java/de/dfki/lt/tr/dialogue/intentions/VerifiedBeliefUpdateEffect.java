@@ -56,7 +56,7 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 					.recurseAncestorsForType(component, aboutBeliefAddr,
 							VerifiedBelief.class);
 
-                        String repStr = "";
+			String repStr = "";
 
 			if (verifiedBeliefWMP != null) {
 
@@ -66,7 +66,7 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 						verifiedBeliefWMP.address, VerifiedBelief.class);
 				CASTIndependentFormulaDistributionsBelief<VerifiedBelief> verifiedBelief = CASTIndependentFormulaDistributionsBelief
 						.create(VerifiedBelief.class, vb);
-                                
+
 				// update the verified belief in memory
 				for (String feature : featuresToSet.keySet()) {
 
@@ -111,20 +111,21 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 						distr.add(value, prob);
 						verifiedBelief.getContent().put(feature, distr);
 
-                                                repStr = ", " + (isPositive ? "" : "not ");
-                                                
-                                                if ("objecttype".equals(feature)) {
-                                                    repStr += "a " + CogXLexicon.beautifyObjectTypes(value);
-                                                }
-                                                else {
-                                                   repStr += value;
-                                                }
-                                                
+						repStr = ", " + (isPositive ? "" : "not ");
+
+						if ("objecttype".equals(feature)) {
+							repStr += "a "
+									+ CogXLexicon.beautifyObjectTypes(value);
+						} else {
+							repStr += value;
+						}
+
 						// BeliefUtils.addFeature(verifiedBelief, feature,
 						// featuresToSet.get(feature));
 
 						BeliefUtils.addFeature(verifiedBelief, feature
-								+ "-prob", new FloatFormula(-1, 1.0f));
+								+ "-prob", new FloatFormula(-1, (float) prob));
+
 					} else {
 						component.log("don't know how do the effect for "
 								+ feature
