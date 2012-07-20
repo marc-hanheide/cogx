@@ -58,7 +58,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 		}
 	}
 
-	private static final String KEY_ID = "001";
+	private static final String KEY_ID = "007";
 	private static final String ACTIVE_ID = "002";
 	private static final String DRIVE_HIERARCHY_ID = "003";
 	private static final String DELAYS_ID = "004";
@@ -75,8 +75,6 @@ public class DelayFilterDisplayClient extends DisplayClient {
 	private static final String ROBOT_SITUATED = "C7B26F";
 	private static final String EXPLORE = ROBOT_SITUATED;
 	private static final String TUTOR_DRIVEN = "6E8243";
-
-
 
 	private static void cell(StringBuilder _sb, Object _content) {
 		_sb.append("<td>");
@@ -111,7 +109,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 	// private static String
 
 	private static StringBuilder startFilter(String _title) {
-		StringBuilder sb = new StringBuilder("<br/><div><h3>");
+		StringBuilder sb = new StringBuilder("<div><h3>");
 		sb.append(_title);
 		sb.append("</h3>");
 		return sb;
@@ -123,7 +121,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 	private static final HashMap<Class<? extends Motive>, String> m_colourMap = new HashMap<Class<? extends Motive>, String>();
 
-	private static final String DISPLAY_CSS = "tr {font-size: 13px}\n";
+	private static final String DISPLAY_CSS = "tr {font-size: 14px}\n";
 
 	private static HashMap<Class<? extends Motive>, Integer> m_passThroughValues;
 
@@ -151,7 +149,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 	private DelayFilterDisplayClient() {
 		setupColours();
-		m_executor.scheduleAtFixedRate(new RenderThread(), 10000, 500,
+		m_executor.scheduleAtFixedRate(new RenderThread(), 10000, 1500,
 				TimeUnit.MILLISECONDS);
 	}
 
@@ -345,7 +343,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 	private synchronized void renderAll() {
 
-		renderKey();
+		
 
 		if (m_motives != null) {
 
@@ -373,7 +371,8 @@ public class DelayFilterDisplayClient extends DisplayClient {
 			// renderActiveGoals(m_activeGoals);
 			// }
 		}
-
+		
+		renderKey();
 	}
 
 	// private static final String ROBOT_NON_SITUATED = "B6CEB6";
@@ -396,10 +395,10 @@ public class DelayFilterDisplayClient extends DisplayClient {
 		cell(sb, "Extrospective");
 		endRow(sb);
 
-		startRow(sb);
-		cell(sb, "&nbsp &nbsp &nbsp &nbsp", EXPLORE);
-		cell(sb, "Extrospective (New Objects)");
-		endRow(sb);
+		// startRow(sb);
+		// cell(sb, "&nbsp &nbsp &nbsp &nbsp", EXPLORE);
+		// cell(sb, "Extrospective (New Objects)");
+		// endRow(sb);
 
 		startRow(sb);
 		cell(sb, "&nbsp &nbsp &nbsp &nbsp", ROBOT_NON_SITUATED);
