@@ -49,6 +49,7 @@ private:
 	void newSizePlaceProperty(const cast::cdl::WorkingMemoryChange &change);
 
 	bool readyToAccumulate();
+	void ensureQueueIntegrity();
 
 	void integrateWithPrior(CategoricalData::ClassifierOutputs &priorOutputs,
 			unsigned int &priorOutputsCount, const CategoricalData::ClassifierOutputs &newOutputs,
