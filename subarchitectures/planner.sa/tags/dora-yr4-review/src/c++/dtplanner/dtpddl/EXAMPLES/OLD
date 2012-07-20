@@ -1,0 +1,687 @@
+;;;  DRAFT DTPDDL for Dora2.0 (Vienna version, Febuary 2010)
+;;;
+;;;  Based on the CogX MAPL description of Dora for the 2009 CogX
+;;;  demonstrations. The domain on which this is based was authored by
+;;;  Michael Brenner and Moritz Göbelbecker, 2009.
+
+
+(define (domain dora_the_explorer)  
+
+  (:requirements 
+   ;; IPC6 elements -- Planning off the ground
+   :typing ;; Keywords :: ":types"
+   :strips 
+   :equality
+   :fluents 
+   
+   ;; Uncertainty track at IPC6
+   :probabilistic-effects
+   
+   ;; PDDL syntactic sugar
+   ;; Keywords :: 
+   :universal-effects  
+   :conditional-effects  
+   
+   ;; DTP-ELEMENT
+   ;; Keywords :: ":percepts", ":observe", and ":execution"
+   :partial-observability 
+
+    )
+
+  
+  (:types 
+   room label widget feature  model-slot - object
+   model - (either widget feature person) 
+   )
+
+  (:constants 
+   
+   ;; "Empty" means that no ML is running in whatever model-slot is
+   ;; occupied by the feature "Empty".
+   Empty - feature
+   
+   )
+  
+  
+  (:predicates 
+
+   ;; Has a room been explored?
+   (explored ?p - room) ;; Dora-1.0 -- 2009
+
+
+   ;; (see also function symbol "foregrounded_mode", and action
+   ;; symbols "foreground_model" and "background_model")
+   ;; 
+   ;; A "model" is something that we typically associate with Machine
+   ;; Learning (ML), or an ML-based algorithm. We suppose that Dora2.0
+   ;; has a limited capacity with regards to the number of "models" that
+   ;; can be "foregrounded" at any given time. Hence we provide a
+   ;; limited number of "model-slots". There are some "models", such as
+   ;; face-detection "models", that may be able to be foregrounded all
+   ;; the time -- i.e., perhaps because there is very low resource
+   ;; consumption wrt using that "model". In this case, we shall suppose
+   ;; a "model-slot" is occupied by that "model", and that planning
+   ;; cannot decide to use that "model-slot" for some other purpose.
+   (deletable ?s - model-slot)
+   
+
+   (connected ?p1 - room ?p2 - room) ;; Dora-1.0 -- 2009
+
+
+   ;; The location at which a widget is located.
+   (widget-location ?o - widget ?p - room) ;; Dora-2.0
+
+   ;; The location at which a feature (shelf/poster/etc) is located.
+   (featured-at ?model - feature ?location - room) ;; Dora-2.0
+   )
+
+
+  ;; An "s-functions" is a function that characterises the world
+  ;; state. This is distinct from an "o-functions" that would
+  ;; characterise aspects of the robots observation status.
+  (:s-functions
+   
+   ;; The natural langauge lable of a room.
+   (labelled ?r - room) - label ;; Dora-2.0
+
+   ;; Location of the robot
+   (located) - room ;; Dora-1.0 -- 2009 [agent free]
+   
+   ;; Reward that has been received so far...
+   (reward) - double
+   
+
+   ;; (see also predicate symbol "deletable", and action symbols
+   ;; "foreground_model" and "background_model")
+   ;;
+   ;; A function from model-slots to models. There are a limited
+   ;; number of slots, and each is associated with an ML-based
+   ;; object/face/etc detection component.
+   (foregrounded-model ?s - model-slot ) - model
+
+
+   ;; Probabilistic information about how the models behave.
+   (probability__observe_widget_model_at_label__if_false ?l - label ?m - widget) - double
+   (probability__observe_widget_model_at_label__if_true ?l - label ?m - widget) - double
+   )
+
+  
+   (probability__observe_feature_at_room_with_label__if_true ?loc - room ?m - feature ?l - label) - double
+   (probability__observe_feature_at_room_with_label__if_feature_false ?loc - room ?m - feature ?l - label) - double
+
+   ;; I made label functional.
+;;    (probability__observe_feature_at_room_with_label__if_label_false ?loc - room ?m - feature ?l - label) - double
+;;    (probability__observe_feature_at_room_with_label__if_feature_and_label_false ?loc - room ?m - feature ?l - label) - double
+   
+
+  
+  (:percepts
+   
+   (observed_model_at_room ?n - room ?m - model)
+
+   )
+
+
+
+  ;; This action is suppose to cause vision to foreground a model, and
+  ;; perhaps the robot will also perform some useful sensing. This
+  ;; goes along with the Michael-Z idea of having vision running
+  ;; continuously in some thread/process.
+  (:action foreground_model
+	   :parameters (?m - model ?s - model-slot)
+	   :precondition (and (= (foregrounded-model ?s) Empty)
+
+			      ;; Test we haven't already foregrounded the model
+			      (forall (?s2 - model-slot) 
+				      (not (= (foregrounded-model ?s2) ?m)))
+
+			      ;; Test that the slot is empty, otherwise
+			      ;; we should empty it before
+			      ;; foregrounding something here.
+			      (forall (?m2 - model) 
+				      (or (not (= (foregrounded-model ?s) ?m2))
+					  (= ?m2 Empty)
+					  )
+				      )
+			      )
+
+			      
+	   :effect (assign (foregrounded-model ?s) ?m)
+	   )
+
+  ;; Sometimes a model cannot be backgrounded. This could be the case
+  ;; if the model, were, for example a face detector -- i.e., is is
+  ;; cheap to run in real-time, and there is no need to stop running
+  ;; it.
+  (:action background_model
+	   :parameters (?s - model-slot)
+	   :precondition (and (deletable ?s))
+	   :effect (assign (foregrounded-model ?s) Empty)
+	   )
+
+
+  ;; Attempt to get some reward. Only worth doing if you are certain,
+  ;; because reward is impossible to achieve if this action fails even
+  ;; once.
+  (:action commit__widget_location 
+	   :parameters (?w - widget ?loc - room)
+
+	   :precondition (forall (?loc2 - room) 
+				 (not (absolute_belief__widget_location ?w ?loc2)))
+
+	   :effect (and (absolute_belief__widget_location ?w ?loc)
+			(when (widget-location ?w ?loc) 
+			  (increase (reward) 1000.0)))
+	   )
+  
+  
+  ;; Dora-1.0 -- 2009 
+  (:action explore-room
+	   :parameters (?loc - room)
+	   :precondition (and
+			  (= (located) ?loc)
+			  )
+	   :effect (and (explored ?loc))
+	   )
+
+  ;;  Dora-1.0 -- 2009 
+  (:action move-to-explored-room
+	   :parameters (?to - room ?from - room)
+	   :precondition 
+	   (and
+	    (= (located) ?from)
+	    (explored ?to)
+	    )
+	   :effect 
+	   (and
+	    (assign (located) ?to)
+	    )
+	   )
+
+  ;;  Dora-1.0 -- 2009 
+  (:action move-to-connected-room
+	   :parameters (?to - room ?from - room)
+	   :precondition 
+	   (and
+	    (= (located) ?from)
+	    (connected ?from ?to)
+	    )
+	   :effect 
+	   (and
+	    (assign (located) ?to)
+	    )
+	   )
+
+
+
+  
+  (:observe reset_model_observations__on_state
+	    :parameters 
+	    (?loc - room ?m - model)
+	    
+	    :execution
+	    ()
+
+	    :precondition
+	    (and (observed_model_at_room ?loc ?m)
+		 (forall (?s - model-slot) (not (= (foregrounded-model ?s) ?m))) )
+
+	    
+	    :effect 
+	    (and (not (observed_model_at_room ?loc ?m)))
+	    )
+
+  
+  (:observe reset_model_observations__on_execution
+	    :parameters 
+	    (?loc - room ?m - model)
+	    
+	    :execution
+	    (not (explore-room ?loc))
+
+	    :precondition
+	    (and (observed_model_at_room ?loc ?m))
+	    
+	    :effect 
+	    (and (not (observed_model_at_room ?loc ?m)))
+	    )
+
+
+  (:observe model_widget
+	    :parameters 
+	    (?location - room ?l - label ?model - widget)
+	    
+	    :execution
+	    (explore-room ?location)
+	    
+	    :precondition 
+	    (and 
+	     (exists (?s - slot) (= (foregrounded-model ?s) ?model))
+
+	     (= (labelled ?location) ?l)
+	     )
+   
+	    :effect 
+	    (and 
+	     (when (widget-location ?model ?location) 
+	       (probabilistic 
+		(probability__observe_widget_model_at_label__if_true ?l ?model) 
+		(observed_model_at_room ?location ?model)
+		)
+	       )
+
+	     (when (not (widget-location ?model ?location) )
+	       (probabilistic 
+		(probability__observe_widget_model_at_label__if_false ?l ?model) 
+		(observed_model_at_room ?location ?model)
+		)
+	       )
+	     )
+	    )
+
+
+  
+  (:observe model_feature
+	    :parameters 
+	    (?location - room ?l - label ?model - feature)
+	    
+	    :execution
+	    (explore_room ?location)
+	    
+	    :precondition 
+	    (and 
+		 (exists (?s - slot) (= (foregrounded-model ?s) ?model))
+		 
+		 )
+   
+	    :effect 
+	    (and 
+	     
+	     (when (and (featured-at ?model ?location)
+			(= (labelled ?location) ?l))
+	       (probabilistic 
+		(probability__observe_feature_at_room_with_label__if_true ?location ?model ?l) 
+		(observed_model_at_room ?location ?model)
+		)
+	       )
+	     
+	     (when (and (not (featured-at ?model ?location))
+			(= (labelled ?location) ?l))
+	       (probabilistic 
+		(probability__observe_feature_at_room_with_label__if_feature_false ?location ?model ?l) 
+		(observed_model_at_room ?location ?model)
+		)
+	       )
+	     
+	     ;; I made label functional
+;; 	     (when (and (featured-at ?model ?location)
+;; 			(not (= (labelled ?location) ?l)))
+;; 	       (probabilistic 
+;; 		(probability__observe_feature_at_room_with_label__if_label_false ?location ?model ?l) 
+;; 		(observed_model_at_room ?location ?model)
+;; 		)
+;; 	       )
+	     
+	     
+	     ;; I made label functional
+;; 	     (when (and (not (featured-at ?model ?location))
+;; 			(not (= (labelled ?location) ?l)))
+;; 	       (probabilistic 
+;; 		(probability__observe_feature_at_room_with_label__if_feature_and_label_false ?location ?model ?l) 
+;; 		(observed_model_at_room ?location ?model)
+;; 		)
+;; 	       )
+	    )
+	    )
+)
+
+
+
+
+;;;  DRAFT DTPDDL for Dora2.0 (Vienna version, Febuary 2010)
+;;;
+;;;  Based on the CogX MAPL description of Dora for the 2009 CogX
+;;;  demonstrations. The domain on which this is based was authored by
+;;;  Michael Brenner and Moritz Göbelbecker, 2009.
+
+
+(define (problem dora_the_explorer__Vienna_2_2010)
+
+  (:domain dora_the_explorer)
+
+  (:objects 
+	
+   Hall R1 R2 R3 - room
+	
+   Library Kitchen Office Hall-Label - label
+
+   Corn-flakes - widget
+
+   Bookshelf Desktop Chef - feature
+
+   S1 - model-slot
+   
+   )
+
+
+  (:init (connected Hall R1) (connected R1 Hall)
+	 (connected Hall R2) (connected R2 Hall)
+	 (connected Hall R3) (connected R3 Hall)
+
+	 (= (foregrounded-model S1) Empty)
+
+	 (= (reward) 0)
+
+	 (deletable S1)
+	 
+	 (assign (located) Hall)
+
+	 (labelled Hall Hall-Label)
+
+	 ;; Code for generating the initial belief-state.
+	 ;;
+	 ;; We don't actually know the true label of a room, only
+	 ;; have probabilistic information about that. So, all we know
+	 ;; here is that all the rooms have a distinct label.
+	 (probabilistic 1/8 (and (assign (labelled R1) Library) 
+				 (assign (labelled R2) Kitchen) 
+				 (assign (labelled R3) Office) 
+				 (widget-location Corn-flakes R2)
+				 (probabilistic 0.9 (featured-at Bookshelf R1) )
+				 (probabilistic 0.3 (featured-at Bookshelf R3) )
+				 (probabilistic 0.8 (featured-at Chef R2)
+						0.1 (featured-at Chef R1) 
+						0.1 (featured-at Chef R3) )
+				 (probabilistic 0.9 (featured-at Desktop R3) )
+				 (probabilistic 0.3 (featured-at Desktop R1) )
+				 (probabilistic 0.1 (featured-at Desktop R2) )
+				 (probabilistic 0.8 (widget-location Corn-flakes R2)
+						0.2 (widget-location Corn-flakes R3) )
+				 )
+
+			1/8 (and (assign (labelled R1) Library) 
+				 (assign (labelled R2) Office) 
+				 (assign (labelled R3) Kitchen) 
+				 (widget-location Corn-flakes R3)
+				 (probabilistic 0.9 (featured-at Bookshelf R1) )
+				 (probabilistic 0.3 (featured-at Bookshelf R2) )
+				 (probabilistic 0.8 (featured-at Chef R3) 
+						0.1 (featured-at Chef R1) 
+						0.1 (featured-at Chef R2) )
+				 (probabilistic 0.9 (featured-at Desktop R2) )
+				 (probabilistic 0.3 (featured-at Desktop R1) )
+				 (probabilistic 0.1 (featured-at Desktop R3) )
+				 (probabilistic 0.8 (widget-location Corn-flakes R3)
+						0.2 (widget-location Corn-flakes R2) )
+				 )
+
+			1/4 (and 
+			     (assign (labelled R1) Kitchen) 
+			     (assign (labelled R2) Library) 
+			     (assign (labelled R3) Office) 
+			     (widget-location Corn-flakes R1)
+			     (probabilistic 0.9 (featured-at Bookshelf R2) )
+			     (probabilistic 0.3 (featured-at Bookshelf R3) )
+			     (probabilistic 0.8 (featured-at Chef R1) 
+					    0.1 (featured-at Chef R2) 
+					    0.1 (featured-at Chef R3) )
+			     (probabilistic 0.9 (featured-at Desktop R3) )
+			     (probabilistic 0.3 (featured-at Desktop R2) )
+			     (probabilistic 0.1 (featured-at Desktop R1) )
+			     (probabilistic 0.8 (widget-location Corn-flakes R1)
+					    0.2 (widget-location Corn-flakes R3) )
+			     )
+
+			1/4 (and (assign (labelled R1) Kitchen) 
+				 (assign (labelled R2) Office) 
+				 (assign (labelled R3) Library) 
+				 (widget-location Corn-flakes R1)
+				 (probabilistic 0.9 (featured-at Bookshelf R3) )
+				 (probabilistic 0.3 (featured-at Bookshelf R2) )
+				 (probabilistic 0.8 (featured-at Chef R1) 
+						0.1 (featured-at Chef R3) 
+						0.1 (featured-at Chef R2) )
+				 (probabilistic 0.9 (featured-at Desktop R2) )
+				 (probabilistic 0.3 (featured-at Desktop R3) )
+				 (probabilistic 0.1 (featured-at Desktop R1) )
+				 (probabilistic 0.8 (widget-location Corn-flakes R1)
+						0.2 (widget-location Corn-flakes R2)
+						)
+				 )
+				 
+			1/8 (and (assign (labelled R1) Office) 
+				 (assign (labelled R2) Kitchen) 
+				 (assign (labelled R3) Library) 
+				 (widget-location Corn-flakes R2)
+				 (probabilistic 0.9 (featured-at Bookshelf R3) )
+				 (probabilistic 0.3 (featured-at Bookshelf R1) )
+				 (probabilistic 0.8 (featured-at Chef R2) 
+						0.1 (featured-at Chef R3) 
+						0.1 (featured-at Chef R1) )
+				 (probabilistic 0.9 (featured-at Desktop R1) )
+				 (probabilistic 0.3 (featured-at Desktop R3) )
+				 (probabilistic 0.1 (featured-at Desktop R2) )
+				 (probabilistic 0.8 (widget-location Corn-flakes R2)
+						0.2 (widget-location Corn-flakes R1)
+						)
+				 )
+
+			1/8 (and (assign (labelled R1) Office) 
+				 (assign (labelled R2) Library) 
+				 (assign (labelled R3) Kitchen) 
+				 (widget-location Corn-flakes R3)
+				 (probabilistic 0.9 (featured-at Bookshelf R2) )
+				 (probabilistic 0.3 (featured-at Bookshelf R1) )
+				 (probabilistic 0.8 (featured-at Chef R3) 
+						0.1 (featured-at Chef R2) 
+						0.1 (featured-at Chef R1) )
+				 (probabilistic 0.9 (featured-at Desktop R1) )
+				 (probabilistic 0.3 (featured-at Desktop R2) )
+				 (probabilistic 0.1 (featured-at Desktop R3) )
+				 (probabilistic 0.8 (widget-location Corn-flakes R3)
+						0.2 (widget-location Corn-flakes R1)
+						)
+				 )
+			)
+
+	 
+
+	 
+
+	 (assign (probability__observe_widget_model_at_label__if_true Library Corn-flakes) .9)
+	 (assign (probability__observe_widget_model_at_label__if_true Kitchen Corn-flakes) .9)
+	 (assign (probability__observe_widget_model_at_label__if_true Office Corn-flakes) .9)
+
+	 (assign (probability__observe_widget_model_at_label__if_false Library Corn-flakes) .1)
+	 (assign (probability__observe_widget_model_at_label__if_false Kitchen Corn-flakes) .1)
+	 (assign (probability__observe_widget_model_at_label__if_false Office Corn-flakes) .1)
+
+
+
+	 
+	 ;; I shall include these zeroed entries in the CPT only once,
+	 ;; and omit them below. We shall assume zero, as is common
+	 ;; for PDDL, where no entry is given.
+	 (assign (probability__observe_feature_at_room_with_label__if_true Hall Bookshelf Library) 0.0 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true Hall Bookshelf Kitchen) 0.0 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true Hall Bookshelf Office) 0.0 )
+
+	 (assign (probability__observe_feature_at_room_with_label__if_true R1 Bookshelf Library) 0.9 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R1 Bookshelf Kitchen) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R1 Bookshelf Office) 0.3 )
+
+	 (assign (probability__observe_feature_at_room_with_label__if_true R2 Bookshelf Library) 0.9 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R2 Bookshelf Kitchen) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R2 Bookshelf Office) 0.3 )
+
+	 ;; Perhaps room-3 is cluttered, and so we decide that
+	 ;; bookshelf detection is not very useful here.
+	 (assign (probability__observe_feature_at_room_with_label__if_true R3 Bookshelf Library) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R3 Bookshelf Kitchen) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R3 Bookshelf Office) 0.1 )
+
+
+	 ;; Perhaps you won't see a desktop in a kitchen, ever, because it would be obscured.
+	 (assign (probability__observe_feature_at_room_with_label__if_true R1 Desktop Library) 0.3 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R1 Desktop Office) 0.9 )
+
+	 (assign (probability__observe_feature_at_room_with_label__if_true R2 Desktop Library) 0.3 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R2 Desktop Office) 0.9 )
+
+	 (assign (probability__observe_feature_at_room_with_label__if_true R3 Desktop Library) 0.9 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R3 Desktop Office) 0.9 )
+
+
+	 (assign (probability__observe_feature_at_room_with_label__if_true R1 Chef Library) 0.9 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R1 Chef Kitchen) 0.9 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R1 Chef Office) 0.9 )
+
+	 (assign (probability__observe_feature_at_room_with_label__if_true R2 Chef Library) 0.9 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R2 Chef Kitchen) 0.9 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R2 Chef Office) 0.9 )
+
+	 (assign (probability__observe_feature_at_room_with_label__if_true R3 Chef Library) 0.7 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R3 Chef Kitchen) 0.9 )
+	 (assign (probability__observe_feature_at_room_with_label__if_true R3 Chef Office) 0.7 )
+
+
+
+
+
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R1 Bookshelf Library) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R1 Bookshelf Kitchen) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R1 Bookshelf Office) 0.1 )
+	 
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R2 Bookshelf Library) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R2 Bookshelf Kitchen) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R2 Bookshelf Office) 0.1 )
+
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R3 Bookshelf Library) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R3 Bookshelf Kitchen) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R3 Bookshelf Office) 0.1 )
+
+
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R1 Desktop Library) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R1 Desktop Kitchen) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R1 Desktop Office) 0.1 )
+
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R2 Desktop Library) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R2 Desktop Kitchen) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R2 Desktop Office) 0.1 )
+
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R3 Desktop Library) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R3 Desktop Kitchen) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R3 Desktop Office) 0.1 )
+
+
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R1 Chef Library) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R1 Chef Kitchen) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R1 Chef Office) 0.1 )
+
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R2 Chef Library) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R2 Chef Kitchen) 0.1 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R2 Chef Office) 0.1 )
+
+	 ;; You can accidentally see chefs quite easily in R3. Again, lots of clutter.
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R3 Chef Library) 0.2 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R3 Chef Kitchen) 0.3 )
+	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R3 Chef Office) 0.2 )
+
+
+
+
+
+
+
+
+
+
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Bookshelf Library) 0.2 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Bookshelf Kitchen) 0.6 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Bookshelf Office) 0.5 )
+	 
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Bookshelf Library) 0.2 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Bookshelf Kitchen) 0.6 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Bookshelf Office) 0.5 )
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Bookshelf Library) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Bookshelf Kitchen) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Bookshelf Office) 0.1 )
+
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Desktop Library) 0.45 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Desktop Kitchen) 0.75 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Desktop Office) 0.15 )
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Desktop Library) 0.45 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Desktop Kitchen) 0.75 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Desktop Office) 0.15 )
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Desktop Library) 0.45 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Desktop Kitchen) 0.9 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Desktop Office) 0.45 )
+
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Chef Library) 0.9 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Chef Kitchen) 0.9 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Chef Office) 0.9 )
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Chef Library) 0.9 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Chef Kitchen) 0.9 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Chef Office) 0.9 )
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Chef Library) 0.8 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Chef Kitchen) 0.7 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Chef Office) 0.8 )
+
+
+
+
+
+
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Bookshelf Library) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Bookshelf Kitchen) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Bookshelf Office) 0.1 )
+	 
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Bookshelf Library) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Bookshelf Kitchen) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Bookshelf Office) 0.1 )
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Bookshelf Library) 0.2 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Bookshelf Kitchen) 0.2 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Bookshelf Office) 0.2 )
+
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Desktop Library) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Desktop Kitchen) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Desktop Office) 0.1 )
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Desktop Library) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Desktop Kitchen) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Desktop Office) 0.1 )
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Desktop Library) 0.3 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Desktop Kitchen) 0.2 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Desktop Office) 0.3 )
+
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Chef Library) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Chef Kitchen) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Chef Office) 0.1 )
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Chef Library) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Chef Kitchen) 0.1 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Chef Office) 0.1 )
+
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Chef Library) 0.2 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Chef Kitchen) 0.3 )
+;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Chef Office) 0.2 )
+
+
+
+  )
+
+  (:metric maximize (reward))   
+)

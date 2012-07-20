@@ -1,0 +1,26 @@
+(define (problem cogxtask)
+
+(:domain cogx)
+
+(:objects  robot_5__q - robot
+           person_id_0_g - person_id
+           place_1__q place_3__q place_0__q - place
+           place_id_0 place_id_2 place_id_1 - place_id
+           person_8__q - person
+)
+
+(:init  (= (placeid place_3__q) place_id_2)
+        (connected place_1__q place_0__q)
+        (= (is-in person_8__q) place_3__q)
+        (= (placeid place_0__q) place_id_0)
+        (= (is-in robot_5__q) place_0__q)
+        (connected place_0__q place_1__q)
+        (= (placeid place_1__q) place_id_1)
+        (= (personid person_8__q) person_id_0_g)
+        (connected place_1__q place_3__q)
+        (connected place_3__q place_1__q)
+)
+
+(:goal  (and  (exists (?r - robot)  (forall (?h - person)  (kval ?r (name ?h))))))
+
+)

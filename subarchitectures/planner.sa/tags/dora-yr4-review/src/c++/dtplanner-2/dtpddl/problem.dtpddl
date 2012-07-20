@@ -1,0 +1,38 @@
+(define (problem dora-test-world-dora)
+
+(:domain dora-test-100)
+
+(:objects  obj3 obj2a obj1 obj4 obj2b - visualobject
+           table cornflakes oven mug - label
+           dora - robot
+           rb ra - room
+           p2b p1a p1b p2a - place
+           bathroom living_room office kitchen - category
+)
+
+(:init  (is-in dora p1a)
+        (in-room p1a ra)
+        (in-room p2a ra)
+        (in-room p1b rb)
+        (in-room p2b rb)
+        (connected p1a p2a)
+        (connected p2a p1b)
+        (connected p1b p2b)
+        (placestatus p2b placeholder)
+        (difficulty cornflakes medium)
+        (difficulty table easy)
+        (difficulty oven easy)
+        (label obj1 cornflakes)
+        (label obj2a table)
+        (label obj2b table)
+        (label obj4 oven)
+        (probabilistic
+        0.5000000000 (and )
+        0.5000000000 (and (is-in obj1 p1a))
+        )
+)
+
+(:goal  (and  (position-committed obj1)))
+(:metric maximize (reward ))
+
+)
