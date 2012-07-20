@@ -31,7 +31,7 @@ floorplan
 
 p3dx_with_urg_and_blobfinder (
 	name "dora"
-	pose [17.027 -0.800 0 -0.000]
+	pose [16.709 -0.209 0 0]
 	color "red"
 )
 
@@ -180,7 +180,7 @@ p3dx_with_urg_and_blobfinder (
  (
  name "desk11"
  color "black"
- pose [15.194 10.627 0 90.000]
+ pose [17.149 8.400 0 90.000]
  )
 
  long-desk

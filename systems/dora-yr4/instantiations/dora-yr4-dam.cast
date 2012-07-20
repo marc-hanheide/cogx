@@ -1,3 +1,15 @@
+###################################################################################
+###################################################################################
+###################################################################################
+
+SETVAR patrol_config=--targets "0 5 18 10" --deadline 25
+#SETVAR patrol_config=--targets "18" --deadline 30
+
+
+###################################################################################
+###################################################################################
+###################################################################################
+
 VARDEFAULT feature_options=<multiline>
 # enable the spatial core
     spatial			
@@ -47,11 +59,10 @@ VARDEFAULT feature_options=<multiline>
     visualization	
 </multiline>
 
-SETVAR display_doors=
+SETVAR conceptual_categories=--no-roomid --no-areaclass
 
-SETVAR patrol_config=--targets "1 16 24 16" --deadline 30
-
-SETVAR dont_update_without_motion=--dont-update-without-motion
+SETVAR dont_update_without_motion=
+#--dont-update-without-motion
 SETVAR no_slam_age_warning=--no-slam-age-warning
 
 SETVAR cons_rules=NOTEXISTS
@@ -65,6 +76,9 @@ VARDEFAULT logged_types=<multiline>
   execution.slice.Action,
   motivation.slice.Motive,
 </multiline>
+
+SETVAR display_doors=
+
 
 
 include dora-yr4.cast
