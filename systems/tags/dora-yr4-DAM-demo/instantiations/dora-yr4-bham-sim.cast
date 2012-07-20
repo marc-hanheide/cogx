@@ -1,0 +1,43 @@
+### the directory containing the calibration files to use
+SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
+
+#### TODO create categorical data for BHAM
+#SETVAR categorisation_config=subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg
+
+SETVAR feature_options=<multiline>
+    spatial			# enable the spatial core
+    binder			# enable all mediators in the cores enabled and the binding working memory
+    vision			# enable the vision core, object recognition (depending on the hardware setting)
+    peekabot		# use peekabot
+	man_ctrl		# enable manual GUIs for navigation, PTZ, planning, etc.
+    avs			# enable AVS view cone planning and relation manager
+    execution		# enable execution framework to let the planner trigger actions
+	conceptual		# enable conceptual framework
+	default			# enable default
+	coma			# enable coma
+    categorisation	# enable place categorisation
+    planning_sa		# enable planning core
+    debug			# enable more debug GUIs and WM loggers
+    dialogue		# enable dialogue
+    motivation		# enable motivation base
+    !motivation_external	# enable motivation via external goal infusion
+    !motivation_explanation	# enable motivation via explanation
+    visualization	# enable visualisation (see debug)
+</multiline>
+
+### the default knowledge to use
+SETVAR default_knowledge="instantiations/defaultprobs/defaultknowledge-bham-yr4.xml"
+
+### the default probabilities
+SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-bham-yr4-direct.txt"
+
+### the default goals passed on to the planner GUI
+VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
+
+SETVAR conceptual_categories=corridor,office,meetingroom
+
+SETVAR avs_cone_depth=2.5
+
+SETVAR exclude_exploration=--exclude-from-exploration "y > 2 or x > 2"
+
+INCLUDE dora-yr4.cast
