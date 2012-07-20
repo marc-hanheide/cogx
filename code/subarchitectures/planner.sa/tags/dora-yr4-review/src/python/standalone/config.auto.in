@@ -1,0 +1,7 @@
+# Config options for the planner that are determined by cmake at build time
+
+planner_dir = ${BASE_PLANNER_ROOT}
+planner_sa_dir = ${PROJECT_SOURCE_DIR}
+cogx_dir = ${COGX_ROOT}
+install_dir = ${CMAKE_INSTALL_PREFIX}
+

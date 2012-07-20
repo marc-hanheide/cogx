@@ -1,0 +1,422 @@
+(define (domain george-yr2)
+
+  (:requirements :mapl :adl :fluents :action-costs :equality)
+
+  (:types
+    robot - agent
+    visual-object concept-name visual-concept-model-status - object
+    color-name shape-name ident-name - concept-name
+  )
+
+  (:constants
+    george - robot
+    tutor - agent
+    unknown-color - color-name
+    unknown-shape - shape-name
+    unknown-ident - ident-name
+  )
+
+  (:predicates
+    (color-learned ?v - visual-object)
+    (shape-learned ?v - visual-object)
+    (ident-learned ?v - visual-object)
+    (color-unlearned ?v - visual-object)
+    (shape-unlearned ?v - visual-object)
+    (ident-unlearned ?v - visual-object)
+    (allow-general-color-question ?v - visual-object)
+    (allow-polar-color-question ?v - visual-object ?c - color-name)
+    (allow-general-shape-question ?v - visual-object)
+    (allow-polar-shape-question ?v - visual-object ?s - shape-name)
+    (allow-general-ident-question ?v - visual-object)
+    (allow-polar-ident-question ?v - visual-object ?i - ident-name)
+    (has-highest-color-gain ?v - visual-object)
+    (has-highest-shape-gain ?v - visual-object)
+    (has-highest-ident-gain ?v - visual-object)
+    (object-of-desired-color-available ?c - color-name)
+    (object-of-desired-shape-available ?s - shape-name)
+    (learning-impossible)
+    (asked-for ?v - visual-concept-model-status)
+  )
+
+ 
+  (:functions
+    (color ?v - visual-object) - color-name
+    (shape ?v - visual-object) - shape-name
+    (ident ?v - visual-object) - ident-name
+    (p-color ?v - visual-object ?c - color-name) - number
+    (p-shape ?v - visual-object ?s - shape-name) - number
+    (p-ident ?v - visual-object ?i - ident-name) - number
+    (max-gain-label-color ?v - visual-object) - color-name
+    (max-gain-label-shape ?v - visual-object) - shape-name
+    (max-gain-label-ident ?v - visual-object) - ident-name
+    (max-gain-value-color ?v - visual-object) - number
+    (max-gain-value-shape ?v - visual-object) - number
+    (max-gain-value-ident ?v - visual-object) - number
+    (most-promising ?v - visual-concept-model-status) - concept-name
+  )
+
+  (:init-rule set-max-gain-value-color
+     :parameters (?v - visual-object)
+     :precondition (= (max-gain-value-color ?v) UNKNOWN)
+     :effect (assign (max-gain-value-color ?v) 0)
+  )
+
+  (:init-rule set-max-gain-value-shape
+     :parameters (?v - visual-object)
+     :precondition (= (max-gain-value-shape ?v) UNKNOWN)
+     :effect (assign (max-gain-value-shape ?v) 0)
+  )
+
+  (:init-rule set-max-gain-value-ident
+     :parameters (?v - visual-object)
+     :precondition (= (max-gain-value-ident ?v) UNKNOWN)
+     :effect (assign (max-gain-value-ident ?v) 0)
+  )
+
+  (:init-rule set-p-color
+     :parameters (?v - visual-object ?c - color-name)
+     :precondition (= (p-color ?v ?c) UNKNOWN)
+     :effect (assign (p-color ?v ?c) 0)
+  )
+
+  (:init-rule set-p-shape
+     :parameters (?v - visual-object ?s - shape-name)
+     :precondition (= (p-shape ?v ?s) UNKNOWN)
+     :effect (assign (p-shape ?v ?s) 0)
+  )
+
+  (:init-rule set-p-ident
+     :parameters (?v - visual-object ?i - ident-name)
+     :precondition (= (p-ident ?v ?i) UNKNOWN)
+     :effect (assign (p-ident ?v ?i) 0)
+  )
+
+  (:derived (learning-impossible)
+  	    (forall (?v - visual-object)
+	    	(and
+		   (or
+		      (forall (?c - color-name) (not (attributed tutor (color ?v) ?c)))
+		      (color-learned ?v)
+		   )
+		   (or
+		      (forall (?s - shape-name) (not (attributed tutor (shape ?v) ?s)))
+		      (shape-learned ?v)
+		   )
+		   (or
+		      (forall (?i - ident-name) (not (attributed tutor (ident ?v) ?i)))
+		      (ident-learned ?v)
+		   )
+		   (or
+		      (forall (?c - color-name) (not (neg-attributed tutor (color ?v) ?c)))
+		      (color-unlearned ?v)
+		   )
+		   (or
+		      (forall (?s - shape-name) (not (neg-attributed tutor (shape ?v) ?s)))
+		      (shape-unlearned ?v)
+		   )
+		   (or
+		      (forall (?i - ident-name) (not (neg-attributed tutor (ident ?v) ?i)))
+		      (ident-unlearned ?v)
+		   )
+		)
+	    )
+  )		
+
+  (:derived (allow-general-color-question ?v - visual-object)
+  	    (or
+		(color-unlearned ?v)
+  	    	(forall (?c - color-name)
+	    	    (or
+			(= ?c unknown-color)
+			(< (p-color ?v ?c) 0.5)
+			(not (= (max-gain-label-color ?v) ?c))
+		    )
+		)
+	    )
+  )
+
+  (:derived (allow-polar-color-question ?v - visual-object ?c - color-name)
+  	    (and
+		(>= (p-color ?v ?c) 0.5)
+		(= (max-gain-label-color ?v) ?c)
+		(not (color-unlearned ?v))
+	    )
+  )
+
+  (:derived (allow-general-shape-question ?v - visual-object)
+  	    (or
+		(shape-unlearned ?v)
+  	    	(forall (?s - shape-name)
+	    	    (or
+			(= ?s unknown-shape)
+			(< (p-shape ?v ?s) 0.5)
+			(not (= (max-gain-label-shape ?v) ?s))
+		    )
+		)
+	    )
+  )
+
+  (:derived (allow-polar-shape-question ?v - visual-object ?s - shape-name)
+  	    (and
+		(>= (p-shape ?v ?s) 0.5)
+		(= (max-gain-label-shape ?v) ?s)
+		(not (shape-unlearned ?v))
+	    )
+  )
+
+  (:derived (allow-general-ident-question ?v - visual-object)
+  	    (or
+		(ident-unlearned ?v)
+  	    	(forall (?i - ident-name)
+	    	    (or
+			(= ?i unknown-ident)
+			(< (p-ident ?v ?i) 0.5)
+			(not (= (max-gain-label-ident ?v) ?i))
+		    )
+		)
+	    )
+  )
+
+  (:derived (allow-polar-ident-question ?v - visual-object ?i - ident-name)
+  	    (and
+		(>= (p-ident ?v ?i) 0.5)
+		(= (max-gain-label-ident ?v) ?i)
+		(not (ident-unlearned ?v))
+	    )
+  )
+
+  (:derived (has-highest-color-gain ?v - visual-object)
+  	    (forall (?v1 - visual-object)
+		    (and
+			(or (color-learned ?v1) (>= (max-gain-value-color ?v) (max-gain-value-color ?v1)))
+			(or (shape-learned ?v1) (>= (max-gain-value-color ?v) (max-gain-value-shape ?v1)))
+			(or (ident-learned ?v1) (>= (max-gain-value-color ?v) (max-gain-value-ident ?v1)))
+		    )
+	    )
+  )
+
+  (:derived (has-highest-shape-gain ?v - visual-object)
+  	    (forall (?v1 - visual-object)
+		    (and
+			(or (color-learned ?v1) (>= (max-gain-value-shape ?v) (max-gain-value-color ?v1)))
+			(or (shape-learned ?v1) (>= (max-gain-value-shape ?v) (max-gain-value-shape ?v1)))
+			(or (ident-learned ?v1) (>= (max-gain-value-shape ?v) (max-gain-value-ident ?v1)))
+		    )
+	    )
+  )
+
+  (:derived (has-highest-ident-gain ?v - visual-object)
+  	    (forall (?v1 - visual-object)
+		    (and
+			(or (color-learned ?v1) (>= (max-gain-value-ident ?v) (max-gain-value-color ?v1)))
+			(or (shape-learned ?v1) (>= (max-gain-value-ident ?v) (max-gain-value-shape ?v1)))
+			(or (ident-learned ?v1) (>= (max-gain-value-ident ?v) (max-gain-value-ident ?v1)))
+		    )
+	    )
+  )
+
+  (:action ask-for-an-objects-color-polar
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?c - color-name)
+    :precondition (and 
+    		       (in-domain (color ?v) ?c)
+		       (not (= ?c unknown-color))
+		       (allow-polar-color-question ?v ?c)
+		       (learning-impossible)
+		       (has-highest-color-gain ?v)
+		  )
+    :effect (and
+		(attributed tutor (color ?v) ?c)
+		(increase (total-cost) 1)
+	    )
+  )
+
+  (:action ask-for-an-objects-color-general
+    :agent (?a - robot)
+    :parameters (?v - visual-object)
+    :precondition (and 
+    		       (allow-general-color-question ?v)
+		       (learning-impossible)
+		       (has-highest-color-gain ?v)
+		  )
+    :effect (and 
+		 (attributed tutor (color ?v) unknown-color)
+		 (increase (total-cost) 2)
+	    )
+  )
+
+  (:action ask-for-an-objects-shape-polar
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?s - shape-name)
+    :precondition (and
+			(in-domain (shape ?v) ?s)
+			(not (= ?s unknown-shape))
+			(allow-polar-shape-question ?v ?s)
+			(learning-impossible)
+			(has-highest-shape-gain ?v)
+		  )
+    :effect (and
+		(attributed tutor (shape ?v) ?s)
+		(increase (total-cost) 1)
+	    )
+  )
+
+  (:action ask-for-an-objects-shape-general
+    :agent (?a - robot)
+    :parameters (?v - visual-object)
+    :precondition (and 
+    		       (allow-general-shape-question ?v)
+		       (learning-impossible)
+		       (has-highest-shape-gain ?v)
+		  )
+    :effect (and
+		(attributed tutor (shape ?v) unknown-shape)
+		(increase (total-cost) 2)
+	    )
+  )
+
+  (:action ask-for-an-objects-ident-polar
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?i - ident-name)
+    :precondition (and
+			(in-domain (ident ?v) ?i)
+			(not (= ?i unknown-ident))
+			(allow-polar-ident-question ?v ?i)
+			(learning-impossible)
+			(has-highest-ident-gain ?v)
+		  )
+    :effect (and
+		(attributed tutor (ident ?v) ?i)
+		(increase (total-cost) 1)
+	    )
+  )
+
+  (:action ask-for-an-objects-ident-general
+    :agent (?a - robot)
+    :parameters (?v - visual-object)
+    :precondition (and 
+    		       (allow-general-ident-question ?v)
+		       (learning-impossible)
+		       (has-highest-ident-gain ?v)
+		  )
+    :effect (and
+		(attributed tutor (ident ?v) unknown-ident)
+		(increase (total-cost) 2)
+	    )
+  )
+
+  (:action learn-color
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?c - color-name)
+    :precondition 
+      (and
+	(not (color-learned ?v))
+	(attributed tutor (color ?v) ?c)
+      )
+    :effect (and
+		(color-learned ?v)
+		(increase (total-cost) 1)
+	    )
+  )
+
+  (:action learn-shape
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?s - shape-name)
+    :precondition 
+      (and
+	(not (shape-learned ?v))
+	(attributed tutor (shape ?v) ?s)
+      )
+    :effect (and
+		(shape-learned ?v)
+		(increase (total-cost) 1)
+	    )
+  )
+
+  (:action learn-ident
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?i - ident-name)
+    :precondition 
+      (and
+	(not (ident-learned ?v))
+	(attributed tutor (ident ?v) ?i)
+      )
+    :effect (and
+		(ident-learned ?v)
+		(increase (total-cost) 1)
+	    )
+  )
+
+  (:action unlearn-color
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?c - color-name)
+    :precondition 
+      (and 
+	     (neg-attributed tutor (color ?v) ?c)
+	     (not (color-unlearned ?v))
+	     (not (= ?c unknown-color))
+      )
+    :effect (and 
+    	    	 (color-unlearned ?v)
+		 (increase (total-cost) 1)
+	    )
+  )
+
+  (:action unlearn-shape
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?s - shape-name)
+    :precondition 
+      (and 
+	     (neg-attributed tutor (shape ?v) ?s)
+	     (not (shape-unlearned ?v))
+	     (not (= ?s unknown-shape))
+      )
+    :effect (and 
+    	    	 (shape-unlearned ?v)
+		 (increase (total-cost) 1)
+	    )
+  )
+
+  (:action unlearn-ident
+    :agent (?a - robot)
+    :parameters (?v - visual-object ?i - ident-name)
+    :precondition 
+      (and 
+	     (neg-attributed tutor (ident ?v) ?i)
+	     (not (ident-unlearned ?v))
+	     (not (= ?i unknown-ident))
+      )
+    :effect (and 
+    	    	 (ident-unlearned ?v)
+		 (increase (total-cost) 1)
+	    )
+  )
+
+  (:action ask-for-and-object-with-color
+    :agent (?a - robot)
+    :parameters (?c - color-name ?v - visual-concept-model-status)
+    :precondition (and 
+    		     (= (most-promising ?v) ?c) 
+		     (not (asked-for ?v))
+		  )
+    :effect (and 
+     	       (object-of-desired-color-available ?c) 
+	       (update (object-of-desired-color-available ?c) true)
+	       (asked-for ?v)
+	    )
+  )
+
+  (:action ask-for-and-object-with-shape
+    :agent (?a - robot)
+    :parameters (?s - shape-name ?v - visual-concept-model-status)
+    :precondition (and 
+    		     (= (most-promising ?v) ?s) 
+		     (not (asked-for ?v))
+		  )
+    :effect (and 
+    	       (object-of-desired-shape-available ?s) 
+	       (update (object-of-desired-shape-available ?c) true)
+	       (asked-for ?v)
+	    )
+  )
+)

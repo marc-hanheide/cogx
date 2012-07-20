@@ -1,0 +1,11 @@
+
+To compile the DTP component of CogX, the following should suffice.
+
+ - Install ccache
+
+ - Invoke 
+ 
+   make clean; make -j 8
+
+If you don't want to install ccache for some insane reason, then just
+edit the make file and remove it from the CXXPREFIX variable.
