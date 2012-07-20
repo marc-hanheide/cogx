@@ -70,18 +70,20 @@ public class DelayFilterDisplayClient extends DisplayClient {
 	private static final PairComparator<Motive> MOTIVE_PAIR_COMPARATOR = new PairComparator<Motive>();
 
 	private static final String ROBOT_NON_SITUATED = "B6CEB6";
-	private static final String EXPLORE = "936663";
+	// private static final String EXPLORE = "936663";
+
 	private static final String ROBOT_SITUATED = "C7B26F";
+	private static final String EXPLORE = ROBOT_SITUATED;
 	private static final String TUTOR_DRIVEN = "6E8243";
 
-	private static final String DISPLAY_HEAD = "";
+
 
 	private static void cell(StringBuilder _sb, Object _content) {
 		_sb.append("<td>");
 		_sb.append(_content.toString());
 		_sb.append("</td>");
 	}
-	
+
 	private static void cell(StringBuilder _sb, Object _content, String _hex) {
 		_sb.append("<td bgcolor=\"#");
 		_sb.append(_hex);
@@ -109,9 +111,9 @@ public class DelayFilterDisplayClient extends DisplayClient {
 	// private static String
 
 	private static StringBuilder startFilter(String _title) {
-		StringBuilder sb = new StringBuilder("<br/><hr/><div><h2>");
+		StringBuilder sb = new StringBuilder("<br/><div><h3>");
 		sb.append(_title);
-		sb.append("</h2>");
+		sb.append("</h3>");
 		return sb;
 	}
 
@@ -121,8 +123,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 	private static final HashMap<Class<? extends Motive>, String> m_colourMap = new HashMap<Class<? extends Motive>, String>();
 
-	private static final String DISPLAY_CSS = "tr {font-size: 16px}\n";
-
+	private static final String DISPLAY_CSS = "tr {font-size: 13px}\n";
 
 	private static HashMap<Class<? extends Motive>, Integer> m_passThroughValues;
 
@@ -283,11 +284,11 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 		StringBuilder sb = startFilter("Drive Hierarchy");
 
-//		if (m_activeLevel == DriveHierarchy.UNKNOWN_CLASS_VALUE) {
-//			sb.append("Waiting for any input ");
-//		} else {
-//			sb.append("Active level is " + m_activeLevel);
-//		}
+		// if (m_activeLevel == DriveHierarchy.UNKNOWN_CLASS_VALUE) {
+		// sb.append("Waiting for any input ");
+		// } else {
+		// sb.append("Active level is " + m_activeLevel);
+		// }
 
 		int driveLevels = m_driveHierarchy.size();
 
@@ -394,7 +395,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 		cell(sb, "&nbsp &nbsp &nbsp &nbsp", ROBOT_SITUATED);
 		cell(sb, "Extrospective");
 		endRow(sb);
-		
+
 		startRow(sb);
 		cell(sb, "&nbsp &nbsp &nbsp &nbsp", EXPLORE);
 		cell(sb, "Extrospective (New Objects)");
@@ -408,7 +409,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 		endTable(sb);
 		endFilter(sb);
 		setHtml(DISPLAY_ID, KEY_ID, sb.toString());
-		
+
 	}
 
 	private synchronized HashMap<WorkingMemoryAddress, Motive> renderCompleted(
