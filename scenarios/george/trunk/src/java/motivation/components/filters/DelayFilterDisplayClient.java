@@ -417,7 +417,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 		HashMap<WorkingMemoryAddress, Motive> passOn = new HashMap<WorkingMemoryAddress, Motive>();
 
 		for (Motive mtv : _motives.values()) {
-			if (mtv.status != MotiveStatus.COMPLETED) {
+			if (mtv.status != MotiveStatus.COMPLETED && mtv.tries < 4) {
 				passOn.put(mtv.thisEntry, mtv);
 			}
 		}
