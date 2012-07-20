@@ -40,8 +40,6 @@ public class PossibleInterpretationsMotiveGenerator
 		extends
 		AbstractInterpretedIntentionMotiveGenerator<PossibleInterpretedIntentions> {
 
-	private static final double DISAMBIGUATION_CONFIDENCE_THRESHOLD = 0.9;
-
 	public PossibleInterpretationsMotiveGenerator() {
 		super(PossibleInterpretedIntentions.class);
 	}
@@ -79,7 +77,7 @@ public class PossibleInterpretationsMotiveGenerator
 
 			if ((subtype != null && !subtype.contains("answer"))
 					|| (clss != null && clss.equals("complex-action"))) {
-				if (neeedsDisambiguation(_pii)) {
+				if (AbstractDialogueActionInterface.neeedsDisambiguation(_pii)) {
 					println("generating motive to disambiguate");
 					motive = generateDisambiguationMotive(_piiAddr, _pii);
 				} else {
@@ -160,24 +158,6 @@ public class PossibleInterpretationsMotiveGenerator
 					receiver);
 		}
 
-	}
-
-	public static boolean neeedsDisambiguation(PossibleInterpretedIntentions _pii) {
-		// TODO something more principled
-
-		if (_pii.intentions.size() == 1) {
-			return false;
-		} else {
-
-//			for (InterpretedIntention ii : _pii.intentions.values()) {
-//				logIntention(ii);
-//			}
-
-			InterpretedIntention mostConfidentIntention = IntentionUnpacker
-					.getMostConfidentIntention(_pii);
-
-			return mostConfidentIntention.confidence < DISAMBIGUATION_CONFIDENCE_THRESHOLD;
-		}
 	}
 
 	@Override
