@@ -4,13 +4,11 @@ import java.util.Map;
 
 import motivation.components.generators.AbstractBeliefMotiveGenerator;
 import motivation.slice.ExploreMotive;
-import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import autogen.Planner.Goal;
-import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
@@ -20,7 +18,6 @@ import eu.cogx.perceptmediator.components.AssociatedBorderPropertyMediator;
 import eu.cogx.perceptmediator.components.AssociatedSpacePropertyMediator;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
-import facades.SpatialFacade;
 
 public class ExplorePlaceGenerator extends
 		AbstractBeliefMotiveGenerator<ExploreMotive, GroundedBelief> {
@@ -71,6 +68,9 @@ public class ExplorePlaceGenerator extends
 		boolean isExplored = belief.getContent().get("placestatus")
 				.getDistribution().getMostLikely().getProposition()
 				.equalsIgnoreCase(PlaceStatus.TRUEPLACE.name());
+    int id  = belief.getContent().get(PlaceTransferFunction.PLACE_ID_ID)
+        .getDistribution().getMostLikely().getInteger();
+
 		log("checkForAddition(): placestatus="
 				+ belief.getContent().get("placestatus").getDistribution()
 						.getMostLikely().getProposition());
@@ -84,6 +84,7 @@ public class ExplorePlaceGenerator extends
 			result.priority = MotivePriority.UNSURFACE;
 			result.referenceEntry = adr;
 			result.status = MotiveStatus.UNSURFACED;
+			result.placeID = id;
 			fillValues(belief, result);
 			return result;
 		}
