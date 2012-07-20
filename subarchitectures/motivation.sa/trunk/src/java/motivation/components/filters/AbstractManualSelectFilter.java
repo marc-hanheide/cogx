@@ -247,6 +247,10 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 		return jMotivesPanel;
 	}
 
+	protected void onUnsurfaceAll() {
+		
+	}
+	
 	private JPanel getPresetPanel() {
 		JPanel presetPanel = new JPanel();
 		// presetPanel.add(new JLabel("presets:"));
@@ -268,6 +272,7 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 							m_savedValues.add(p.getSlider().getValue());
 							p.getSlider().setValue(0);
 						}
+						onUnsurfaceAll();
 					} else {
 						Iterator<Integer> i = m_savedValues.iterator();
 						for (FilterPanel p : panels.values()) {
