@@ -257,7 +257,7 @@
       (= (color ?v) ?c)
       (>= (color-prob ?v) (polar-question-color-threshold ?r))
       (not (= (presence ?v) REMOVED))
-      (not (= (?c UNDETERMINED_COLOR)))
+      (not (= ?c UNDETERMINED_COLOR))
     )
   )
 
@@ -266,7 +266,7 @@
       (= (shape ?v) ?s)
       (>= (shape-prob ?v) (polar-question-shape-threshold ?r))
       (not (= (presence ?v) REMOVED))
-      (not (= (?s UNDETERMINED_SHAPE)))
+      (not (= ?s UNDETERMINED_SHAPE))
     )
   )
 
@@ -275,7 +275,7 @@
       (= (objecttype ?v) ?t)
       (>= (objecttype-prob ?v) (polar-question-objecttype-threshold ?r))
       (not (= (presence ?v) REMOVED))
-      (not (= (?t UNDETERMINED_OBJECTTYPE)))
+      (not (= ?t UNDETERMINED_OBJECTTYPE))
     )
   )
 
@@ -284,7 +284,7 @@
       (>= (color-prob ?v) (learn-autonomous-color-threshold ?r))
       (= (color ?v) ?c)
       (not (= (presence ?v) REMOVED))
-      (not (= (?c UNDETERMINED_COLOR)))
+      (not (= ?c UNDETERMINED_COLOR))
     )
   )
 
@@ -293,7 +293,7 @@
       (>= (shape-prob ?v) (learn-autonomous-shape-threshold ?r))
       (= (shape ?v) ?s)
       (not (= (presence ?v) REMOVED))
-      (not (= (?s UNDETERMINED_SHAPE)))
+      (not (= ?s UNDETERMINED_SHAPE))
     )
   )
 
