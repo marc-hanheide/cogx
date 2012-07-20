@@ -32,8 +32,7 @@ public class DelayFilter implements MotiveFilter {
 	protected final HashMap<Class<? extends Motive>, Long> m_postDelays;
 	protected MotiveFilterManager m_component;
 
-	private final DelayFilterDisplayClient m_display = DelayFilterDisplayClient
-			.getClient();
+	private DelayFilterDisplayClient m_display;
 
 	public DelayFilter() {
 		m_delayMap = new HashMap<Class<? extends Motive>, Integer>();
@@ -119,8 +118,7 @@ public class DelayFilter implements MotiveFilter {
 		// .println("whoops, this probably did bad things in the past");
 		// }
 
-		m_display.updateDelays(currentSystemTime, m_activeDelays,
-				m_component.getMotives());
+		m_display.updateDelays(currentSystemTime, m_activeDelays);
 
 		return priority;
 	}
@@ -139,9 +137,10 @@ public class DelayFilter implements MotiveFilter {
 		m_component = motiveFilterManager;
 	}
 
+	
 	@Override
 	public void start() {
-		m_display.connectIceClient(m_component);
+		m_display.connect(m_component);
 	}
 
 	@Override
@@ -163,7 +162,7 @@ public class DelayFilter implements MotiveFilter {
 		// m_postDelayWindowMap.put(LookAtViewConeMotive.class,
 		// postDialogueDelay);
 
-		m_display.configureDisplayClient(_config);
+		m_display = DelayFilterDisplayClient.getClient(_config);
 	}
 
 }

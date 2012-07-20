@@ -162,16 +162,16 @@ public class PossibleInterpretationsMotiveGenerator
 
 	}
 
-	private boolean neeedsDisambiguation(PossibleInterpretedIntentions _pii) {
+	public static boolean neeedsDisambiguation(PossibleInterpretedIntentions _pii) {
 		// TODO something more principled
 
 		if (_pii.intentions.size() == 1) {
 			return false;
 		} else {
 
-			for (InterpretedIntention ii : _pii.intentions.values()) {
-				logIntention(ii);
-			}
+//			for (InterpretedIntention ii : _pii.intentions.values()) {
+//				logIntention(ii);
+//			}
 
 			InterpretedIntention mostConfidentIntention = IntentionUnpacker
 					.getMostConfidentIntention(_pii);
