@@ -40,7 +40,7 @@ if nargin>0
    %axes(LRaxPts3d) ;
    
    if ~isempty(pts3d)
-       if size(pts3d,2) < 6
+       if 1==1;% size(pts3d,2) < 6  %%DS!! Always use the median color
 %           ptcol = repmat(hsv2rgb(f(1:3)')*255, size(pts3d,1),1) ;
            ptcol = repmat(hsl2rgb(f(1:3)')*255, size(pts3d,1),1) ;
        else
@@ -59,6 +59,11 @@ showSurfaceFromPoints( pts3d(:,1:3), ptcol, Figs.LRguiR.LRaxPts3d ) ;
       Settings.Params.ImgNo=Settings.Params.ImgNo+1;
       imwrite(x,[Dirs.images 'img' num2str(Settings.Params.ImgNo,'%03d') ,'.png']);
       imwrite(b,[Dirs.images 'msk' num2str(Settings.Params.ImgNo,'%03d') ,'.png']);
+      fid = fopen([Dirs.images 'pts' num2str(Settings.Params.ImgNo,'%03d') ,'.txt'], 'w');
+%      fprintf(fid,'%f %f %f\n', pts3d(:,1:3));
+      fprintf(fid,'%f %f %f\n', pts3d(:,1:3)');
+      fclose(fid);
+%      fprintf([Dirs.images 'pts' num2str(Settings.Params.ImgNo,'%03d') ,'.txt'],pts3d);
    end
    
 end
