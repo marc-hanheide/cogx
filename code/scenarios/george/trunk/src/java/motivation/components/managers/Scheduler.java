@@ -25,7 +25,7 @@ import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
  */
 public class Scheduler extends AbstractScheduler {
 
-	private final DelayFilterDisplayClient m_display = DelayFilterDisplayClient.getClient();
+	private DelayFilterDisplayClient m_display;
 
 	public Scheduler() {
 		super();
@@ -34,7 +34,7 @@ public class Scheduler extends AbstractScheduler {
 	@Override
 	public void start() {
 		super.start();
-		m_display.connectIceClient(this);
+		m_display.connect(this);
 	}
 
 	protected static boolean containsUnsurfaced(
@@ -70,9 +70,8 @@ public class Scheduler extends AbstractScheduler {
 				log("we currently have " + activeGoals.size()
 						+ " active goals.");
 
-				
 				m_display.updateActiveGoals(activeGoals);
-				
+
 				if (executionFuture != null
 						&& (executionFuture.isDone() || executionFuture
 								.isCancelled())) {
@@ -234,6 +233,12 @@ public class Scheduler extends AbstractScheduler {
 		}
 		return motive;
 
+	}
+
+	@Override
+	protected void configure(Map<String, String> _config) {
+		super.configure(_config);
+		m_display = DelayFilterDisplayClient.getClient(_config);
 	}
 
 }

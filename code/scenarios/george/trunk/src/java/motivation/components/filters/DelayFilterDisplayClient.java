@@ -14,6 +14,7 @@ import motivation.slice.AnalyzeProtoObjectMotive;
 import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.LookAtViewConeMotive;
 import motivation.slice.Motive;
+import motivation.slice.MotiveStatus;
 import motivation.slice.RobotNonSituatedMotive;
 import motivation.slice.TutorInitiativeMotive;
 import motivation.util.WMMotiveView;
@@ -22,8 +23,10 @@ import org.apache.log4j.Logger;
 
 import si.unilj.fri.cogx.v11n.core.DisplayClient;
 import cast.cdl.WorkingMemoryAddress;
+import cast.core.CASTComponent;
 import cast.core.CASTUtils;
 import cast.core.Pair;
+import cast.interfaces.ManagedComponent;
 
 public class DelayFilterDisplayClient extends DisplayClient {
 
@@ -52,13 +55,13 @@ public class DelayFilterDisplayClient extends DisplayClient {
 				m_logger.warn("Nick, fix me", t);
 			}
 		}
-
 	}
 
 	private static final String ACTIVE_ID = "001";
 	private static final String DRIVE_HIERARCHY_ID = "002";
 	private static final String DELAYS_ID = "003";
 	private static final String PASS_THROUGH_ID = "004";
+	private static final String COMPLETED_ID = "005";
 
 	private static final String DISPLAY_ID = "motive.filter";
 
@@ -75,6 +78,14 @@ public class DelayFilterDisplayClient extends DisplayClient {
 		_sb.append("</td>");
 	}
 
+	private static void cell(StringBuilder _sb, Object _content, int _colspan) {
+		_sb.append("<td colspan=\"");
+		_sb.append(_colspan);
+		_sb.append("\">");
+		_sb.append(_content.toString());
+		_sb.append("</td>");
+	}
+
 	private static void endFilter(StringBuilder _sb) {
 		_sb.append("</div>");
 	}
@@ -85,8 +96,11 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 	// private static String
 
-	private static StringBuilder startFilter() {
-		return new StringBuilder("<br/><hr/><br/><div>");
+	private static StringBuilder startFilter(String _title) {
+		StringBuilder sb = new StringBuilder("<br/><hr/><div><h2>");
+		sb.append(_title);
+		sb.append("</h2>");
+		return sb;
 	}
 
 	private static void startRow(StringBuilder _sb) {
@@ -99,18 +113,21 @@ public class DelayFilterDisplayClient extends DisplayClient {
 	private DriveHierarchy m_driveHierarchy;
 	private long m_currentSystemTime;
 	private HashMap<WorkingMemoryAddress, Long> m_activationTimes;
-	private WMMotiveView m_motives;
+	private WMMotiveView m_motives = null;
 
 	private Map<WorkingMemoryAddress, Motive> m_activeGoals;
 
 	private int m_activeLevel = DriveHierarchy.UNKNOWN_CLASS_VALUE;
 
+	private boolean m_connected = false;
+
 	private static DelayFilterDisplayClient m_client;
 
 	// MASSIVE HACK with static
-	public static DelayFilterDisplayClient getClient() {
+	public static DelayFilterDisplayClient getClient(Map<String, String> _config) {
 		if (m_client == null) {
 			m_client = new DelayFilterDisplayClient();
+			m_client.configureDisplayClient(_config);
 		}
 		return m_client;
 	}
@@ -122,7 +139,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 	}
 
 	private static void endTable(StringBuilder _sb) {
-		_sb.append("</table");
+		_sb.append("</table>");
 	}
 
 	public synchronized void setDriveHierarchy(DriveHierarchy _driveHierarchy) {
@@ -139,18 +156,18 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 	private synchronized HashMap<WorkingMemoryAddress, Motive> renderPassThroughState(
 			HashMap<Class<? extends Motive>, Integer> _values,
-			WMMotiveView _m_motives) {
+			HashMap<WorkingMemoryAddress, Motive> _motives) {
 
 		HashMap<WorkingMemoryAddress, Motive> passOn = new HashMap<WorkingMemoryAddress, Motive>();
 
 		// go through all motives and display which are turned off here
 
-		StringBuilder sb = startFilter();
+		StringBuilder sb = startFilter("Filter Override");
 		startTable(sb);
 
 		LinkedList<Motive> stoppedMotives = new LinkedList<Motive>();
 
-		for (Motive mtv : _m_motives.values()) {
+		for (Motive mtv : _motives.values()) {
 			Integer value = _values.get(mtv.getClass());
 			// if this is managed by the slide and it's turned off
 			if (value != null && value == 0) {
@@ -165,7 +182,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 				Class<? extends Motive> mtvCls = mtv.getClass();
 				startRow(sb, mtvCls);
 				cell(sb, mtvCls.getSimpleName());
-				cell(sb, CASTUtils.toString(mtv.thisEntry));
+				// cell(sb, CASTUtils.toString(mtv.thisEntry));
 				cell(sb, mtv.goal.goalString);
 				endRow(sb);
 			}
@@ -190,13 +207,19 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 	private static void startRow(StringBuilder _sb,
 			Class<? extends Motive> _mtvCls) {
-		_sb.append("<tr");
 		String hexCol = m_colourMap.get(_mtvCls);
 		if (hexCol != null) {
-			_sb.append(" bgcolor=\"#");
-			_sb.append(hexCol);
-			_sb.append("\"");
+			startRow(_sb, hexCol);
+		} else {
+			startRow(_sb);
 		}
+	}
+
+	private static void startRow(StringBuilder _sb, String _hex) {
+		_sb.append("<tr");
+		_sb.append(" bgcolor=\"#");
+		_sb.append(_hex);
+		_sb.append("\"");
 		_sb.append(">");
 	}
 
@@ -206,14 +229,14 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 	private synchronized void renderActiveGoals(
 			Map<WorkingMemoryAddress, Motive> _activeGoals) {
-		StringBuilder sb = startFilter();
+		StringBuilder sb = startFilter("Active Goals");
 		startTable(sb);
 		if (!_activeGoals.isEmpty()) {
 			for (Motive mtv : _activeGoals.values()) {
 				Class<? extends Motive> mtvCls = mtv.getClass();
 				startRow(sb, mtvCls);
 				cell(sb, mtvCls.getSimpleName());
-				cell(sb, CASTUtils.toString(mtv.thisEntry));
+				// cell(sb, CASTUtils.toString(mtv.thisEntry));
 				cell(sb, mtv.goal.goalString);
 				endRow(sb);
 			}
@@ -239,7 +262,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 	private synchronized void renderDriveHierarchy(
 			HashMap<WorkingMemoryAddress, Motive> _motives) {
 
-		StringBuilder sb = startFilter();
+		StringBuilder sb = startFilter("Drive Hierarchy");
 
 		if (m_activeLevel == DriveHierarchy.UNKNOWN_CLASS_VALUE) {
 			sb.append("Waiting for any input ");
@@ -255,7 +278,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 		for (int i = 0; i < driveLevels; i++) {
 			startRow(sb);
-			cell(sb, "Drive Level: " + i);
+			cell(sb, "Drive Level: " + i, 2);
 			endRow(sb);
 
 			Iterator<WorkingMemoryAddress> iterator = _motives.keySet()
@@ -268,7 +291,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 				if (m_driveHierarchy.getPriority(mtv.getClass()) == i) {
 					startRow(sb, mtvCls);
 					cell(sb, mtvCls.getSimpleName());
-					cell(sb, CASTUtils.toString(mtv.thisEntry));
+					// cell(sb, CASTUtils.toString(mtv.thisEntry));
 					cell(sb, mtv.goal.goalString);
 					endRow(sb);
 					m_logger.info("motives size before: " + _motives.size());
@@ -279,8 +302,8 @@ public class DelayFilterDisplayClient extends DisplayClient {
 			}
 
 			if (i == m_activeLevel) {
-				startRow(sb);
-				cell(sb, "Threshold");
+				startRow(sb, "000000");
+				cell(sb, "Threshold", 2);
 				endRow(sb);
 				drawnThreshold = true;
 			}
@@ -288,8 +311,8 @@ public class DelayFilterDisplayClient extends DisplayClient {
 		}
 
 		if (!drawnThreshold) {
-			startRow(sb);
-			cell(sb, "Threshold");
+			startRow(sb, "000000");
+			cell(sb, "Threshold", 2);
 			endRow(sb);
 			drawnThreshold = true;
 		}
@@ -302,31 +325,47 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 	private synchronized void renderAll() {
 
-		HashMap<WorkingMemoryAddress, Motive> passOn = null;
+		if (m_motives != null) {
 
-		if (m_passThroughValues != null) {
-			m_logger.info("pass through: " + m_motives.size());
-			passOn = renderPassThroughState(m_passThroughValues, m_motives);
+			HashMap<WorkingMemoryAddress, Motive> passOn = renderCompleted(m_motives);
+
+			if (m_passThroughValues != null) {
+				// m_logger.info("pass through: " + passOn.size());
+				passOn = renderPassThroughState(m_passThroughValues, passOn);
+			}
+
+			if (m_activationTimes != null) {
+				// m_logger.info("activations: " + passOn.size());
+				passOn = renderDelays(m_currentSystemTime, m_activationTimes,
+						passOn);
+			}
+
+			if (m_driveHierarchy != null) {
+				// m_logger.info("drive hierarchy: " + passOn.size());
+				renderDriveHierarchy(passOn);
+			}
+
+			// if (m_activeGoals != null) {
+			// // TODO use passOn once it makes sense
+			// m_logger.info("drive hierarchy: " + m_activeLevel);
+			// renderActiveGoals(m_activeGoals);
+			// }
 		}
 
-		if (m_activationTimes != null) {
-			m_logger.info("activations: " + passOn.size());
-			passOn = renderDelays(m_currentSystemTime, m_activationTimes,
-					passOn);
+	}
+
+	private synchronized HashMap<WorkingMemoryAddress, Motive> renderCompleted(
+			WMMotiveView _motives) {
+
+		HashMap<WorkingMemoryAddress, Motive> passOn = new HashMap<WorkingMemoryAddress, Motive>();
+
+		for (Motive mtv : _motives.values()) {
+			if (mtv.status != MotiveStatus.COMPLETED) {
+				passOn.put(mtv.thisEntry, mtv);
+			}
 		}
 
-		if (passOn != null) {
-			m_logger.info("drive hierarchy: " + passOn.size());
-
-			renderDriveHierarchy(passOn);
-		}
-
-		if (m_activeGoals != null) {
-			// TODO use passOn once it makes sense
-			m_logger.info("drive hierarchy: " + m_activeLevel);
-			renderActiveGoals(m_activeGoals);
-		}
-
+		return passOn;
 	}
 
 	private synchronized HashMap<WorkingMemoryAddress, Motive> renderDelays(
@@ -354,12 +393,14 @@ public class DelayFilterDisplayClient extends DisplayClient {
 				} else {
 					passOn.put(mtvAddr, mtv);
 				}
+			} else {
+				passOn.put(mtvAddr, mtv);
 			}
 		}
 
 		Collections.sort(motiveDelays, MOTIVE_PAIR_COMPARATOR);
 
-		StringBuilder sb = startFilter();
+		StringBuilder sb = startFilter("Delay Filter");
 		startTable(sb);
 		if (!motiveDelays.isEmpty()) {
 			for (Pair<Motive, Long> pair : motiveDelays) {
@@ -367,7 +408,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 				Class<? extends Motive> mtvCls = mtv.getClass();
 				startRow(sb, mtvCls);
 				cell(sb, mtvCls.getSimpleName());
-				cell(sb, CASTUtils.toString(mtv.thisEntry));
+				// cell(sb, CASTUtils.toString(mtv.thisEntry));
 				cell(sb, pair.m_second);
 				cell(sb, mtv.goal.goalString);
 				endRow(sb);
@@ -384,12 +425,18 @@ public class DelayFilterDisplayClient extends DisplayClient {
 	}
 
 	public synchronized void updateDelays(long _currentSystemTime,
-			HashMap<WorkingMemoryAddress, Long> _activeDelays,
-			WMMotiveView _motives) {
+			HashMap<WorkingMemoryAddress, Long> _activeDelays) {
 
 		m_currentSystemTime = _currentSystemTime;
 		m_activationTimes = _activeDelays;
-		m_motives = _motives;
+
+	}
+
+	public void connect(CASTComponent _component) {
+		if (!m_connected) {
+			connectIceClient(_component);
+			m_connected = true;
+		}
 
 	}
 }

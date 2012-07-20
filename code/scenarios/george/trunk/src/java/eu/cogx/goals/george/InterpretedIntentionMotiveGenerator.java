@@ -38,6 +38,7 @@ public class InterpretedIntentionMotiveGenerator extends
 			// mark referents of chosen intention
 			if (motive != null
 					&& motive instanceof ObjectReferencingIntentionMotive) {
+			
 				List<WorkingMemoryAddress> referenceList = new LinkedList<WorkingMemoryAddress>();
 				WorkingMemoryAddress reference = aboutBeliefAddress(_intention);
 				referenceList.add(reference);

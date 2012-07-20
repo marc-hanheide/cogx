@@ -20,7 +20,6 @@ import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.RobotNonSituatedMotive;
 import motivation.slice.TutorInitiativeMotive;
-import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 
 /**
@@ -29,8 +28,7 @@ import cast.cdl.WorkingMemoryChange;
  */
 public class GeorgePassThroughFilter extends AbstractManualSelectFilter {
 
-	private final DelayFilterDisplayClient m_display = DelayFilterDisplayClient
-			.getClient();
+	private DelayFilterDisplayClient m_display;
 
 	protected class OnOffFilterPanel extends FilterPanel {
 
@@ -89,13 +87,13 @@ public class GeorgePassThroughFilter extends AbstractManualSelectFilter {
 	@Override
 	public void configure(Map<String, String> _config) {
 		super.configure(_config);
-		m_display.configureDisplayClient(_config);
+		m_display = DelayFilterDisplayClient.getClient(_config);
 	}
 
 	@Override
 	public void start() {
 		super.start();
-		m_display.connectIceClient(component);
+		m_display.connect(component);
 	}
 
 	/**

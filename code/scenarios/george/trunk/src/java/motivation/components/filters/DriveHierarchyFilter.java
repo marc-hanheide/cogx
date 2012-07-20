@@ -26,7 +26,7 @@ public class DriveHierarchyFilter implements MotiveFilter,
 
 	private MotiveFilterManager m_component;
 
-	private final DelayFilterDisplayClient m_display = DelayFilterDisplayClient.getClient();
+	private DelayFilterDisplayClient m_display;
 
 	private final DriveHierarchy m_driveHierarchy = GeorgeDriveConfig
 			.getGeorgeDriveHierarchy();
@@ -82,7 +82,7 @@ public class DriveHierarchyFilter implements MotiveFilter,
 
 	@Override
 	public void configure(Map<String, String> _config) {
-		m_display.configureDisplayClient(_config);
+		m_display = DelayFilterDisplayClient.getClient(_config);
 		m_display.setDriveHierarchy(m_driveHierarchy);
 	}
 
@@ -163,7 +163,7 @@ public class DriveHierarchyFilter implements MotiveFilter,
 	@Override
 	public void start() {
 		m_component.addMotiveCompletionHandler(this);
-		m_display.connectIceClient(m_component);
+		m_display.connect(m_component);
 		m_display.updateActiveLevel(m_activeLevel);
 
 		new Thread(new Runnable() {
