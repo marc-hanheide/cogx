@@ -97,6 +97,11 @@ void PlaceManager::configure(const std::map<std::string, std::string>& _config) 
     m_bNoPlaceholders = true;
   }
 
+  m_bExtraConnectivities = false;
+  if (_config.find("--extra-connectivities") != _config.end()) {
+    m_bExtraConnectivities = true;
+  }
+
   m_RetryDelay = 1000;
   if (_config.find("--retry-interval") != _config.end()) {
     std::istringstream str(_config.find("--retry-interval")->second);
@@ -1453,45 +1458,49 @@ void PlaceManager::evaluateUnexploredPaths() {
                       > -width / 2 * 1.5) && (s < width / 2 * 1.5) && (max_dist
                       > 1.5)) {
                     // The connection line goes through a door
-                    if (!link_gateway2) {
-                      NodeHypothesisPtr newHyp =
-                          new SpatialData::NodeHypothesis();
-                      // There were no door nodes in the connection chain
-                      // Create a door placeholder (see information above)
+		    if (!link_gateway2) {
+		      if (m_bExtraConnectivities) {
+			NodeHypothesisPtr newHyp =
+			  new SpatialData::NodeHypothesis();
+			// There were no door nodes in the connection chain
+			// Create a door placeholder (see information above)
 
-                      //if (t>l/2) t=l/2;
-                      t = 0;
-                      newHyp->x = x1 + nx * t;
-                      newHyp->y = y1 + ny * t;
-                      newHyp->hypID = -1;
-                      newHyp->originPlaceID = curPlaceID;
-                      newHyp->originNodeID = curNode->nodeId;
-                      newHyp->gateway = true;
-                      PlacePtr p;
-                      p = new Place;
-                      p->status = PLACEHOLDER;
+			//if (t>l/2) t=l/2;
+			t = 0;
+			newHyp->x = x1 + nx * t;
+			newHyp->y = y1 + ny * t;
+			newHyp->hypID = -1;
+			newHyp->originPlaceID = curPlaceID;
+			newHyp->originNodeID = curNode->nodeId;
+			newHyp->gateway = true;
+			PlacePtr p;
+			p = new Place;
+			p->status = PLACEHOLDER;
 
-                      PlaceID newPlaceID = _addPlaceWithHyp(p, newHyp);
-                      log("Added new hypothesis at (%f, %f) with ID %i",
-                          newHyp->x, newHyp->y, newHyp->hypID);
+			PlaceID newPlaceID = _addPlaceWithHyp(p, newHyp);
+			log("Added new hypothesis at (%f, %f) with ID %i",
+			    newHyp->x, newHyp->y, newHyp->hypID);
 
-                      // Add connectivity property (one-way)
-                      createConnectivityProperty(m_hypPathLength, curPlaceID,
-                          newPlaceID);
-                      m_hypotheticalConnectivities.push_back(pair<int, int> (
-                          newHyp->originPlaceID, newPlaceID));
-                    }
+			// Add connectivity property (one-way)
+			createConnectivityProperty(m_hypPathLength, curPlaceID,
+			    newPlaceID);
+			m_hypotheticalConnectivities.push_back(pair<int, int> (
+			      newHyp->originPlaceID, newPlaceID));
+		      }
+		    }
                     intersects_door = true;
                     break;
                   }
                 }
               }
             }
-            if (!intersects_door) {
-              // Connection line didn't go through the door, so we create a normal connection
-              createConnectivityProperty(sqrt(dist2), curPlaceID, it->first);
-              createConnectivityProperty(sqrt(dist2), it->first, curPlaceID);
-            }
+	    if (m_bExtraConnectivities) {
+	      if (!intersects_door) {
+		// Connection line didn't go through the door, so we create a normal connection
+		createConnectivityProperty(sqrt(dist2), curPlaceID, it->first);
+		createConnectivityProperty(sqrt(dist2), it->first, curPlaceID);
+	      }
+	    }
           }
         }
       }
