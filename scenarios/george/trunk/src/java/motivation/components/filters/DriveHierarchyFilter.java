@@ -2,8 +2,6 @@ package motivation.components.filters;
 
 import java.util.Map;
 
-import javax.swing.JOptionPane;
-
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
@@ -166,16 +164,31 @@ public class DriveHierarchyFilter implements MotiveFilter,
 		m_display.connect(m_component);
 		m_display.updateActiveLevel(m_activeLevel);
 
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				while (true) {
-					JOptionPane.showMessageDialog(null, "kill all things");
-				}
-
-			}
-		});
+//		new Thread(new Runnable() {
+//
+//			@Override
+//			public void run() {
+//
+//				try {
+//					Thread.sleep(5000);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//				while (m_component.isRunning()) {
+//					JOptionPane.showMessageDialog(null, "Reset filter");
+//					m_activeLevel = DriveHierarchy.UNKNOWN_CLASS_VALUE;
+//					try {
+//						m_component.lockComponent();
+//						m_component.checkAll();
+//					} catch (Throwable t) {
+//						m_component.logException("on reset", t);
+//					} finally {
+//						m_component.unlockComponent();
+//					}
+//				}
+//
+//			}
+//		}).start();
 	}
 
 }

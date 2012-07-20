@@ -18,9 +18,13 @@ import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.LookAtViewConeMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
+import motivation.slice.MotiveStatus;
 import motivation.slice.RobotNonSituatedMotive;
 import motivation.slice.TutorInitiativeMotive;
+import motivation.util.WMMotiveView;
+import cast.CASTException;
 import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryPermissions;
 
 /**
  * @author marc
@@ -108,6 +112,34 @@ public class GeorgePassThroughFilter extends AbstractManualSelectFilter {
 		} else {
 			return panels.get(c);
 		}
+	}
+
+	@Override
+	protected void onUnsurfaceAll() {
+		WMMotiveView motives = component.getMotives();
+
+		for (Motive mtv : motives.values()) {
+			if (mtv.status == MotiveStatus.ACTIVE) {
+				try {
+					component.lockEntry(mtv.thisEntry,
+							WorkingMemoryPermissions.LOCKEDO);
+					Motive motive = component.getMemoryEntry(mtv.thisEntry,
+							Motive.class);
+					motive.status = MotiveStatus.COMPLETED;
+					component.overwriteWorkingMemory(motive.thisEntry, motive);
+				} catch (Exception e) {
+					component.logException(e);
+				} finally {
+					try {
+						component.unlockEntry(mtv.thisEntry);
+					} catch (CASTException e) {
+						component.logException(
+								"CASTException in motive filtering ", e);
+					}
+				}
+			}
+		}
+
 	}
 
 	@Override
