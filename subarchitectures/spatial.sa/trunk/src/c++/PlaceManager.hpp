@@ -249,6 +249,7 @@ private:
   bool m_useLocalMaps; // Whether to connect to the LocalMapManager and
   // generate PlaceholderPlaceProperties
   bool m_bNoPlaceholders;
+  bool m_bExtraConnectivities;
 
   //    bool m_updatePlaceholderPositions;
 
