@@ -13,7 +13,8 @@ TASKS_ID = "planner.tasks"
 STATE_ID = "planner.state"
 
 STYLE = """
-tr {font-size: 16px}
+html{font-family:sans-serif !important}
+tr {font-size: 16px; font-family:sans-serif; font-weight:bold}
 
 tr.sat {background-color: #88FF88}
 tr.unsat {background-color: #FF6666}
