@@ -1,0 +1,115 @@
+include "../common/map.inc"
+include "../common/p3dx_with_urg.inc"
+include "../common/box.inc"
+include "barrier.inc"
+
+window
+(
+	#This is the size the simulation window will be in pixels
+	size [1215.000 940.000]
+	#This is how many metres of the simulated environment each pixel shows
+	scale 18.181
+)
+
+floorplan
+(
+	bitmap "./cs-2.png"
+	#size of map in metre
+	size [50.625 35.290 1.500]
+)
+
+p3dx_with_urg_and_blobfinder (
+	name "dora"
+	pose [17.800 10.200 0 -90.000]
+	color "red"
+)
+
+# cereal box
+
+ box2d
+ (
+ name "redbox1"
+ color "red"
+ pose [21.835 10.145 0 0]
+ )
+
+# barriers to close office doors:
+
+ barrier
+ (
+ name "barrier1"
+ color "black"
+ pose [19.150 9.550 0 0]
+ )
+
+ barrier
+ (
+ name "barrier2"
+ color "black"
+ pose [19.800 5.100 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier3"
+ color "black"
+ pose [19.800 2.050 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier4"
+ color "black"
+ pose [19.800 -1.000 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier5"
+ color "black"
+ pose [19.800 -4.100 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier6"
+ color "black"
+ pose [19.800 -7.200 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier7"
+ color "black"
+ pose [17.900 0.900 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier8"
+ color "black"
+ pose [17.900 -8.350 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier9"
+ color "black"
+ pose [19.100 -11.100 0 0]
+ )
+
+# barriers to block the corridor next to the printer room
+
+ barrier
+ (
+ name "barrier10"
+ color "black"
+ pose [12.650 -9.600 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier11"
+ color "black"
+ pose [12.650 -10.350 0 90.000]
+ )

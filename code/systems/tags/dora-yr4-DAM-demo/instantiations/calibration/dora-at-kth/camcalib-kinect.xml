@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<imgsize type_id="opencv-matrix">
+  <rows>2</rows>
+  <cols>1</cols>
+  <dt>d</dt>
+  <data>
+    640. 480.</data></imgsize>
+<intrinsic type_id="opencv-matrix">
+  <rows>3</rows>
+  <cols>3</cols>
+  <dt>d</dt>
+  <data>
+    5.2983708130337777e+02 0. 3.1274626972820312e+02 0.
+    5.3000046392060062e+02 2.5513838613830603e+02 0. 0. 1.</data></intrinsic>
+<distortion type_id="opencv-matrix">
+  <rows>4</rows>
+  <cols>1</cols>
+  <dt>d</dt>
+  <data>
+    1.7077185269613615e-01 -2.9699436558047715e-01
+    -2.9878544756272740e-03 -9.2254889559056105e-04</data></distortion>
+<tvecs type_id="opencv-matrix">
+  <rows>23</rows>
+  <cols>3</cols>
+  <dt>d</dt>
+  <data>
+    0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+    0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+    0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.</data></tvecs>
+<rvecs type_id="opencv-matrix">
+  <rows>23</rows>
+  <cols>3</cols>
+  <dt>d</dt>
+  <data>
+    0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 0. 1. 0. 0. 0. 0. 1. 0. 0. 1.
+    0. 0. 1. 2. 511. 0. 0. 1. 0. 0. 1. 0. 0. 1. 2. 511. 0. 0. 1. 0. 0.
+    0. 0. 0. 0. 1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 2. 511. 0. 0. 1. 0. 0.
+    0. 0. 0.</data></rvecs>
+</opencv_storage>

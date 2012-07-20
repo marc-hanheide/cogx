@@ -1,0 +1,38 @@
+HOST localhost
+SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
+SETVAR ptz_server=ptz.server
+
+VARDEFAULT siftroot_=./instantiations/sift-models
+VARDEFAULT plyroot_=./instantiations/ply-models
+VARDEFAULT objname_=AImagazineSpring1999
+
+VARDEFAULT or3d_sift_files=<multiline>
+   %(siftroot_)/%(objname_).sift
+</multiline>
+VARDEFAULT or3d_ply_files=<multiline>
+   %(plyroot_)/%(objname_).ply
+</multiline>
+VARDEFAULT or3d_labels=%(objname_)
+
+
+COMPONENT CPP laser.server LaserServerPlayer --log --player-host localhost #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
+# Spatial.SA ################################################################
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+
+# Vision ######################################################################
+INCLUDE includes/vision.sa/vision-base.cast
+
+CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "%(vision_calib_root)/camcalib-kinect.xml" --create-viewcone
+
+CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver %(ptz_server)
+
+CPP MG Recognizer.3D ObjectRecognizer3D --pcserver pcserver --camid "2" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --save-images #--display
+
+JAVA MG estimator castutils.experimentation.ManualObservationModelEstimatorComponent --label "%(or3d_labels)"
+
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
+
