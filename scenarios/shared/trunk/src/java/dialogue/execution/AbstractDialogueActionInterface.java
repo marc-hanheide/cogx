@@ -39,6 +39,7 @@ import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
 import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.beliefs.slice.VerifiedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
+import eu.cogx.goals.george.PossibleInterpretationsMotiveGenerator;
 import execution.components.AbstractActionInterface;
 import execution.slice.Action;
 import execution.slice.ConfidenceLevel;
@@ -505,15 +506,6 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 		@Override
 		protected TriBool checkResponse(InterpretedIntention _ii)
 				throws SubarchitectureComponentException {
-			// Handle matched response looking like this:
-			// [33m[gg.ii: asserted-value -> red][0m
-			// [33m[gg.ii: subtype -> answer][0m
-			// [33m[gg.ii: asserted-polarity -> pos][0m or neg
-			// [33m[gg.ii: asserted-feature -> color][0m
-			// [33m[gg.ii: type -> assertion][0m
-			// [33m[gg.ii: ][0m
-
-			// TODO what if the answer is a negation?
 
 			// TODO do all this via a RichIntention just like input intentions
 
@@ -535,6 +527,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 						verifiedAncestorPtr.address, VerifiedBelief.class);
 				CASTIndependentFormulaDistributionsBelief<VerifiedBelief> pb = CASTIndependentFormulaDistributionsBelief
 						.create(VerifiedBelief.class, belief);
+
 				double prob = 1.0;
 
 				if (_ii.stringContent.get("asserted-polarity").equals("neg")) {
@@ -552,7 +545,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 				pb.getContent().put(feature, distr);
 
 				distr = FormulaDistribution.create();
-				distr.add(new FloatFormula(-1, 1.0f), 1);
+				distr.add(new FloatFormula(-1, (float) prob), 1);
 				pb.getContent().put(feature + "-prob", distr);
 
 				distr = FormulaDistribution.create();
@@ -703,7 +696,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			// pointer across multiple calls of the executor
 			_addressContent
 					.put("verification-of",
-							((AbstractDialogueActionInterface<?>) getComponent()).m_lastPossibleIntentionsAddition);
+							((AbstractDialogueActionInterface<?>) getComponent()).m_lastAmbiguousPossibleIntentionsAddition);
 		}
 
 		/**
@@ -1328,7 +1321,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 		return false;
 	}
 
-	private WorkingMemoryAddress m_lastPossibleIntentionsAddition;
+	private WorkingMemoryAddress m_lastAmbiguousPossibleIntentionsAddition;
 
 	// public static void main(String[] args) throws SecurityException,
 	// NoSuchMethodException {
@@ -1354,7 +1347,15 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
-						m_lastPossibleIntentionsAddition = _wmc.address;
+
+						PossibleInterpretedIntentions pii = getMemoryEntry(
+								_wmc.address,
+								PossibleInterpretedIntentions.class);
+						if (PossibleInterpretationsMotiveGenerator
+								.neeedsDisambiguation(pii)) {
+							m_lastAmbiguousPossibleIntentionsAddition = _wmc.address;
+						}
+
 					}
 				});
 
