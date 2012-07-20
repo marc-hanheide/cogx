@@ -264,6 +264,24 @@ bool CategoricalShapeIntegrator::readyToAccumulate()
 	return true;
 }
 
+// ------------------------------------------------------
+void CategoricalShapeIntegrator::ensureQueueIntegrity()
+{
+	if ( (_resultsQueue.empty()) || (_odometryQueue.empty()) )
+		return;
+
+	if (_resultsQueue.front()->frameNo > _odometryQueue.front()->frameNo)
+	{
+	  getLogger()->warn("Queues out of sync; dropping one odometry frame!");
+	  _odometryQueue.pop_front();
+	}
+	if (_resultsQueue.front()->frameNo < _odometryQueue.front()->frameNo)
+	{
+	  getLogger()->warn("Queues out of sync; dropping one laser result frame!");
+	  _resultsQueue.pop_front();
+	}
+}
+
 
 // ------------------------------------------------------
 void CategoricalShapeIntegrator::runComponent()
@@ -283,6 +301,7 @@ ts.tv_nsec = 0;
 		pthread_mutex_lock(&_dataSignalMutex);
 		if (!readyToAccumulate())
 			pthread_cond_timedwait(&_dataSignalCond, &_dataSignalMutex, &ts);
+		ensureQueueIntegrity();
 
 		// Handle signal if signal arrived
 		if ((!isRunning()) || (!readyToAccumulate()))
