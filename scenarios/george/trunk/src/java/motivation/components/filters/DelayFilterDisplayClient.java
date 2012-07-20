@@ -11,12 +11,15 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import motivation.slice.AnalyzeProtoObjectMotive;
+import motivation.slice.ComplexActionCommandMotive;
 import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.LookAtViewConeMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.slice.RobotNonSituatedMotive;
+import motivation.slice.TutorInitiativeLearningMotive;
 import motivation.slice.TutorInitiativeMotive;
+import motivation.slice.TutorInitiativeQuestionMotive;
 import motivation.util.WMMotiveView;
 
 import org.apache.log4j.Logger;
@@ -24,9 +27,7 @@ import org.apache.log4j.Logger;
 import si.unilj.fri.cogx.v11n.core.DisplayClient;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTComponent;
-import cast.core.CASTUtils;
 import cast.core.Pair;
-import cast.interfaces.ManagedComponent;
 
 public class DelayFilterDisplayClient extends DisplayClient {
 
@@ -57,11 +58,12 @@ public class DelayFilterDisplayClient extends DisplayClient {
 		}
 	}
 
-	private static final String ACTIVE_ID = "001";
-	private static final String DRIVE_HIERARCHY_ID = "002";
-	private static final String DELAYS_ID = "003";
-	private static final String PASS_THROUGH_ID = "004";
-	private static final String COMPLETED_ID = "005";
+	private static final String KEY_ID = "001";
+	private static final String ACTIVE_ID = "002";
+	private static final String DRIVE_HIERARCHY_ID = "003";
+	private static final String DELAYS_ID = "004";
+	private static final String PASS_THROUGH_ID = "005";
+	private static final String COMPLETED_ID = "006";
 
 	private static final String DISPLAY_ID = "motive.filter";
 
@@ -72,8 +74,18 @@ public class DelayFilterDisplayClient extends DisplayClient {
 	private static final String ROBOT_SITUATED = "C7B26F";
 	private static final String TUTOR_DRIVEN = "6E8243";
 
+	private static final String DISPLAY_HEAD = "";
+
 	private static void cell(StringBuilder _sb, Object _content) {
 		_sb.append("<td>");
+		_sb.append(_content.toString());
+		_sb.append("</td>");
+	}
+	
+	private static void cell(StringBuilder _sb, Object _content, String _hex) {
+		_sb.append("<td bgcolor=\"#");
+		_sb.append(_hex);
+		_sb.append("\">");
 		_sb.append(_content.toString());
 		_sb.append("</td>");
 	}
@@ -108,6 +120,10 @@ public class DelayFilterDisplayClient extends DisplayClient {
 	}
 
 	private static final HashMap<Class<? extends Motive>, String> m_colourMap = new HashMap<Class<? extends Motive>, String>();
+
+	private static final String DISPLAY_CSS = "tr {font-size: 16px}\n";
+
+
 	private static HashMap<Class<? extends Motive>, Integer> m_passThroughValues;
 
 	private DriveHierarchy m_driveHierarchy;
@@ -200,6 +216,9 @@ public class DelayFilterDisplayClient extends DisplayClient {
 	protected synchronized void setupColours() {
 		m_colourMap.put(AnalyzeProtoObjectMotive.class, EXPLORE);
 		m_colourMap.put(TutorInitiativeMotive.class, TUTOR_DRIVEN);
+		m_colourMap.put(ComplexActionCommandMotive.class, TUTOR_DRIVEN);
+		m_colourMap.put(TutorInitiativeLearningMotive.class, TUTOR_DRIVEN);
+		m_colourMap.put(TutorInitiativeQuestionMotive.class, TUTOR_DRIVEN);
 		m_colourMap.put(LearnObjectFeatureMotive.class, ROBOT_SITUATED);
 		m_colourMap.put(LookAtViewConeMotive.class, ROBOT_SITUATED);
 		m_colourMap.put(RobotNonSituatedMotive.class, ROBOT_NON_SITUATED);
@@ -224,7 +243,7 @@ public class DelayFilterDisplayClient extends DisplayClient {
 	}
 
 	private static void startTable(StringBuilder _sb) {
-		_sb.append("<table border=\"1\">");
+		_sb.append("<table frame=\"border\" border=\"1\" rules=\"all\">");
 	}
 
 	private synchronized void renderActiveGoals(
@@ -264,11 +283,11 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 		StringBuilder sb = startFilter("Drive Hierarchy");
 
-		if (m_activeLevel == DriveHierarchy.UNKNOWN_CLASS_VALUE) {
-			sb.append("Waiting for any input ");
-		} else {
-			sb.append("Active level is " + m_activeLevel);
-		}
+//		if (m_activeLevel == DriveHierarchy.UNKNOWN_CLASS_VALUE) {
+//			sb.append("Waiting for any input ");
+//		} else {
+//			sb.append("Active level is " + m_activeLevel);
+//		}
 
 		int driveLevels = m_driveHierarchy.size();
 
@@ -325,6 +344,8 @@ public class DelayFilterDisplayClient extends DisplayClient {
 
 	private synchronized void renderAll() {
 
+		renderKey();
+
 		if (m_motives != null) {
 
 			HashMap<WorkingMemoryAddress, Motive> passOn = renderCompleted(m_motives);
@@ -352,6 +373,42 @@ public class DelayFilterDisplayClient extends DisplayClient {
 			// }
 		}
 
+	}
+
+	// private static final String ROBOT_NON_SITUATED = "B6CEB6";
+	// private static final String EXPLORE = "936663";
+	// private static final String ROBOT_SITUATED = "C7B26F";
+	// private static final String TUTOR_DRIVEN = "6E8243";
+	//
+
+	private synchronized void renderKey() {
+		StringBuilder sb = startFilter("Key");
+		startTable(sb);
+
+		startRow(sb);
+		cell(sb, "&nbsp &nbsp &nbsp &nbsp", TUTOR_DRIVEN);
+		cell(sb, "Interactive");
+		endRow(sb);
+
+		startRow(sb);
+		cell(sb, "&nbsp &nbsp &nbsp &nbsp", ROBOT_SITUATED);
+		cell(sb, "Extrospective");
+		endRow(sb);
+		
+		startRow(sb);
+		cell(sb, "&nbsp &nbsp &nbsp &nbsp", EXPLORE);
+		cell(sb, "Extrospective (New Objects)");
+		endRow(sb);
+
+		startRow(sb);
+		cell(sb, "&nbsp &nbsp &nbsp &nbsp", ROBOT_NON_SITUATED);
+		cell(sb, "Introspective");
+		endRow(sb);
+
+		endTable(sb);
+		endFilter(sb);
+		setHtml(DISPLAY_ID, KEY_ID, sb.toString());
+		
 	}
 
 	private synchronized HashMap<WorkingMemoryAddress, Motive> renderCompleted(
@@ -436,6 +493,8 @@ public class DelayFilterDisplayClient extends DisplayClient {
 		if (!m_connected) {
 			connectIceClient(_component);
 			m_connected = true;
+			setHtmlHead(DISPLAY_ID, "head", "<style type=\"text/css\">"
+					+ DISPLAY_CSS + "</style>");
 		}
 
 	}
