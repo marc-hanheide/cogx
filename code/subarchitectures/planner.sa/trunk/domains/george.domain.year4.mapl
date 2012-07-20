@@ -613,6 +613,8 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (not (= ?c UNKNOWN_COLOR))
+        (not (= ?c UNDETERMINED_COLOR))
         (is-in-robot-initiated-mode ?r)
         (allow-autonomous-color-learning ?v ?c ?r)
         (not (exists (?c1 - ColorName) (= (attributed-color ?v) ?c1)))
@@ -682,6 +684,8 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
+        (not (= ?s UNKNOWN_SHAPE))
+        (not (= ?s UNDETERMINED_SHAPE))
         (is-in-robot-initiated-mode ?r)
         (allow-autonomous-shape-learning ?v ?s ?r)
         (not (shape-learned ?v))
