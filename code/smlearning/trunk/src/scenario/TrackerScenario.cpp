@@ -185,7 +185,7 @@ void TrackerScenario::writeChunk (LearningData::Chunk& chunk) {
 
 void TrackerScenario::updateObjectPoseSimulation ()
 {
-	if (object != NULL && !bStart)
+	if (object != NULL)
 	{
 		CriticalSectionWrapper csw (cs);
 		golem::Mat34 objectPose = TrackingToGolem (tracker_th->getPose ());
@@ -213,8 +213,8 @@ void TrackerScenario::postprocess (golem::SecTmReal elapsedTime)
 		LearningData::Chunk chunk;
 		writeChunk (chunk);
 		learningData.currentChunkSeq.push_back (chunk);
-		if (!isnan(chunk.object.obRoll) && !isnan(chunk.object.obPitch) && !isnan(chunk.object.obYaw))
-			object->setPose (chunk.object.objectPose);
+		// if (!isnan(chunk.object.obRoll) && !isnan(chunk.object.obPitch) && !isnan(chunk.object.obYaw))
+		// 	object->setPose (chunk.object.objectPose);
 	}
 
 	updateObjectPoseSimulation ();
@@ -254,7 +254,6 @@ void TrackerScenarioPredictionSingle::postprocess (golem::SecTmReal elapsedTime)
 				learningData.get_pfPose_from_cryssmexquantization (predictedVector, learningData.efVectorSize, denormalization);
 		}		
 	}
-
 	updateObjectPoseSimulation ();
 
 }
@@ -295,6 +294,7 @@ void TrackerScenarioPredictionEnsemble::postprocess (golem::SecTmReal elapsedTim
 			}
 		}
 	}
+	updateObjectPoseSimulation ();
 }
 
 void TrackerScenario::closeGripper(Katana300Arm &arm) {
