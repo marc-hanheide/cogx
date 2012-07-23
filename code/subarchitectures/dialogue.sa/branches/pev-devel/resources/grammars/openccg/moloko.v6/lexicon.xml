@@ -104,7 +104,6 @@
     <member stem="car-noun-n" pred="car"/>
     <member stem="wall-noun-n" pred="wall"/>
     <member stem="pizza-noun-n" pred="pizza"/>
-    <member stem="cerealbox-noun-n" pred="cerealbox"/>
     <member stem="book-noun-n" pred="book"/>
     <member stem="ball-noun-n" pred="ball"/>
     <member stem="block-noun-n" pred="block"/>
@@ -116,6 +115,12 @@
     <member stem="toppas-noun-n" pred="toppas"/>
     <member stem="chocos-noun-n" pred="chocos"/>
     <member stem="darjeeling-noun-n" pred="darjeeling"/>
+    <member stem="teabox-noun-n" pred="teabox"/>
+    <member stem="cerealbox-noun-n" pred="cerealbox"/>
+    <member stem="drinkcan-noun-n" pred="drinkcan"/>
+    <member stem="noodle-noun-n" pred="noodle"/>
+    <member stem="milk-noun-n" pred="milk"/>
+    <member stem="bottle-noun-n" pred="bottle"/>
     <member stem="box2-noun-n" pred="box"/>
     <member stem="box3-noun-n" pred="box"/>
     <member stem="box4-noun-n" pred="box"/>

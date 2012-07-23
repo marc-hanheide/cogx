@@ -20,6 +20,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
+import de.dfki.lt.tr.beliefs.slice.intentions.InterpretationStatus;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
@@ -33,6 +34,7 @@ import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntention;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntentionProofInterpreter;
 import de.dfki.lt.tr.dialogue.interpret.MaximumReadingsTerminationCondition;
+import de.dfki.lt.tr.dialogue.interpret.PossibleReadingsFilter;
 import de.dfki.lt.tr.dialogue.interpret.ResultCombinator;
 import de.dfki.lt.tr.dialogue.interpret.ResultGatherer;
 import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeAction;
@@ -95,6 +97,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 	public final String DEFAULT_ABD_ENDPOINT_CONFIG = "default";
 	public final String DEFAULT_ENGINE_NAME = "intention-recognition";
 	public final int DEFAULT_TIMEOUT = 250;
+        
+        public final int DEFAULT_REF_RESOLUTION_TIMEOUT = 5;
 
 	public final int DEFAULT_MAX_READINGS = 1;
         public final int DEFAULT_NUM_REF_EX_RESOLVERS = 2;
@@ -107,6 +111,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 	private String rulesetFile = "/dev/null";
 
         private int numRefExResolvers = DEFAULT_NUM_REF_EX_RESOLVERS;
+        private int refResolutionTimeout = DEFAULT_REF_RESOLUTION_TIMEOUT;
 	private int timeout = DEFAULT_TIMEOUT;
 
 	private final Map<String, RemappedSLF> nomToLFMap;
@@ -173,12 +178,18 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
                     String numResolversStr = args.get("--num-resolvers");
                     numRefExResolvers = Integer.parseInt(numResolversStr);
                 }
+                if (args.containsKey("--ref-resolution-timeout")) {
+                    String refResolutionTimeoutStr = args.get("--ref-resolution-timeout");
+                    refResolutionTimeout = Integer.parseInt(refResolutionTimeoutStr);
+                }
 
 		getLogger().debug("will only look at the " + maxReadings + " best reading(s)");
 		condition = new MaximumReadingsTerminationCondition(maxReadings);
 
 		getLogger().debug("will be combining the results of " + numRefExResolvers + " reference expression resolvers");
 
+                getLogger().debug("ref resolution timeout will be " + refResolutionTimeout + " s");
+                
 		String abd_host = args.get("--abd-host");
 		abd_endpoints = AbducerUtils.getAbducerServerEndpointString(abd_host, DEFAULT_ABD_PORT);
 
@@ -241,7 +252,15 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 
 				if (!listIpret.isEmpty()) {
 					PossibleInterpretedIntentions pii = createPossibleInterpretedIntentions(translatorFactory, listIpret);
+					getLogger().debug("before pruning:\n" + possibleInterpretedIntentionsToString(pii));
 					pii = prunePossibleInterpretedIntentions(pii);
+					
+					//set status if single interpretation
+					if(pii.intentions.size() == 1) {
+						WorkingMemoryAddress wma = pii.intentions.keySet().iterator().next();
+						pii.statuses.put(wma, InterpretationStatus.CORRECT);
+					}
+					
 					getLogger().debug("normalizing confidences");
 					normalizeConfidences(pii);
 					getLogger().debug("after pruning and normalization: " + pii.intentions.size() + " alternative intentions");
@@ -265,7 +284,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 				}
 				else {
 					getLogger().warn("didn't get any interpretations at all!");
-                                        VerbalisationUtils.verbaliseString(committer, "sorry I did not understand what you meant");
+                                        VerbalisationUtils.verbaliseString(committer, "sorry , I did not understand what you meant");
 				}
 			}
 
@@ -281,13 +300,15 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 		PossibleInterpretedIntentions pii = new PossibleInterpretedIntentions(
 				new HashMap<WorkingMemoryAddress, InterpretedIntention>(),
 				new HashMap<WorkingMemoryAddress, dBelief>(),
-				EMPTY_ADDRESS);
+				EMPTY_ADDRESS,
+				new HashMap<WorkingMemoryAddress, InterpretationStatus>());
 
 		for (InterpretedUserIntention iui : listIpret) {
 			WMAddressTranslator translator = translatorFactory.newTranslator();
 			WorkingMemoryAddress wma = translator.translate(iui.getAddress());
 			pii.intentions.put(wma, iui.toIntention(translator));
 			pii.beliefs.putAll(iui.toBeliefs(translator));
+			pii.statuses.put(wma,InterpretationStatus.UNCHECKED);
 		}
 		
 		return pii;
@@ -341,12 +362,19 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 
 			// this is the case we can handle
 			getLogger().debug("okay, this seems to be an open/polar question -> we should be able to handle multiple intentions here");
+
+                        PossibleReadingsFilter filter = new PossibleReadingsFilter(getLogger());
+                        
+                        
+                        
+                        newPii = filter.filterForAboutness(pii, iint);
 		}
 		else {
 			// we cannot handle anything else: prrrune!
 			getLogger().debug("this is not an open/polar question -> will prune the PossibleInterpretedIntentions to be sure");
 			newPii = extractFromRoot(addr, pii);
 		}
+                
 		getLogger().debug("pruning finished");
 		return newPii;
 	}
@@ -363,7 +391,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 	public PossibleInterpretedIntentions extractFromRoot(WorkingMemoryAddress wma, PossibleInterpretedIntentions pii) {
 		PossibleInterpretedIntentions newPii = new PossibleInterpretedIntentions(
 				new HashMap<WorkingMemoryAddress, InterpretedIntention>(),
-				new HashMap<WorkingMemoryAddress, dBelief>(), EMPTY_ADDRESS);
+				new HashMap<WorkingMemoryAddress, dBelief>(), EMPTY_ADDRESS,
+				new HashMap<WorkingMemoryAddress, InterpretationStatus>());
 
 		InterpretedIntention iint = pii.intentions.get(wma);
 		newPii.intentions.put(wma, iint);
@@ -372,6 +401,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 				newPii.beliefs.put(addr, pii.beliefs.get(addr));
 			}
 		}
+		newPii.statuses.put(wma, InterpretationStatus.UNCHECKED);
 		
 		return newPii;
 	}
@@ -606,7 +636,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 				logException(ex);
 			}
 
-			result = gatherer.ensureStabilization(5, TimeUnit.SECONDS);
+			result = gatherer.ensureStabilization(refResolutionTimeout, TimeUnit.SECONDS);
 			final String nom = getNominalInTheRequest(wma);
 			assert nom != null;
 			stopGathererObservation(wma);
@@ -905,10 +935,49 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 			ReferenceResolutionResult rr = new ReferenceResolutionResult(null, null, "combined", new LinkedList<EpistemicReferenceHypothesis>());
 			result = new ReferenceResolutionResultWrapper(rr);
 		}
+/*
+                protected boolean isUniform(ReferenceResolutionResult rr) {
+                    boolean allEqual = false;
+                    double prevScore = Double.NaN;
+                    for (EpistemicReferenceHypothesis h : rr.hypos) {
+                        if (Double.isNaN(prevScore)) {
+                            prevScore = h.score;
+                            allEqual = true;
+                        }
+                        else {
+                            if (h.score != prevScore) return false;
+                        }
 
+                    }
+                    return allEqual;
+                }
+                
+                protected void improveUniform(ReferenceResolutionResult rr) {
+                    if (rr.hypos.size() > 0) {
+                        double eq = 1.0 / rr.hypos.size();
+                        for (EpistemicReferenceHypothesis h : rr.hypos) {
+                            h.score = eq;
+                        }
+                    }
+                    else {
+			getLogger().debug("this was an EMPTY result yet we were still asked to improve it!!!");
+                    }
+                }
+*/                
 		@Override
 		synchronized public void addResult(ReferenceResolutionResultWrapper added) {
 			getLogger().debug("got a new reference resolution result: " + ReferenceUtils.resolutionResultToString(added.getResult()));
+/*                        
+                        if ("MLN".equals(added.getResult().method)) {
+                                if (isUniform(added.getResult())) {
+                                    improveUniform(added.getResult());
+                                    getLogger().debug("this seems to have been a uniform result, adjusted it to: " + ReferenceUtils.resolutionResultToString(added.getResult()));
+                                }
+                                else {
+                                    getLogger().debug("this was a sensible result, no adjustments done");
+                                }
+                        }
+*/                        
 			++count;
 			if (result.getResult().nom == null) {
 				result.getResult().nom = added.getResult().nom;

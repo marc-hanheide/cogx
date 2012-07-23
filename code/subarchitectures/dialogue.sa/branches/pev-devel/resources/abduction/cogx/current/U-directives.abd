@@ -301,7 +301,19 @@ understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
 	int : string_content(Int, type, 'look-direction') / p(1.0),
 	int : string_content(Int, direction, Dir) / p(1.0).
 
-% TODO: also do "look to the left/right"
+% look to the DIRECTION
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : prop(Nom, Verb),
+	look_around_verb(Verb),
+	i : rel_Modifier(Nom, ModNom),
+		i : rel_Anchor(ModNom, AnchNom),
+		understand : direction(AnchNom, Dir),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'complex-action') / p(1.0),
+	int : string_content(Int, type, 'look-direction') / p(1.0),
+	int : string_content(Int, direction, Dir) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -315,6 +327,10 @@ understand : direction(Nom, Dir) <-
 	i : rel_Result(Nom, ModNom),
 		i : prop(ModNom, Prop),
 		valid_direction(Prop, Dir).
+
+understand : direction(Nom, Dir) <-
+	i : prop(Nom, Prop),
+	valid_direction(Prop, Dir).
 
 valid_direction(forward, forward).
 %valid_direction(back, back).

@@ -117,22 +117,34 @@ understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
 
 polar_query_prop(Nom, color, PropValue) <-
 	i : sort(Nom, 'q-color'),
-	i : prop(Nom, PropValue).
+	i : prop(Nom, PropValue),
+	valid_color(PropValue).
 
 polar_query_prop(Nom, shape, PropValue) <-
 	i : sort(Nom, 'q-shape'),
-	i : prop(Nom, PropValue).
-
-polar_query_prop(Nom, size, PropValue) <-
-	i : sort(Nom, 'q-size'),
-	i : prop(Nom, PropValue).
-
-polar_query_prop(Nom, objecttype, PropValue) <-
-	i : sort(Nom, thing),
 	i : prop(Nom, PropValue),
+	valid_shape(PropValue).
+
+%polar_query_prop(Nom, size, PropValue) <-
+%	i : sort(Nom, 'q-size'),
+%	i : prop(Nom, PropValue).
+
+% a TYPE
+polar_query_prop(Nom, objecttype, PropValue) <-
+	i : sort(Nom, Sort),
+	i : prop(Nom, Value),
 	i : feat_Delimitation(Nom, existential),
 	i : feat_Num(Nom, sg),
-	i : feat_Quantification(Nom, specific).
+	i : feat_Quantification(Nom, specific),
+	valid_objecttype(Sort, Value, PropValue).
+
+% a PROP TYPE
+polar_query_prop(Nom, Prop, Value) <-
+	i : sort(Nom, Sort),
+	i : prop(Nom, Type),
+	general_objecttype(Sort, Type),
+	i : rel_Modifier(Nom, ModNom),
+	polar_query_prop(ModNom, Prop, Value).
 
 polar_query_prop(Nom, identity, PropValue) <-
 	i : sort(Nom, 'e-place'),
@@ -177,7 +189,7 @@ polarity(Nom, Polarity) <-
 	i : feat_Polarity(Nom, Polarity).
 
 polarity(Nom, pos) <-
-	polarity_positive(Nom) / p(0.9).
+	polarity_positive(Nom) / p(0.1).
 
 %-------------------------------------------------------------------------
 

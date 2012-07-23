@@ -94,11 +94,11 @@ extends AbstractReferringExpressionGenerationComponent<DiscursiveGenerator> {
 						return "it";
 					}
 					else {
-						 return "this object";
+						 return "this";
 					}
 				}
 				else {
-					return "the object";
+					return "this";
 				}
 			}
 		}

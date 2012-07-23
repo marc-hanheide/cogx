@@ -46,6 +46,9 @@ implements ReferenceResolutionRequestExtractor {
 		if (prop.equals("context")) {
 			return ReferenceResolver.SORT_INDETERMINATE;
 		}
+                if (prop.equals("other")) {
+                    return ReferenceResolver.SORT_INDETERMINATE;
+                }
 
 		if (sort.equals("thing")) {
 			return ReferenceResolver.SORT_OBJECT;
@@ -94,6 +97,9 @@ implements ReferenceResolutionRequestExtractor {
 		if (nom.sort.equals("q-shape")) {
 			return "shape";
 		}
+                if (nom.prop.prop.equals("other")) {
+                    return "otherness";
+                }
 		return null;
 	}
 
