@@ -138,6 +138,7 @@ public class PEVUtils {
 	public static String postProcessLexiconSubstitution(String lfString) {
 		Map<String,String> postLexicalSub = new HashMap<String, String>();
 		postLexicalSub.put(" cones", " viewcones");
+		postLexicalSub.put(" often", " possibly found");
 		postLexicalSub.put(" shelf", " container");
 		postLexicalSub.put(" shelves", " containers");
 		postLexicalSub.put("did not search for", "didn't find");
