@@ -138,6 +138,7 @@ public class PEVUtils {
 	public static String postProcessLexiconSubstitution(String lfString) {
 		Map<String,String> postLexicalSub = new HashMap<String, String>();
 		postLexicalSub.put(" cones", " viewcones");
+		postLexicalSub.put(" often", " possibly found");
 		postLexicalSub.put(" shelf", " container");
 		postLexicalSub.put(" shelves", " containers");
 		postLexicalSub.put("did not search for", "didn't find");
@@ -202,7 +203,7 @@ public class PEVUtils {
 					&& !sentences[i+1].startsWith("and") 
 					&& !sentences[i+1].startsWith("but")
 					&& !sentences[i+1].startsWith("in order to")
-					) text += ".\n";
+					) text += ". \n";
 			else text += " ";
 		}
 		text = text + sentences[sentences.length-1] + ".";
@@ -214,7 +215,7 @@ public class PEVUtils {
 		matchPatterns.add("(to the )(place|placeholder) ([a-z]+)( )([ a-z0-9]*?)(because I wanted to )(go|move) ([ a-z0-9]*?)(to the )(place|placeholder)( [a-z]+)([ a-z]+)");
 		replacePatterns.add("$1$2 $3$4$5$6reach $10$11");
 
-		matchPatterns.add("(!![ a-zA-Z0-9]+\\.\n)+");
+		matchPatterns.add("(!![ a-zA-Z0-9]+\\. \n)+");
 		replacePatterns.add("my plan was to visit several other places, after which ");
 		
 		matchPatterns.add("(someone|somebody)([ a-zA-Z0-9]+?)(someone|somebody)");
@@ -223,12 +224,37 @@ public class PEVUtils {
 		matchPatterns.add("(ask)([ a-zA-Z0-9]+?)(if)([ a-zA-Z0-9]+?)(in|on)( the thing)");
 		replacePatterns.add("$1$2$3$4$5 it");
 
+		matchPatterns.add("and I (didn't|did not)");
+		replacePatterns.add("but I $1");
+
+		matchPatterns.add("(I )(moved|went)( to )(the place )([a-zA-Z]+)((( )(via|from)( the place )([a-zA-Z]+))+)\\. \n");
+		replacePatterns.add("$1MOTION $4$5, ");
+		
+		matchPatterns.add("my task was to search for a  and to find it. \n");
+		replacePatterns.add("");
+
+		matchPatterns.add("my task was to search for a ([a-zA-Z]*) and to find it. \n");
+		replacePatterns.add("my task was to find a $1. \n");
+
+		
 		String[] mPats = matchPatterns.toArray(new String[matchPatterns.size()]);
 		String[] rPats = replacePatterns.toArray(new String[replacePatterns.size()]);
 		
 		for (int i=0; i<mPats.length; i++) {
 			text = text.replaceAll(mPats[i], rPats[i]);			
 		}
+		
+		// now skip repetetive assumptions
+		sentences = text.split("\n");
+		text = "";
+		for (String sentence : sentences) {
+			if (sentence.contains("MOTION")) {
+				sentence = sentence.replaceFirst("MOTION", "visited");
+				sentence = sentence.replaceAll("I MOTION ", "");
+				sentence = PEVUtils.replaceLast(sentence, ",", ", and then");
+			}
+			text += sentence + "\n";
+		}	
 		
 		// now skip repetetive assumptions
 		sentences = text.split("\n");
@@ -248,9 +274,42 @@ public class PEVUtils {
 			}
 			text += sentence + "\n";
 		}
+		
+		
+		
+//		// now skip repetetive room mentions
+//		sentences = text.split("\n");
+//		text = "";
+//		String lastRoom = "";
+//		for (String sentence : sentences) {
+//			if (sentence.contains("in the room")) {
+//				String matchPattern = "([ a-zA-Z']+?)(in the room )([a-zA-Z0-9']+)([ a-zA-Z']+?)(\\.)";
+//				String replacePattern = "$2$3";
+//				String currentRoom = sentence.replaceFirst(matchPattern, replacePattern);
+//				System.err.println(lastRoom + " - " + currentRoom);
+//				if (currentRoom.equals(lastRoom)) {
+//					text += "SKIPPED " + sentence;
+//					continue;
+//				} 
+//				lastRoom = currentRoom;
+//			}
+//			text += sentence + "\n";
+//		}
+		
 		return text;
 	}
 	
+	public static String replaceLast(String string, String toReplace, String replacement) {
+	    int pos = string.lastIndexOf(toReplace);
+	    if (pos > -1) {
+	        return string.substring(0, pos)
+	             + replacement
+	             + string.substring(pos + toReplace.length(), string.length());
+	    } else {
+	        return string;
+	    }
+	}
+
 	
 	/**
 	 * Read the raw text as XML-based String object from the given file
