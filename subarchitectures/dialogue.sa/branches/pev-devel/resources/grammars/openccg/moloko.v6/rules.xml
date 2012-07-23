@@ -6503,7 +6503,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-58">
+  <typechanging name="x2du-58">
     <arg>
       <atomcat type="np">
         <fs>
@@ -6530,7 +6530,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-59">
+  <typechanging name="x2du-59">
     <arg>
       <atomcat type="n">
         <fs>
@@ -6557,7 +6557,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-60">
+  <typechanging name="x2du-60">
     <arg>
       <atomcat type="adj">
         <fs>
@@ -6584,7 +6584,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-61">
+  <typechanging name="x2du-61">
     <arg>
       <atomcat type="adv">
         <fs>
@@ -6611,7 +6611,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-62">
+  <typechanging name="x2du-62">
     <arg>
       <atomcat type="s">
         <fs>
@@ -6638,7 +6638,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-63">
+  <typechanging name="x2du-63">
     <arg>
       <atomcat type="pp">
         <fs>
@@ -6665,7 +6665,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-64">
+  <typechanging name="disclevelcomposition">
     <arg>
       <atomcat type="du">
         <fs>
@@ -6715,7 +6715,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-65">
+  <typechanging name="correction-65">
     <arg>
       <atomcat type="np">
         <fs>
@@ -6761,7 +6761,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-66">
+  <typechanging name="correction-66">
     <arg>
       <atomcat type="n">
         <fs>

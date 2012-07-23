@@ -23,49 +23,6 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	understand : assertion_effect(Speaker, Hearer, Int, SubjNom, Polarity, ScopeNom).
 
 %-------------------------------------------------------------------------
-
-% there is X
-understand : event : from_logical_form(S, H, Nom) <-
-	i : sort(Nom, presentational),
-	i : feat_Mood(Nom, ind),
-	i : feat_Tense(Nom, pres),
-	i : rel_Presented(Nom, PresNom),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	understand : assertion_effect(S, H, Int, PresNom, pos, PresNom),
-	understand : topic_switch_mark(PresNom, 'pointer-to'(assertion)) / p(1.0),
-	int : post(Int, state([presented, agent(S), patient('pointer-to'(assertion))])) / p(1.0).
-
-%-------------------------------------------------------------------------
-
-% I see X
-understand : event : from_logical_form(S, H, Nom) <-
-	i : sort(Nom, perception),
-	i : prop(Nom, see),
-	i : feat_Mood(Nom, ind),
-	i : rel_Patient(Nom, PatNom),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-%	int : pre(Int, state([see, agent(S), patient(PatNom)])) / p(1.0),
-	understand : assertion_effect(S, H, Int, PatNom, pos, PatNom).
-
-%-------------------------------------------------------------------------
-
-% (I) don't know
-%understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
-%	i : sort(Nom, cognition),
-%	i : prop(Nom, know),
-%	i : feat_Polarity(Nom, neg),
-%
-%	? understand : i : intention(Nom, Int),
-%
-%	int : agent(Int, Speaker) / p(1.0),
-%	int : string_content(Int, type, 'assertion') / p(1.0),
-%	int : string_content(Int, subtype, 'answer-unknown') / p(1.0),
-%
-%	doesnt_matter_under_discussion(_QUDAddr, Nom, Int, _Feature).
-
-%-------------------------------------------------------------------------
 % YES/NO CONFIRMATIONS
 %-------------------------------------------------------------------------
 

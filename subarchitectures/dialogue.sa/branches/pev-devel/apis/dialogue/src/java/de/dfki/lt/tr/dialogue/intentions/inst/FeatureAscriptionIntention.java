@@ -4,6 +4,7 @@ import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.intentions.AbstractBaseIntentionTranscoder;
+import de.dfki.lt.tr.dialogue.intentions.FeatureValueUpdateEffect;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
 import de.dfki.lt.tr.dialogue.intentions.DecodingUtils;
 import de.dfki.lt.tr.dialogue.intentions.DecodingException;
@@ -43,6 +44,13 @@ public class FeatureAscriptionIntention extends AssertionIntention {
 		Map<String, dFormula> updates = new HashMap<String, dFormula>();
 		updates.put(getFeatureName(), BeliefFormulaFactory.maybeNegatedElementaryFormula(getFeatureValue(), !isPositive()));
 		return new VerifiedBeliefUpdateEffect(getEntity(), updates);
+	}
+	
+	@Override
+	public CASTEffect getOnAcceptEffect() {
+		Map<String, dFormula> updates = new HashMap<String, dFormula>();
+		updates.put("attributed-" + getFeatureName(), BeliefFormulaFactory.maybeNegatedElementaryFormula(getFeatureValue(), !isPositive()));
+		return new FeatureValueUpdateEffect(getEntity(), updates);
 	}
 	
 	public static class Transcoder

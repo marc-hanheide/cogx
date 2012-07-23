@@ -9,22 +9,27 @@ import cast.cdl.WorkingMemoryPointer;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
-import de.dfki.lt.tr.dialogue.util.CogXLexicon;
-import de.dfki.lt.tr.dialogue.util.VerbalisationUtils;
 import eu.cogx.beliefs.slice.VerifiedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
 
-public class VerifiedBeliefUpdateEffect implements CASTEffect {
+/**
+ * General update effect that sets belief values. Very similar to
+ * {@link VerifiedBeliefUpdateEffect} except this doesn't do the extra "-prob"
+ * value. TODO These should probably be refactored later.
+ * 
+ * @author nah
+ * 
+ */
+public class FeatureValueUpdateEffect implements CASTEffect {
 
 	private final WorkingMemoryAddress aboutBeliefAddr;
 
 	private final Map<String, dFormula> featuresToSet;
 
-	public VerifiedBeliefUpdateEffect(WorkingMemoryAddress aboutBeliefAddr,
+	public FeatureValueUpdateEffect(WorkingMemoryAddress aboutBeliefAddr,
 			Map<String, dFormula> featuresToSet) {
 		this.aboutBeliefAddr = aboutBeliefAddr;
 		this.featuresToSet = featuresToSet;
@@ -55,8 +60,6 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 			WorkingMemoryPointer verifiedBeliefWMP = BeliefUtils
 					.recurseAncestorsForType(component, aboutBeliefAddr,
 							VerifiedBelief.class);
-
-			String repStr = "";
 
 			if (verifiedBeliefWMP != null) {
 
@@ -111,21 +114,6 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 						distr.add(value, prob);
 						verifiedBelief.getContent().put(feature, distr);
 
-						repStr = ", " + (isPositive ? "" : "not ");
-
-						if ("objecttype".equals(feature)) {
-							repStr += "a "
-									+ CogXLexicon.beautifyObjectTypes(value);
-						} else {
-							repStr += value;
-						}
-
-						// BeliefUtils.addFeature(verifiedBelief, feature,
-						// featuresToSet.get(feature));
-
-						BeliefUtils.addFeature(verifiedBelief, feature
-								+ "-prob", new FloatFormula(-1, (float) prob));
-
 					} else {
 						component.log("don't know how do the effect for "
 								+ feature
@@ -141,9 +129,6 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 
 				component.overwriteWorkingMemory(verifiedBeliefWMP.address,
 						verifiedBelief.get());
-
-				VerbalisationUtils.verbaliseString(component, "ok" + repStr);
-
 			}
 		} catch (CASTException e) {
 			component.logException(e);

@@ -1,5 +1,6 @@
 VARDEFAULT irecog_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.U.txt
 VARDEFAULT max_readings=1
 VARDEFAULT num_refex_resolvers=2
+VARDEFAULT ref_resolution_timeout=5
 
-JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer --ruleset %(irecog_abd_domain) --abd-host %(host:AbducerHost) --max-readings %(max_readings) --num-resolvers %(num_refex_resolvers)
+JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer --ruleset %(irecog_abd_domain) --abd-host %(host:AbducerHost) --max-readings %(max_readings) --num-resolvers %(num_refex_resolvers) --ref-resolution-timeout %(ref_resolution_timeout)
