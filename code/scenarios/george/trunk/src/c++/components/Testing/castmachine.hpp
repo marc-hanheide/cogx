@@ -72,6 +72,7 @@ typedef std::shared_ptr<CTestEntry> CTestEntryPtr;
 class CTeachTestEntry: public CTestEntry
 {
 public:
+  enum { OK = 1, NOTOK = 2 };
   std::string mLabel;
   std::string mColor;
   std::string mShape;
@@ -140,6 +141,8 @@ private:
   // Management of WM copies.
   long getVisibleVisualObjectCount();
   void addRobotResponse(const std::string &response);
+
+public:
   void clearRobotResponses();
 
 private:
