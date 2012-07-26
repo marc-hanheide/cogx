@@ -32,8 +32,9 @@ std::string CTeachTestEntry::getLessonText(int numLesson)
 // TODO 0 NO answer, 1 YES, 2 NO
 long CTeachTestEntry::classifyResponse(int numLesson, const std::string& response)
 {
-  // TODO parse the answer
-  return 1; // for now accept anything; TODO constant YES
+  if (response.size() > 0 && response.substr(0, 2) == "ok")
+    return OK;
+  return NOTOK;
 }
 
 #define TIME_VIEW "Evaluator.tm"

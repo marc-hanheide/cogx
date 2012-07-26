@@ -269,6 +269,7 @@ protected:
   CLinkedStatePtr mEndTeach;
   CLinkedStatePtr mSelf;
   CLinkedStatePtr mWLearnTaskComplete;
+  CLinkedStatePtr mWLearnTaskConfirmed;
   long mPrevTaskAddCount, mPrevTaskDoneCount;
   std::string mDebug;
 
@@ -276,6 +277,7 @@ protected:
   {
     mTeachStep = linkedState("TeachOneStep", "Confirmed");
     mWLearnTaskComplete = linkedState("WaitLearningTaskComplete", "TaskCreated");
+    mWLearnTaskConfirmed = linkedState("WaitLearningTaskConfirmed", "TaskComplete");
     mEndTeach = linkedState("EndTeaching", "Timeout");
   }
 
@@ -291,7 +293,7 @@ public:
   {
     initLinkedStates();
     setWatchEvents({ "::VisionData::VisualLearningTask" });
-    setTimeout(180 * 1000); // 30 standalone, 180 valgrind
+    setTimeout(30 * 1000); // 30 standalone, 180 valgrind
     setSleepTime(20);
   }
 
@@ -299,6 +301,7 @@ public:
     mDebug = "";
     mPrevTaskAddCount = std::strtol(mInfo["LearningTask-add"].c_str(), nullptr, 10);
     mPrevTaskDoneCount = std::strtol(mInfo["LearningTask-done"].c_str(), nullptr, 10);
+    machine()->clearRobotResponses();
     return Continue;
   }
 
@@ -345,12 +348,43 @@ public:
 
     if (cntDone != mPrevTaskDoneCount) {
       machine()->reportRunningTime(id(), mRunningTimer.elapsed() * 1e-3);
-      exitLesson("task-completed");
+      machine()->switchToState(mWLearnTaskConfirmed, "task-completed");
+      //exitLesson("task-completed");
       return Continue;
     }
 
     if (hasTimedOut()) {
       machine()->reportTimeout("Waiting for Learning Task Completion");
+      exitLesson("<b>timeout</b>");
+      return Continue;
+    }
+
+    return WaitChange;
+  }
+};
+
+// Wait for the robot to confirm the learning task completion ('R: ok, ...')
+class CstWaitLearningTaskConfirmed: public CstWaitLearningTask
+{
+public:
+  CstWaitLearningTaskConfirmed(CCastMachine* pMachine)
+    : CstWaitLearningTask(pMachine, "WaitLearningTaskConfirmed")
+  {
+  }
+
+  TStateFunctionResult work() {
+    long resp = machine()->getRobotAnswerClass(); 
+    if (resp) {
+      machine()->reportRunningTime(id(), mRunningTimer.elapsed() * 1e-3);
+      if (resp == CTeachTestEntry::OK)
+        exitLesson("task-confirmed");
+      else
+        exitLesson("task-not-confirmed");
+      return Continue;
+    }
+
+    if (hasTimedOut()) {
+      machine()->reportTimeout("Waiting for Learning Task Confirmation");
       exitLesson("<b>timeout</b>");
       return Continue;
     }
@@ -400,6 +434,7 @@ CMachinePtr CY4Learning::createMachine(CTester* pOwner)
   //pMachine->addState(new CstWaitResponse(pMachine));
   pMachine->addState(new CstWaitLearningTask(pMachine));
   pMachine->addState(new CstWaitLearningTaskComplete(pMachine));
+  pMachine->addState(new CstWaitLearningTaskConfirmed(pMachine));
   pMachine->addState(new CstEndTeach(pMachine));
 
   pMachine->switchToState(pStart);
