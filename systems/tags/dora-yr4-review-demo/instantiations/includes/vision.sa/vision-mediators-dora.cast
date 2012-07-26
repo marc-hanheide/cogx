@@ -1,0 +1,5 @@
+JAVA MG pm.visualobject eu.cogx.perceptmediator.dora.VisualObjectMediatorComponent 
+JAVA MG pt.visualobject eu.cogx.percepttracker.dora.DoraVisualObjectTracker
+JAVA MG pm.person 	eu.cogx.perceptmediator.dora.PersonMediator
+JAVA MG pt.person 	eu.cogx.percepttracker.dora.DoraPersonTracker #--update-on-move
+
