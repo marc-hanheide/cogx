@@ -39,11 +39,26 @@ OPTDEFAULT feature_options=<multiline>
    binder
    binder-mln
    dialogue
+   !dialogue-gui
    planning
    motivation
    manipulation
    visualization
 </multiline>
+
+OPTDEFAULT Motivation_George_Options=<multiline>
+    model-status-generator
+</multiline>
+
+VARDEFAULT MotiveFileManagerGoalFilter=automatic
+IFEQ(1, 0)
+    SETVAR MotiveFileManagerGoalFilter=manual
+ENDIF
+IFEQ(1, 0)
+    # fake katana
+    SETOPT feature_options=manipulation
+    SETOPT hardware_options=!katana
+ENDIF
 
 OPTDEFAULT test_options=<multiline>
     tutor-driven-test
@@ -60,10 +75,5 @@ IFOPTANY(%(test_options), tutor-driven-test)
     # These settings are required for the tutor-driven test.
     SETVAR MotiveFileManagerGoalFilter=manual
 ENDIF
-
-#SETOPT feature_options=!visualization
-#
-#OPTDEFAULT feature_options=vision !motivation somethingelse
-#OPTDEFAULT cute_options=vision !motivation somethingelse
 
 INCLUDE george.cast
