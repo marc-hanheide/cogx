@@ -98,10 +98,10 @@ SETVAR min_cone_prob=0.03
 SETVAR min_relative_cone_prob=0.03
 
 # Smallest allowed ABSOLUTE probability of any one cone group
-SETVAR min_conegroup_prob=0.1
+SETVAR min_conegroup_prob=0.08
 
 ## Use an increased confidence to avoid false postives
-SETVAR object_detector_confidence=0.11
+SETVAR object_detector_confidence=0.08
 
 #INCLUDE dora-yr4-real.cast
 
@@ -160,6 +160,6 @@ SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (
 ### the prior for a room having a person in it 
 SETVAR room_has_person=0.2
 
-SETVAR avs_cone_depth=2.0
+SETVAR avs_cone_depth=1.6
 
 INCLUDE dora-yr4.cast
