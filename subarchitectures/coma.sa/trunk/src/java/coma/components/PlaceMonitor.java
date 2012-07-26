@@ -500,9 +500,16 @@ public class PlaceMonitor extends ManagedComponent {
 			this.notifyAll();
 		}
 	}
+	
 	private void processOverwrittenMapLoadStatus(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		MapLoadStatus _mlstatus = getMemoryEntry(_wmc.address, MapLoadStatus.class);
-		log("received OVERWRITTEN MapLoadStatus");
+		log("received OVERWRITTEN MapLoadStatus: nodesWritten = " + Boolean.toString(_mlstatus.nodesWritten) +
+		    " placesWritten = " + Boolean.toString(_mlstatus.placesWritten) +
+		    " categoryDataWritten = " + Boolean.toString(_mlstatus.categoryDataWritten) +
+		    " localMapsLoaded = " + Boolean.toString(_mlstatus.localMapsLoaded) +
+		    " obstacleMapsLoaded = " + Boolean.toString(_mlstatus.obstacleMapsLoaded) +
+		    " roomsWritten = " + Boolean.toString(_mlstatus.roomsWritten));
+		
 		synchronized(this) {
 			log("mapLoadPlacesWritten is currently set to " + Boolean.toString(this.mapLoadPlacesWritten));
 			if (!this.mapLoadPlacesWritten) {
