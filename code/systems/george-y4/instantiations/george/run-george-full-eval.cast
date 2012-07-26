@@ -42,7 +42,7 @@ OPTDEFAULT feature_options=<multiline>
    !dialogue-gui
    planning
    motivation
-   manipulation
+   !manipulation
    visualization
 </multiline>
 
@@ -63,7 +63,6 @@ ENDIF
 OPTDEFAULT test_options=<multiline>
     tutor-driven-test
 </multiline>
-
 IFOPTANY(%(test_options), tutor-driven-test)
     # The world used is george-02.world, it must be specified at Gazebo startup.
     # The object list is shared between GazeboJuggler and GeorgeTester.
@@ -74,6 +73,8 @@ IFOPTANY(%(test_options), tutor-driven-test)
     # Tutor initiative: ON, Analyze PO: ON, everything else is off.
     # These settings are required for the tutor-driven test.
     SETVAR MotiveFileManagerGoalFilter=manual
+    SETOPT feature_options=!manipulation
+    SETOPT hardware_options=!katana
 ENDIF
 
 INCLUDE george.cast
