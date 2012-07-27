@@ -5,7 +5,7 @@
 world=instantiations/gazebo.100/george-02.world 
 
 gazebo="--gazebo-world=$world"
-player="--player=instantiations/player/cogx-platform-sim.cfg"
+player="--player=instantiations/player.100/cogx-platform-sim.cfg"
 #abducer="--abducer"
 #display="--display-server"
 #peekabot="--peekabot"
