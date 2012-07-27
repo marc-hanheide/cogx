@@ -19,6 +19,7 @@ class WmTaskExecutor_Analyze: public WmTaskExecutor
 {
 protected:
   virtual void handle_add_task(WmEvent *pEvent);
+
 public:
   WmTaskExecutor_Analyze(SOIFilter* soif) : WmTaskExecutor(soif) {}
 

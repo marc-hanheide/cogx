@@ -188,9 +188,10 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
 
   // Start other recognition tasks
   // Visual Learner - overwrites on completion
+  LearnerRecognitionTaskRcv* pRecogTask = nullptr;
   try {
-    LearnerRecognitionTaskRcv* pTask = new LearnerRecognitionTaskRcv(pSoiFilter, cmd.pcmd->protoObjectAddr, voAddr);
-    pTask->deleteOnCompletion();
+    pRecogTask = new LearnerRecognitionTaskRcv(pSoiFilter, cmd.pcmd->protoObjectAddr, voAddr);
+    //pRecogTask->deleteOnCompletion(); // do this later, after waitForCompletion
   }
   catch(...) {
       log("analyze_task: caught an unknown exception creating LearnerRecognitionTaskRcv.");
@@ -257,6 +258,14 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     error("analyze_task: Unknown version of 3D recognizer: %d", pSoiFilter->m_identityRecognizerVersion);
   }
 
+  if (pRecogTask) {
+    // We give the VisualLearner a chance to complete the recognition task. If
+    // it takes too long, we stop waiting and prepare the event-receiver for
+    // automatic deletion after it is completed. Although the Analyze task did
+    // not yet succeed, we mark it as successful anyway (cmd.succeed).
+    pRecogTask->waitForCompletion(10 * 1000);
+    pRecogTask->deleteOnCompletion();
+  }
   cmd.succeed();
 
 #if CATCH_NULL
