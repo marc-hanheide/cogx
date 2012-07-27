@@ -229,9 +229,13 @@ std::string CTraceEvents::getObjectCountStr()
 void CTraceEvents::onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc)
 {
 #ifdef FEAT_VISUALIZATION
-  dlgice::synthesize::SpokenOutputItemPtr psaid =
-    getMemoryEntry<dlgice::synthesize::SpokenOutputItem>(_wmc.address);
-  display().addSpeech("R: " + psaid->phonString);
+  try {
+    dlgice::synthesize::SpokenOutputItemPtr psaid =
+      getMemoryEntry<dlgice::synthesize::SpokenOutputItem>(_wmc.address);
+    display().addSpeech("R: " + psaid->phonString);
+  }
+  catch(cast::DoesNotExistOnWMException){
+  }
 #endif
 }
 
@@ -239,21 +243,29 @@ void CTraceEvents::onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc)
 void CTraceEvents::onAdd_PhonString(const cast::cdl::WorkingMemoryChange & _wmc)
 {
 #ifdef FEAT_VISUALIZATION
-  dlgice::asr::PhonStringPtr psaid =
-    getMemoryEntry<dlgice::asr::PhonString>(_wmc.address);
-  display().addSpeech("H: " + psaid->wordSequence);
+  try {
+    dlgice::asr::PhonStringPtr psaid =
+      getMemoryEntry<dlgice::asr::PhonString>(_wmc.address);
+    display().addSpeech("H: " + psaid->wordSequence);
+  }
+  catch(cast::DoesNotExistOnWMException){
+  }
 #endif
 }
 
 void CTraceEvents::onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-  auto pvo = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-  {
-    //std::lock_guard<std::mutex> lock(mWmCopyMutex);
-    mVisualObjects[_wmc.address] = pvo;
-    mCount["VisualObject"] += 1;
-    mCount["VisualObject-v"] = getVisibleVisualObjectCount();
-    display().addCounts("+VO", getObjectCountStr());
+  try {
+    auto pvo = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+    {
+      //std::lock_guard<std::mutex> lock(mWmCopyMutex);
+      mVisualObjects[_wmc.address] = pvo;
+      mCount["VisualObject"] += 1;
+      mCount["VisualObject-v"] = getVisibleVisualObjectCount();
+      display().addCounts("+VO", getObjectCountStr());
+    }
+  }
+  catch(cast::DoesNotExistOnWMException){
   }
 }
 
@@ -270,12 +282,16 @@ void CTraceEvents::onDel_VisualObject(const cast::cdl::WorkingMemoryChange & _wm
 
 void CTraceEvents::onChange_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-  auto pvo = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-  {
-    //std::lock_guard<std::mutex> lock(mWmCopyMutex);
-    mVisualObjects[_wmc.address] = pvo;
-    mCount["VisualObject-v"] = getVisibleVisualObjectCount();
-    display().addCounts("(VO)", getObjectCountStr());
+  try {
+    auto pvo = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+    {
+      //std::lock_guard<std::mutex> lock(mWmCopyMutex);
+      mVisualObjects[_wmc.address] = pvo;
+      mCount["VisualObject-v"] = getVisibleVisualObjectCount();
+      display().addCounts("(VO)", getObjectCountStr());
+    }
+  }
+  catch(cast::DoesNotExistOnWMException){
   }
 }
 
@@ -415,13 +431,17 @@ void CTraceEvents::onAdd_Motive(const cast::cdl::WorkingMemoryChange & _wmc)
   {
     //std::lock_guard<std::mutex> lock(mWmCopyMutex);
     //mCount["VisualLearnerRecognitionTask-add"] += 1;
-    auto pmo = getMemoryEntry<motivation::slice::Motive>(_wmc.address);
-    std::string info;
-    if (pmo->goal.get()) {
-      info = pmo->goal->goalString;
+    try {
+      auto pmo = getMemoryEntry<motivation::slice::Motive>(_wmc.address);
+      std::string info;
+      if (pmo->goal.get()) {
+        info = pmo->goal->goalString;
+      }
+      display().addWmEntry("ADD " + pmo->ice_id().substr(21) 
+          + " " + motiveStatusStr(pmo->status), info);
     }
-    display().addWmEntry("ADD " + pmo->ice_id().substr(21) 
-        + " " + motiveStatusStr(pmo->status), info);
+    catch(cast::DoesNotExistOnWMException){
+    }
   }
 }
 
@@ -430,13 +450,17 @@ void CTraceEvents::onChange_Motive(const cast::cdl::WorkingMemoryChange & _wmc)
   {
     //std::lock_guard<std::mutex> lock(mWmCopyMutex);
     //mCount["VisualLearnerRecognitionTask-add"] += 1;
-    auto pmo = getMemoryEntry<motivation::slice::Motive>(_wmc.address);
-    std::string info;
-    if (pmo->goal.get() /*&& pmo->status == motivation::slice::SURFACED*/) {
-      info = pmo->goal->goalString;
+    try {
+      auto pmo = getMemoryEntry<motivation::slice::Motive>(_wmc.address);
+      std::string info;
+      if (pmo->goal.get() /*&& pmo->status == motivation::slice::SURFACED*/) {
+        info = pmo->goal->goalString;
+      }
+      display().addWmEntry("CHG " + pmo->ice_id().substr(21)
+          + " " + motiveStatusStr(pmo->status), info);
     }
-    display().addWmEntry("CHG " + pmo->ice_id().substr(21)
-        + " " + motiveStatusStr(pmo->status), info);
+    catch(cast::DoesNotExistOnWMException){
+    }
   }
 }
 
