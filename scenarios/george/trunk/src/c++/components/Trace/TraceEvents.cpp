@@ -235,6 +235,7 @@ void CTraceEvents::onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc)
     display().addSpeech("R: " + psaid->phonString);
   }
   catch(cast::DoesNotExistOnWMException){
+    display().addSpeech("(R: \?\?)");
   }
 #endif
 }
@@ -249,6 +250,7 @@ void CTraceEvents::onAdd_PhonString(const cast::cdl::WorkingMemoryChange & _wmc)
     display().addSpeech("H: " + psaid->wordSequence);
   }
   catch(cast::DoesNotExistOnWMException){
+    display().addSpeech("(H: \?\?)");
   }
 #endif
 }
@@ -266,6 +268,7 @@ void CTraceEvents::onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wm
     }
   }
   catch(cast::DoesNotExistOnWMException){
+    display().addCounts("+VO?", "\?\?");
   }
 }
 
@@ -292,6 +295,7 @@ void CTraceEvents::onChange_VisualObject(const cast::cdl::WorkingMemoryChange & 
     }
   }
   catch(cast::DoesNotExistOnWMException){
+    display().addCounts("-VO?", "\?\?");
   }
 }
 
@@ -441,6 +445,7 @@ void CTraceEvents::onAdd_Motive(const cast::cdl::WorkingMemoryChange & _wmc)
           + " " + motiveStatusStr(pmo->status), info);
     }
     catch(cast::DoesNotExistOnWMException){
+      display().addWmEntry("ADD (motive: \?\?)");
     }
   }
 }
@@ -460,6 +465,7 @@ void CTraceEvents::onChange_Motive(const cast::cdl::WorkingMemoryChange & _wmc)
           + " " + motiveStatusStr(pmo->status), info);
     }
     catch(cast::DoesNotExistOnWMException){
+      display().addWmEntry("CHG (motive: \?\?)");
     }
   }
 }
