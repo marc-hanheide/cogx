@@ -19,6 +19,9 @@ using namespace std;
 using namespace VisionData;
 using namespace cogx;
 
+#define DEG2RAD(X) (X / 180 * M_PI)
+#define RAD2DEG(X) (X * 180 / M_PI)
+
 namespace cast {
 
 /*
@@ -118,16 +121,6 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     }
 #endif
 
-    pobj = createProtoObject();
-    pSoiFilter->m_snapper.m_LastProtoObject = pobj;
-    string objId = pSoiFilter->newDataID();
-
-    // link soi to po
-    psoirec->protoObjectAddr.id = objId;
-    psoirec->protoObjectAddr.subarchitecture = pSoiFilter->getSubarchitectureID();
-
-    pobj->position = psoi->boundingSphere.pos;
-
     // Calculate the current and the desired View Cone
     //    We don't (shouldn't?) know an absolute position of the robot so we
     //    can only use relative coordinates. We should keep track of the robot
@@ -143,7 +136,6 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     pCurVc->y = 0;
     pCurVc->viewDirection = pSoiFilter->m_RobotPose.theta + pSoiFilter->m_RobotPose.pan;
     pCurVc->tilt = pSoiFilter->m_RobotPose.tilt;
-    pobj->cameraLocation = pCurVc;
 
     double dirDelta = 0;
     double tiltDelta = 0;
@@ -151,15 +143,15 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     double rcy = 0;
     Video::CameraParameters camPars;
     if (! pSoiFilter->m_coarsePointCloud.getCameraParameters(Math::LEFT, camPars)) {
-      error("FAILED to get the camera parameters from '%s'",
+      error("FAILED to get the camera parameters from '%s'. SOI ignored.",
           pSoiFilter->m_coarsePcServer.c_str());
+      return;
     }
     else {
       // getCameraParameters sometimes returns invalid values. In this case we try to
       // get new parameters and calculate a new projectSOI.
       // xxx: unfortunately we have to wait for a long time for the parameters to become stable again,
       // but maybe we get lucky.
-      pobj->image.camPars = camPars; // XXX: Where do we need camPars again? In segmentation?
 
       ROIPtr roiPtr = projectSOI(camPars, *psoi);
 
@@ -185,7 +177,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
       // how far from the center of the LEFT image is the SOI
       dirDelta  = -atan2( (rcx - camPars.cx), camPars.fx); // negative pan is to the right
       tiltDelta = -atan2( (rcy - camPars.cy), camPars.fy); // y is inverted between image and tilt
-      log("Angle to SOI: pan %g, tilt %g", dirDelta, tiltDelta);
+      log("Angle to SOI: pan %.2f, tilt %.2f", RAD2DEG(dirDelta), RAD2DEG(tiltDelta));
 
 
 #if 0 && defined(FEAT_VISUALIZATION) && defined(HAS_LIBPLOT)
@@ -209,13 +201,35 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
 #endif
     }
 
+    double bttrDir = pCurVc->viewDirection + dirDelta;
+    double bttrTilt = pCurVc->tilt + tiltDelta;
+    log("New direction is: pan %.2f°, tilt %.2f°", RAD2DEG(bttrDir), RAD2DEG(bttrTilt));
+    // In the y4 setup (static robot, moving head + arm) the robot might start
+    // looking at itself. To prevent this, we limit the tilt value.
+    if (bttrTilt < DEG2RAD(-70)) {
+      log("SOI '%s' is too low (tilt=%.2f°)", psoirec->addr.id.c_str(), RAD2DEG(bttrTilt));
+      return;
+    }
+
+    pobj = createProtoObject();
+    pobj->cameraLocation = pCurVc;
+    pobj->image.camPars = camPars;
+    pSoiFilter->m_snapper.m_LastProtoObject = pobj;
+    string objId = pSoiFilter->newDataID();
+
+    // link soi to po
+    psoirec->protoObjectAddr.id = objId;
+    psoirec->protoObjectAddr.subarchitecture = pSoiFilter->getSubarchitectureID();
+
+    pobj->position = psoi->boundingSphere.pos;
+
     // New view cone for turning the head
     ViewConePtr pBetterVc = createViewCone();
     pBetterVc->anchor = pCurVc->anchor;
     pBetterVc->x = pCurVc->x;
     pBetterVc->y = pCurVc->y;
-    pBetterVc->viewDirection = pCurVc->viewDirection + dirDelta;
-    pBetterVc->tilt = pCurVc->tilt + tiltDelta;
+    pBetterVc->viewDirection = bttrDir;
+    pBetterVc->tilt = bttrTilt;
     pBetterVc->target = createWmPointer<ProtoObject>(cast::makeWorkingMemoryAddress(objId,
           pSoiFilter->getSubarchitectureID()));
 
