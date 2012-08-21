@@ -19,8 +19,8 @@ using namespace std;
 using namespace VisionData;
 using namespace cogx;
 
-#define DEG2RAD(X) (X / 180 * M_PI)
-#define RAD2DEG(X) (X * 180 / M_PI)
+#define DEG2RAD(X) (X / 180.0 * M_PI)
+#define RAD2DEG(X) (X * 180.0 / M_PI)
 
 namespace cast {
 
@@ -177,7 +177,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
       // how far from the center of the LEFT image is the SOI
       dirDelta  = -atan2( (rcx - camPars.cx), camPars.fx); // negative pan is to the right
       tiltDelta = -atan2( (rcy - camPars.cy), camPars.fy); // y is inverted between image and tilt
-      log("Angle to SOI: pan %.2f, tilt %.2f", RAD2DEG(dirDelta), RAD2DEG(tiltDelta));
+      log("Angle to SOI: pan %.2f°, tilt %.2f°", RAD2DEG(dirDelta), RAD2DEG(tiltDelta));
 
 
 #if 0 && defined(FEAT_VISUALIZATION) && defined(HAS_LIBPLOT)
@@ -204,9 +204,11 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     double bttrDir = pCurVc->viewDirection + dirDelta;
     double bttrTilt = pCurVc->tilt + tiltDelta;
     log("New direction is: pan %.2f°, tilt %.2f°", RAD2DEG(bttrDir), RAD2DEG(bttrTilt));
-    // In the y4 setup (static robot, moving head + arm) the robot might start
-    // looking at itself. To prevent this, we limit the tilt value.
-    if (bttrTilt < DEG2RAD(-70)) {
+
+    // XXX In the y4 test setup (simulation, static robot, moving head + arm) the
+    // robot might start looking at itself. To prevent this, we limit the tilt
+    // value.
+    if (bttrTilt < DEG2RAD(-60)) {
       log("SOI '%s' is too low (tilt=%.2f°)", psoirec->addr.id.c_str(), RAD2DEG(bttrTilt));
       return;
     }
@@ -604,4 +606,4 @@ void WmTaskExecutor_Soi::handle_update_soi(WmEvent *pEvent)
 }
 
 } // namespace
-// vim: set sw=2 ts=8 sts=4 et :vim
+// vim: set sw=2 ts=8 sts=4 et fileencoding=utf8 :vim
