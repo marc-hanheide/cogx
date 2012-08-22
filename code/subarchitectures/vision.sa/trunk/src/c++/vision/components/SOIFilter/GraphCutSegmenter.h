@@ -54,6 +54,8 @@ class GraphCutSegmenter
   std::vector<CvScalar> filterList;
 
   int doDisplay;
+
+  void setDefaults();
 public:
   PointCloudClient* pPcClient;
 #ifdef FEAT_VISUALIZATION
@@ -97,7 +99,7 @@ private:
   void drawHull(IplImage *img, const std::vector<CvPoint> projPoints,
       const std::vector<int> hull);
 
-  std::vector<CvScalar> getSortedHlsList(std::vector<PointCloud::SurfacePoint> surfPoints);
+  std::vector<CvScalar> getSortedHlsList(std::vector<PointCloud::SurfacePoint> surfPoints, bool bInverRedBlue);
 
   std::vector<unsigned char> graphCut(int width, int height, int num_labels,
       IplImage* costImg, IplImage* bgCostImg);

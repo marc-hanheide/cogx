@@ -67,6 +67,11 @@ static long smoothFn(int p1, int p2, int l1, int l2)
 
 GraphCutSegmenter::GraphCutSegmenter()
 {
+  setDefaults();
+}
+
+void GraphCutSegmenter::setDefaults()
+{
   objHueTolerance = OBJ_HSL_TOLERANCE;
   objDistTolerance = OBJ_DIST_TOLERANCE;
   bgHueTolerance = BG_HSL_TOLERANCE;
@@ -84,23 +89,14 @@ void GraphCutSegmenter::configure(const map<string,string> & _config)
 {
   map<string,string>::const_iterator it;
 
-  objHueTolerance = OBJ_HSL_TOLERANCE;
-  objDistTolerance = OBJ_DIST_TOLERANCE;
-  bgHueTolerance = BG_HSL_TOLERANCE;
-  bgDistTolerance = BG_DIST_TOLERANCE;
-  lblFixCost = LABEL_FIX_COST;
-  smoothCost = SMOOTH_COST;
-  colFilThreshold = COLOR_FILTERING_THRESHOLD;
-  m_invertRB = INVERT_RED_BLUE;
-  m_objErosionIterations = OBJ_EROSION_ITER;
-  m_objDilationIterations = OBJ_DILATION_ITER;
-  m_bgDilationIterations = BG_DILATION_ITER;
+  setDefaults();
 
   if((it = _config.find("--display")) != _config.end())
   {
     doDisplay = true;
   }
   
+  // Invert the R and B channels in points from the PointCloud.
   if((it = _config.find("--invert-rb")) != _config.end())
   {
     m_invertRB = true;
@@ -318,7 +314,7 @@ static int hlsAbsDiff(CvScalar i, CvScalar j, float hueOverflow, float norm)
 
 
 
-vector<CvScalar> GraphCutSegmenter::getSortedHlsList(vector<SurfacePoint> surfPoints)
+vector<CvScalar> GraphCutSegmenter::getSortedHlsList(vector<SurfacePoint> surfPoints, bool bInverRedBlue)
 {
   vector<CvScalar> hlsList;
 
@@ -344,7 +340,7 @@ vector<CvScalar> GraphCutSegmenter::getSortedHlsList(vector<SurfacePoint> surfPo
     //log("red: %i green: %i blue: %i", surfPoints[i].c.r, surfPoints[i].c.g, surfPoints[i].c.b);
     v.val[1] = surfPoints[i].c.g;
     
-    if(m_invertRB) {	  
+    if(bInverRedBlue) {	  
       v.val[0] = surfPoints[i].c.b; 
       v.val[2] = surfPoints[i].c.r; }
     else {
@@ -622,18 +618,17 @@ vector<SurfacePoint> GraphCutSegmenter::sampleFake3DPointsFromImg(IplImage *iplP
     int x = rand()%w;
     int y = rand()%h;
     
-    SurfacePoint *sp = new SurfacePoint();
-    sp->c.b = iplPatch->imageData[y*wstep + 3*x];
-    sp->c.g = iplPatch->imageData[y*wstep + 3*x + 1];
-    sp->c.r = iplPatch->imageData[y*wstep + 3*x + 2];
+    SurfacePoint sp;
+    sp.c.r = iplPatch->imageData[y*wstep + 3*x];
+    sp.c.g = iplPatch->imageData[y*wstep + 3*x + 1];
+    sp.c.b = iplPatch->imageData[y*wstep + 3*x + 2];
     
-    sp->p.x = x;
-    sp->p.y = y;
-    sp->p.z = 0;
+    sp.p.x = x;
+    sp.p.y = y;
+    sp.p.z = 0;
     
     cvpoints.push_back(cvPoint(x, y));
-    fpoints.push_back(*sp);
-    delete sp;
+    fpoints.push_back(sp);
   }
   
   return fpoints;
@@ -690,7 +685,7 @@ IplImage* GraphCutSegmenter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint>
 
   int colorKval = min(surfPoints.size(), (size_t) MAX_COLOR_SAMPLE)/HSL_K_RATIO + 1;
 
-  vector<CvScalar> sortHlsList = getSortedHlsList(surfPoints); 
+  vector<CvScalar> sortHlsList = getSortedHlsList(surfPoints, m_invertRB); 
 
   if (!filterFlag)			//HACK
     filterList = sortHlsList;
