@@ -365,27 +365,29 @@ void KinectVideoServer::copyImage(const IplImage *iplImg, Video::Image &img) thr
 
   img.data.resize(iplImg->width*iplImg->height*iplImg->nChannels);
 
-  // note: this neat triple loop might be somewhat slower than a memcpy, but
+  // note: this double loop might be somewhat slower than a memcpy, but
   // makes sure images are copied correctly irrespective of memory layout and line padding.
   if(iplImg->depth == (int)IPL_DEPTH_8U || iplImg->depth == (int)IPL_DEPTH_8S)
   {
-#ifndef FAST_DIRTY_CONVERSION
-    int x, y;  // c;
-    for(y = 0; y < iplImg->height; y++)
+#if 1 // # ifndef FAST_DIRTY_CONVERSION
+    int x, y;
+    for(y = 0; y < iplImg->height; y++) {
+      unsigned char* pdst = (unsigned char*) &img.data[y * img.width * channels];
+      unsigned char* psrc = (unsigned char*) &iplImg->imageData[y * iplImg->widthStep];
+      // Source bytes will be read in reverse (to achieve bgr2rgb) -> we start at +2
+      psrc += 2;
       for(x = 0; x < iplImg->width; x++)
       {
-        //for(c = 0; c < channels; c++)
-        //  img.data[channels*(y*img.width + x) + c] =
-        //    iplImg->imageData[y*iplImg->widthStep + channels*x + c];
-        img.data[channels*(y*img.width + x) + 0] =
-           iplImg->imageData[y*iplImg->widthStep + channels*x + 2];
-        img.data[channels*(y*img.width + x) + 1] =
-           iplImg->imageData[y*iplImg->widthStep + channels*x + 1];
-        img.data[channels*(y*img.width + x) + 2] =
-           iplImg->imageData[y*iplImg->widthStep + channels*x + 0];
+        *pdst++ = *psrc--;
+        *pdst++ = *psrc--;
+        *pdst++ = *psrc--;
+        psrc += 3;
       }
+    }
 #else
-    memcpy(&img.data[0], iplImg->imageData, iplImg->height*iplImg->widthStep);
+    // This gives an image in the wrong format!
+    // iplImage is BGR, while Video::Image is RGB.
+    // memcpy(&img.data[0], iplImg->imageData, iplImg->height*iplImg->widthStep);
 #endif
   }
   else throw runtime_error(exceptionMessage(__HERE__, "can only handle 8 bit colour values"));
