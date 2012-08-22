@@ -446,7 +446,7 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth,
          pt.p.z = cvpt.z;
       }
 
-      // NOTE: Point3f points are taken from Kinect.rgbImage (cv::Mat) which
+      // NOTE: Point3f colors are taken from Kinect.rgbImage (cv::Mat) which
       // has channels stored in BGR. So the mapping of channels is: X=B, Y=G, Z=R.
       const cv::Point3f& cvco = colCloud.at<cv::Point3f>(row, col);
       pt.c.r = cvco.z;
