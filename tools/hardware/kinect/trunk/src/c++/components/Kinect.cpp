@@ -433,7 +433,10 @@ bool Kinect::NextFrame()
       d[co] = pImageMD->Data()[co];
 
     rgbImage = cv::Mat(rgbHeight, rgbWidth, CV_8UC3);
-    cv::cvtColor(grayImage, rgbImage, CV_BayerGB2BGR/* CV_BayerGB2RGB*/, 3);
+    // Convert the gray Bayer image to RGB. Note that a RGB image is stored as
+    // B-G-R in IplImage raw data. Nevertheless the correct conversion to
+    // use is CV_BayerGB2RGB (and not CV_BayerGB2BGR).
+    cv::cvtColor(grayImage, rgbImage, CV_BayerGB2RGB, 3);
     
     return true;
   }
