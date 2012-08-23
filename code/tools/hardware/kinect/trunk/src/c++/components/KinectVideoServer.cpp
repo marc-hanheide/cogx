@@ -376,12 +376,11 @@ void KinectVideoServer::copyImage(const IplImage *iplImg, Video::Image &img) thr
       unsigned char* psrc = (unsigned char*) &iplImg->imageData[y * iplImg->widthStep];
       // Source bytes will be read in reverse (to achieve bgr2rgb) -> we start at +2
       psrc += 2;
-      for(x = 0; x < iplImg->width; x++)
-      {
+      for(x = 0; x < iplImg->width; x++) {
         *pdst++ = *psrc--;
         *pdst++ = *psrc--;
-        *pdst++ = *psrc--;
-        psrc += 3;
+        *pdst++ = *psrc;
+        psrc += 5;
       }
     }
 #else
