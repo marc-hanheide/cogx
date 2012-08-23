@@ -186,15 +186,15 @@ inline cv::Point3f Kinect::DepthToWorld(int x, int y, int depthValue)
  * @brief Get the color for world points.
  * @param x x-coordinate in depth image
  * @param y y-coordinate in depth image
- * @return Returns the color as 3d point.
+ * @return Returns the color as 3d point (x=r, y=g, z=b)
  */
 inline cv::Point3f Kinect::WorldToColorInternal(unsigned x, unsigned y)
 {
   uchar *ptr = rgbImage.data;
   cv::Point3f col;
-  col.x = ptr[(y*rgbWidth + x)*3];
+  col.z = ptr[(y*rgbWidth + x)*3];
   col.y = ptr[(y*rgbWidth + x)*3 +1];
-  col.z = ptr[(y*rgbWidth + x)*3 +2];
+  col.x = ptr[(y*rgbWidth + x)*3 +2];
   return col;
 }
 
