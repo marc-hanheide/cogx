@@ -369,24 +369,19 @@ void KinectVideoServer::copyImage(const IplImage *iplImg, Video::Image &img) thr
   // makes sure images are copied correctly irrespective of memory layout and line padding.
   if(iplImg->depth == (int)IPL_DEPTH_8U || iplImg->depth == (int)IPL_DEPTH_8S)
   {
-#if 1 // # ifndef FAST_DIRTY_CONVERSION
+#if 1 //#ifndef FAST_DIRTY_CONVERSION
     int x, y;
     for(y = 0; y < iplImg->height; y++) {
       unsigned char* pdst = (unsigned char*) &img.data[y * img.width * channels];
       unsigned char* psrc = (unsigned char*) &iplImg->imageData[y * iplImg->widthStep];
-      // Source bytes will be read in reverse (to achieve bgr2rgb) -> we start at +2
-      psrc += 2;
       for(x = 0; x < iplImg->width; x++) {
-        *pdst++ = *psrc--;
-        *pdst++ = *psrc--;
-        *pdst++ = *psrc;
-        psrc += 5;
+        *pdst++ = *psrc++;
+        *pdst++ = *psrc++;
+        *pdst++ = *psrc++;
       }
     }
 #else
-    // This gives an image in the wrong format!
-    // iplImage is BGR, while Video::Image is RGB.
-    // memcpy(&img.data[0], iplImg->imageData, iplImg->height*iplImg->widthStep);
+    memcpy(&img.data[0], iplImg->imageData, iplImg->height*iplImg->widthStep);
 #endif
   }
   else throw runtime_error(exceptionMessage(__HERE__, "can only handle 8 bit colour values"));
