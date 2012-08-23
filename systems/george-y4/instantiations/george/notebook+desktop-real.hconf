@@ -1,0 +1,15 @@
+# Manipulation and some vision are running on the robot (notebook, player)
+# The rest is running on the desktop machine.
+# The system is started on the desktop machine, the notebook runs an agent.
+# Video is transported to a videoviewer on the desktop machine.
+HOST Notebook     192.168.33.119
+HOST VisionHost   [Notebook]
+HOST PlayerHost   [Notebook]
+
+
+ID videoserver           [VisionHost]
+ID kinect.server         [VisionHost]
+ID Recognizer3D          [VisionHost]
+ID vis.ppo.coarse        [VisionHost]
+
+SA manipulation.sa       [PlayerHost]
