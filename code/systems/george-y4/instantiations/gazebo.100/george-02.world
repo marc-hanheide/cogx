@@ -69,6 +69,8 @@
   <include filename="cogx-table.model" model_name="table4" model_pose="1.465 0 0 0 0 0"/>
   <include filename="cogx-table.model" model_name="table5" model_pose="1.465 0.350 0 0 0 0"/>
   <include filename="cogx-table.model" model_name="table6" model_pose="1.465 -0.350 0 0 0 0"/>
+  <!--The robot is slowly moving forward. This box shoud stop it far enough from the objects. -->
+  <include filename="cogx-table.model" model_name="tableX" model_pose="0.535 0 0 0 0 0"/>
 
   <!-- and finally a cereal box! -->
   <!--<include filename="cereals-bircher.model" model_name="cereals1" model_pose="1 0 0.5 0 0 0"/>-->
