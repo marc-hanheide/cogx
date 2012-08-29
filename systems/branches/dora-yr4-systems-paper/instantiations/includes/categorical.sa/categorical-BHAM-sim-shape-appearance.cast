@@ -1,0 +1,9 @@
+# Include file for model 'BHAM-sim'
+
+SUBARCHITECTURE categorical.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP GD categorical.dataprovider CategoricalDataProvider --config subarchitectures/categorical.sa/config/BHAM-sim-shape.cfg
+CPP GD categorical.laserprocessor CategoricalLaserProcessor --config subarchitectures/categorical.sa/config/BHAM-sim-shape.cfg
+CPP GD categorical.shapeintegrator CategoricalShapeIntegrator --config subarchitectures/categorical.sa/config/BHAM-sim-shape.cfg --placemanager place.manager
