@@ -112,6 +112,7 @@ checkInitVal('Settings.Disp.printDpi', '72'); % This affects the size of PNG ima
 checkInitVal('Settings.SaveImgs', '0');
 checkInitVal('Settings.ASVon', '0');
 checkInitVal('Settings.initModel', '''''');
+Settings
 
 %Default directories
 checkInitVal('Dirs.cogLearn', '[pwd ''/'']');
@@ -119,6 +120,7 @@ checkInitVal('Dirs.images', '[Dirs.cogLearn ''files/images/'']');
 checkInitVal('Dirs.models', '[Dirs.cogLearn ''files/models/'']');
 checkInitVal('Dirs.asv', '[Dirs.cogLearn ''files/asv/'']');
 checkInitVal('Dirs.disp', '[Dirs.cogLearn ''files/disp/'']');
+Dirs
 
 %HTML display files
 checkInitVal('Disp.mGL', '[Dirs.disp ''mGL.png'']');
@@ -127,6 +129,7 @@ checkInitVal('Disp.mGD', '[Dirs.disp ''mGD.png'']');
 checkInitVal('Disp.mTL', '[Dirs.disp ''mTL.html'']');
 checkInitVal('Disp.mTR', '[Dirs.disp ''mTR.html'']');
 checkInitVal('Disp.mTD', '[Dirs.disp ''mTD.html'']');
+Disp
 
 %Default internal parameters
 checkInitVal('Params.THRs', '[.7 .5 .1]');
@@ -141,6 +144,7 @@ checkInitVal('Coma.avNames', '{''red'';''green'';''blue'';''yellow'';''square'';
 checkInitVal('Coma.Cnames', '[''Rd'';''Gr'';''Bl'';''Yl'';''Sq'';''Tr'';''Cr'']');
 checkInitVal('Coma.Fnames', 'extAPfeatures');
 checkInitVal('Coma.SCnames', '[''Color'';''Shape'']');
+Coma
 
 %Default data
 checkInitVal('Dirs.data', '[Dirs.cogLearn ''Sim/data/objects_newvis/'']');
@@ -151,6 +155,7 @@ checkInitVal('Data.imgName', '''img''');
 checkInitVal('Data.mskName', '''msk''');
 checkInitVal('Data.numDigit', '3');
 checkInitVal('Data.cgtName', '''Cgt.mat''');
+Data
 
 %Default mostly obsolete parameters
 checkInitVal('Params.HEG', '.1');
@@ -158,6 +163,8 @@ checkInitVal('Params.ING', '3');
 checkInitVal('Params.SCC', '[1:8; 1 1 1 1 2 2 2 2]');%AP8
 checkInitVal('Params.MDF', '{[1 3],1:3,4:6}');
 checkInitVal('Params.deterministic ', '0'); 
+Params
+
 checkInitVal('currMode', 'struct(''learnMode'',2,''THRs'',[5 1 .5]/100,''wT'',1,''wYes'',.75,''wPy'',.25,''qnt2qlD'',0,''CTT'',[])');
 currMode=struct('learnMode',2,'THRs',[5 1 .5]/100,'wT',1,'wYes',.75,'wPy',.25,'qnt2qlD',0,'CTT',[]);
 

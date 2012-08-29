@@ -27,8 +27,8 @@ if Settings.ASVon
       LRvisUpdate;
       %LRevalUpdate;
 
-      set(Figs.vmipH.lbipH,'String',Settings.Params.IPs);
-      set(Figs.vmipH.lbipH,'Value',size(Settings.Params.IPs,1));
+      %set(Figs.vmipH.lbipH,'String',Settings.Params.IPs);
+      %set(Figs.vmipH.lbipH,'Value',size(Settings.Params.IPs,1));
    end
 end
 
