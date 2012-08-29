@@ -1,0 +1,89 @@
+<default>
+    <default_room_category_connectivity_potential>0.1</default_room_category_connectivity_potential>
+    <room_category_connectivity>
+	<item room_category1="corridor"       room_category2="corridor"       potential="0.5"/>
+	<item room_category1="corridor"       room_category2="kitchen"        potential="0.9"/>
+	<item room_category1="corridor"       room_category2="office"         potential="0.9"/>
+	<item room_category1="corridor"       room_category2="meetingroom"    potential="0.9"/>
+	<item room_category1="kitchen"        room_category2="corridor"       potential="0.9"/>
+	<item room_category1="kitchen"        room_category2="kitchen"        potential="0.1"/>
+	<item room_category1="kitchen"        room_category2="office"         potential="0.1"/>
+	<item room_category1="kitchen"        room_category2="meetingroom"    potential="0.1"/>
+	<item room_category1="office"         room_category2="corridor"       potential="0.9"/>
+	<item room_category1="office"         room_category2="kitchen"        potential="0.1"/>
+	<item room_category1="office"         room_category2="office"         potential="0.1"/>
+	<item room_category1="office"         room_category2="meetingroom"    potential="0.1"/>
+	<item room_category1="meetingroom"    room_category2="corridor"       potential="0.9"/>
+	<item room_category1="meetingroom"    room_category2="kitchen"        potential="0.1"/>
+	<item room_category1="meetingroom"    room_category2="office"         potential="0.1"/>
+	<item room_category1="meetingroom"    room_category2="meetingroom"    potential="0.1"/>
+    </room_category_connectivity>
+    <default_object_existence_probability>0.01</default_object_existence_probability>
+    <shape_property_given_room_category>
+	<item room_category1="corridor"       shape_property="elongated"   probability="0.4"/>
+	<item room_category1="corridor"       shape_property="rectangular"   probability="0.3"/>
+	<item room_category1="corridor"       shape_property="square"      probability="0.3"/>
+
+	<item room_category1="kitchen"        shape_property="elongated"   probability="0.3"/>
+	<item room_category1="kitchen"        shape_property="rectangular"   probability="0.4"/>
+	<item room_category1="kitchen"        shape_property="square"      probability="0.4"/>
+
+	<item room_category1="office"         shape_property="elongated"   probability="0.3"/>
+	<item room_category1="office"         shape_property="rectangular"   probability="0.4"/>
+	<item room_category1="office"         shape_property="square"      probability="0.4"/>
+
+	<item room_category1="meetingroom"    shape_property="elongated"   probability="0.3"/>
+	<item room_category1="meetingroom"    shape_property="rectangular"   probability="0.4"/>
+	<item room_category1="meetingroom"    shape_property="square"      probability="0.4"/>
+    </shape_property_given_room_category>
+    <default_shape_property_given_room_category>
+	<item shape_property="elongated"   probability="0.5"/>
+	<item shape_property="square"      probability="0.5"/>
+    </default_shape_property_given_room_category>
+    <size_property_given_room_category>
+	<item room_category1="corridor"       size_property="small"   probability="0.3"/>
+	<item room_category1="corridor"       size_property="medium"      probability="0.3"/>
+	<item room_category1="corridor"       size_property="large"      probability="0.4"/>
+	<item room_category1="kitchen"        size_property="small"   probability="0.2"/>
+	<item room_category1="kitchen"        size_property="medium"      probability="0.4"/>
+	<item room_category1="kitchen"        size_property="large"      probability="0.4"/>
+	<item room_category1="office"         size_property="small"   probability="0.4"/>
+	<item room_category1="office"         size_property="medium"      probability="0.4"/>
+	<item room_category1="office"         size_property="large"      probability="0.2"/>
+	<item room_category1="meetingroom"    size_property="small"   probability="0.3"/>
+	<item room_category1="meetingroom"    size_property="medium"      probability="0.3"/>
+	<item room_category1="meetingroom"    size_property="large"      probability="0.4"/>
+    </size_property_given_room_category>
+    <default_size_property_given_room_category>
+	<item size_property="small"   probability="0.3333"/>
+	<item size_property="medium"      probability="0.3333"/>
+	<item size_property="large"      probability="0.3333"/>
+    </default_size_property_given_room_category>
+    <appearance_property_given_room_category>
+	<item room_category1="corridor"       appearance_property="corridor"        probability="0.91"/>
+	<item room_category1="corridor"       appearance_property="kitchen"         probability="0.03"/>
+	<item room_category1="corridor"       appearance_property="office"          probability="0.03"/>
+	<item room_category1="corridor"       appearance_property="meetingroom"     probability="0.03"/>
+	<item room_category1="kitchen"        appearance_property="corridor"        probability="0.03"/>
+	<item room_category1="kitchen"        appearance_property="kitchen"         probability="0.91"/>
+	<item room_category1="kitchen"        appearance_property="office"          probability="0.03"/>
+	<item room_category1="kitchen"        appearance_property="meetingroom"     probability="0.03"/>
+	<item room_category1="office"         appearance_property="corridor"        probability="0.03"/>
+	<item room_category1="office"         appearance_property="kitchen"         probability="0.03"/>
+	<item room_category1="office"         appearance_property="office"          probability="0.91"/>
+	<item room_category1="office"         appearance_property="meetingroom"     probability="0.03"/>
+	<item room_category1="meetingroom"    appearance_property="corridor"        probability="0.03"/>
+	<item room_category1="meetingroom"    appearance_property="kitchen"         probability="0.03"/>
+	<item room_category1="meetingroom"    appearance_property="office"          probability="0.03"/>
+	<item room_category1="meetingroom"    appearance_property="meetingroom"     probability="0.91"/>
+    </appearance_property_given_room_category>
+    <default_appearance_property_given_room_category>
+	<item appearance_property="corridor"        probability="0.25"/>
+	<item appearance_property="kitchen"         probability="0.25"/>
+	<item appearance_property="office"          probability="0.25"/>
+	<item appearance_property="meetingroom"     probability="0.25"/>
+    </default_appearance_property_given_room_category>
+
+    <default_object_observation_model true_positive_probability="0.9" true_negative_probability="0.9"/>
+    <default_human_asserted_knowledge_property_given_room_category matching_probability="0.95"/>
+</default>

@@ -1,0 +1,50 @@
+
+### the directory containing the calibration files to use
+SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
+
+# This config relates to cs-2-small-furniture2
+SETVAR categorisation_config=subarchitectures/categorical.sa/config/BHAM-sim2-shape.cfg
+
+SETVAR feature_options=<multiline>
+# enable the spatial core
+    spatial			
+# enable all mediators in the cores enabled and the binding working memory
+    binder			
+# enable the vision core, object recognition (depending on the hardware setting)
+    vision			
+# use peekabot
+    peekabot
+# disable manual GUIs for navigation, PTZ, planning, etc.		
+	!man_ctrl
+# enable AVS view cone planning and relation manager
+    avs			
+# enable execution framework to let the planner trigger actions
+    execution		
+# enable conceptual framework
+	conceptual
+# enable default		
+	default
+# enable coma
+	coma			
+# enable place categorisation
+    categorisation	
+# use visaul categorisation
+    !categorisation-visual 
+# enable planning core
+    planning_sa
+# disable more debug GUIs and WM loggers		
+    !debug		
+# enable dialogue	
+    dialogue		
+# enable motivation base
+    motivation		
+# enable motivation via external goal infusion
+    motivation_external	
+# enable motivation via explanation
+    motivation_explanation	
+# disable visualisation (see debug)
+    !visualization	
+</multiline>
+
+
+INCLUDE dora-yr4.cast
