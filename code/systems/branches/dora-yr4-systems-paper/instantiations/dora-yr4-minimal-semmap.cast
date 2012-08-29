@@ -1,0 +1,20 @@
+SETVAR feature_options=<multiline>
+    spatial		# enable the spatial core
+    peekabot		# use peekabot
+    conceptual	
+    default		
+    coma		
+    categorisation	
+    !binder			
+    !vision			
+    !man_ctrl		# manual GUIs for navigation, PTZ, planning, etc.
+    !avs			
+    !execution		
+    !planning_sa	# enable planning core
+    !debug		# enable more debug GUIs and WM loggers
+    !dialogue		
+    !motivation		
+    !visualization	
+</multiline>
+
+INCLUDE dora-yr4.cast
