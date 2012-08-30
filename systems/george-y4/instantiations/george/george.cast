@@ -138,10 +138,12 @@ IFEQ(%(hardware), simulation)
     IFOPTALL(%(test_options), tutor-driven-test)
         VARDEFAULT JugglerObjectList=%(CONFIG_DIR)/../gazebo/test1.objects.txt
         VARDEFAULT TesterLearnAttrs=%(CONFIG_DIR)/../gazebo/test1.attrs.txt
+        VARDEFAULT TesterFirstSample=0
         SETVAR tester_attrs=<multiline>
             --player-host %(host:PlayerHost)
             --objects "%(JugglerObjectList)"
             --learn-attrs "%(TesterLearnAttrs)"
+            --first-sample %(TesterFirstSample)
         </multiline>
         CPP MG test-george GeorgeTester %(tester_attrs)
     ENDIF
