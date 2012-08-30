@@ -375,10 +375,11 @@ class RandomColorSelector:
                     continue
                 l = l.split()
                 labels[l[0]] = l[1]
-        for l in open(tripletsFilename):
+        for i,l in enumerate(open(tripletsFilename)):
             l = l.strip()
             if l.startswith(";") or l.startswith("#"):
                 continue
+            #print "Line", i
             f.write(l)
             l = l.split()
             coname = l[3]
@@ -501,7 +502,7 @@ def createObjects(prjname):
     SG = SizeGenerator()
     CG = RandomColorSelector()
     #CG.addSimpleColors()
-    validColors = ["red", "green", "blue", "yellow", "orange"]
+    validColors = ["red", "green", "blue", "yellow", "orange", "black", "white", "pink"]
     CG.loadColorsRgb("res/colors01.txt", "res/colorlabels.txt")
     cs = CG.colors.keys()
     colorCount = {}
@@ -523,7 +524,7 @@ def createObjects(prjname):
         else: sizeNum[key] = 0
         return sizeNum[key]
 
-    for io in xrange(50):
+    for io in xrange(200):
         l = labels[io % len(labels)]
         s = SG.getSize()
         dim = s[:3]; compact = s[3]
@@ -539,6 +540,8 @@ def createObjects(prjname):
 
         labelcolor = color[:3]
         #labelcolor = "%s-%02x%02x%02x" % (color, rgb[0], rgb[1], rgb[2])
+        srgb = "rgb(%d,%d,%d)" % (rgb[0], rgb[1], rgb[2])
+        sdim = "sxyz(%.3f,%.3f,%.3f)" % (dim[0], dim[1], dim[2])
         label = "%s-%s-%d" % (labelcolor, PW.label2modelname(l), getSizeNum(l, color))
         b = OgreBox(label, size=dim, color=rgb, prefix="cogx")
         PW.createOjbect(label, b)
@@ -546,7 +549,7 @@ def createObjects(prjname):
         z += 1.1
         zrot = (zrot + 7) % 360
 
-        flrn.write("%s\t%s\t%s\n" % (label, color, compact))
+        flrn.write("%s\t%s\t%s\t%s\t%s\n" % (label, color, compact, srgb, sdim))
 
     flrn.close()
     PW.closeFiles()
