@@ -75,6 +75,9 @@ IFOPTANY(%(test_options), tutor-driven-test)
     SETVAR MotiveFileManagerGoalFilter=manual
     SETOPT feature_options=!manipulation
     SETOPT hardware_options=!katana
+
+    # Set this to the first sample to use after an interrupted run
+    SETVAR TesterFirstSample=0
 ENDIF
 
 INCLUDE george.cast
