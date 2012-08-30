@@ -204,10 +204,10 @@ public:
 private:
   std::string mLogDirectory;
   std::string mAsvDirectory;
-  // Save lesson data after its success is reported
-  // TODO: configure the output directory
-  // TODO: the report should be linked with matlab-asv files: find the last ASV
-  // in the directory and write its name in the lesson report
+  VisionData::VisualObjectPtr mpLastVisualObject;
+  // Save lesson data after its success is reported.
+  // The report is linked with matlab-asv files: find the last ASV in the
+  // directory and write its name in the lesson report.
   void saveLessonData(bool success);
 
 private:
