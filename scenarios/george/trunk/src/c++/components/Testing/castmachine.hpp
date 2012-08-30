@@ -67,9 +67,10 @@ public:
   {
     return 0;
   }
+  // @p numLesson is usu. CCastMachine::mTeachingStep (1-first lesson)
   virtual void setSuccess(int numLesson, bool success)
   {
-    while (mLessonSuccess.size() < numLesson) {
+    while (mLessonSuccess.size() < numLesson-1) {
       mLessonSuccess.push_back(false);
     }
     mLessonSuccess.push_back(success);
