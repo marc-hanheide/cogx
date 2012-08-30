@@ -52,6 +52,8 @@ CCastMachine::CCastMachine(CTester* pOwner)
   mOptions["dialogue.sa"] = "dialogue"; // hardcoded default SA name; change with --dialogue-sa
   mOptions["vision.sa"] = pOwner->getSubarchitectureID(); // change with --vision-sa
 
+  mAsvDirectory = "subarchitectures/vision.sa/config/test-vislearner/files/asv";
+  mLogDirectory = mAsvDirectory;
 }
 
 void CCastMachine::configure(const std::map<std::string,std::string> & _config)
@@ -180,11 +182,11 @@ void CCastMachine::loadLearningAttributes(const std::string& fname)
   }
   else {
     while (f.good() && !f.eof()) {
-      std::string line, name, color, shape;
+      std::string line, name, color, shape, srgb, sdim;
       std::getline(f, line);
       std::istringstream itok(line);
 
-      itok >> name >> color >> shape;
+      itok >> name >> color >> shape >> srgb >> sdim;
 
       auto iobj = std::find_if(mObjects.begin(), mObjects.end(), [&name](GObject& obj) {
             return obj.label == name;
@@ -193,7 +195,7 @@ void CCastMachine::loadLearningAttributes(const std::string& fname)
         castComponent()->log("Object '%s' is in --learn-attrs but not in --objects", name.c_str());
         continue;
       }
-      auto pe = new CTeachTestEntry(name, color, shape);
+      auto pe = new CTeachTestEntry(name, color, shape, srgb, sdim);
       mTestEntries.push_back(CTestEntryPtr(pe));
     }
     f.close();
@@ -281,7 +283,7 @@ void CCastMachine::reportRunningTime(const std::string& id, double seconds)
   }
   else {
     pos /= 2;
-    ss << "<td>Mid(" << (pos - times.size()) << "):</td>";
+    ss << "<td>Mid(" << (times.size() - pos) << "):</td>";
     while (i > 0 && pos >= 0) {
       ss << "<td>" << times[pos] << "</td>";
       --pos;
@@ -607,6 +609,52 @@ bool CCastMachine::sayLesson()
     }
   }
 #endif
+}
+
+void CCastMachine::setLessonSucceeded(bool success)
+{
+  CTestEntryPtr pinfo = getCurrentTest();
+  if (pinfo) {
+    pinfo->setSuccess(mTeachingStep, success);
+    saveLessonData(success);
+  }
+}
+
+void CCastMachine::saveLessonData(bool success)
+{
+  CTestEntryPtr _pinfo = getCurrentTest();
+  if (!_pinfo) 
+    return;
+  CTeachTestEntry* pinfo = dynamic_cast<CTeachTestEntry*>(_pinfo.get());
+  if (!pinfo)
+    return;
+
+  std::string fname = mLogDirectory + "/george-td-learning-test.log";
+  {
+    std::ifstream f(fname);
+    if (f.good()) f.close();
+    else {
+      std::ofstream f(fname, std::ios::out | std::ios::trunc);
+      f << "# Log File of the George Tutor Driven Test.\n";
+      f << "# @p det-color and det-shape are the values detected by the recognizer.\n";
+      f << "# @p lesson indicates the currnent lesson (0:learn-color, 1:learn-shape).\n";
+      f << "# @p success-bits indicate the success of each lesson.\n";
+      f << "# @p asv-file is the filename of the latest matlab-auto-save file.\n";
+      f << "#\n";
+      f << "object\tcolor\tshape\trgb\tsize\tdet-color\tdet-shape\tlesson\tsuccess-bits\tasv-file\n";
+      f.close();
+    }
+  }
+  std::ofstream f(fname, std::ios::out | std::ios::app);
+  f << pinfo->mLabel << "\t" << pinfo->mColor << "\t" << pinfo->mShape << "\t";
+  f << pinfo->mRgbStr << "\t" << pinfo->mDimStr << "\t" << pinfo->mColorDetected << "\t";
+  f << pinfo->mShapeDetected << "\t" << mTeachingStep << "\t";
+  for (auto sb : pinfo->mLessonSuccess) {
+    f << (sb ? "1" : "0");
+  }
+  // TODO: detect the newest asv file
+  f << "\t" << "????.asv" << "\n";
+  f.close();
 }
 
 long CCastMachine::getRobotAnswerClass()

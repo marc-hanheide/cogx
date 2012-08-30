@@ -54,11 +54,13 @@ public:
     if (machine()->getCount("VisualObject") != 0 || machine()->getCount("ProtoObject") != 0) {
       return WaitChange;
     }
+    machine()->reportRunningTime(id(), mRunningTimer.elapsed() * 1e-3);
     return Continue;
   }
 
   TStateFunctionResult work() {
     if (machine()->getCount("VisualObject") < 1 && machine()->getCount("ProtoObject") < 1) {
+      machine()->reportRunningTime(id(), mRunningTimer.elapsed() * 1e-3);
       if (mSceneFound) {
         machine()->switchToState(mLoadScene, "table-empty");
       }
@@ -350,11 +352,13 @@ public:
       machine()->reportRunningTime(id(), mRunningTimer.elapsed() * 1e-3);
       machine()->switchToState(mWLearnTaskConfirmed, "task-completed");
       //exitLesson("task-completed");
+      machine()->setLessonSucceeded(true);
       return Continue;
     }
 
     if (hasTimedOut()) {
       machine()->reportTimeout("Waiting for Learning Task Completion");
+      machine()->setLessonSucceeded(false);
       exitLesson("<b>timeout</b>");
       return Continue;
     }

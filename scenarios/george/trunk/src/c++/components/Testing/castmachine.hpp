@@ -47,6 +47,7 @@ public:
 class CTestEntry
 {
 public:
+  std::vector<bool> mLessonSuccess;
   virtual long getLessonCount()
   {
     return 3;
@@ -66,6 +67,13 @@ public:
   {
     return 0;
   }
+  virtual void setSuccess(int numLesson, bool success)
+  {
+    while (mLessonSuccess.size() < numLesson) {
+      mLessonSuccess.push_back(false);
+    }
+    mLessonSuccess.push_back(success);
+  }
 };
 typedef std::shared_ptr<CTestEntry> CTestEntryPtr;
 
@@ -76,11 +84,17 @@ public:
   std::string mLabel;
   std::string mColor;
   std::string mShape;
-  CTeachTestEntry(std::string label, std::string color, std::string shape)
+  std::string mRgbStr;
+  std::string mDimStr;
+  std::string mColorDetected;
+  std::string mShapeDetected;
+  CTeachTestEntry(std::string label, std::string color, std::string shape, std::string srgb="", std::string sdim="")
   {
     mLabel = label;
     mColor = color;
     mShape = shape;
+    mRgbStr = srgb;
+    mDimStr = sdim;
   }
 
   virtual long getLessonCount()
@@ -90,6 +104,7 @@ public:
   virtual std::string getLessonText(int numLesson);
   virtual long classifyResponse(int numLesson, const std::string& response);
 };
+typedef std::shared_ptr<CTeachTestEntry> CTeachTestEntryPtr;
 
 class CCastComponentMixin
 {
@@ -180,9 +195,19 @@ public:
   bool hasMoreLessons();
   bool nextLesson();
   bool sayLesson();
+  void setLessonSucceeded(bool success);
   long getRobotAnswerClass();
 
   void writeMachineDescription(std::ostringstream& ss) /*override*/;
+
+private:
+  std::string mLogDirectory;
+  std::string mAsvDirectory;
+  // Save lesson data after its success is reported
+  // TODO: configure the output directory
+  // TODO: the report should be linked with matlab-asv files: find the last ASV
+  // in the directory and write its name in the lesson report
+  void saveLessonData(bool success);
 
 private:
   void onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
