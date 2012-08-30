@@ -81,6 +81,11 @@ void CCastMachine::configure(const std::map<std::string,std::string> & _config)
     // This loads attributes for the objects in --objects.
     loadLearningAttributes(it->second);
   }
+  if((it = _config.find("--first-sample")) != _config.end()) {
+    std::istringstream str(it->second);
+    str >> mCurrentTest;
+    println("Starting at sample %d", mCurrentTest);
+  }
 
   // CONFIG: --dialogue-sa
   // TYPE: string (subarchitecture-id)
