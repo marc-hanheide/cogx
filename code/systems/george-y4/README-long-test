@@ -1,0 +1,112 @@
+
+Outline
+=======
+
+For each test:
+   generate random objects
+   while not all examples processed:
+      remove the generated models and logfile
+      prepare the run:
+         - set the initial model to load (mC0.mat on the first run)
+         - set the initial sample
+      run the evaluation system
+      save the generated models and logfile
+
+Generate random objects
+=======================
+
+{{{
+bash instantiations/gazebo/generatetestworld.sh
+}}}
+
+The objects are generated in instantiations/xdata/gazebo. The script generates
+200 objects with random colors and sizes.
+
+Run the evaluation system
+=========================
+
+The configuration file to use is:
+   instantiations/george/run-george-full-eval.cast
+
+Use a .hconf file to distribute the system. Example:
+
+   HOST Remote       192.168.33.119
+   HOST PlayerHost   [Remote]
+   HOST GazeboHost   [PlayerHost]
+   # HOST AbducerHost  [Remote]
+
+   #SA vision.sa       [GazeboHost]
+
+   #ID Recognizer3D          [Remote]
+
+   # test-george runs where gazebo is running
+   ID test-george           [GazeboHost]
+   ID videoserver           [GazeboHost]
+   ID vis.learner           [GazeboHost]
+   ID vis.learner.display   [GazeboHost]
+
+
+Some considerations:
+
+* The components that have to run on the same computer as Gazebo:
+   - test-george 
+      - it manages the Gazebo scene by running an external program.
+      - it creates a logfile of the test run that references the data produced
+        by vis.learner
+
+   - vis.learner and vis.learner.dislpaly 
+      - it saves models afer every learning instructions; the newest model is
+        referenced by the logfile
+
+   - videoserver
+      - this will reduce data transfer between computers
+      
+Generated models and logfile
+============================
+
+The models and the logfile are saved into the directory:
+
+   subarchitectures/vision.sa/config/test-vislearner/files/asv
+
+This value is set in:
+   - subarchitectures/vision.sa/config/test-vislearner/cmLearn.config
+   - hardcoded in scenarios/George/src/c++/components/Testing/castmachine.cpp
+
+The models are saved only if asvOn is set in cmLearn.config. The component
+test-george finds the newest asv*.mat file after every learning instruction and
+registers it in the logfile.
+
+When the system crashes during a run
+====================================
+
+In this case not all the objects are processed and the system has to be
+restarted. The following changes have to be made in the system:
+
+   - save all the asv*.mat and the logfile
+
+   - copy the last asv*.mat file to 
+
+      subarchitectures/vision.sa/config/test-vislearner/files/models
+
+   - set the name of the last asv*.mat file in cmLearn.config:
+
+      Settings.initModel='asvXXX.mat';
+
+   - set the number of the sample from the list of generated object from which
+     to start; this parameter is set in george.cast for the test-george
+     component. The first sample is 0
+
+       eg. --first-sample 58
+
+     Alternatively you can set the variable TesterFirstSample in
+     run-george-full-eval.cast:
+      
+       SETVAR TesterFirstSample=58
+
+     Note that there are usually 2 asv*.mat files for each object, one for
+     color-learning and one for shape-learning. If the last generated file
+     is X, the first sample to resume the run is approx. X/2.
+
+   - delete all the asv*.mat and the logfile from the asv directory; this is
+     required because Matlab will enumerate the models starting from 1 on each
+     run.
