@@ -84,7 +84,7 @@ restarted. The following changes have to be made in the system:
 
    - save all the asv*.mat and the logfile
 
-   - copy the last asv*.mat file to 
+   - copy the last (newest) asv*.mat file to 
 
       subarchitectures/vision.sa/config/test-vislearner/files/models
 
@@ -93,15 +93,11 @@ restarted. The following changes have to be made in the system:
       Settings.initModel='asvXXX.mat';
 
    - set the number of the sample from the list of generated object from which
-     to start; this parameter is set in george.cast for the test-george
-     component. The first sample is 0
+     to start; this parameter is set in run-george-full-eval.cast:
 
-       eg. --first-sample 58
-
-     Alternatively you can set the variable TesterFirstSample in
-     run-george-full-eval.cast:
-      
        SETVAR TesterFirstSample=58
+
+     The first sample is 0.
 
      Note that there are usually 2 asv*.mat files for each object, one for
      color-learning and one for shape-learning. If the last generated file
