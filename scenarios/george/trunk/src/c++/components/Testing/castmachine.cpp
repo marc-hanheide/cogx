@@ -12,6 +12,12 @@
 #include <sstream>
 #include <fstream>
 #include <cstdlib>
+#include <algorithm>
+
+#include <dirent.h>
+#include <sys/types.h>
+#include <cstdio> 
+#include <sys/stat.h>
 
 namespace dlgice = de::dfki::lt::tr::dialogue::slice;
 
@@ -613,9 +619,29 @@ bool CCastMachine::sayLesson()
 
 void CCastMachine::setLessonSucceeded(bool success)
 {
-  CTestEntryPtr pinfo = getCurrentTest();
-  if (pinfo) {
-    pinfo->setSuccess(mTeachingStep, success);
+  CTestEntryPtr _pinfo = getCurrentTest();
+  if (_pinfo) {
+    _pinfo->setSuccess(mTeachingStep, success);
+
+    CTeachTestEntry* pinfo = dynamic_cast<CTeachTestEntry*>(_pinfo.get());
+    if (pinfo) {
+      if (mpLastVisualObject) {
+        auto pvo = mpLastVisualObject;
+        if (pvo->colorDistrib.size()) {
+          auto pm = std::max_element(pvo->colorDistrib.begin(), pvo->colorDistrib.end());
+          long i = pm - pvo->colorDistrib.begin();
+          printf(" *** max color is %d/%d\n", i, pvo->colorLabels.size());
+          pinfo->mColorDetected = pvo->colorLabels[i];
+        }
+        if (pvo->shapeDistrib.size()) {
+          auto pm = std::max_element(pvo->shapeDistrib.begin(), pvo->shapeDistrib.end());
+          long i = pm - pvo->shapeDistrib.begin();
+          printf(" *** max shape is %d/%d\n", i, pvo->shapeLabels.size());
+          pinfo->mShapeDetected = pvo->shapeLabels[i];
+        }
+      }
+    }
+
     saveLessonData(success);
   }
 }
@@ -636,7 +662,8 @@ void CCastMachine::saveLessonData(bool success)
     else {
       std::ofstream f(fname, std::ios::out | std::ios::trunc);
       f << "# Log File of the George Tutor Driven Test.\n";
-      f << "# @p det-color and det-shape are the values detected by the recognizer.\n";
+      f << "# @p object, color, shape, rgb, size are input fields.\n";
+      f << "# @p det-color and det-shape are the values detected by the recognizer (before the learning step).\n";
       f << "# @p lesson indicates the currnent lesson (0:learn-color, 1:learn-shape).\n";
       f << "# @p success-bits indicate the success of each lesson.\n";
       f << "# @p asv-file is the filename of the latest matlab-auto-save file.\n";
@@ -652,8 +679,41 @@ void CCastMachine::saveLessonData(bool success)
   for (auto sb : pinfo->mLessonSuccess) {
     f << (sb ? "1" : "0");
   }
-  // TODO: detect the newest asv file
-  f << "\t" << "????.asv" << "\n";
+
+  // detect the newest mat file
+  std::string asvFname;
+  {
+    DIR* dp;
+    struct dirent* ep;
+
+    time_t mtime = 0;
+    dp = opendir(mAsvDirectory.c_str());
+    if (dp != nullptr) {
+      while(ep = readdir(dp)) {
+        auto len = strlen(ep->d_name);
+        if (0 != strncmp(ep->d_name, "asv", 3)) {
+          //printf("%s not asv\n", ep->d_name);
+          continue;
+        }
+        if (len < 7 || 0 != strcmp(ep->d_name + len - 4, ".mat")) {
+          //printf("%s not .mat (%s)\n", ep->d_name, ep->d_name + len - 4);
+          continue;
+        }
+        struct stat fst;
+        if (0 != stat((mAsvDirectory + "/" + std::string(ep->d_name)).c_str(), &fst)) {
+          printf("%s not stat-ed\n", ep->d_name);
+          continue;
+        }
+        if (fst.st_mtime > mtime) {
+          mtime = fst.st_mtime;
+          asvFname = std::string(ep->d_name);
+        }
+      }
+    }
+    closedir(dp);
+  }
+
+  f << "\t" << asvFname << "\n";
   f.close();
 }
 
@@ -803,6 +863,7 @@ void CCastMachine::onChange_VisualObject(const cast::cdl::WorkingMemoryChange & 
    {
      std::lock_guard<std::mutex> lock(mWmCopyMutex);
      mVisualObjects[_wmc.address] = pvo;
+     mpLastVisualObject = pvo;
      mCount["VisualObject"] = getVisibleVisualObjectCount();
      checkReceivedEvent("::VisionData::VisualObject");
    }
