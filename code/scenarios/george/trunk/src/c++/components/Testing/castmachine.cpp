@@ -648,7 +648,7 @@ void CCastMachine::saveLessonData(bool success)
   std::ofstream f(fname, std::ios::out | std::ios::app);
   f << pinfo->mLabel << "\t" << pinfo->mColor << "\t" << pinfo->mShape << "\t";
   f << pinfo->mRgbStr << "\t" << pinfo->mDimStr << "\t" << pinfo->mColorDetected << "\t";
-  f << pinfo->mShapeDetected << "\t" << mTeachingStep << "\t";
+  f << pinfo->mShapeDetected << "\t" << mTeachingStep-1 << "\t";
   for (auto sb : pinfo->mLessonSuccess) {
     f << (sb ? "1" : "0");
   }
