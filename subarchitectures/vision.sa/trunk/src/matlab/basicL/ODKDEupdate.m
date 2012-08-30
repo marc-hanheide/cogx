@@ -15,5 +15,6 @@ for sc=1:numSC
       mC{sc}=executeOperatorIKDEClsfr( mC{sc}, 'input_data', indat, 'add_input' ) ;
       %mC{sc}=executeOperatorIKDEClsfr( mC{sc},'compress_pdf');
       mC{sc}=executeOperatorIKDEClsfr( mC{sc}, 'make_simple_feature_selection') ;
+      mC{sc}.last.F=F; mC{sc}.last.C=C; %for saving feature/concelp pairs
    end
 end
