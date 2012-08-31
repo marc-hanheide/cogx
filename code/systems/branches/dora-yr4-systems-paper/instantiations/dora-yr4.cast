@@ -255,6 +255,9 @@ VARDEFAULT spatial_visual_exploration_startup_delay=4000
 # Example: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
 VARDEFAULT exclude_exploration=
 
+## don't generate extra connectivities by default
+VARDEFAULT extra_connectivities=
+
 # If --follow-robot is supplied, PB will follow the robot with the camera
 VARDEFAULT follow_robot=--follow-robot
 
@@ -401,7 +404,7 @@ IFOPTALL(%(feature_options), spatial)
 # Maintains connection between Place on the one hand and either a FNode or a
 # NodeHypothesis on the other. Supplies ICE interfaces for translating between the
 # two. Writes ConnectivityPathProperty structs.
-    CPP GD place.manager        PlaceManager --no-update-placeholders %(exclude_exploration) --min-node-separation 2.0 --hyp-path-length 1.5 %(no_placeholders)
+    CPP GD place.manager        PlaceManager --no-update-placeholders %(exclude_exploration) --min-node-separation 2.0 --hyp-path-length 1.5 %(no_placeholders) %(extra_connectivities)
 
 ### Maintains local obstacle grid maps around individual nodes
 # Also detects and displays door hypotheses at a distance (with --detect-doors)
@@ -970,7 +973,7 @@ IFOPTALL(%(feature_options), visualization)
         ### Set %(logged_types) to select the types you are interested in
         JAVA MG wmlogger castutils.experimentation.WMLogger --subscribe "%(logged_types)"
         ### log the distance travelled every 5 seconds
-        #JAVA MG distancelogger castutils.experimentation.DistanceMonitor
+        JAVA MG distancelogger castutils.experimentation.DistanceMonitor
     ENDIF
 ELSE
     IFOPTALL(%(feature_options), debug)
