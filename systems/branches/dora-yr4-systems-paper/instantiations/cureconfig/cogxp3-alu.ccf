@@ -2,8 +2,8 @@ ROBOT
 CogXdemo
 
 PEEKABOT_HOST
-localhost
-#192.168.1.2
+#localhost
+192.168.1.121
 #10.0.11.54
 #10.0.2.2
 #130.237.218.66
