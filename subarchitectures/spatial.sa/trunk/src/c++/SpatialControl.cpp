@@ -656,9 +656,16 @@ void SpatialControl::configure(const map<string, string>& _config) {
     str >> m_RobotServerName;
   }
 
-  m_lgm = new Cure::LocalGridMap<unsigned char>(300, 0.05, '2',
+  int numCellsInLocalGridMap = 300;
+  it = _config.find("--num-cells-in-obstacle-map");
+  if (it != _config.end()) {
+    std::istringstream str(it->second);
+    str >> numCellsInLocalGridMap;
+  }
+
+  m_lgm = new Cure::LocalGridMap<unsigned char>(numCellsInLocalGridMap, 0.05, '2',
       Cure::LocalGridMap<unsigned char>::MAP1);
-  m_lgmKH = new Cure::LocalGridMap<double>(300, 0.05, FLT_MAX,
+  m_lgmKH = new Cure::LocalGridMap<double>(numCellsInLocalGridMap, 0.05, FLT_MAX,
       Cure::LocalGridMap<double>::MAP1);
 
   if (m_loadLgm) {
@@ -681,13 +688,13 @@ void SpatialControl::configure(const map<string, string>& _config) {
 
   }
 
-  m_binaryMap = new Cure::LocalGridMap<unsigned char>(300, 0.05, '2',
+  m_binaryMap = new Cure::LocalGridMap<unsigned char>(numCellsInLocalGridMap, 0.05, '2',
       Cure::LocalGridMap<unsigned char>::MAP1);
 
   m_DisplayCureObstacleMap = false;
   if (_config.find("--display-cure-obstacle-map") != _config.end()) {
     m_DisplayCureObstacleMap = true;
-    m_obstacleMap = new Cure::LocalGridMap<unsigned char>(300, 0.05, 1,
+    m_obstacleMap = new Cure::LocalGridMap<unsigned char>(numCellsInLocalGridMap, 0.05, 1,
         Cure::LocalGridMap<unsigned char>::MAP1);
     m_displayObstacleMap = new Cure::XDisplayLocalGridMap<unsigned char>(
         *m_obstacleMap);
