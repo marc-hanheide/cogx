@@ -433,6 +433,7 @@ public class DialogueActionInterface extends
 
 		public HumanEngagementExecutor(ManagedComponent _component) {
 			super(_component, EngageWithHuman.class);
+			setDontCheckMatchingIntentionHackEnabled(true);
 		}
 
 		@Override
