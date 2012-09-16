@@ -100,6 +100,17 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 		private boolean m_stopped = false;
 
+		private boolean dontCheckMatchingIntentionHackEnabled=false;
+
+		public boolean isDontCheckMatchingIntentionHackEnabled() {
+			return dontCheckMatchingIntentionHackEnabled;
+		}
+
+		public void setDontCheckMatchingIntentionHackEnabled(
+				boolean dontCheckMatchingIntentionHackEnabled) {
+			this.dontCheckMatchingIntentionHackEnabled = dontCheckMatchingIntentionHackEnabled;
+		}
+
 		public IntentionDialogueAction(ManagedComponent _component,
 				Class<T> _cls, int _timeoutSeconds, TriBool _timeoutResponse) {
 			super(_component, _cls);
@@ -216,7 +227,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 							continue;
 						}
 						println("check if the received InterpretedIntention matches the one we are waiting for");
-						if (correspAddress.equals(id)) {
+						if (correspAddress.equals(id) || dontCheckMatchingIntentionHackEnabled) {
 							println("yes, it matched!");
 							if (checkResponse(bestIntention) == TriBool.TRITRUE) {
 								submitCorrespondingBeliefs(
