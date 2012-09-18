@@ -752,6 +752,10 @@ IFOPTALL(%(feature_options), planning_sa)
 
     JAVA MG exec-monitor dora.execution.components.ExecutionMonitor --displayserver "display.srv"
 
+    IFOPTALL(%(feature_options), demo)			    
+    	JAVA MG demo-control demos.abigbang.DemoControlComponent
+    ENDIF	
+
     IFOPTALL(%(feature_options), motivation)
         IFOPTALL(%(feature_options), motivation_external)
             ### accepts goals given externally via the ExternalGoalGeneratorClient process, useful for external JUnit test by jenkins
