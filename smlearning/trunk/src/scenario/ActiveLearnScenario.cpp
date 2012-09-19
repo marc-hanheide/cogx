@@ -124,6 +124,8 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 					regionsCount = region.index;
 			}
 		}
+		// std::cout << boost::singleton_pool< boost::fast_pool_allocator_tag,
+		// 	sizeof( GNGSMRegion::PoolAlloc::value_type ) >::purge_memory;
 	}
 	else
 	{
@@ -503,7 +505,9 @@ void ActiveLearnScenario::updateLearners (int iteration) {
 			it->second.outputqGraphSizeHistory.push_back(lastsize);
 			// it->second.startingPositionsHistory.push_back(0);
 		}	
-	}	
+	}
+	// std::cout << boost::singleton_pool< boost::fast_pool_allocator_tag,
+	// 	sizeof( GNGSMRegion::PoolAlloc::value_type ) >::purge_memory();
 }
 
 ///
