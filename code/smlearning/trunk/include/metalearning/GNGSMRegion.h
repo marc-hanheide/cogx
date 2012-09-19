@@ -27,7 +27,8 @@
 
 #include <vector>
 #include <metalearning/CrySSMEx.h>
-#include <boost/unordered_map.hpp>
+// #include <boost/unordered_map.hpp>
+#include <boost/pool/pool_alloc.hpp>
 
 // using namespace std;
 
@@ -42,7 +43,9 @@ namespace smlearning {
 */
 struct GNGSMRegion {
 
-	typedef boost::unordered_map<int, GNGSMRegion> RegionsMap;
+	typedef boost::pool_allocator<std::pair<int, GNGSMRegion>, boost::default_user_allocator_new_delete, boost::details::pool::default_mutex, 1024*1024> PoolAlloc;
+	// typedef boost::unordered_map<int, GNGSMRegion, boost::hash<int>, std::equal_to<int>, PoolAlloc > RegionsMap;
+	typedef std::map<int, GNGSMRegion, std::less<int>, PoolAlloc > RegionsMap;
 
 	/** Encapsulation of input/output quantizers */
 	CrySSMEx cryssmex;
