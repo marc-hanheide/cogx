@@ -6,6 +6,9 @@ SETVAR dont_update_without_motion=--dont-update-without-motion
 SETVAR max_goto_v=0.35
 SETVAR max_goto_w=0.5
 
+# size of obstacle map
+SETVAR num_cells_in_obstacle_map=600
+
 ### the directory containing the calibration files to use
 SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
 
@@ -32,10 +35,10 @@ SETVAR spatial_max_door_width=0.85
 ## exclude 234 and down corridor past 245
 #234: x > 2.7 x < 3.7 y > 1.7 y < 2.8
 #past 245 
-# x > 11.3 x < 13 y > 1.3 y < 3.5
+# x > 11.3 x < 13 y > 1.3 y < 4.5
 #next to 232:
 # x > 3.8 x < 5.9 y > -1.2 y < 0.7
-SETVAR exclude_exploration=--exclude-from-exploration "x > 7.3 x < 13 y > 1.3 y < 3.5 or x > 3.8 x < 5.9 y > -1.2 y < 0.7"
+SETVAR exclude_exploration=--exclude-from-exploration "x > 21 x < 24 y > -2 y < 1 or x > 3.8 x < 5.9 y > -1.2 y < 0.7"
 # also exclude 236, 237, etc:
 # or x > 6 x < 12 y > 3.0 y < 4.3"
 # end of corridor:
