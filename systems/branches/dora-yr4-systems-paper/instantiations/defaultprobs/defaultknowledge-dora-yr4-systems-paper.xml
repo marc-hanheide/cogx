@@ -18,8 +18,8 @@
 	<item room_category1="corridor"       shape_property="square"      probability="0.1"/>
 
 	<item room_category1="office"         shape_property="elongated"   probability="0.1"/>
-	<item room_category1="office"         shape_property="rectangular" probability="0.3"/>
-	<item room_category1="office"         shape_property="square"      probability="0.6"/>
+	<item room_category1="office"         shape_property="rectangular" probability="0.6"/>
+	<item room_category1="office"         shape_property="square"      probability="0.3"/>
 
 	<item room_category1="meetingroom"    shape_property="elongated"   probability="0.1"/>
 	<item room_category1="meetingroom"    shape_property="rectangular"   probability="0.6"/>
@@ -38,9 +38,9 @@
 	<item room_category1="office"         size_property="small"   probability="0.2"/>
 	<item room_category1="office"         size_property="medium"      probability="0.6"/>
 	<item room_category1="office"         size_property="large"      probability="0.2"/>
-	<item room_category1="meetingroom"    size_property="small"   probability="0.2"/>
-	<item room_category1="meetingroom"    size_property="medium"      probability="0.6"/>
-	<item room_category1="meetingroom"    size_property="large"      probability="0.2"/>
+	<item room_category1="meetingroom"    size_property="small"   probability="0.1"/>
+	<item room_category1="meetingroom"    size_property="medium"      probability="0.4"/>
+	<item room_category1="meetingroom"    size_property="large"      probability="0.5"/>
     </size_property_given_room_category>
     <default_size_property_given_room_category>
 	<item size_property="small"   probability="0.3333"/>
