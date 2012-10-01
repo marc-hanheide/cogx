@@ -6,6 +6,9 @@ SETVAR dont_update_without_motion=--dont-update-without-motion
 SETVAR max_goto_v=0.35
 SETVAR max_goto_w=0.5
 
+# size of obstacle map
+SETVAR num_cells_in_obstacle_map=600
+
 ### the directory containing the calibration files to use
 SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
 
