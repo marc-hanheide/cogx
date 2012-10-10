@@ -56,10 +56,8 @@ GNGSMRegion::GNGSMRegion (GNGSMRegion& parentRegion, int idx, double cuttingValu
 	inputqErrorsHistory (parentRegion.inputqErrorsHistory),
 	outputqErrorsHistory (parentRegion.outputqErrorsHistory),
 	inputqGraphSizeHistory (parentRegion.inputqGraphSizeHistory),
-	outputqGraphSizeHistory (parentRegion.outputqGraphSizeHistory)
-{ //,
-	// startingPositionsHistory (parentRegion.startingPositionsHistory
-	// ) {
+	outputqGraphSizeHistory (parentRegion.outputqGraphSizeHistory),
+	startingPositionsHistory (parentRegion.startingPositionsHistory) {
 		
 	if (firstRegion){
 		maxValuesSMVector[cuttingIdx] = cuttingValue;
@@ -76,8 +74,24 @@ double GNGSMRegion::getAvgError () {
 
 void GNGSMRegion::updateErrorsHistory ()
 {
-	inputqErrorsHistory.push_back (static_cast<GNG_Quantizer*>(cryssmex.getInputQuantizer ())->getAvgError ());
-	outputqErrorsHistory.push_back (static_cast<GNG_Quantizer*>(cryssmex.getOutputQuantizer ())->getAvgError ());
+	// double lastEr = static_cast<GNG_Quantizer*>(cryssmex.getInputQuantizer ())->getAvgError ();
+	// double graphsize = static_cast<GNG_Quantizer*>(cryssmex.getInputQuantizer ())->graphsize ();
+	double datasetsize = static_cast<GNG_Quantizer*>(cryssmex.getInputQuantizer ())->size ();
+	double lastEr = static_cast<GNG_Quantizer*>(cryssmex.getInputQuantizer ())->getModelEfficiency () / (datasetsize);
+	// if (lastEr == -1 && !inputqErrorsHistory.empty())
+	// 	inputqErrorsHistory.push_back (inputqErrorsHistory.back ());
+	// else
+		inputqErrorsHistory.push_back (lastEr);
+	cout << "input space error: " << inputqErrorsHistory.back () << endl;
+	// lastEr = static_cast<GNG_Quantizer*>(cryssmex.getOutputQuantizer ())->getAvgError ();
+	// graphsize = static_cast<GNG_Quantizer*>(cryssmex.getOutputQuantizer ())->graphsize ();
+	datasetsize = static_cast<GNG_Quantizer*>(cryssmex.getOutputQuantizer ())->size ();
+	lastEr = static_cast<GNG_Quantizer*>(cryssmex.getOutputQuantizer ())->getModelEfficiency () / (datasetsize);
+	// if (lastEr == -1 && !outputqErrorsHistory.empty())
+	// 	outputqErrorsHistory.push_back (outputqErrorsHistory.back ());
+	// else
+		outputqErrorsHistory.push_back (lastEr);
+	cout << "output space error: " << outputqErrorsHistory.back () << endl;
 }
 
 void GNGSMRegion::updateGraphSizeHistory ()
@@ -112,7 +126,7 @@ bool GNGSMRegion::writeData (string fileName) {
 	write_vector<double> (writeFile, outputqErrorsHistory);
 	write_vector<double> (writeFile, inputqGraphSizeHistory);
 	write_vector<double> (writeFile, outputqGraphSizeHistory);
-	// write_vector<double> (writeFile, startingPositionsHistory);
+	write_vector<double> (writeFile, startingPositionsHistory);
 
 	writeFile.close ();
 	cryssmex.saveInputQuantizer (fileName + "_inputq.qnt");
@@ -136,7 +150,7 @@ bool GNGSMRegion::readData (string fileName) {
 	read_vector<double> (readFile, outputqErrorsHistory);
 	read_vector<double> (readFile, inputqGraphSizeHistory);
 	read_vector<double> (readFile, outputqGraphSizeHistory);
-	// read_vector<double> (readFile, startingPositionsHistory);
+	read_vector<double> (readFile, startingPositionsHistory);
 	
 	readFile.close ();
 
@@ -161,8 +175,8 @@ void GNGSMRegion::printData () {
 	print_featvector<double> (inputqGraphSizeHistory);
 	cout << endl << "outputqgraphsizeHistory: " << endl;
 	print_featvector<double> (outputqGraphSizeHistory);
-	// cout << endl << "startingPositionsHistory: " << endl;
-	// print_featvector<double> (startingPositionsHistory);
+	cout << endl << "startingPositionsHistory: " << endl;
+	print_featvector<double> (startingPositionsHistory);
 	cout << endl;
 }
 

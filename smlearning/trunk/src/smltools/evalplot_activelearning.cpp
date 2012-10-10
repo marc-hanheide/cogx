@@ -130,7 +130,9 @@ int main (int argc, char* argv[])
 	for (int i = firstIndex; i < lastIndex; i++) {
 		errorFileValues << i << "\t";
 		errorFileValues << region.inputqErrorsHistory[i] << "\t";
+		cout << region.inputqErrorsHistory[i] << "\t";
 		errorFileValues << region.outputqErrorsHistory[i] << endl;
+		cout << region.outputqErrorsHistory[i] << endl;
 	}
 	scriptValues((vm["regFile"].as<string>() + "-Errors"), tempValuesName, tempScriptName, region.index, errors);
 	plotAndFinish(tempValuesName, tempScriptName);

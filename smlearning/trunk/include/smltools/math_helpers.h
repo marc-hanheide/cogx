@@ -143,15 +143,7 @@ double fRand(double min = 0., double max = 1.);
 ///
 class compare_Vec3 { // simple comparison function
 public:
-	bool operator()(const golem::Vec3& v1, const golem::Vec3& v2) {
-		golem::Real epsilon = 1e-8;
-		if (((v1.v1 - epsilon) < v2.v1) && (v2.v1 < (v1.v1 + epsilon)) &&
-		    ((v1.v2 - epsilon) < v2.v2) && (v2.v2 < (v1.v2 + epsilon)) &&
-		    ((v1.v3 - epsilon) < v2.v3) && (v2.v3 < (v1.v3 + epsilon)))
-			return false;
-		
-		return v1.magnitude() < v2.magnitude();
-	}
+	bool operator()(const golem::Vec3& v1, const golem::Vec3& v2);
 };
 
 void set_point_coordinates(golem::Vec3& position, const golem::Vec3& normalVec, const golem::Vec3& orthogonalVec, const golem::Real& spacing, const golem::Real& horizontal, const golem::Real& vertical);

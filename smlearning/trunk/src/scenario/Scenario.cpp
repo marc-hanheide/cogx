@@ -242,7 +242,7 @@ void Scenario::calculateStartCoordinates()
 
 	set_coordinates_into_target(startPosition, positionTarget, normal, orthogonal, tmpDesc.dist, tmpDesc.side, tmpDesc.center, tmpDesc.top, tmpDesc.over);
 
-	cout << "Position " << startPosition-1 << endl;
+	cout << "Position " << startPosition << endl;
 	
 	// and set target waypoint
 	fromCartesianPose(target.pos, positionTarget, orientationTarget);
@@ -431,5 +431,45 @@ void Scenario::Desc::setToDefault()
 	startingPositionsConfig = "1-18";
 
 }
+
+///
+///obtain a discretization of starting finger poses from a canonical set of actions
+///
+map<Vec3, int, compare_Vec3> Scenario::get_canonical_positions (Desc& desc) {
+	//generate all possible polyflap poses
+
+	//initialization of arm target: the center of the polyflap
+	// Vec3 positionT (desc.descActorObject.startPosition.v1, desc.descActorObject.startPosition.v2, desc.descActorObject.width * 0.5);
+	Vec3 positionT (desc.descActorObject.startPosition.v1, desc.descActorObject.startPosition.v2, desc.descActorObject.startPosition.v3);
+	cout << "canonical pos.: " << Real(positionT.v1) << " " << Real(positionT.v2) << " " << Real(positionT.v3) << endl;
+
+	//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
+	//Vec3 polyflapNormalVec = computeNormalVector(Vec3 (0.2, 0.2, 0.0),Vec3 (0.2, 0.25, 0.0));
+	Vec3 standingPolyflapPosition (desc.descActorObject.startPosition.v1, desc.descActorObject.startPosition.v2 + desc.descActorObject.dimensions.v2 * 0.5, desc.descActorObject.startPosition.v3);
+	cout << "standingPolPos: " << standingPolyflapPosition.v1 << "," << standingPolyflapPosition.v2 << "," << standingPolyflapPosition.v3 << endl;
+	Vec3 normalVec = computeNormalVector(desc.descActorObject.startPosition, standingPolyflapPosition);
+	
+	Vec3 orthogonalVec = computeOrthogonalVec(normalVec);
+
+	map<Vec3, int, compare_Vec3> positionsT;
+
+	vector<int> availableStartingPositions = parse_startingPositions(desc.startingPositionsConfig, startingPositionsCount);
+
+
+	//int smRegionsCount = 18;
+	//for (int i=1; i <= smRegionsCount; i++) {
+	for (int i=0; i<availableStartingPositions.size(); i++) {
+		//arm target update
+		
+		Vec3 pos (positionT);
+		///*Scenario::*/set_coordinates_into_target(i, pos, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
+		set_coordinates_into_target(availableStartingPositions[i], pos, normalVec, orthogonalVec, desc.descActorObject.dist, desc.descActorObject.side, desc.descActorObject.center, desc.descActorObject.top, desc.descActorObject.over);
+		positionsT[pos] = availableStartingPositions[i];
+		
+	}
+
+	return positionsT;
+}
+
 
 }; // namespace smlearning 

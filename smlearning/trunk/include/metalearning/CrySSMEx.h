@@ -113,29 +113,6 @@ protected:
 
 }; // CrySSMEx class
 
-//! \class ActiveCrySSMEx
-/*! \brief For dealing with active learning quantization algorithms
- */
-class ActiveCrySSMEx : public CrySSMEx
-{
-public:
-	/** initialize input quantizer */
-	virtual void initializeInputQuantizer (unsigned int dim);
-	/** initialize output quantizer */
-	virtual void initializeOutputQuantizer (unsigned int dim);
-	/** set present data sequences */
-	void setData (std::string seqFile, LearningData::DataSet& data, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod, int index = -1);
-	/** train input quantizer with a new data sequence */
-	void trainInputQuantizer (int iteration, LearningData::Chunk::Seq& currentChunkSeq, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod);
-	/** train output quantizer with a new data sequence */
-	void trainOutputQuantizer (int iteration, LearningData::Chunk::Seq& currentChunkSeq, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod);
-	/** Wait for input quantizer to finish learning */
-	void waitForInputQuantizer ();
-	/** Wait for output quantizer to finish learning */
-	void waitForOutputQuantizer ();
-
-}; // ActiveCrySSMEx class
-
 }; // smlearning namespace
 
 #endif // SMLEARNING_CRYSSMEX_H_

@@ -236,7 +236,7 @@ void ActiveLearnScenario::chooseAction () {
 			
 			for (int i=0; i<maxNumberCandidateActions; i++) {
 				LearningData::Chunk chunk_cand;
-				int startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
+				int startPosition = 18;/*availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];*/
 				//action.pushDuration = floor (randomG.nextUniform (3.0, 6.0));
 				chunk_cand.action.pushDuration = 3.0;
 				chunk_cand.action.horizontalAngle = chooseAngle(Real(60.0), Real(120.0));
@@ -268,7 +268,8 @@ void ActiveLearnScenario::chooseAction () {
 			// this->positionT = chosenAction.effectorPose.p;
 			// this->startPosition = positionsT[this->positionT];
 
-			// usedStartingPositions.push_back(startPosition);
+			usedStartingPositions.push_back(positionsT[chosenAction->effectorPose.p]);
+			cout << "Calculated Position: " << usedStartingPositions.back () << endl;
 		}
 	}
 	else
@@ -334,9 +335,9 @@ void ActiveLearnScenario::writeData (bool final){
 	//writing the dataset into binary file
 	if (final) {
 		LearningData::write_dataset (dataFileName, data, learningData.featLimits);
-		// string stpFileName = dataFileName + ".stp";
-		// ofstream writeToFile (stpFileName.c_str(), ios::out | ios::binary);
-		// write_vector<double>(writeToFile, usedStartingPositions);
+		string stpFileName = dataFileName + ".stp";
+		ofstream writeToFile (stpFileName.c_str(), ios::out | ios::binary);
+		write_vector<double>(writeToFile, usedStartingPositions);
 	}
 
 	for (GNGSMRegion::RegionsMap::iterator regionIter = regions.begin(); regionIter != regions.end(); regionIter++) {
@@ -376,7 +377,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	//set: random seed, tmDeltaAsync; get initial config
 	_init();
 
-	// positionsT = get_canonical_positions (desc);
+	positionsT = get_canonical_positions (desc);
 
 	//start of the experiment loop
 	for (int iteration = 0; iteration<numSequences; iteration++) {
@@ -488,7 +489,7 @@ void ActiveLearnScenario::updateLearners (int iteration) {
 	currentRegion->cryssmex.waitForInputQuantizer ();
 	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
 		currentRegion->cryssmex.waitForOutputQuantizer ();
-	// currentRegion->startingPositionsHistory.push_back (startPosition);
+	currentRegion->startingPositionsHistory.push_back (usedStartingPositions.back());
 	currentRegion->updateErrorsHistory ();
 	currentRegion->updateGraphSizeHistory ();
 
@@ -503,11 +504,9 @@ void ActiveLearnScenario::updateLearners (int iteration) {
 			it->second.inputqGraphSizeHistory.push_back(lastsize);
 			lastsize = it->second.outputqGraphSizeHistory.back();
 			it->second.outputqGraphSizeHistory.push_back(lastsize);
-			// it->second.startingPositionsHistory.push_back(0);
+			it->second.startingPositionsHistory.push_back(0);
 		}	
 	}
-	// std::cout << boost::singleton_pool< boost::fast_pool_allocator_tag,
-	// 	sizeof( GNGSMRegion::PoolAlloc::value_type ) >::purge_memory();
 }
 
 ///
@@ -609,6 +608,7 @@ void ActiveLearnScenario::splitRegion (GNGSMRegion& region) {
 	GNGSMRegion secondRegion (region, ++regionsCount, cuttingValue, cuttingIdx, secondSplittingSet, false);
 	regions[firstRegion.index] = firstRegion;
 	regions[secondRegion.index] = secondRegion;
+	cout << "splitting region " << region.index << " into regions " << firstRegion.index << " and " << secondRegion.index << endl;
 
 	// create new quantizers
 	quantizing::GNG_Quantizer* inputQuantizer = static_cast<quantizing::GNG_Quantizer*>(region.cryssmex.getInputQuantizer());
@@ -628,7 +628,7 @@ void ActiveLearnScenario::splitRegion (GNGSMRegion& region) {
 
 	bool regiondeleted = regions.erase (region.index);
 	assert (regiondeleted == 1);
-	
+	boost::singleton_pool<boost::fast_pool_allocator_tag, sizeof(GNGSMRegion::PoolAlloc)>::release_memory();	
 	updateCurrentRegion ();
 	cout << "region split..." << endl;
 
