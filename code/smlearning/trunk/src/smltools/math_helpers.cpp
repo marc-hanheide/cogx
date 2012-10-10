@@ -26,6 +26,7 @@
  */
 
 #include <smltools/math_helpers.h>
+#include <vector>
 
 namespace smlearning {
 
@@ -180,6 +181,27 @@ void set_coordinates_into_target(const int startPosition, golem::Vec3& positionT
 
 }
 
+bool compare_Vec3::operator()(const golem::Vec3& v1, const golem::Vec3& v2) {
+		golem::Real epsilon = 1e-8;
+		if (((v1.v1 - epsilon) < v2.v1) && (v2.v1 < (v1.v1 + epsilon)) &&
+		    ((v1.v2 - epsilon) < v2.v2) && (v2.v2 < (v1.v2 + epsilon)) &&
+		    ((v1.v3 - epsilon) < v2.v3) && (v2.v3 < (v1.v3 + epsilon)))
+		    return false;
+
+		std::vector<golem::Real> V1, V2;
+		V1.push_back (v1.v1);
+		V1.push_back (v1.v2);
+		V1.push_back (v1.v3);
+		V2.push_back (v2.v1);
+		V2.push_back (v2.v2);
+		V2.push_back (v2.v3);
+
+		return V1 < V2;
+		
+		// return v1.magnitude() < v2.magnitude();
+		
+		// return true;
+	}
 
 
 }; /* namespace smlearning */

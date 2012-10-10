@@ -27,7 +27,7 @@
 
 #include <vector>
 #include <metalearning/CrySSMEx.h>
-// #include <boost/unordered_map.hpp>
+#include <boost/unordered_map.hpp>
 #include <boost/pool/pool_alloc.hpp>
 
 // using namespace std;
@@ -43,9 +43,8 @@ namespace smlearning {
 */
 struct GNGSMRegion {
 
-	typedef boost::pool_allocator<std::pair<int, GNGSMRegion>, boost::default_user_allocator_new_delete, boost::details::pool::default_mutex, 1024*1024> PoolAlloc;
-	// typedef boost::unordered_map<int, GNGSMRegion, boost::hash<int>, std::equal_to<int>, PoolAlloc > RegionsMap;
-	typedef std::map<int, GNGSMRegion, std::less<int>, PoolAlloc > RegionsMap;
+	typedef boost::fast_pool_allocator<std::pair<int, GNGSMRegion> > PoolAlloc;
+	typedef boost::unordered_map<int, GNGSMRegion, boost::hash<int>, std::equal_to<int>, PoolAlloc > RegionsMap;
 
 	/** Encapsulation of input/output quantizers */
 	CrySSMEx cryssmex;
@@ -60,7 +59,7 @@ struct GNGSMRegion {
 	/** instances corresponding to the region */
 	LearningData::DataSet data;
 	// /** vector corresponding to history of starting positions */
-	// vector<double> startingPositionsHistory;	
+	vector<double> startingPositionsHistory;	
 	/** vector of history of avg errors for input quantizer */
 	std::vector<double> inputqErrorsHistory;
 	/** vector of history of avg errors for output quantizer */
@@ -70,14 +69,15 @@ struct GNGSMRegion {
 	/** vector of history of graph size for output quantizer */
 	std::vector<double> outputqGraphSizeHistory;
 
+	/** default cto. */
 	GNGSMRegion () { }
 	
 	GNGSMRegion (int idx, int smCtxtSize);
 
 	GNGSMRegion (GNGSMRegion& parentRegion, int idx, double cuttingValue, int cuttingIdx, LearningData::DataSet& inheritedData, bool firstRegion);
 
-	/** default cto. */
-	~GNGSMRegion () {}
+	/** default dto. */
+	~GNGSMRegion () { }
 
 	/** get the average error of input quantizer */
 	double getAvgError ();

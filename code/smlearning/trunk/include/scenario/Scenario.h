@@ -146,6 +146,8 @@ protected:
 	void setMovementAngle(const Real, golem::WorkspaceCoord&,const Real&,const Vec3&,const Vec3&);
 	/** write obtained dataset into a binary file */
 	void writeData ();
+	/** obtain a discretization of starting finger poses from a canonical set of actions */
+	map<Vec3, int, compare_Vec3> get_canonical_positions (Desc&);
 
 	//NOTE: variables are alphabetically ordered
 	/** the main actor : the Golem arm himself */

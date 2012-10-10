@@ -88,7 +88,7 @@ protected:
 	Action *chosenAction;
 
 	// /** canonical positions */
-	// map<Vec3, int, compare_Vec3> positionsT;
+	map<Vec3, int, compare_Vec3> positionsT;
 	
 	// /** Renders the object. */
         // virtual void render();
