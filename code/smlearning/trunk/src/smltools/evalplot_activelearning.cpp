@@ -135,7 +135,11 @@ int main (int argc, char* argv[])
 		cout << desc << "\n";
 		return 1;
 	}
-
+	if (!vm.count("regFile") && !vm.count("frequencysequences")) {
+		cout << "No source files specified. Use -r and/or -d options. Exiting..." << endl;
+		cout << "Use  --help  for argument options."  << endl;
+		return 1;
+	}
 
 	if (vm.count("regFile")) {
 		GNGSMRegion region;
