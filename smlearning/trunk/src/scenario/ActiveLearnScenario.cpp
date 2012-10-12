@@ -79,6 +79,13 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 			cerr << "Sequence data file limits do not correspond to scenario limits" << endl;
 			abort ();			
 		}
+		ifstream stpFile (string(vm["seqFile"].as<string>() + ".stp").c_str(), ios::in | ios::binary);
+		if (!stpFile)
+		{
+			cout << "Starting positions file could not be read..." << endl;
+			exit (-1);
+		}
+		read_vector<double> (stpFile, usedStartingPositions);
 		//Store in feature vector the motor context
 		for (int i=0; i<data.size(); i++)
 			for (int j=0; j<data[i].size(); j++)
