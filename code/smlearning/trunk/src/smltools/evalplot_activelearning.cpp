@@ -14,45 +14,66 @@ namespace po = boost::program_options;
 
 using namespace smlearning;
 
-enum plot { errors, graphsize };
+typedef map<double, vector<unsigned int> > map_frequencies;
 
-void scriptValues(string fileName, string sourceName, string scriptName, int region, plot plottype) {
+void scriptValues(string fileName, string sourceName, string scriptName, int region, vector<string> descText) {
 
-	string descText1;
-	string descText2;
-	if (plottype == errors) {
-		descText1 = "Errors history for Input Q.";
-		descText2 = "Errors history for Output Q.";
-	}
-	else if (plottype == graphsize) {
-		descText1 = "Graph size history for Input Q.";
-		descText2 = "Graph size history for Output Q.";
-	}
-	
 
 	stringstream gnuplotstream;
 
 	gnuplotstream << "set terminal postscript eps enhanced color font \"Times-Roman,14\"" << endl;
 	gnuplotstream << "set output \"|epstopdf --filter > '" + fileName + ".pdf'" << endl;
 	gnuplotstream << "set autoscale" << endl;
-	gnuplotstream << "set style line 1 lt 1 lc rgb \"blue\"" << endl;
-	gnuplotstream << "set style line 2 lt 1 lc rgb \"red\"" << endl;
-	gnuplotstream << "set style line 3 lt 1 lc rgb \"green\"" << endl;
-	gnuplotstream << "set style line 4 lt 1 lc rgb \"yellow\"" << endl;
 	// gnuplotstream << "set log y" << endl;
 	gnuplotstream << "set title \"Region " << region << endl;
 	gnuplotstream << "set xlabel \"Iterations\" " << endl;
 	gnuplotstream << "set ylabel \"Values\" " << endl;
-	gnuplotstream << "plot  \"" + sourceName + "\" "; 
-	gnuplotstream << "using 1:2 ls 1 title '" + descText1 +"' with lines, ";
-	gnuplotstream << "\"" + sourceName + "\" "; 
-	gnuplotstream << "using 1:3 ls 2 title '" + descText2 +"' with lines";
+	gnuplotstream << "plot  ";
+	for (int i=0; i<descText.size(); i++)
+	{
+		gnuplotstream << "\"" + sourceName + "\" "; 
+		gnuplotstream << "using 1:" << i+2 << " lt " << i+1 << " lc " << i+1 << " title '" + descText[i] +"' with lines";
+		if (i < descText.size() -1)
+			gnuplotstream << ", ";
+	}
 	gnuplotstream << endl;
 
 	ofstream gnuplotScript(scriptName.c_str(), ios::out);
 	gnuplotScript << gnuplotstream.str() << endl;
 	gnuplotScript.close();
 
+}
+
+map_frequencies getFrequencyStatistics (vector<double> startingPositionsHistory, int firstIndex, int lastIndex, int window)
+{
+	map_frequencies statistics;
+
+	for (int i=firstIndex; i<lastIndex; i++)
+	{
+		if (startingPositionsHistory[i] != 0)
+		{
+			if (statistics.find (startingPositionsHistory[i]) == statistics.end ()) {
+				vector<unsigned int> freqVector;
+				statistics[startingPositionsHistory[i]] = freqVector;
+			}
+		}
+	}
+	
+	for (int i=firstIndex; i<lastIndex; i++)
+	{
+
+		for(map_frequencies::const_iterator it = statistics.begin(); it != statistics.end(); ++it)
+		{
+			double k = it->first;
+			statistics[k].push_back (0);
+		}
+		for (int j=i; j<i+window && j<lastIndex; j++)
+		{
+			if (startingPositionsHistory[j] != 0)
+				statistics[startingPositionsHistory[j]].back()++;
+		}
+	}
+	return statistics;
 }
 
 void plotAndFinish(string valuesFile, string scriptFile) {
@@ -73,6 +94,7 @@ int main (int argc, char* argv[])
 		("regFile,r", po::value<string>(), "region file to plot")
 		("firstIndex,f", po::value<int>(), "index to plot from")
 		("lastIndex,l", po::value<int>(), "index to plot to")
+		("window,w", po::value<unsigned int>()->default_value(20), "window size for frequency of actions")
 	;
 	
 	po::variables_map vm;       
@@ -126,6 +148,9 @@ int main (int argc, char* argv[])
 	string tempValuesName = "tempValues";	
 	string tempScriptName = "tempgnuscript.gnu";
 
+	vector<string> descText;
+	descText.push_back ("Normalized model efficiency history for Input Q.");
+	descText.push_back ("Normalized model efficiency history for Output Q.");
 	ofstream errorFileValues(tempValuesName.c_str(), ios::out);
 	for (int i = firstIndex; i < lastIndex; i++) {
 		errorFileValues << i << "\t";
@@ -134,18 +159,42 @@ int main (int argc, char* argv[])
 		errorFileValues << region.outputqErrorsHistory[i] << endl;
 		cout << region.outputqErrorsHistory[i] << endl;
 	}
-	scriptValues((vm["regFile"].as<string>() + "-Errors"), tempValuesName, tempScriptName, region.index, errors);
+	scriptValues((vm["regFile"].as<string>() + "-Errors"), tempValuesName, tempScriptName, region.index, descText);
 	plotAndFinish(tempValuesName, tempScriptName);
 	cout << endl << "region error history plot printed" << endl;
 
+	descText.clear ();
+	descText.push_back ("Graph size history for Input Q.");
+	descText.push_back ("Graph size history for Output Q.");	
 	ofstream graphsizeFileValues(tempValuesName.c_str(), ios::out);
 	for (int i = firstIndex; i < lastIndex; i++) {
 		graphsizeFileValues << i << "\t";
 		graphsizeFileValues << region.inputqGraphSizeHistory[i] << "\t";
 		graphsizeFileValues << region.outputqGraphSizeHistory[i] << endl;
 	}
-	scriptValues((vm["regFile"].as<string>() + "-GraphSize"), tempValuesName, tempScriptName, region.index, graphsize);
+	scriptValues((vm["regFile"].as<string>() + "-GraphSize"), tempValuesName, tempScriptName, region.index, descText);
 	plotAndFinish(tempValuesName, tempScriptName);
 	cout << endl << "region graph size history plot printed" << endl;
-	
+
+	map_frequencies frequencystartpositions = getFrequencyStatistics (region.startingPositionsHistory, firstIndex, lastIndex, vm["window"].as<unsigned int>());
+	descText.clear ();
+	for (map_frequencies::const_iterator it = frequencystartpositions.begin(); it != frequencystartpositions.end(); ++it)
+	{
+		std::ostringstream s;
+		s << (*it).first;
+		descText.push_back ("Frequency of actions starting in position " + s.str ());
+	}
+
+	ofstream freqstartpositionsFileValues (tempValuesName.c_str(), ios::out);
+	int freqVectorSize = (*frequencystartpositions.begin()).second.size();
+	for (int i=0; i<freqVectorSize; i++)
+	{
+		freqstartpositionsFileValues << i << "\t";
+		for (map_frequencies::const_iterator it = frequencystartpositions.begin(); it != frequencystartpositions.end(); ++it)
+			freqstartpositionsFileValues << (*it).second[i] << "\t";
+		freqstartpositionsFileValues << endl;
+	}
+	scriptValues ((vm["regFile"].as<string>() + "-StartPosStats"), tempValuesName, tempScriptName, region.index, descText);
+	plotAndFinish(tempValuesName, tempScriptName);
+	cout << endl << "region frequency of actions history plot printed" << endl;
 }

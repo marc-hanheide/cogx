@@ -236,7 +236,7 @@ void ActiveLearnScenario::chooseAction () {
 			
 			for (int i=0; i<maxNumberCandidateActions; i++) {
 				LearningData::Chunk chunk_cand;
-				int startPosition = 18;/*availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];*/
+				int startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
 				//action.pushDuration = floor (randomG.nextUniform (3.0, 6.0));
 				chunk_cand.action.pushDuration = 3.0;
 				chunk_cand.action.horizontalAngle = chooseAngle(Real(60.0), Real(120.0));
