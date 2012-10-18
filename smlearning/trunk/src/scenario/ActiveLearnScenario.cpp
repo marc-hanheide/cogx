@@ -384,7 +384,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	//set: random seed, tmDeltaAsync; get initial config
 	_init();
 
-	positionsT = get_canonical_positions (desc);
+	positionsT = get_canonical_positions ((Scenario::Desc&)desc);
 
 	//start of the experiment loop
 	for (int iteration = 0; iteration<numSequences; iteration++) {

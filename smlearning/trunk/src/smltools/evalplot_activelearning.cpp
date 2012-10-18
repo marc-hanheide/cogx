@@ -33,7 +33,7 @@ void scriptValues(string fileName, string sourceName, string scriptName, int reg
 	for (int i=0; i<descText.size(); i++)
 	{
 		gnuplotstream << "\"" + sourceName + "\" "; 
-		gnuplotstream << "using 1:" << i+2 << " lt " << i+1 << " lc " << i+1 << " title '" + descText[i] +"' with lines";
+		gnuplotstream << "using 1:" << i+2 << " lt " << i+1 << " lc " << i+1 << " lw " << i/8*2 << " title '" + descText[i] +"' with lines";
 		if (i < descText.size() -1)
 			gnuplotstream << ", ";
 	}
