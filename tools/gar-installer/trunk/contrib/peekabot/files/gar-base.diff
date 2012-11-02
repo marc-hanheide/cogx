@@ -1,6 +1,6 @@
 diff --speed-large-files --minimal -ru peekabot-0.8.6.orig/m4/boost.m4 peekabot-0.8.6/m4/boost.m4
 --- peekabot-0.8.6.orig/m4/boost.m4	2011-05-29 18:59:31.000000000 +0100
-+++ peekabot-0.8.6/m4/boost.m4	2012-06-20 10:17:13.431995678 +0100
++++ peekabot-0.8.6/m4/boost.m4	2012-11-02 11:49:46.968983261 +0000
 @@ -403,7 +403,7 @@
        LDFLAGS=$boost_save_LDFLAGS
        LIBS=$boost_save_LIBS
@@ -12,7 +12,7 @@ diff --speed-large-files --minimal -ru peekabot-0.8.6.orig/m4/boost.m4 peekabot-
        else
 diff --speed-large-files --minimal -ru peekabot-0.8.6.orig/src/Main.cc peekabot-0.8.6/src/Main.cc
 --- peekabot-0.8.6.orig/src/Main.cc	2011-01-27 22:56:31.000000000 +0000
-+++ peekabot-0.8.6/src/Main.cc	2012-06-20 10:19:29.355995030 +0100
++++ peekabot-0.8.6/src/Main.cc	2012-11-02 11:49:46.968983261 +0000
 @@ -77,7 +77,7 @@
       * \brief The formatter used to format the log messages.
       */
@@ -68,7 +68,7 @@ diff --speed-large-files --minimal -ru peekabot-0.8.6.orig/src/Main.cc peekabot-
      TheMessageHub::instance().publish(
 diff --speed-large-files --minimal -ru peekabot-0.8.6.orig/src/UploadCache.cc peekabot-0.8.6/src/UploadCache.cc
 --- peekabot-0.8.6.orig/src/UploadCache.cc	2010-09-08 12:52:48.000000000 +0100
-+++ peekabot-0.8.6/src/UploadCache.cc	2012-06-20 10:18:54.187995199 +0100
++++ peekabot-0.8.6/src/UploadCache.cc	2012-11-02 11:49:46.972985211 +0000
 @@ -155,7 +155,10 @@
  
  boost::filesystem::path UploadCache::get_upload_directory()
@@ -81,3 +81,19 @@ diff --speed-large-files --minimal -ru peekabot-0.8.6.orig/src/UploadCache.cc pe
  }
  
  
+diff --speed-large-files --minimal -ru peekabot-0.8.6.orig/src/utils/obj2pbmf/obj2pbmf.cc peekabot-0.8.6/src/utils/obj2pbmf/obj2pbmf.cc
+--- peekabot-0.8.6.orig/src/utils/obj2pbmf/obj2pbmf.cc	2010-09-08 12:52:48.000000000 +0100
++++ peekabot-0.8.6/src/utils/obj2pbmf/obj2pbmf.cc	2012-11-02 11:50:30.150020673 +0000
+@@ -473,9 +473,9 @@
+     {
+         boost::progress_display pd( 3*m_tri_count );
+ 
+-        for( int i = 0; i < 3*m_tri_count; i++ )
++        for( int iter = 0; iter < 3*m_tri_count; iter++ )
+         {
+-            IndexTuple &triple = m_src_indices[i];
++            IndexTuple &triple = m_src_indices[iter];
+ 
+             int i = triple.get<0>();
+             int j = triple.get<1>();
+Only in peekabot-0.8.6/src/utils/obj2pbmf: obj2pbmf.cc~

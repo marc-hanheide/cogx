@@ -1,63 +1,12 @@
-diff -N --speed-large-files --minimal -ru peekabot-0.8.x.orig/src/Config.cc peekabot-0.8.x/src/Config.cc
---- peekabot-0.8.x.orig/src/Config.cc	2010-10-01 11:16:09.000000000 +0100
-+++ peekabot-0.8.x/src/Config.cc	2010-10-20 16:45:58.000000000 +0100
-@@ -95,10 +95,12 @@
-         std::vector<std::string> components;
-         boost::split( components, str, boost::is_any_of("#;") );
- 
-+        if( components.size() <= 1 )
-+            continue;
-         std::string &line = components[0];
--        boost::trim(line);
- 
- 
-+        boost::trim(line);
-         if( line.length() == 0  )
-             continue;
- 
-diff -N --speed-large-files --minimal -ru peekabot-0.8.x.orig/src/Hinge.cc peekabot-0.8.x/src/Hinge.cc
---- peekabot-0.8.x.orig/src/Hinge.cc	2010-10-01 11:16:09.000000000 +0100
-+++ peekabot-0.8.x/src/Hinge.cc	2010-10-20 16:45:48.000000000 +0100
-@@ -33,6 +33,7 @@
- #include <boost/ref.hpp>
- #include <boost/lexical_cast.hpp>
- 
-+#include <Eigen/LU>
- 
- using namespace peekabot;
- 
-diff -N --speed-large-files --minimal -ru peekabot-0.8.x.orig/src/SceneObject.cc peekabot-0.8.x/src/SceneObject.cc
---- peekabot-0.8.x.orig/src/SceneObject.cc	2010-10-01 11:16:09.000000000 +0100
-+++ peekabot-0.8.x/src/SceneObject.cc	2010-10-20 16:43:41.000000000 +0100
-@@ -44,7 +44,7 @@
- #include <boost/algorithm/string/trim.hpp>
- #include <boost/lexical_cast.hpp>
- #include <boost/math/fpclassify.hpp>
--
-+#include <Eigen/LU>
- 
- using namespace peekabot;
- 
-diff -N --speed-large-files --minimal -ru peekabot-0.8.x.orig/src/actions/Rotate.cc peekabot-0.8.x/src/actions/Rotate.cc
---- peekabot-0.8.x.orig/src/actions/Rotate.cc	2010-10-01 11:16:09.000000000 +0100
-+++ peekabot-0.8.x/src/actions/Rotate.cc	2010-10-20 16:44:24.000000000 +0100
-@@ -11,6 +11,7 @@
- #include <stdexcept>
- #include <boost/math/fpclassify.hpp>
- #include <Eigen/Core>
-+#include <Eigen/LU>
- 
- #include "Rotate.hh"
- 
-diff -N --speed-large-files --minimal -ru peekabot-0.8.x.orig/src/gui/MoveTool.cc peekabot-0.8.x/src/gui/MoveTool.cc
---- peekabot-0.8.x.orig/src/gui/MoveTool.cc	2010-10-01 11:16:09.000000000 +0100
-+++ peekabot-0.8.x/src/gui/MoveTool.cc	2010-10-20 16:45:25.000000000 +0100
-@@ -33,7 +33,7 @@
- #include <boost/bind.hpp>
- #include <boost/foreach.hpp>
- #include <Eigen/Geometry>
--
-+#include <Eigen/LU>
- 
- using namespace peekabot;
- using namespace peekabot::gui;
+diff --speed-large-files --minimal -ru peekabot-0.8.6.orig/m4/boost.m4 peekabot-0.8.6/m4/boost.m4
+--- peekabot-0.8.6.orig/m4/boost.m4	2011-05-29 18:59:31.000000000 +0100
++++ peekabot-0.8.6/m4/boost.m4	2011-11-21 10:54:31.000000000 +0000
+@@ -403,7 +403,7 @@
+       LDFLAGS=$boost_save_LDFLAGS
+       LIBS=$boost_save_LIBS
+       if test x"$Boost_lib" = xyes; then
+-        Boost_lib_LDFLAGS="-L$boost_ldpath -Wl,-R$boost_ldpath"
++        Boost_lib_LDFLAGS="-L$boost_ldpath"
+         Boost_lib_LDPATH="$boost_ldpath"
+         break 6
+       else
