@@ -82,7 +82,7 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 		ifstream stpFile (string(vm["seqFile"].as<string>() + ".stp").c_str(), ios::in | ios::binary);
 		if (!stpFile)
 		{
-			cout << "Starting positions file could not be read..." << endl;
+			cerr << "Starting positions file could not be read..." << endl;
 			exit (-1);
 		}
 		read_vector<double> (stpFile, usedStartingPositions);
@@ -496,7 +496,8 @@ void ActiveLearnScenario::updateLearners (int iteration) {
 	currentRegion->cryssmex.waitForInputQuantizer ();
 	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
 		currentRegion->cryssmex.waitForOutputQuantizer ();
-	currentRegion->startingPositionsHistory.push_back (usedStartingPositions.back());
+	if (!usedStartingPositions.empty())
+		currentRegion->startingPositionsHistory.push_back (usedStartingPositions.back());
 	currentRegion->updateErrorsHistory ();
 	currentRegion->updateGraphSizeHistory ();
 
