@@ -316,7 +316,7 @@ SET(TOOLS_HEADERS
 	${SMLEARNING_ROOT}/include/smltools/math_helpers.h
 	${SMLEARNING_ROOT}/include/smltools/tracker_tools.h
 )
-INSTALL(FILES ${TOOLS_HEADERS} DESTINATION include/SMLearning/tools/)
+INSTALL(FILES ${TOOLS_HEADERS} DESTINATION include/SMLearning/smltools/)
 
 SET(DATA_PLOT_MOC_HEADERS
 	${SMLEARNING_ROOT}/include/smltools/data_plot.h

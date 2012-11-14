@@ -368,7 +368,10 @@ void Scenario::writeData (){
 
 	string stpFileName = dataFileName + ".stp";
 	ofstream writeToFile (stpFileName.c_str(), ios::out | ios::binary);
-	write_vector<double> (writeToFile, usedStartingPositions);
+	if (!writeToFile)
+		cerr << "Starting positions file could not be written..." << endl;
+	else
+		write_vector<double> (writeToFile, usedStartingPositions);
 }
 
 ///////// Private //////////
