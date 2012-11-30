@@ -743,7 +743,10 @@ IFOPTALL(%(feature_options), planning_sa)
     SUBARCHITECTURE planner.sa
     JAVA WM cast.architecture.SubarchitectureWorkingMemory
     CPP TM AlwaysPositiveTaskManager
-    CPP MG Planner WMControl --belief-timeout 500 #--log 
+
+#  timeout was 500
+    CPP MG Planner WMControl --belief-timeout 750 #--log
+
     CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --setvars "plandir=subarchitectures/planner.sa/src/python"  --monitor "CurrentPlan=dot:%(plandir)/{plan*.dot}"
 
     IFOPTALL(%(feature_options), man_ctrl)
