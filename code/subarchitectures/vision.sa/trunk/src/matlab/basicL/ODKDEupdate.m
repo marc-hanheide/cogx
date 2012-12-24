@@ -5,16 +5,21 @@ function mC=ODKDEupdate(F,C,mC)
 %C: concept labels for these samples
 %mC: current models of concepts
 
-numSC=getc(mC,'numSC');
-
-for sc=1:numSC
-   if C(sc)>0
-      indat={};
-      indat{1}.data=F;
-      indat{1}.class_name=num2str(C(sc));
-      mC{sc}=executeOperatorIKDEClsfr( mC{sc}, 'input_data', indat, 'add_input' ) ;
-      %mC{sc}=executeOperatorIKDEClsfr( mC{sc},'compress_pdf');
-      mC{sc}=executeOperatorIKDEClsfr( mC{sc}, 'make_simple_feature_selection') ;
-      mC{sc}.last.F=F; mC{sc}.last.C=C; %for saving feature/concelp pairs
-   end
+if (F(1:3)==[-1;-1;-1])
+    disp('CORRUPTED FEATURE VECTOR, UPDTATE ABORTED!!!');
+else
+    numSC=getc(mC,'numSC');
+    
+    for sc=1:numSC
+        if C(sc)>0
+            indat={};
+            indat{1}.data=F;
+            indat{1}.class_name=num2str(C(sc));
+            mC{sc}.sub_selected_features=[1 3]; %%LIMIT TO HuLu ONLY!
+            mC{sc}=executeOperatorIKDEClsfr( mC{sc}, 'input_data', indat, 'add_input' ) ;
+            %mC{sc}=executeOperatorIKDEClsfr( mC{sc},'compress_pdf');
+            %mC{sc}=executeOperatorIKDEClsfr( mC{sc}, 'make_simple_feature_selection') ;
+            mC{sc}.last.F=F; mC{sc}.last.C=C; %for saving feature/concelp pairs
+        end
+    end
 end
