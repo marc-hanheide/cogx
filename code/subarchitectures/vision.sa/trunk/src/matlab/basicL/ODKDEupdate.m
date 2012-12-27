@@ -5,7 +5,7 @@ function mC=ODKDEupdate(F,C,mC)
 %C: concept labels for these samples
 %mC: current models of concepts
 
-if (F(1:3)==[-1;-1;-1])
+if all(F(1:3)==-1)%(F(1:3)==[-1;-1;-1])
     disp('CORRUPTED FEATURE VECTOR, UPDTATE ABORTED!!!');
 else
     numSC=getc(mC,'numSC');
