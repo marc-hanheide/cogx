@@ -159,7 +159,15 @@ void PlanePopOut::PlaneEntry::init(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cl
 	    pcl_domplane->values[1],
 	    pcl_domplane->values[2],
 	    pcl_domplane->values[3]);
-    normalisePlane(plane);        
+    normalisePlane(plane);
+    // make sure the normal vector of the plane points "up"
+    if(dot(vector3(plane.a, plane.b, plane.c), PlanePopOut::upVector) < 0.)
+    {
+      plane.a = -plane.a;
+      plane.b = -plane.b;
+      plane.c = -plane.c;
+      plane.d = -plane.d;
+    }
     for (size_t i = 0; i < planepoints->indices.size(); i++)
     {
       int index = planepoints->indices[i];
@@ -339,6 +347,7 @@ void PlanePopOut::SOIEntry::calcHistogram()
     cvReleaseImage(&tmp);
 }
 
+Vector3 PlanePopOut::upVector;
 int PlanePopOut::m_componentCount = 0;
 IceUtil::Mutex PlanePopOut::m_planePopoutMutex;
 
@@ -349,12 +358,14 @@ PlanePopOut::PlanePopOut()
     // TODO: these settings should come from CAST config.
     pclA::PlanePopout::Parameter par;
     // Minimum and maximum object height (default 0.005m, and 0.7m))
-    // for origin in camera
+    // for origin in camera looking down on the table
     //par.minObjectHeight = 0.005;
     //par.maxObjectHeight = 1.;
+    //upVector = vector3(0, -1, 0);
     // for origin in robot ego
     par.minObjectHeight = -1.;
     par.maxObjectHeight = -0.05;
+    upVector = vector3(0, 0, 1);
     //par.thrSacDistance = 0.03;
     // filter points depending on z value (default = 0.5m - 1.5m)
     par.minZ = 0.3;
@@ -662,7 +673,6 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
 {
     castutils::CMilliTimer tm(true);
 
-    int pointCnt = 0;
     std::ostringstream str;
     str.unsetf(ios::floatfield); // unset floatfield
     str.precision(3); // set the _maximum_ precision
@@ -672,27 +682,22 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
     str << "v=glVertex\nc=glColor\n";
 
 #define FCHN(x) (float)x/255.0
-    // (Approximately) Limit the number of points sent to the display server
-    const double MAX_IN_PLANE = 2000.0;
-    const double MAX_IN_SOI = 300.0;
+    // Limit the number of points sent to the display server
+    const size_t PLANE_POINTS = 2000;
+    const size_t SOI_POINTS = 300;
     if (dominantPlane.valid) {
 	str << "c("
 	    << FCHN(dominantPlane.dispColor.r) << ","
 	    << FCHN(dominantPlane.dispColor.g) << ","
 	    << FCHN(dominantPlane.dispColor.b) << ")\n";
-	
-	int pctLimit = floor(0.5 + 1000 * (MAX_IN_PLANE / dominantPlane.planePoints.size()));
-	if (pctLimit < 1) pctLimit = 1;
-	
-	for(size_t i = 0; i < dominantPlane.planePoints.size(); i++)
+
+	for(size_t i = 0; i < PLANE_POINTS; i++)
 	{
-	    if (rand() % 1000 > pctLimit)
-		continue;
+	    size_t j = rand() % dominantPlane.planePoints.size();
 	    str << "v("
-		<< dominantPlane.planePoints[i].p.x << ","
-		<< dominantPlane.planePoints[i].p.y << ","
-		<< dominantPlane.planePoints[i].p.z << ")\n";
-	    pointCnt++;
+		<< dominantPlane.planePoints[j].p.x << ","
+		<< dominantPlane.planePoints[j].p.y << ","
+		<< dominantPlane.planePoints[j].p.z << ")\n";
 	}
     }
     for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
@@ -702,18 +707,13 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
 	    << FCHN(it->dispColor.g) << ","
 	    << FCHN(it->dispColor.b) << ")\n";
 
-	int pctLimit = floor(0.5 + 1000 * (MAX_IN_SOI / it->points.size()));
-	if (pctLimit < 1) pctLimit = 1;
-
-	for(size_t i = 0; i < it->points.size(); i++)
+	for(size_t i = 0; i < SOI_POINTS; i++)
 	{
-	    if (rand() % 1000 > pctLimit)
-		continue;
+	    size_t j = rand() % it->points.size();
 	    str << "v("
-		<< it->points[i].p.x << ","
-		<< it->points[i].p.y << ","
-		<< it->points[i].p.z << ")\n";
-	    pointCnt++;
+		<< it->points[j].p.x << ","
+		<< it->points[j].p.y << ","
+		<< it->points[j].p.z << ")\n";
 	}
     }
 #undef FCHN
@@ -730,7 +730,6 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
 	str.str("");
 	str.clear();
 	str << "<h3>Plane popout - SendPoints</h3>";
-	str << "Points: " << pointCnt << "<br>";
 	str << "Strlen: " << S.length() << "<br>";
 	str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
 	str << "Converted: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
@@ -1147,17 +1146,18 @@ void PlanePopOut::GetPlaneAndSOIs()
 	      // vertices of the bounding prism. We are however interested in all original
 	      // points inside the SOI.
 	      /*for (size_t i = 0; i < pcl_cloud->points.size(); i++)
+	      {
+		unsigned soi_label = m_planePopout->IsInSOI(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+		// if point is in any SOI
+		if(soi_label > 0)
 		{
-		int soi_label = planePopout->IsInSOI(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-	      // if point is in any SOI
-	      if(soi_label != 0) {
-	      SurfacePoint p;
-	      p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-	      p.c.r = pcl_cloud->points[i].r;
-	      p.c.g = pcl_cloud->points[i].g;
-	      p.c.b = pcl_cloud->points[i].b;
-	      currentSOIs[soi_label].points.push_back(p);
-	      }
+		  SurfacePoint p;
+		  p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+		  p.c.r = pcl_cloud->points[i].r;
+		  p.c.g = pcl_cloud->points[i].g;
+		  p.c.b = pcl_cloud->points[i].b;
+		  currentSOIs[soi_label].points.push_back(p);
+		}
 	      }*/
 
 	      // NOTE: the above does not work for some as yet unknown reason, so we essentially
@@ -1178,10 +1178,13 @@ void PlanePopOut::GetPlaneAndSOIs()
 		  {
 		    SurfacePoint p;
 		    p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-		    p.c.r = pcl_cloud->points[i].r;
-		    p.c.g = pcl_cloud->points[i].g;
-		    p.c.b = pcl_cloud->points[i].b;
-		    currentSOIs[j].points.push_back(p);
+		    if(distPointToPlane(p.p, dominantPlane.plane) > 0)
+		    {
+	              p.c.r = pcl_cloud->points[i].r;
+		      p.c.g = pcl_cloud->points[i].g;
+		      p.c.b = pcl_cloud->points[i].b;
+		      currentSOIs[j].points.push_back(p);
+		    }
 		  }
 		}
 	      }

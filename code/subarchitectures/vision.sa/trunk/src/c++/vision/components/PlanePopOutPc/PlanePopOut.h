@@ -107,6 +107,12 @@ public:
         VisionData::SOIPtr createWMSOI(ManagedComponent *comp);
     };
 
+public:
+    /**
+     * Vector pointing "up", i.e. in negative direction of gravity. 
+     */
+    static Vector3 upVector;
+
 private:
     /**
      * Camera ID from where to get images in case we want to display image and
