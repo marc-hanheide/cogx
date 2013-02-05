@@ -9,7 +9,7 @@ DESCRIPTION = Point Cloud Library
 include ../../gar.detect.mk
 
 DEB_PACKAGES=	\
-		libpcl-all-dev@ubuntu \
+		libpcl-$(GARVERSION)-all-dev@ubuntu \
 
 LIBDEPS = 
 
@@ -18,7 +18,7 @@ BUILD_SCRIPTS =
 INSTALL_SCRIPTS =
 CONFIGURE_ARGS =
 
-libpcl-all-dev@ubuntu:	add-pcl-ppa
+libpcl-$(GARVERSION)-all-dev@ubuntu:	add-pcl-ppa
 APT_LIST_FILE = /etc/apt/sources.list.d/v-launchpad-jochen-sprickerhof-de-pcl-$(SYSTEM_CODENAME).list
 
 add-pcl-ppa: $(APT_LIST_FILE)
