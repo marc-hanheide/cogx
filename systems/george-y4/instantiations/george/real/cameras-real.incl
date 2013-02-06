@@ -41,6 +41,31 @@ ENDIF
 
 #----------------------------------------------------------------------------------------------
 
+IFOPTANY(%(hardware_options), monovideo)
+    VARDEFAULT CameraIds=%(left_cam_id)
+    VARDEFAULT CameraDevs=0
+    VARDEFAULT CameraConfigs_01=<multiline>
+       %(camera_config_dir)/camcalib_mono.xml
+    </multiline>
+    #-------------------------------------------------------
+    SETVAR OpenCvLiveServer_Params=<multiline>
+       --camids  "%(CameraIds)"
+       --camconfigs "%(CameraConfigs_01)"
+       --imgsize "1280 960"
+       --framerate_fps 7
+       --swapredblue
+    </multiline>
+    CPP MG videoserver PointGreyServerUSB %(OpenCvLiveServer_Params)
+    CPP MG VideoViewer VideoViewer --videoname videoserver --camids "0" --displayserver "display.srv" --log
+
+    SETVAR real_camera_ids=%(real_camera_ids) %(CameraIds)
+    IFEQ(%(main_camera_id),)
+        SETVAR main_camera_id=%(left_cam_id)
+    ENDIF
+ENDIF
+
+#----------------------------------------------------------------------------------------------
+
 IFOPTALL(%(hardware_options), video stereo)
     SETVAR StereoServer_Params=<multiline>
        --videoname videoserver
@@ -73,7 +98,7 @@ IFOPTALL(%(hardware_options), kinect)
 ENDIF
 
 IFOPTALL(%(hardware_options), kinect-video)
-    CPP MG videoserver KinectVideoServer --camids "%(kinect_cam_id)" --kconfig "%(kinect_internal_file)"
+    CPP MG videoserver KinectVideoServer --camids "%(kinect_cam_id)" --camconfigs "%(kinect_config_file)" --kconfig "%(kinect_internal_file)"
     SETVAR real_camera_ids=%(real_camera_ids) %(kinect_cam_id)
     IFEQ(%(main_camera_id),)
         SETVAR main_camera_id=%(kinect_cam_id)
@@ -87,11 +112,10 @@ ENDIF
 # be calculated based on the kinematic chain base - pan joint - tilt joint -
 # cam offset
 IFOPTALL(%(hardware_options), ptz cameramount )
-    VARDEFAULT cameramount_camera_ids=%(left_cam_id) %(right_cam_id) %(kinect_cam_id)
+    VARDEFAULT cameramount_camera_ids=%(left_cam_id)  %(kinect_cam_id)
     VARDEFAULT cameramount_camera_poses=<multiline>
-        %(camera_config_dir)/ptu-pose-cam-left-sim.xml
-        %(camera_config_dir)/campose-right2left-tuw-11-05-11.xml
-        %(camera_config_dir)/campose-kinect2left-tuw-11-05-11.xml
+        %(camera_config_dir)/ptu-pose-cam-left-mountbelow.xml
+        %(camera_config_dir)/campose-kinectRelative2Mono_pose.xml
     </multiline>
     VARDEFAULT cameramount_ref_cam_id=%(left_cam_id)
 
@@ -117,4 +141,6 @@ ENDIF
 ## IFOPTALL(%(hardware_options), ptz )
 ##     JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-1.0" # --testGUI
 ## ENDIF
+
+#CPP MG testprojection TestProjection --pcserver kinect.server --videoname videoserver --camid 0
 
