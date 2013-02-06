@@ -429,13 +429,10 @@ void ObjectRecognizer3D::visualizeRecognizedObject(cv::Mat &img,
   if(loc.idxView < obj->views.size())
   {
     cv::Mat intrinsic(cv::Mat::zeros(3,3,CV_64F));
-    // HACK: set these to kinect parameters.
-    //  no idea why cam.fx = 1, and cam.cx = 0, these come from the image and
-    //  should be correct
-    intrinsic.at<double>(0, 0) = 525.;  //cam.fx;
-    intrinsic.at<double>(0, 2) = 320;   //cam.cx;
-    intrinsic.at<double>(1, 1) = 525;   //cam.fy;
-    intrinsic.at<double>(1, 2) = 240;   //cam.cy;
+    intrinsic.at<double>(0, 0) = cam.fx;
+    intrinsic.at<double>(0, 2) = cam.cx;
+    intrinsic.at<double>(1, 1) = cam.fy;
+    intrinsic.at<double>(1, 2) = cam.cy;
     intrinsic.at<double>(2, 2) = 1.;
     // last params: brightness and whether to draw keypoints
     P::View::draw(*obj->views[loc.idxView], intrinsic, img, loc.pose, 2., true);
