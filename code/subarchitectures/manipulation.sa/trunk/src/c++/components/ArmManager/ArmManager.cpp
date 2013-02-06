@@ -36,6 +36,8 @@ ArmManager::ArmManager() : m_lastStatus(MCREQUESTED)
 void ArmManager::configure(const map<string, string> &_config)
 {
   map<string,string>::const_iterator it;
+  // use corrAngleDeg to correct if the arm (due to various calibration inaccuracies)
+  // does not point precisely at the objects
   if((it = _config.find("--corrAngleDeg")) != _config.end())
   {
     istringstream str(it->second);
@@ -195,7 +197,7 @@ Pose3 ArmManager::pointingPose(const Pose3 objPose)
 #endif
   double dist = sqrt(sqr(pointingPose.pos.x) + sqr(pointingPose.pos.y));
   double distCorr = dist - m_pointingOffsetHor;;
-  const double maxDist = 0.35;
+  const double maxDist = 0.25;
   const double minZ = 0.8;
   const double maxZ = 0.85;
   pointingPose.pos.x /= dist;

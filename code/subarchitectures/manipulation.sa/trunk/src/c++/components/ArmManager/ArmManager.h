@@ -47,6 +47,8 @@ private:
   bool m_pointing_now;
   double m_pointingOffsetVer;
   double m_pointingOffsetHor;
+  // use corrAngleDeg to correct if the arm (due to various calibration inaccuracies)
+  // does not point precisely at the objects
   double corrAngle;
 
   cdl::WorkingMemoryAddress m_pointedObjAddr;
