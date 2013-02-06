@@ -386,20 +386,8 @@ if(DO_ANT)
    endif()
 endif(DO_ANT)
 
-#option(DO_V4R_MAKE "automatically compile the v4r library (external make)" NO)
-#if(DO_V4R_MAKE)
-#   #add_custom_target( v4r_build ALL )
-#   #add_custom_command(
-#   #   TARGET  v4r_build
-#   #   COMMAND bash cmake/makev4r.sh
-#   #   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-#   #   )
-#   MESSAGE(STATUS "V4R is no longer part of CogX build. Use GAR installer.")
-#endif()
-
 MESSAGE(STATUS " * Build type: " ${CMAKE_BUILD_TYPE})
 MESSAGE(STATUS " * Do Ant: " ${DO_ANT})
 MESSAGE(STATUS " * Do slice only: " ${DO_SLICE_ONLY})
 MESSAGE(STATUS " * Do slice disabled: " ${DO_SLICE_DISABLED})
-#MESSAGE(STATUS " * Do make V4R: " ${DO_V4R_MAKE})
 MESSAGE(STATUS " * Use ccache: " ${USE_CCACHE})
