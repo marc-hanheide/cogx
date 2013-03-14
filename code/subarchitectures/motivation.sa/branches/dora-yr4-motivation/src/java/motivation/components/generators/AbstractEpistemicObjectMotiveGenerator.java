@@ -51,6 +51,9 @@ public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T
 		result.maxPlanningTime = DEFAULT_MAX_PLANNING_TIME;
 		result.priority = MotivePriority.UNSURFACE;
 		result.status = MotiveStatus.UNSURFACED;
+		result.updated=result.created;
+		result.thisEntry=new WorkingMemoryAddress();
+		result.referenceEntry=new WorkingMemoryAddress();
 		return result;
 	}
 

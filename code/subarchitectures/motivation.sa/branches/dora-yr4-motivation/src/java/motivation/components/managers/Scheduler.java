@@ -86,7 +86,7 @@ public class Scheduler extends AbstractScheduler {
 
 					Map<WorkingMemoryAddress, Motive> prioritySet = getMaxPrioritySet(surfacedGoals);
 
-					WMEntryQueueElement<PlanningTask> plan = doPlanning(
+					WMEntryQueueElement<PlanningTask> plan = planner.plan(
 							prioritySet, possibleGoals, impossibleGoals);
 
 					if (plan != null && possibleGoals.size() > 0) {

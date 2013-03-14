@@ -55,6 +55,8 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 
 	private static final int TIME_TO_WAIT_TO_SETTLE = 1000;
 
+	protected final PlannerDispatcher planner;
+
 	protected static MotivePriority getMaxPriority(
 			Map<WorkingMemoryAddress, Motive> possibleGoals) {
 		MotivePriority result = MotivePriority.UNSURFACE;
@@ -76,14 +78,12 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 
 	final WMMotiveView motives;
 
-	final PlannerFacade planner;
-
 	/**
 	 * 
 	 */
 	public AbstractScheduler() {
 		executor = new ExecutorFacade(this);
-		planner = new PlannerFacade(this);
+		planner = new PlannerDispatcher(this);
 		motives = WMMotiveView.create(this);
 	}
 
@@ -139,95 +139,133 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 		return true;
 	}
 
-	protected WMEntryQueueElement<PlanningTask> doPlanning(
-			Map<WorkingMemoryAddress, Motive> goalsToPlanFor,
-			Map<WorkingMemoryAddress, Motive> possibleGoals,
-			Map<WorkingMemoryAddress, Motive> impossibleGoals)
-			throws InterruptedException, ExecutionException {
-		int timeout = MINIMUM_PLANNER_TIMEOUT;
-		for (Motive g : goalsToPlanFor.values()) {
-			timeout += g.maxPlanningTime;
+	// protected WMEntryQueueElement<PlanningTask> doPlanning(
+	// Map<WorkingMemoryAddress, Motive> goalsToPlanFor,
+	// Map<WorkingMemoryAddress, Motive> possibleGoals,
+	// Map<WorkingMemoryAddress, Motive> impossibleGoals)
+	// throws InterruptedException, ExecutionException {
+	// int timeout = MINIMUM_PLANNER_TIMEOUT;
+	// for (Motive g : goalsToPlanFor.values()) {
+	// timeout += g.maxPlanningTime;
+	// }
+	// return doPlanning(goalsToPlanFor, possibleGoals, impossibleGoals,
+	// timeout);
+	// }
+
+	// protected WMEntryQueueElement<PlanningTask> doPlanning(
+	// Map<WorkingMemoryAddress, Motive> goalsToPlanFor,
+	// Map<WorkingMemoryAddress, Motive> possibleGoals,
+	// Map<WorkingMemoryAddress, Motive> impossibleGoals, int timeoutMs)
+	// throws InterruptedException, ExecutionException {
+	// log("try to plan for " + goalsToPlanFor.size() + " goals; timeout="
+	// + timeoutMs + "ms.");
+	// Map<String, WorkingMemoryAddress> goal2motiveMap = new HashMap<String,
+	// WorkingMemoryAddress>();
+	//
+	// List<Goal> goals = new LinkedList<Goal>();
+	// for (Motive m : goalsToPlanFor.values()) {
+	// if (!m.goal.goalString.isEmpty())
+	// // set all those that are of HIGHEST priority to HARD goals
+	// if (m.priority == MotivePriority.HIGH)
+	// m.goal.importance = -1;
+	// goals.add(m.goal);
+	// }
+	//
+	// for (Entry<WorkingMemoryAddress, Motive> m : goalsToPlanFor.entrySet()) {
+	// if (!m.getValue().goal.goalString.isEmpty()) {
+	// if (goal2motiveMap.containsKey(m.getValue().goal.goalString)) {
+	// getLogger()
+	// .warn("the goal "
+	// + m.getValue().goal.goalString
+	// + " is already associated with motive"
+	// + goal2motiveMap.get(m.getValue().goal.goalString));
+	// continue;
+	// } else {
+	// goal2motiveMap
+	// .put(m.getValue().goal.goalString, m.getKey());
+	// }
+	// }
+	// }
+	//
+	// impossibleGoals.clear();
+	// possibleGoals.clear();
+	// impossibleGoals.putAll(goalsToPlanFor);
+	// try {
+	// WMEntryQueueElement<PlanningTask> result = null;
+	//
+	// if (timeoutMs > 0) {
+	// result = planner.plan(goals).get(timeoutMs, TimeUnit.SECONDS);
+	// } else {
+	// result = planner.plan(goals).get();
+	// }
+	// if (result == null) {
+	// getLogger().warn("failed to create a plan at all");
+	// return null;
+	// }
+	// if (result.getEntry().planningStatus != Completion.SUCCEEDED) {
+	// getLogger().warn(
+	// "planner returned with result "
+	// + result.getEntry().planningStatus.name());
+	// return null;
+	// }
+	//
+	// // mark all motives POSSIBLE that have been planned for
+	// for (Goal o : result.getEntry().goals) {
+	// WorkingMemoryAddress correspMotiveWMA = goal2motiveMap
+	// .get(o.goalString);
+	// assert (correspMotiveWMA != null);
+	// log("looking for planning result for goal " + o.goalString
+	// + " (#actions=" + result.getEntry().plan.length + "): "
+	// + o.isInPlan);
+	//
+	// if (o.isInPlan) {
+	// log("  goal " + o.goalString + " is possible!");
+	// possibleGoals.put(correspMotiveWMA,
+	// impossibleGoals.remove(correspMotiveWMA));
+	// }
+	// }
+	//
+	// return result;
+	// } catch (TimeoutException e) {
+	// getLogger().warn("planner timeout", e);
+	// return null;
+	// }
+	// }
+
+	protected void assignIndividualCosts(Set<Motive> motives) {
+		for (Motive m : motives) {
+			m.costs = getCosts(m);
 		}
-		return doPlanning(goalsToPlanFor, possibleGoals, impossibleGoals,
-				timeout);
 	}
 
-	private WMEntryQueueElement<PlanningTask> doPlanning(
-			Map<WorkingMemoryAddress, Motive> goalsToPlanFor,
-			Map<WorkingMemoryAddress, Motive> possibleGoals,
-			Map<WorkingMemoryAddress, Motive> impossibleGoals, int timeoutMs)
-			throws InterruptedException, ExecutionException {
-		log("try to plan for " + goalsToPlanFor.size() + " goals; timeout="
-				+ timeoutMs + "ms.");
-		Map<String, WorkingMemoryAddress> goal2motiveMap = new HashMap<String, WorkingMemoryAddress>();
-
-		List<Goal> goals = new LinkedList<Goal>();
-		for (Motive m : goalsToPlanFor.values()) {
-			if (!m.goal.goalString.isEmpty())
-				// set all those that are of HIGHEST priority to HARD goals
-				if (m.priority == MotivePriority.HIGH)
-					m.goal.importance = -1;
-			goals.add(m.goal);
-		}
-
-		for (Entry<WorkingMemoryAddress, Motive> m : goalsToPlanFor.entrySet()) {
-			if (!m.getValue().goal.goalString.isEmpty()) {
-				if (goal2motiveMap.containsKey(m.getValue().goal.goalString)) {
-					getLogger()
-							.warn("the goal "
-									+ m.getValue().goal.goalString
-									+ " is already associated with motive"
-									+ goal2motiveMap.get(m.getValue().goal.goalString));
-					continue;
-				} else {
-					goal2motiveMap
-							.put(m.getValue().goal.goalString, m.getKey());
-				}
-			}
-		}
-
-		impossibleGoals.clear();
-		possibleGoals.clear();
-		impossibleGoals.putAll(goalsToPlanFor);
+	protected double getCosts(Motive motive) {
+		Map<WorkingMemoryAddress, Motive> possibleGoals = new HashMap<WorkingMemoryAddress, Motive>();
+		Map<WorkingMemoryAddress, Motive> impossibleGoals = new HashMap<WorkingMemoryAddress, Motive>();
+		Map<WorkingMemoryAddress, Motive> goalsToPlanFor = new HashMap<WorkingMemoryAddress, Motive>();
+		goalsToPlanFor.put(motive.thisEntry, motive);
 		try {
-			WMEntryQueueElement<PlanningTask> result = null;
-
-			if (timeoutMs > 0) {
-				result = planner.plan(goals).get(timeoutMs, TimeUnit.SECONDS);
+			WMEntryQueueElement<PlanningTask> plan = planner.plan(
+					goalsToPlanFor, possibleGoals, impossibleGoals);
+			if (plan == null) {
+				getLogger().error(
+						"no plan found, assuming costs to be infinite");
+				return Double.POSITIVE_INFINITY;
+			}
+			if (possibleGoals.containsKey(motive.thisEntry)) {
+				return plan.getEntry().costs;
 			} else {
-				result = planner.plan(goals).get();
+				return Double.POSITIVE_INFINITY;
 			}
-			if (result == null) {
-				getLogger().warn("failed to create a plan at all");
-				return null;
-			}
-			if (result.getEntry().planningStatus != Completion.SUCCEEDED) {
-				getLogger().warn(
-						"planner returned with result "
-								+ result.getEntry().planningStatus.name());
-				return null;
-			}
-
-			// mark all motives POSSIBLE that have been planned for
-			for (Goal o : result.getEntry().goals) {
-				WorkingMemoryAddress correspMotiveWMA = goal2motiveMap
-						.get(o.goalString);
-				assert (correspMotiveWMA != null);
-				log("looking for planning result for goal " + o.goalString
-						+ " (#actions=" + result.getEntry().plan.length + "): "
-						+ o.isInPlan);
-
-				if (o.isInPlan) {
-					log("  goal " + o.goalString + " is possible!");
-					possibleGoals.put(correspMotiveWMA,
-							impossibleGoals.remove(correspMotiveWMA));
-				}
-			}
-
-			return result;
-		} catch (TimeoutException e) {
-			getLogger().warn("planner timeout", e);
-			return null;
+		} catch (InterruptedException e) {
+			getLogger()
+					.error("interrupted while planning to get costs "
+							+ e.getMessage());
+			return Double.POSITIVE_INFINITY;
+		} catch (ExecutionException e) {
+			getLogger().error(
+					"execution exception while planning to get costs "
+							+ e.getMessage());
+			return Double.POSITIVE_INFINITY;
 		}
 	}
 
@@ -236,6 +274,8 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 			WorkingMemoryChange wmc, Motive newEntry, Motive oldEntry)
 			throws CASTException {
 		debug("received change event: " + CASTUtils.toString(wmc));
+		PlannerDispatcher pd = new PlannerDispatcher(this);
+
 		synchronized (this) {
 			lastChange = wmc;
 			this.notifyAll();
@@ -440,7 +480,8 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 		for (Entry<WorkingMemoryAddress, Motive> m : copySet) {
 			Motive motive = m.getValue();
 
-			if (motive.status == MotiveStatus.ACTIVE || motive.status == MotiveStatus.SURFACED) {
+			if (motive.status == MotiveStatus.ACTIVE
+					|| motive.status == MotiveStatus.SURFACED) {
 
 				WorkingMemoryAddress wma = m.getKey();
 
