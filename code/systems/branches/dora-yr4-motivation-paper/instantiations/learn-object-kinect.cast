@@ -1,0 +1,15 @@
+HOST localhost
+SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
+
+INCLUDE includes/vision.sa/vision-base.cast
+
+CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "%(vision_calib_root)/camcalib-kinect.xml" --create-viewcone
+
+CPP MG Tracker ObjectTracker --pcserver pcserver --camid 2 --textured --coordinateframe --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2
+
+CPP MG Recognizer3D ObjectRecognizer3D --pcserver pcserver --camid "2" --display --plyfiles "instantiations/ply-models/AImagazineSpring1999.ply" --siftfiles "instantiations/sift-models/AImagazineSpring1999.sift" --labels "AImagazineSpring1999"
+
+# mode can be RECOGNIZE or LEARN
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "AImagazineSpring1999" --mode LEARN
+
+

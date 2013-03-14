@@ -1,0 +1,288 @@
+include "../common/map.inc"
+include "../common/p3dx_with_urg.inc"
+include "../common/box.inc"
+include "barrier.inc"
+include "desk.inc"
+include "long-desk.inc"
+#include "big-desk.inc"
+include "shelf-unit.inc"
+#include "row-of-chairs.inc"
+include "chair.inc"
+include "fakebookcase.inc"
+include "filingcabinet.inc"
+
+interval_real 10
+
+window
+(
+	#This is the size the simulation window will be in pixels
+	size [316.000 706.000]
+	#This is how many metres of the simulated environment each pixel shows
+	scale 22.000
+	center [18.572 -0.300]
+)
+
+floorplan
+(
+	bitmap "./cs-2-dist.png"
+	#size of map in metre
+	size [50.625 35.290 1.500]
+)
+
+p3dx_with_urg_and_blobfinder (
+	name "dora"
+	pose [16.709 -0.209 0 0]
+	color "red"
+)
+
+# cereal box
+
+ box2d
+ (
+ name "redbox1"
+ color "red"
+ pose [24.310 9.045 0 0]
+ )
+
+ fakebookcase
+ (
+ name "polystyrene1"
+ color "black"
+ pose [18.190 4.730 0 90.000]
+ )
+
+ filingcabinet
+ (
+ name "cabinet1"
+ color "black"
+ pose [17.105 7.220 0 0]
+ )
+
+# chairs
+
+ chair
+ (
+ name "chair1"
+ color "black"
+ pose [13.683 -4.000 0 0]
+ )
+
+ chair
+ (
+ name "chair2"
+ color "black"
+ pose [15.181 -3.273 0 0]
+ )
+
+# row-of-chairs
+# (
+# name "row-of-chairs1"
+# color "black"
+# pose [14.636 1.773 0 0]
+# )
+
+# row-of-chairs
+# (
+# name "row-of-chairs2"
+# color "black"
+# pose [12.727 3.545 0 90.000]
+# )
+
+# desks
+
+# long-desk
+# (
+# name "corridor-table1"
+# color "black"
+# pose [15.841 7.329 0 0]
+# )
+
+# long-desk
+# (
+# name "corridor-table2"
+# color "black"
+# pose [14.023 7.329 0 0]
+# )
+
+ desk
+ (
+ name "desk1"
+ color "black"
+ pose [15.277 -5.573 0 0]
+ )
+
+ long-desk
+ (
+ name "desk2"
+ color "black"
+ pose [14.977 -7.671 0 90.000]
+ )
+
+ long-desk
+ (
+ name "desk3"
+ color "black"
+ pose [15.623 0.103 0 90.000]
+ )
+
+ desk
+ (
+ name "desk4"
+ color "black"
+ pose [18.045 12.995 0 90.000]
+ )
+
+ desk
+ (
+ name "desk5"
+ color "black"
+ pose [15.294 -6.371 0 0]
+ )
+
+ shelf-unit
+ (
+ name "shelf-unit1"
+ color "black"
+ pose [14.747 6.508 0 0]
+ )
+
+ shelf-unit
+ (
+ name "shelf-unit2"
+ color "black"
+ pose [17.690 2.169 0 90.000]
+ )
+
+ model
+ (
+ #name "big-desk"
+ bitmap "./big-table1.pnm"
+ size [2.800 1.600 0.720]
+ color "black"
+ pose [14.096 -2.096 0 45.000]
+ )
+
+ desk
+ (
+ name "desk8"
+ color "black"
+ pose [13.837 -5.118 0 0]
+ )
+
+ long-desk
+ (
+ name "desk10"
+ color "black"
+ pose [15.184 12.729 0 90.000]
+ )
+
+ long-desk
+ (
+ name "desk11"
+ color "black"
+ pose [17.149 8.400 0 90.000]
+ )
+
+ long-desk
+ (
+ name "desk12"
+ color "black"
+ pose [18.090 11.383 0 90.000]
+ )
+
+# extra barriers to block the corridor next to the meeting room (245)
+
+ barrier
+ (
+ name "extrabarrier1"
+ color "black"
+ pose [14.873 -8.775 0 0]
+ )
+
+ barrier
+ (
+ name "extrabarrier2"
+ color "black"
+ pose [15.105 -4.957 0 0]
+ )
+
+# barriers to close office doors:
+
+ barrier
+ (
+ name "barrier1"
+ color "black"
+ pose [19.150 9.550 0 0]
+ )
+
+ barrier
+ (
+ name "barrier2"
+ color "black"
+ pose [19.800 5.100 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier3"
+ color "black"
+ pose [19.800 2.050 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier4"
+ color "black"
+ pose [19.800 -1.000 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier5"
+ color "black"
+ pose [19.800 -4.100 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier6"
+ color "black"
+ pose [19.800 -7.200 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier7"
+ color "black"
+ pose [19.809 8.127 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier8"
+ color "black"
+ pose [19.855 -10.350 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier9"
+ color "black"
+ pose [19.100 -11.100 0 0]
+ )
+
+# barriers to block the corridor next to the printer room
+
+ barrier
+ (
+ name "barrier10"
+ color "black"
+ pose [12.650 -9.600 0 90.000]
+ )
+
+ barrier
+ (
+ name "barrier11"
+ color "black"
+ pose [12.650 -10.350 0 90.000]
+ )
