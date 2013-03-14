@@ -79,7 +79,5 @@ VARDEFAULT logged_types=<multiline>
 
 SETVAR display_doors=
 
-
-
-include dora-yr4.cast
+INCLUDE dora-yr4.cast
 

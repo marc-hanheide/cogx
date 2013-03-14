@@ -767,6 +767,7 @@ IFOPTALL(%(feature_options), planning_sa)
         IFOPTALL(%(feature_options), motivation_external)
             ### accepts goals given externally via the ExternalGoalGeneratorClient process, useful for external JUnit test by jenkins
             JAVA MG goal.server dora.test.DoraTestRunner
+            JAVA MG goal.server.manual motivation.components.generators.ManualGoalComponent
         ENDIF
         IFOPTALL(%(feature_options), motivation_explanation)
             ### creates goals from hypothesis about visualobjects
