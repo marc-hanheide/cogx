@@ -1,0 +1,8 @@
+VARDEFAULT vision_pcserver=
+# --pcserver pcserver
+VARDEFAULT conceptual_categories=corridor,kitchen,office,meetingroom
+VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
+
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c %(spatial_cureconfig) --no-sois %(vision_pcserver) --room-categories %(conceptual_categories) --object-models "cornflakes musli.pbmf rice rice.pbmf keyboard keyboard.pbmf book book.pbmf" --follow-robot
+
+
