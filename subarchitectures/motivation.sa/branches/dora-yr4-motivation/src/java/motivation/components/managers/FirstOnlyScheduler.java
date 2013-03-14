@@ -31,7 +31,7 @@ public class FirstOnlyScheduler extends SimpleScheduler {
 
 					Map<WorkingMemoryAddress, Motive> prioritySet = getMaxPrioritySet(surfacedGoals);
 
-					WMEntryQueueElement<PlanningTask> plan = doPlanning(
+					WMEntryQueueElement<PlanningTask> plan = planner.plan(
 							prioritySet, possibleGoals, impossibleGoals);
 
 					if (plan != null) {

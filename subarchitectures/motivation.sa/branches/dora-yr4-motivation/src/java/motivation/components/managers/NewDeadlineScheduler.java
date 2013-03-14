@@ -6,6 +6,7 @@ package motivation.components.managers;
 import java.util.HashMap;
 import java.util.Map;
 
+import motivation.components.managers.PlannerDispatcher.PlanningJob;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import autogen.Planner.PlanningTask;
@@ -24,7 +25,7 @@ import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class DeadlineScheduler extends AbstractScheduler {
+public class NewDeadlineScheduler extends AbstractScheduler {
 
 	/*
 	 * (non-Javadoc)
@@ -37,6 +38,27 @@ public class DeadlineScheduler extends AbstractScheduler {
 			executionEnabled = false;
 		if (_config.containsKey("--no-opportunities"))
 			checkForOpportunities = false;
+
+	}
+
+	public class MotiveCostAssigner implements PlannerDispatcher.PlanningJobCB {
+
+		public MotiveCostAssigner(Motive m) {
+			motive = m;
+		}
+
+		final Motive motive;
+
+		@Override
+		public void plannedFor(PlanningJob job) {
+			if (job.task != null) {
+				synchronized (motive) {
+					motive.costs=job.task.getEntry().costs;
+					//ahiostmotives.put(motive.thisEntry, motive);
+				}
+			}
+
+		}
 
 	}
 
@@ -60,6 +82,13 @@ public class DeadlineScheduler extends AbstractScheduler {
 					continue;
 				}
 				surfacedGoals = motives.getMapByStatus(MotiveStatus.SURFACED);
+				for (Motive m : surfacedGoals.values()) {
+					planner.plan(m,new MotiveCostAssigner(m));
+				}
+				// wait for all costs to be assigned
+				planner.waitForIdle();
+				log("individual costs have been assigned now.");
+				
 				activeGoals = motives.getMapByStatus(MotiveStatus.ACTIVE);
 				log("we currently have " + surfacedGoals.size()
 						+ " surfaced goals.");

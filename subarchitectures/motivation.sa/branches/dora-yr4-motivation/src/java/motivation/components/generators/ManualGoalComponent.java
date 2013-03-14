@@ -6,7 +6,7 @@ package motivation.components.generators;
 import javax.swing.table.TableModel;
 
 import motivation.components.generators.ManualGoalFrame.SubmitListener;
-import motivation.slice.TutorInitiativeMotive;
+import motivation.slice.GeneralGoalMotive;
 import autogen.Planner.Goal;
 import cast.AlreadyExistsOnWMException;
 import cast.UnknownSubarchitectureException;
@@ -87,7 +87,7 @@ public class ManualGoalComponent extends ManagedComponent implements
 					}
 				}
 				Goal g = new Goal(importance, -1, (String) goalObj, false);
-				TutorInitiativeMotive motive = new TutorInitiativeMotive();
+				GeneralGoalMotive motive = new GeneralGoalMotive();
 				AbstractEpistemicObjectMotiveGenerator.fillDefault(motive);
 				motive.thisEntry = new WorkingMemoryAddress(newDataID(),
 						getSubarchitectureID());
