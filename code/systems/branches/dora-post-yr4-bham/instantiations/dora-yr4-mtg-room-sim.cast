@@ -1,0 +1,7 @@
+
+# This config relates to cs-2-small-furniture2
+SETVAR categorisation_config=subarchitectures/categorical.sa/config/BHAM-sim2-shape.cfg
+
+#SETVAR exclude_exploration="x > 1.3 and y > -1"
+
+INCLUDE dora-yr4.cast

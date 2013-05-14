@@ -1,0 +1,93 @@
+
+### the default goal
+SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o))); (exists (?p - person) (kval (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o)))); (kval ROBOT (category ROOM))"
+
+### the plannig domain to use
+SETVAR planning_domain=dora-interactive.pddl
+
+### the default probabilities
+SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-review-direct.txt"
+
+### the default knowledge to use
+SETVAR default_knowledge="instantiations/defaultprobs/defaultknowledge-review.xml"
+
+### the Haar-like face detector file to use
+SETVAR face_detector=instantiations/data/haarcascade_frontalface_alt2.xml
+
+### run coma mediators in a discretising way?
+SETVAR discrete_room_cats=
+#SETVAR discrete_room_cats=--discrete
+
+SETVAR room_has_person=0.9
+
+### places for the initial automatic tour:
+SETVAR tour_places="0 9 4"
+
+### all types to be logged from WMs
+SETVAR logged_types=<multiline>
+  execution.slice.Action, 
+  SpatialData.ObjectSearchResult, 
+  SpatialData.ViewPoint, 
+  SpatialData.ProcessConeGroup, 
+  comadata.ComaRoom,
+  SpatialData.RelationalViewPointGenerationCommand,
+  autogen.Planner.Action,
+  autogen.Planner.PlanningTask
+  ptz.SetPTZPoseCommand
+</multiline>
+
+### root for the sift-models
+SETVAR siftroot_=./instantiations/sift-models
+
+### root for the ply-models
+SETVAR plyroot_=./instantiations/ply-models
+
+### siftfiles
+SETVAR or3d_sift_files=<multiline>
+   %(siftroot_)/rumblepad.sift
+   %(siftroot_)/pizza.sift
+   %(siftroot_)/juice.sift
+   %(siftroot_)/coffee.sift
+   %(siftroot_)/lipton.sift
+   %(siftroot_)/kelloggs.sift
+   %(siftroot_)/AI.sift
+   %(siftroot_)/XXX
+   %(siftroot_)/XXX
+</multiline>
+
+### ply files
+SETVAR or3d_ply_files=<multiline>
+   %(plyroot_)/rumplepad.ply
+   %(plyroot_)/pizza.ply
+   %(plyroot_)/juice.ply
+   %(plyroot_)/coffee.ply
+   %(plyroot_)/lipton.ply
+   %(plyroot_)/kelloggs.ply
+   %(plyroot_)/AI.ply
+   %(plyroot_)/table.ply
+   %(plyroot_)/table.ply
+</multiline>
+
+### object labels
+SETVAR or3d_labels=joystick pizza juice coffee tea cerealbox book table milk
+
+### CURE config file
+VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
+
+### SPATIAL.SA DOOR DETECTION SETTINGS
+SETVAR spatial_min_door_width=0.8
+SETVAR spatial_max_door_width=1.2
+
+SETVAR playerhost= %(host:localhost)
+SETVAR ptz_server=ptz.server
+
+SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
+
+SETVAR vision_pcserver_host=pcserver
+SETVAR vision_pcserver=--pcserver %(vision_pcserver_host)
+# disable use of Kinect data for navigation:
+SETVAR spatial_pcserver=--pcserver %(vision_pcserver_host)
+
+SETVAR no_placeholders=#--no-placeholders
+
+include dora-real.cast

@@ -1,0 +1,67 @@
+COST_INROOM cerealbox 200
+COST_ON cerealbox table 30
+
+COST_INROOM stapler 200
+COST_ON stapler table 30
+
+COST_INROOM book 200
+COST_ON book table 30
+
+COST_INROOM tea 200
+COST_ON tea table 30
+
+COST_INROOM coffee 200
+COST_ON coffee table 30
+
+COST_INROOM juice 200
+COST_ON juice table 30
+
+INROOM juice corridor 0.024542753
+INROOM juice kitchen 0.4768059
+INROOM juice meetingroom 0.018174686
+INROOM juice office 0.15421732
+
+INROOM coffee corridor 0.04747875
+INROOM coffee kitchen 0.57454646
+INROOM coffee meetingroom 0.09345645
+INROOM coffee office 0.25422904
+
+INROOM tea corridor 0.038969487
+INROOM tea kitchen 0.51447165
+INROOM tea meetingroom 0.0582405
+INROOM tea office 0.17742857
+
+INROOM table kitchen 0.55362135
+INROOM table meetingroom 0.10420009
+INROOM table office 0.51997805
+INROOM table corridor 0.0594
+
+INROOM cerealbox kitchen 0.581
+INROOM cerealbox meetingroom 0.06
+INROOM cerealbox office 0.2529
+INROOM cerealbox corridor 0.0519
+
+INROOM stapler kitchen 0.1750
+INROOM stapler meetingroom 0.0110
+INROOM stapler office 0.4025
+INROOM stapler corridor 0.0035
+
+INROOM book kitchen 0.0366
+INROOM book meetingroom 0.0154
+INROOM book office 0.1285
+INROOM book corridor 0.0025
+
+ON cerealbox table kitchen 0.3
+ON cerealbox table meetingroom 0.03
+ON cerealbox table office 0.03
+ON cerealbox table corridor 0.03
+
+ON stapler table kitchen 0.03
+ON stapler table meetingroom 0.03
+ON stapler table office 0.6
+ON stapler table corridor 0.05
+
+ON book table kitchen 0.03
+ON book table meetingroom 0.3
+ON book table office 0.1
+ON book table corridor 0.03

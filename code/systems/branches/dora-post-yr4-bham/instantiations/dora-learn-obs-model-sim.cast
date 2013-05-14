@@ -1,0 +1,46 @@
+HOST localhost
+
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
+# Spatial.SA ################################################################
+INCLUDE includes/spatial.sa/spatial-blobfinder.cast
+COMPONENT CPP ptz.server PlayerActServer --ptz-device 0
+INCLUDE includes/spatial.sa/spatial-base.cast
+
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric #--no-file-output
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph #--no-file-output
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf --explore-range 2.0 
+CPP MG spatial.translation SpatialTranslation 
+CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.6 --min-node-separation 1 --hyp-path-length 2.0 --no-placeholders 
+CPP GD path.query PathQueryProcessor #--no-indirect-paths 
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-local-map-window --no-tentative-window --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05 --detect-doors 
+JAVA MG experiment vision.components.ObservationModelExperiment --set-angleStep 90 --set-radiusStart 0.75 --set-radiusStop 1.5 --set-radiusStep 0.25 
+
+# Vision ######################################################################
+INCLUDE includes/vision.sa/vision-base.cast
+INCLUDE includes/vision.sa/vision-blobs-dora.cast
+
+CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
+CPP MG cameramounttest CameraMountTest --pan "0" --tilt "20.0"
+
+VARDEFAULT siftroot_=./instantiations/sift-models
+VARDEFAULT plyroot_=./instantiations/ply-models
+VARDEFAULT or3d_sift_files=<multiline>
+   %(siftroot_)/cornflakes.sift
+   %(siftroot_)/table.sift
+</multiline>
+VARDEFAULT or3d_ply_files=<multiline>
+   %(plyroot_)/cornflakes.ply
+   %(plyroot_)/table.ply
+</multiline>
+VARDEFAULT or3d_labels=cerealbox table
+CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+
+
+
+# binder ######################################################################
+INCLUDE includes/binder.sa/binder-base.cast
+
+
+

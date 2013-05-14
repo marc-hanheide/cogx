@@ -1,0 +1,42 @@
+
+# Parameter descriptions:
+#    <parameter>     mandatory
+#    <parameter?>    optional
+#    <par1>//<par2>  alternatives
+
+# Define host names
+# HOST <id>  <ip>//<hostname>
+HOST  Bamboo1         192.168.1.100
+HOST  Bamboo2         192.168.1.121
+
+HOSTNAME  Main           [Bamboo1]
+
+HOSTNAME  PlayerHost     [Main]
+HOSTNAME  PeekabotHost   [Bamboo2]
+HOSTNAME  DisplayHost    [Bamboo1]
+HOSTNAME  AbducerHost    [Bamboo1]
+HOSTNAME  DialogueHost   [Bamboo2]
+
+# All subarchitectures executed on the same host
+# SA  <sa_id>  [<host_id>]//<ip>//<hostname>  <enabled?>
+SA    none           [Bamboo1]  # This is for the default HOST in .cast file (ie. no SA defined yet)
+SA    binder         [Bamboo1]
+SA    coma        [Bamboo1]
+SA    dialogue         [Bamboo1]
+SA    default.sa       [Bamboo1]
+SA    conceptual.sa         [Bamboo1]
+SA    categorical.sa         [Bamboo1]
+SA    planner.sa     [Bamboo1]
+SA    spatial.sa     [Bamboo1]
+SA    vision.sa      [Bamboo1]
+SA    visualization.sa      [Bamboo1]
+
+# Special settings for individual components
+# ID  <component_id>  [<host_id>]//<ip>//<hostname>  <enabled?>
+# ID    video.viewer   [TheOne]
+
+# Parameters that define hosts
+# HPAR <component_id?>|<param>  [<host_id>]//<ip>//<hostname>
+# Player may execute on a separate computer
+#HPAR  |--player-host   [Bamboo1]
+
