@@ -149,7 +149,8 @@ void PushingApplication<S,D>::define_program_options_desc()
 				("featuresel,f", po::value<feature_selection>()->default_value (_mcobpose_obpose_direction), feature_selection_options ().c_str())
 				("prefix,p", po::value<string>()->default_value("./"), "path for looking for quantization and SSMs machines")
 				("seqFile,d", po::value<string>(), "name of file containing data sequences\n(do not type .seq extension)")
-				("useseqpred,u", "use seqFile for prediction");
+				("useseqpred,u", "use seqFile for prediction")
+				("longtermpred,l", "long term prediction");
 		}
 
 	} catch(std::exception& e) {

@@ -57,6 +57,8 @@ protected:
 	virtual void calculateStartCoordinates();
 	/** Describe the experiment trajectory */
 	virtual void initMovement();
+	/** write data chunk (used in postprocess function) */
+	virtual void writeChunkLongTerm (LearningData::Chunk& chunk);
 	/** Renders the object. */
         virtual void render();
 	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
@@ -95,6 +97,8 @@ protected:
 	vector<string> currentPredictedOutput;
 	/** true if using sequence file for prediction */
 	bool useseqpred;
+	/** true if making long-term predictions */
+	bool longtermpred;
 
 }; // class
 
