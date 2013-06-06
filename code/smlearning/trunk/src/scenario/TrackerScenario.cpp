@@ -553,6 +553,7 @@ void TrackerScenarioPredictionSingle::updateAvgError ()
 			error += pow(normalization(predRoll,-REAL_PI, REAL_PI) - normalization(learningData.currentChunkSeq[i].object.obRoll, -REAL_PI, REAL_PI), 2);
 			error += pow(normalization(predPitch,-REAL_PI, REAL_PI) - normalization(learningData.currentChunkSeq[i].object.obPitch, -REAL_PI, REAL_PI), 2);
 			error += pow(normalization(predYaw,-REAL_PI, REAL_PI) - normalization(learningData.currentChunkSeq[i].object.obYaw,-REAL_PI, REAL_PI), 2);
+			error /= 6;
 			error = sqrt (error);
 			cout << "error: " << error << endl;
 			avgerror += error;

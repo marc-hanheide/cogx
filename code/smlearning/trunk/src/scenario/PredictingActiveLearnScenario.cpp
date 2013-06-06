@@ -16,6 +16,7 @@ PredictingActiveLearnScenario::PredictingActiveLearnScenario(golem::Scene &scene
 	denormalization = denormalize<Real>;
 	currentRegion = NULL;
 	useseqpred = false;
+	longtermpred = false;
 }
 
 PredictingActiveLearnScenario::~PredictingActiveLearnScenario() {
@@ -75,6 +76,11 @@ void PredictingActiveLearnScenario::init (boost::program_options::variables_map 
 		{
 			useseqpred = true;
 		}
+	}
+
+	if (vm.count("longtermpred"))
+	{
+		longtermpred = true;
 	}
 
 }
@@ -185,6 +191,27 @@ void PredictingActiveLearnScenario::render () {
 	
 }
 
+///
+///write data chunk (used in postprocess function)
+///
+void PredictingActiveLearnScenario::writeChunkLongTerm (LearningData::Chunk& chunk) {
+
+	arm->getArm()->getArm().lookupState(chunk.action.armState, context.getTimer().elapsed());
+	chunk.action.effectorPose = arm->getEffector()->getPose();
+	chunk.action.effectorPose.multiply (chunk.action.effectorPose, arm->getEffectorBounds().at(1)->getPose());
+	chunk.action.effectorPose.R.toEuler (chunk.action.efRoll, chunk.action.efPitch, chunk.action.efYaw);
+	chunk.action.horizontalAngle = arm->getHorizontalAngle ();
+	chunk.action.pushDuration = arm->getPushDuration();
+	chunk.action.endEffectorPose = end;
+	chunk.action.endEffectorPose.R.toEuler (chunk.action.endEfRoll, chunk.action.endEfPitch, chunk.action.endEfYaw);
+	if (learningData.currentPredictedPfSeq.size() > 0)
+		chunk.object.objectPose = learningData.currentPredictedPfSeq.back ();
+	else
+		chunk.object.objectPose = object->getPose();
+	chunk.object.objectPose.R.toEuler (chunk.object.obRoll, chunk.object.obPitch, chunk.object.obYaw);
+
+}
+
 void PredictingActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 	if (bStart) {
 		CriticalSectionWrapper csw(cs);
@@ -195,6 +222,9 @@ void PredictingActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		LearningData::Chunk chunk;
 		writeChunk (chunk);
 		learningData.currentChunkSeq.push_back (chunk);
+
+		if (longtermpred)
+			writeChunkLongTerm (chunk);
 
 		FeatureVector inputVector;
 		LearningData::load_cryssmexinput (inputVector, chunk, featureSelectionMethod, normalization, learningData.featLimits);
@@ -298,6 +328,7 @@ void PredictingActiveLearnScenario::updateAvgError ()
 			error += pow(normalization(predRoll,-REAL_PI, REAL_PI) - normalization(learningData.currentChunkSeq[i].object.obRoll, -REAL_PI, REAL_PI), 2);
 			error += pow(normalization(predPitch,-REAL_PI, REAL_PI) - normalization(learningData.currentChunkSeq[i].object.obPitch, -REAL_PI, REAL_PI), 2);
 			error += pow(normalization(predYaw,-REAL_PI, REAL_PI) - normalization(learningData.currentChunkSeq[i].object.obYaw,-REAL_PI, REAL_PI), 2);
+			error /= 6;
 			error = sqrt (error);
 			cout << "error: " << error << endl;
 			avgerror += error;
