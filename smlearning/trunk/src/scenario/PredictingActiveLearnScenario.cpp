@@ -23,6 +23,7 @@ PredictingActiveLearnScenario::~PredictingActiveLearnScenario() {
 }
 
 void PredictingActiveLearnScenario::init (boost::program_options::variables_map vm) {
+	// CriticalSectionWrapper csw (cs);
 	Scenario::init (vm);
 
 	// Set feature selection method
@@ -196,19 +197,11 @@ void PredictingActiveLearnScenario::render () {
 ///
 void PredictingActiveLearnScenario::writeChunkLongTerm (LearningData::Chunk& chunk) {
 
-	arm->getArm()->getArm().lookupState(chunk.action.armState, context.getTimer().elapsed());
-	chunk.action.effectorPose = arm->getEffector()->getPose();
-	chunk.action.effectorPose.multiply (chunk.action.effectorPose, arm->getEffectorBounds().at(1)->getPose());
-	chunk.action.effectorPose.R.toEuler (chunk.action.efRoll, chunk.action.efPitch, chunk.action.efYaw);
-	chunk.action.horizontalAngle = arm->getHorizontalAngle ();
-	chunk.action.pushDuration = arm->getPushDuration();
-	chunk.action.endEffectorPose = end;
-	chunk.action.endEffectorPose.R.toEuler (chunk.action.endEfRoll, chunk.action.endEfPitch, chunk.action.endEfYaw);
 	if (learningData.currentPredictedPfSeq.size() > 0)
+	{
 		chunk.object.objectPose = learningData.currentPredictedPfSeq.back ();
-	else
-		chunk.object.objectPose = object->getPose();
-	chunk.object.objectPose.R.toEuler (chunk.object.obRoll, chunk.object.obPitch, chunk.object.obYaw);
+		chunk.object.objectPose.R.toEuler (chunk.object.obRoll, chunk.object.obPitch, chunk.object.obYaw);
+	}
 
 }
 
