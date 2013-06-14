@@ -140,6 +140,19 @@ void Scenario::writeChunk (LearningData::Chunk& chunk) {
 
 }
 
+///
+///write data chunk (used in postprocess function for long term predictions)
+///
+void Scenario::writeChunkLongTerm (LearningData::Chunk& chunk) {
+
+	if (learningData.currentPredictedPfSeq.size() > 0)
+	{
+		chunk.object.objectPose = learningData.currentPredictedPfSeq.back ();
+		chunk.object.objectPose.R.toEuler (chunk.object.obRoll, chunk.object.obPitch, chunk.object.obYaw);
+	}
+
+}
+
 
 void Scenario::postprocess(SecTmReal elapsedTime) {
 	if (bStart) {

@@ -23,7 +23,7 @@ PredictingActiveLearnScenario::~PredictingActiveLearnScenario() {
 }
 
 void PredictingActiveLearnScenario::init (boost::program_options::variables_map vm) {
-	// CriticalSectionWrapper csw (cs);
+	CriticalSectionWrapper csw (cs);
 	Scenario::init (vm);
 
 	// Set feature selection method
@@ -190,19 +190,6 @@ void PredictingActiveLearnScenario::render () {
 	boundsRenderer.setWireColour (RGBA::RED);
 	boundsRenderer.renderWire (objectLocalBounds->begin(), objectLocalBounds->end());
 	
-}
-
-///
-///write data chunk (used in postprocess function)
-///
-void PredictingActiveLearnScenario::writeChunkLongTerm (LearningData::Chunk& chunk) {
-
-	if (learningData.currentPredictedPfSeq.size() > 0)
-	{
-		chunk.object.objectPose = learningData.currentPredictedPfSeq.back ();
-		chunk.object.objectPose.R.toEuler (chunk.object.obRoll, chunk.object.obPitch, chunk.object.obYaw);
-	}
-
 }
 
 void PredictingActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
