@@ -140,6 +140,8 @@ protected:
 	virtual void initMovement();
 	/** write data chunk (used in postprocess function) */
 	virtual void writeChunk (LearningData::Chunk& chunk);
+	/** rewrite data chunk (used in postprocess function for long term prediction) */
+	virtual void writeChunkLongTerm (LearningData::Chunk& chunk);
 	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
 	/** calculate final pose according to the given direction angle */

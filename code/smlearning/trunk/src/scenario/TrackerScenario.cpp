@@ -38,6 +38,7 @@ TrackerScenarioPredictionSingle::TrackerScenarioPredictionSingle (golem::Scene &
 {
 	normalization = normalize<float>;
 	denormalization = denormalize<float>;
+	longtermpred = false;
 }
 
 TrackerScenarioPredictionEnsemble::TrackerScenarioPredictionEnsemble (golem::Scene &scene) : TrackerScenarioPredictionSingle (scene)
@@ -92,7 +93,11 @@ void TrackerScenarioPredictionSingle::init (boost::program_options::variables_ma
 		assert (learningData.efVectorSize + learningData.pfVectorSize == cryssmex.getStateQuantizer()->dimensionality());
 	cryssmex.averageModelVectors ();
 
-	
+	if (vm.count("longtermpred"))
+	{
+		longtermpred = true;
+	}
+
 }
 
 void TrackerScenarioPredictionEnsemble::init (boost::program_options::variables_map vm)
@@ -137,6 +142,12 @@ void TrackerScenarioPredictionEnsemble::init (boost::program_options::variables_
 
 		}
 	}
+
+	if (vm.count("longtermpred"))
+	{
+		longtermpred = true;
+	}
+
 }
 
 bool TrackerScenario::create(const TrackerScenario::Desc& desc) {
@@ -238,6 +249,9 @@ void TrackerScenarioPredictionSingle::postprocess (golem::SecTmReal elapsedTime)
 			learningData.currentChunkSeq.push_back (chunk);
 		else
 			return;
+
+		if (longtermpred)
+			writeChunkLongTerm (chunk);
 		
 		FeatureVector inputVector;
 		LearningData::load_cryssmexinput (inputVector, chunk, featureSelectionMethod, normalization, learningData.featLimits);
@@ -275,6 +289,9 @@ void TrackerScenarioPredictionEnsemble::postprocess (golem::SecTmReal elapsedTim
 			learningData.currentChunkSeq.push_back (chunk);
 		else
 			return;
+
+		if (longtermpred)
+			writeChunkLongTerm (chunk);
 
 		FeatureVector inputVector;
 		LearningData::load_cryssmexinput (inputVector, chunk, featureSelectionMethod, normalization, learningData.featLimits);
@@ -779,7 +796,9 @@ int TrackerScenarioApp::main(int argc, char *argv[])
 			("featuresel,f", po::value<feature_selection>()->default_value (_mcobpose_obpose_direction), feature_selection_options ().c_str())
 			("ssmFile,s", po::value<string>(), "If -P == single, name of SSM file")
 			("cvqFile,c", po::value<string>(), "If -P == single, name of CVQ quantizer file")
-			("configFile,C", po::value<string>(), "name of the xml config file");
+			("configFile,C", po::value<string>(), "name of the xml config file")
+			("longtermpred,l", "long term prediction");
+
 		po::store(po::parse_command_line(argc, argv, prgOptDesc), vm);
 		po::notify(vm);
 		

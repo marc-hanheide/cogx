@@ -188,6 +188,8 @@ protected:
 	unsigned int featureSelectionMethod;
 	/** average error in prediction */
 	vector<double> avgerrors;
+	/** true if making long-term predictions */
+	bool longtermpred;
 
 
 };
