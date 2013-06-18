@@ -1,5 +1,5 @@
 GARNAME = mercury-compiler
-GARVERSION = 10.04.1
+GARVERSION = 10.04.2
 CATEGORIES = bootstrap
 MAINTAINER = fsiepman
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
