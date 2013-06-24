@@ -1,0 +1,24 @@
+Files:
+- polygoncode.py contains the main classes for computing data about task 1.
+- CDSRStimuliKey.xls explains the ids of the results
+- results.csv contains the pilot human trial results
+- stimuli contains images of each of the regions used in the experiment along with the .pdfs of the abstract views
+- polygondata is a directory that contains preprocessed data used by polycodecode.py
+- polygoncode contains a simple pyhton test function to ensure that things are working
+
+
+
+
+We would like to analyze the pilot data stored in (results.csv) for the following properties:
+- In task 1, we expect the region size to grow between the following regions:
+     -- E.g, <stimuli_type>,<stimuli-index> should be smaller than <stimuli_type>,<stimuli-index>
+     -- 2,2 should be smaller than 2,4
+     -- 2,3 should be smaller than 2,5
+     -- 1,2 should be smaller than 1,1
+     -- 3,1 should be smaller than 3,2
+ - In task 1, we have two trials that assess peoples simulation ability when considering these regions
+     -- the upper boundary of Region 3,2 should be higher than the upper boundry of 3,3
+     -- The regions should be the same for 3,3 ad 3,4
+
+
+

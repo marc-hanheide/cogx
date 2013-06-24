@@ -1,0 +1,7 @@
+We would like to analyze the pilot data stored in (results.csv) for the following properties:
+- In task 1, we expect the region size to grow between the following regions:
+     -- E.g, <stimuli_type>,<stimuli-index> should be smaller than <stimuli_type>,<stimuli-index>
+     -- 2,2 should be smaller than 2,4
+     -- 2,3 should be smaller than 2,5
+     -- 1,2 should be smaller than 1,1
+     -- 3,1 should be smaller than 3,2
