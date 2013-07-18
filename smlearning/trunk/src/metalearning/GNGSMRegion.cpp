@@ -158,6 +158,15 @@ bool GNGSMRegion::readData (string fileName) {
 
 	cryssmex.setInputQuantizer (fileName + "_inputq.qnt");
 	cryssmex.setOutputQuantizer (fileName + "_outputq.qnt");
+
+	string cvqfilename = fileName + "_cryssmex_cvq_final.cvq";
+	ifstream cvqfile (cvqfilename.c_str());
+	if (cvqfile)
+		cryssmex.setStateQuantizer (cvqfilename);
+	string ssmfilename = fileName + "_cryssmex_ssm_final.ssm";
+	ifstream ssmfile (ssmfilename.c_str());
+	if (ssmfile)
+		cryssmex.setSSM (ssmfilename);
 	
 	return true;
 }
