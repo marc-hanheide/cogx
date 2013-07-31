@@ -23,7 +23,8 @@ class KappaScoreAnalysis():
             self.subject_test_point_classification = dict()
             self.subject_test_point_yes = dict()
             self.between_subject_kappa = dict()
-            
+            self.user_paired_trial_polygons = dict() # {userid : { { test_id : polygon}, {test_id : polygon} ... } } 
+            self.withinSubject_paired_trial_kappa = dict() #{userid : { {test_id+test_id : kappa } ...} }
             
       def generateTestPoints(self):
             test_point_list = []
@@ -132,6 +133,7 @@ class KappaScoreAnalysis():
                               #print str(curr_id) + " " + str(Pa) + " " + str(Pe)
                               coh_kappa = (Pa-Pe)/(1-Pe)
                               curr_subj_dict[comparision_id] = coh_kappa
+                
                         else:
                               curr_subj_dict[curr_id] = 1.0 #every subject will have a kappa of 1 with themselves
                   #compute the average cohens kapps for the current user
@@ -150,7 +152,78 @@ class KappaScoreAnalysis():
                   for (subject,kappa_score) in sorted(self.between_subject_kappa[subj_id].items()):
                         row.append(str(round(kappa_score,4)))
                   print "".join([cell_val.ljust(COLUMN_WIDTH) for cell_val in row])
-                       
+
+      #e.g. testid_1 = 2_4 and testid_2 = 2_5
+      def getDataByUserAndPairedTrial(self, testid_1, testid_2):
+          #open the file and read it line by line into an array
+          try:
+              fh = open(self.resultsfilepath, 'rU')
+              lines = [line.strip() for line in fh]
+              fh.close()
+          except IOError as e:
+              print "I/O Error({0}): {1}".format(e.errno,e.strerror)
+
+          for id in self.subject_ids:
+              self.user_paired_trial_polygons[id] = dict()
+
+          for i in range(0, len(lines)):
+              lines[i] = lines[i].split(',')
+              #check if it is the stimulus type we are interested in
+              #by checking the testid
+              if (lines[i][3] == testid_1):
+                    self.user_paired_trial_polygons[lines[i][0]][testid_1] = self.convertResultsStringToPolygon(lines[i][7])
+              elif (lines[i][3] == testid_2):
+                    self.user_paired_trial_polygons[lines[i][0]][testid_2] = self.convertResultsStringToPolygon(lines[i][7])
+    
+      #we assume that testid_2 is the id of the trail that we want to flip the polygon 
+      #from right to left for
+      def calculateWithinSubjectPairedTrialKappa(self, testid_1, testid_2):
+            for i in range(0,len(self.subject_ids)):
+                  curr_id = self.subject_ids[i]
+                  self.withinSubject_paired_trial_kappa[curr_id]=dict()
+                  num_test_points = len(self.test_points)
+                  classification_list_testid_1 = [0] * num_test_points
+                  classification_list_testid_2 = [0] * num_test_points
+                  testid_1_polygon = self.user_paired_trial_polygons[curr_id][testid_1]
+                  #note we flip testid_2 polgon when we retrieve it
+                  testid_2_polygon = self.mirrorPolygonOnHorizontal(self.user_paired_trial_polygons[curr_id][testid_2])
+                  for j in range(0,num_test_points):
+                        if testid_1_polygon.isInside(self.test_points[j][0],self.test_points[j][1]):
+                              classification_list_testid_1[j] = 1
+                        if testid_2_polygon.isInside(self.test_points[j][0],self.test_points[j][1]):
+                              classification_list_testid_2[j] = 1
+                  agree = 0 #count how often they both agreed (both 0 or both 1)
+                  testid_1_yes = sum(classification_list_testid_1)
+                  testid_2_yes = sum(classification_list_testid_2)
+                  for k in range(0,len(self.test_points)):
+                      if classification_list_testid_1[k] == classification_list_testid_2[k]:
+                          agree += 1
+                  Pa = float(agree)/float(len(self.test_points))
+                  PTest_id1_Yes = (testid_1_yes/float(len(self.test_points)))
+                  PTest_id2_Yes = (testid_2_yes/float(len(self.test_points)))
+                  PYes = PTest_id1_Yes * PTest_id2_Yes
+                  PNo = (1-PTest_id1_Yes) * (1-PTest_id2_Yes)
+                  Pe = PYes + PNo
+                  coh_kappa = (Pa-Pe)/(1-Pe)
+                  thekey= str(testid_1) + "+" + str(testid_2)
+                  self.withinSubject_paired_trial_kappa[curr_id][thekey] = coh_kappa
+               
+      #assume you want to mirror a polygon on the right side of an image to the left side of the image
+      def mirrorPolygonOnHorizontal(self, poly, width=500):
+            flipPoint = width/2
+            poly.flip(flipPoint)
+            f = poly
+            return f
+    
+      def outputWithinSubjectPairedTrialKappas(self):
+            for id in self.subject_ids:
+                  for k in self.withinSubject_paired_trial_kappa[id].keys():
+                        print id + " " + k + " " + str(self.withinSubject_paired_trial_kappa[id][k])
+
+
+    
+
+
 
 ##      def outputAreas(self):
 ##            for k in self.test_polygons.keys():
@@ -167,11 +240,15 @@ class KappaScoreAnalysis():
 if __name__ == '__main__':
       Test = KappaScoreAnalysis("2","2_5",5,500,375,'./simulated_polygon_data.csv')
       Test.getData()
-      print "got data!"
       Test.writePolygonsToSVG()
-      print "svg created"
       Test.classifyTestPoints()
-      print "test points classified"
+      print "Output the between subject kappa score for testid 2_5"
       Test.calculateBetweenSubjectKappa()
       Test.outputBetweenSubjectKappa()
-      print "finished"
+      print "Output the within subject kappa score for the paired testids 2_4 and 2_5"
+      Test.getDataByUserAndPairedTrial("2_4","2_5")
+      Test.calculateWithinSubjectPairedTrialKappa("2_4","2_5")
+      Test.outputWithinSubjectPairedTrialKappas()
+
+      #p = Polygon(((455,370), (475,372), (473, 50), (453,52)))
+      #Test.mirrorPolygonOnHorizontal(p)
