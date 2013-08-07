@@ -39,11 +39,14 @@ Abstract goes here
  
 \section{Context-Dependent Spatial Regions - KLENK}
 
-\begin{itemize}
-	\item Explanation of the basic idea.
-	\item The desiderata of the model - context, extent, generalises to unseen examples
+\subsection{Explanation of the basic idea}
 
-\end{itemize}
+\subsubsection{Model Desiderata} % (fold)
+\label{sec:desiderata}
+
+The desiderata of the model - context, extent, generalises to unseen examples
+
+% subsubsection subsubsection_name (end)
 
 
 
@@ -56,8 +59,15 @@ Research Questions:
  
 
 \section{Modeling - Nick}
-If we want to capture this data in a generative model, what is our hypothesis space. 
-Related work? 
+
+
+As the results above show, in order for an artificial cognitive system to operate successfully with humans (e.g. understanding spatially-situated task utterances), they must have access to internal models which can represent CDSRs and recognise them in new environments. Whilst spatial reasoning has been an active topic in AI and robotics for decades, CDSRs present a new problem which requires solutions beyond the current state-of-the-art. Regions are central to QSR work~\cite{Cohn:2001}. Regions can either have crisp boundaries, usually defined by geometric shapes (e.g. the bounding boxes of visually tracked objects~\cite{SridharCohn:10}), or vague boundaries created qualitatively by multiple crisp regions (e.g. the `egg-yolk model'~\cite{Cohn96b}), or by thresholding an underlying spatially-mapped function (e.g. those created by potential fields~\cite{brenneretal07ijcai} or by Gaussian kernels~\cite{burbridge-dearden12}). The fundamental decision when creating a computational model of a CDSR is the method used to represent its boundary. Given their context-dependent nature, boundary definitions based purely on single geometric shapes seem unlikely to work. However, arbitrary boundaries can be defined using a sequence of geometric primitives (usually straight lines), as in chain code for image region representations~\cite{Freeman:1961}. This is an approach we followed in previous work, where boundary segments connected vertices defined by contextually-appropriate anchor points~\cite{Hawes:2012}.  Whilst our previous approach provided basic performance, the crisp boundaries it generated caused mismatches with human data over the extent of regions. Methods based on underlying spatial functions may be more flexible in this regard, as they can be selectively thresholded depending on context. 
+
+% Basic approaches
+
+\textbf{TODO:} Perhaps add related work on robot spatial representations, e.g. maps, rooms.  
+
+In the following sections we explore whether two possible CDSR models (one based on boundary segments, one based on a spatial function) are able to satisfy the previously described desiderata for a cognitive systems approach to representing and recognising CDSRs. The surrounding discussion is intended to explore the strengths and weaknesses of these models, providing directions for future research.
 
 \subsection{Symbolic Boundary Method - KLENK}
 
@@ -68,7 +78,7 @@ Discussion
 
 \subsection{Kernel Methods - NICK}
 
-Overview - either Chris’s approach or something similar
+Overview - either Chris's approach or something similar
 Example
 Results?
 Discussion 
