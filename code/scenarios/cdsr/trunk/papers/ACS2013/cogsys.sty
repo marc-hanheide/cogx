@@ -1,0 +1,370 @@
+%
+% File: cogsys.sty
+%       Latex style file for Advances in Cognitive Systems. 
+%	The name of this file should follow the article document
+%	type, e.g. \documentclass[cogsys]{article}
+%       Copied and edited from similar files for the Journal of 
+%       Artificial Intelligence Research and, before that, from 
+%       Machine Learning.
+% Original Author:  Jeff Schlimmer
+% Edited by: Pat Langley, Kevin Thompson, Martha Del Alto, Helen Stewart, 
+%            Steve Minton and Pandu Nayak.
+% Last edited: August 26, 2012 by Pat Langley
+
+\typeout{Document Style `cogsys' -- December 2011.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                             P A G E   S I Z E
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+% Change the overall width of the page.  If these parameters are
+%	changed, they will require corresponding changes in the
+%	maketitle section.
+
+\renewcommand{\topfraction}{0.95}   % let figure take up nearly whole page
+\renewcommand{\textfraction}{0.05}  % let figure take up nearly whole page
+
+% Specify the dimensions of each page
+
+\oddsidemargin 0.265in    %   Note \oddsidemargin = \evensidemargin
+\evensidemargin 0.265in
+\marginparwidth 0.07 true in
+%\marginparwidth 0.75 true in
+%\topmargin 0 true pt           % Nominal distance from top of page to top of
+%\topmargin 0.125in
+\topmargin -0.25in
+\addtolength{\headsep}{0.25in}
+\textheight 8.0 true in       % Height of text (including footnotes & figures)
+\textwidth 6.0 true in        % Width of text line.
+\widowpenalty=10000
+\clubpenalty=10000
+\@twosidetrue \@mparswitchtrue \def\ds@draft{\overfullrule 5pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                            TITLE AND AUTHORS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+% Commands for formatting paper title, author names, and addresses. 
+\long\def\title#1{{\center\baselineskip 18pt
+                       \toptitlebar{\Large\bf #1}\bottomtitlebar}}
+\def\toptitlebar{\hrule height1pt \vskip .25in} 
+\def\bottomtitlebar{\vskip .22in \hrule height1pt \vskip .3in} 
+\def\author#1#2{\par\noindent {\bf #1} \hfill {\sc #2}}
+\long\def\address#1{\par\vskip 0.03in\noindent #1 \vskip 0.10in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                               S E C T I O N S
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Definitions for nicer (?) sections, etc., ideas from Pat Langley.
+% Numbering for sections, etc. is taken care of automatically.
+
+\def\@startsiction#1#2#3#4#5#6{\if@noskipsec \leavevmode \fi
+   \par \@tempskipa #4\relax
+   \@afterindenttrue
+   \ifdim \@tempskipa <\z@ \@tempskipa -\@tempskipa \@afterindentfalse\fi
+   \if@nobreak \everypar{}\else
+     \addpenalty{\@secpenalty}\addvspace{\@tempskipa}\fi \@ifstar
+     {\@ssect{#3}{#4}{#5}{#6}}{\@dblarg{\@sict{#1}{#2}{#3}{#4}{#5}{#6}}}}
+
+\def\@sict#1#2#3#4#5#6[#7]#8{\ifnum #2>\c@secnumdepth
+     \def\@svsec{}\else
+     \refstepcounter{#1}\edef\@svsec{\csname the#1\endcsname}\fi
+     \@tempskipa #5\relax
+      \ifdim \@tempskipa>\z@
+        \begingroup #6\relax
+          \@hangfrom{\hskip #3\relax\@svsec.\hskip 0.1em}
+                    {\interlinepenalty \@M #8\par}
+        \endgroup
+       \csname #1mark\endcsname{#7}\addcontentsline
+         {toc}{#1}{\ifnum #2>\c@secnumdepth \else
+                      \protect\numberline{\csname the#1\endcsname}\fi
+                    #7}\else
+        \def\@svsechd{#6\hskip #3\@svsec #8\csname #1mark\endcsname
+                      {#7}\addcontentsline
+                           {toc}{#1}{\ifnum #2>\c@secnumdepth \else
+                             \protect\numberline{\csname the#1\endcsname}\fi
+                       #7}}\fi
+     \@xsect{#5}}
+
+\def\@sect#1#2#3#4#5#6[#7]#8{\ifnum #2>\c@secnumdepth
+     \def\@svsec{}\else 
+     \refstepcounter{#1}\edef\@svsec{\csname the#1\endcsname\hskip 0.5em }\fi
+     \@tempskipa #5\relax
+      \ifdim \@tempskipa>\z@ 
+        \begingroup #6\relax
+          \@hangfrom{\hskip #3\relax\@svsec}{\interlinepenalty \@M #8\par}
+        \endgroup
+       \csname #1mark\endcsname{#7}\addcontentsline
+         {toc}{#1}{\ifnum #2>\c@secnumdepth \else
+                      \protect\numberline{\csname the#1\endcsname}\fi
+                    #7}\else
+        \def\@svsechd{#6\hskip #3\@svsec #8\csname #1mark\endcsname
+                      {#7}\addcontentsline
+                           {toc}{#1}{\ifnum #2>\c@secnumdepth \else
+                             \protect\numberline{\csname the#1\endcsname}\fi
+                       #7}}\fi
+     \@xsect{#5}}
+
+\def\thesection {\arabic{section}}
+\def\thesubsection {\thesection.\arabic{subsection}}
+\def\section{\@startsiction{section}{1}{\z@}{-0.24in}{0.10in}
+             {\large\bf\raggedright}}
+\def\subsection{\@startsection{subsection}{2}{\z@}{-0.20in}{0.08in}
+                {\normalsize\bf\raggedright}}
+\def\subsubsection{\@startsection{subsubsection}{3}{\z@}{-0.18in}{0.08in}
+		{\normalsize\it\raggedright}}
+\def\paragraph{\@startsiction{paragraph}{4}{\z@}{1.5ex plus
+  0.5ex minus .2ex}{-1em}{\normalsize\bf}}
+\def\subparagraph{\@startsiction{subparagraph}{5}{\z@}{1.5ex plus
+  0.5ex minus .2ex}{-1em}{\normalsize\bf}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                              F O O T N O T E S
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Change the size of the footnote rule
+
+% \renewcommand{\footnoterule}{\vspace{10pt}\hrule width 0mm}
+\renewcommand{\footnoterule}{\vspace{-2pt}\hrule width 2.0in\vskip 5pt}
+
+\long\def\@makefntext#1{\@setpar{\@@par\@tempdima \hsize 
+             \advance\@tempdima-15pt\parshape \@ne 15pt \@tempdima}\par
+             \parindent 2em\noindent \hbox to \z@{\hss{\@thefnmark}. \hfil}#1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                               A B S T R A C T
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Replaced \noindent with \setlength{\parindent}{0cm} so that the abstract never has leading space - BM 20/11/2012
+
+%% use \begin{abstract} .. \end{abstract} for abstracts.
+\renewenvironment{abstract}%
+    {\centerline{\large\bf Abstract}\vspace{0.7ex}\setlength{\parindent}{0cm}%
+      \bgroup\leftskip 20pt \rightskip 20pt\small}%
+    {\par\egroup\vskip 0.25ex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                        FIRST PAGE, TITLE, AUTHOR
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Author information can be set in various styles:
+% For several authors from the same institution:
+% \author{Author 1 \and ... \and Author n \\
+%         \addr{Address line} \\ ... \\ \addr{Address line}}
+% if the names do not fit well on one line use
+%         Author 1 \\ {\bf Author 2} \\ ... \\ {\bf Author n} \\
+% To start a seperate ``row'' of authors use \AND, as in
+% \author{Author 1 \\ \addr{Address line} \\  ... \\ \addr{Address line}
+%         \AND
+%         Author 2 \\ \addr{Address line} \\ ... \\ \addr{Address line} \And
+%         Author 3 \\ \addr{Address line} \\ ... \\ \addr{Address line}}
+
+% Title stuff, borrowed in part from aaai92.sty
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                        H E A D S   A N D   F O O T S
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 
+%% \def\@oddfoot{}
+%% \def\@evenfoot{}
+%% 
+%% \def\evenfoot#1{\def\@evenfoot{{\small \thepage} \hfil
+%%                                   {\small\sc #1}}}
+%% \def\oddfoot#1{\def\@oddfoot{{\small\sc #1} \hfil 
+%%                                         {\small \thepage}}}
+%% \def\firstfoot#1#2{%
+%% \def\@oddfoot{\scriptsize\vbox{\leftline{#1}\leftline{#2}}}}
+%% 
+%% 
+%% %% Usage: \cogsysfoot{}{published}{published}, e.g.
+%% %%        \cogsysfoot{}{Submitted 8/93;}{published 9/93}
+%% 
+%% \def\cogsysfoot{\firstfoot{%
+%%      \copyright 1993 AI Access Foundation. All rights reserved.}{}}
+%% 
+%% \def\nofoot{\def\@oddfoot{}}
+%% 
+%% \def\firstheading#1#2{%
+%%     \def\@oddhead{\scriptsize\vbox{\leftline{#1}\leftline{#2}}}
+%% }
+%% \def\evenheading#1{\def\@evenhead{{\small \thepage} \hfil
+%%                                   {\small\sc #1}}}
+%% \def\oddheading#1{\def\@oddhead{{\small\sc #1}} \hfil 
+%%                                         {\small \thepage}}}
+%% 
+%% %% Usage: \cogsysheading{Volume}{year}{page-page}, e.g.
+%% %%        \cogsysheading{1}{1993}{1--15}
+%% %\addtolength{\headsep}{0.125in}
+%% \def\cogsysheading#1#2#3#4#5{\firstheading{%
+%%      Journal of Artificial Intelligence Research #1 (#2) #3 \hfil Submitted #4 published #5}{}}
+%%      
+%% 
+%% \def\ShortTitle#1{\oddheading{#1}}
+%% \def\ShortAuthor#1{\evenheading{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%
+%%% Pagestyle
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Defines the pagestyle cogsystps, the pagestyle of the first page
+
+%% \def\ps@cogsystps{\let\@mkboth\@gobbletwo\def\@oddhead{\scriptsize Journal ofArtificial Intelligence Research 1 (1993) 1-15 \hfill Submitted 8/93 Published 9/93}%
+%% \def\@oddfoot{\scriptsize \copyright 1993 AI Access Foundation.  All rights reserved \hfill}\def\@evenhead{}\def\@evenfoot{}}
+%% 
+%% %% Defines the pagestyle cogsysps, the pagestyle of the remaining pages
+%% 
+%% \def\ps@cogsysps{\let\@mkboth\@gobbletwo\def\@oddhead{{\small\sc Minimizing Conflicts} \hfill {\small \thepage}}%
+%% \def\@oddfoot{}%
+%% \def\@evenhead{{\small \thepage} \hfill {\small Minton et al.}}%
+%% \def\@evenfoot{}}
+
+%% Defines the pagestyle for the title page.
+%% Usage: \cogsysheading{1}{1993}{1-15}{8/93;}{9/93}
+%%	  \cogsysheading{vol}{year}{pages}{Submitted}{published}
+
+\def\cogsysheading#1#2#3#4#5{\def\ps@cogsystps{\let\@mkboth\@gobbletwo%
+\def\@oddhead{\scriptsize Advances in Cognitive Systems #1 (#2) #3 \hfill Submitted #4; published #5}%
+\def\@oddfoot{\scriptsize \copyright~#2 Cognitive Systems Foundation. All rights reserved. \hfill}%
+\def\@evenhead{}\def\@evenfoot{}}%
+\thispagestyle{cogsystps}}
+
+%% Defines the pagestyle for the title page, for poster submissions. - BM 20/11/2012
+%% Usage: \cogsysposterheading{First}{2012}{1-18}
+%%	  \cogsysposterheading{which}{year}{pages}
+
+\def\cogsysposterheading#1#2#3{\def\ps@cogsystps{\let\@mkboth\@gobbletwo%
+\def\@oddhead{\scriptsize #1 Annual Conference on Advances in Cognitive Systems \hfill Poster Collection (#2) #3}%
+\def\@oddfoot{\scriptsize \copyright~#2 Cognitive Systems Foundation. All rights reserved. \hfill}%
+\def\@evenhead{}\def\@evenfoot{}}%
+\thispagestyle{cogsystps}}
+
+%% Defines the pagestyle for the rest of the pages
+%% Usage: \ShortHeadings{Minimizing Conflicts}{Minton et al}
+%%	  \ShortHeadings{short title}{short authors}
+
+\def\firstpageno#1{\setcounter{page}{#1}}
+
+%\def\pageno#1{\global\advance\count0 by #1}
+
+\def\ShortHeadings#1#2{\def\ps@cogsysps{\let\@mkboth\@gobbletwo%
+\def\@oddhead{\hfill {\small\sc #1} \hfill}%
+\def\@oddfoot{\hfill \small\rm \thepage \hfill}%
+\def\@evenhead{\hfill {\small\sc #2} \hfill}%
+\def\@evenfoot{\hfill \small\rm \thepage \hfill}}%
+\pagestyle{cogsysps}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                               MISCELLANY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Define macros for figure captions and table titles
+
+% Figurecaption prints the caption title flush left.
+% \def\figurecaption#1#2{\noindent\hangindent 42pt
+%                        \hbox to 36pt {\sl #1 \hfil}
+%                        \ignorespaces #2}
+% \def\figurecaption#1#2{\noindent\hangindent 46pt
+%                        \hbox to 41pt {\small\sl #1 \hfil}
+%                        \ignorespaces {\small #2}}
+\def\figurecaption#1#2{\noindent\hangindent 40pt
+                       \hbox to 36pt {\small\sl #1 \hfil}
+                       \ignorespaces {\small #2}}
+% Figurecenter prints the caption title centered.
+\def\figurecenter#1#2{\centerline{{\small\sl {\sl #1} #2}}}
+\def\figurecenter#1#2{\centerline{{\small\sl #1} {\small #2}}}
+
+%  Allow ``hanging indents'' in long captions
+
+% \long\def\@makecaption#1#2{
+%    \vskip 10pt 
+%    \setbox\@tempboxa\hbox{#1: #2}
+%    \ifdim \wd\@tempboxa >\hsize               % IF longer than one line:
+%        \begin{list}{#1:}{
+%        \settowidth{\labelwidth}{#1:}
+%        \setlength{\leftmargin}{\labelwidth}
+%        \addtolength{\leftmargin}{\labelsep}
+%         }\item #2 \end{list}\par   % Output in quote mode
+%      \else                                    %   ELSE  center.
+%        \hbox to\hsize{\hfil\box\@tempboxa\hfil}  
+%    \fi}
+
+\newsavebox\diffcaptionbox\newdimen\captionboxwid
+
+\long\def\@makecaption#1#2{
+% \vskip 10pt 
+ \vskip 0.2in
+	\baselineskip 11pt
+	\setbox\@tempboxa\hbox{#1. #2}
+	\ifdim \wd\@tempboxa >6.8in
+        \sbox{\diffcaptionbox}{\small\sl #1.~}
+        \captionboxwid=\wd\diffcaptionbox
+        \usebox\diffcaptionbox {\small #2}
+	\else 
+          \centerline{{\small\sl #1.} {\small #2}} 
+	\fi}
+
+% Various personal itemization commands. 
+\def\citem#1{\par\noindent\hangindent 0.25in
+               \hbox to 0.25in {\hss #1 ~}\ignorespaces}
+\def\ccitem#1{\par\noindent\hangindent 0.5in
+                \hbox to 0.5in {\hss #1 ~}\ignorespaces}
+\def\cbullet{\citem{$\bullet$}}
+\def\ccbullet{\ccitem{$\circ$}}
+
+% Define strut macros for skipping spaces above and below text in a
+% tabular environment.
+
+\def\abovestrut#1{\rule[0in]{0in}{#1}\ignorespaces}
+\def\belowstrut#1{\rule[-#1]{0in}{#1}\ignorespaces}
+
+\def\tabtopline{\hline\belowstrut{0.10in}\abovestrut{0.17in}}
+\def\tabcolline{\hline\abovestrut{0.17in}}
+\def\tabbotline{\belowstrut{0.10in}}
+\def\tableline{
+\vskip .1in
+\hrule height.6pt
+\vskip .1in}
+\def\abovespace{\abovestrut{0.20in}}
+\def\aroundspace{\abovestrut{0.20in}\belowstrut{0.10in}}
+\def\belowspace{\belowstrut{0.10in}}
+
+\def\aboveline{\hline\abovestrut{0.20in}}
+\def\betweenline{\belowstrut{0.10in} \\ \hline\abovestrut{0.20in}}
+\def\belowline{\belowstrut{0.10in} \\ \hline}
+
+\renewcommand{\topfraction}{0.99}   % let figure take up nearly whole page
+\renewcommand{\textfraction}{0.01}  % let figure take up nearly whole page
+
+% Acknowledgements
+
+% \long\def\acks{\vskip 0.3in\noindent{\large\bf Acknowledgements}
+%                \vskip 0.15in\noindent #1}
+
+\newenvironment{acknowledgements}%
+    {\vskip 0.20in\noindent{\large\bf Acknowledgements}
+     \vskip 0.10in\noindent%
+      \bgroup\leftskip 0pt \rightskip 0pt}%
+    {\par\egroup\vskip 0.25ex}
+
+% Research Note
+\long\def\researchnote#1{\noindent {\LARGE\it Research Note} #1}
+
+% Technical Addendum
+\long\def\technicaladdendum#1{\noindent {\LARGE\it Technical Addendum} #1}
+
+\renewcommand{\appendix}{\par
+  \setcounter{section}{0}
+  \setcounter{subsection}{0}
+  \def\thesection{\Alph{section}}
+\def\section{\@ifnextchar*{\@startsiction{section}{1}{\z@}{-0.24in}{0.10in}%
+             {\large\bf\raggedright}}%
+{\@startsiction{section}{1}{\z@}{-0.24in}{0.10in}
+             {\large\bf\raggedright Appendix\ }}}}
+
+% To comment out multiple lines of text.
+\long\def\comment#1{}
