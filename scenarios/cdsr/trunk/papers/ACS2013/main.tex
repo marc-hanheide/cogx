@@ -35,372 +35,54 @@
 Abstract goes here
 \end{abstract}
 
-\section{Introductions} 
+\section{Introduction - KLENK} 
  
-All submissions should follow the same format to ensure that the 
-printers can reproduce them without problems and to let readers 
-more easily find the information that they desire.
+\section{Context-Dependent Spatial Regions - KLENK}
 
-\subsection{Paper Dimensions}
+\begin{itemize}
+	\item Explanation of the basic idea.
+	\item The desiderata of the model - context, extent, generalises to unseen examples
 
-The text of the paper should be formatted in one column, with an
-overall width of 6.0~inches (15.24~cm) and length of 8.0~inches 
-(20.32~cm). The left margin should be 1.25~inches (3.175~cm) and the 
-top margin 1.5~inches (3.81~cm). The right and bottom margins will
-depend on whether you print on US letter or A4 paper.
+\end{itemize}
 
-The paper body should be set in 11~point type with a vertical spacing 
-of 12~points. Please use Times Roman typeface throughout the text. 
 
-\subsection{Title and Author Information}
 
-The paper title should be set in 14~point bold type and centered
-between two horizontal rules that are 1~point thick, with 1.5~inches
-between the top rule and the top edge of the page. Capitalize the
-first letter of each content word and put the rest of the title in 
-lower case.
-
-Author information should start 0.3~inches (0.762~cm) below the bottom
-rule surrounding the title. The authors' names should appear in
-11~point bold type, electronic mail addresses in 11~point small
-capitals, and physical addresses in ordinary 11~point type.
-
-Each author's name should be flush left, whereas the email address
-should be flush right on the same line. The author's physical address
-should appear flush left on the ensuing line, on a single line if
-possible. If successive authors have the same affiliation and address, 
-then give this information only once for them. 
-
-\subsection{Partitioning the Text} 
-
-You should organize your paper into sections and paragraphs to help 
-readers place a structure on the material and understand its 
-contributions. 
-
-% Use \vspace for fine control of spacing above and below headings. 
-\vspace{-0.018in}
-\subsubsection{Sections and Subsections}
-\vspace{-0.015in}
-
-Section headings should be numbered, flush left, and set in 12~point 
-bold type with the content words capitalized. Leave about 0.25~inches
-(0.635~cm) of space before the heading and approximately 0.15~inches 
-(0.33~cm) after the heading.
-
-Similarly, subsection headings should be numbered, flush left, and 
-set in 11~point bold type with the content words capitalized. Leave
-approximately 0.2~inches (0.51~cm) of space before the heading and 
-0.13~inches (0.33~cm) afterward.
-
-Finally, subsubsection headings should be numbered, flush left, and
-set in 11~point italics with the content words beginning with capitals. 
-Leave about 0.18~inches (0.457~cm) of space before the heading and
-about 0.1~inches (0.254~cm) after the heading. Please use no more 
-than three levels of headings in a paper.
-
-\subsubsection{Paragraphs, Quotations, and Footnotes}
-
-Within each section or subsection, you should further partition 
-the paper into paragraphs. You should not indent the first line 
-of a section or subsection's initial paragraph, but you should
-indent successive paragraphs by 0.25 inches (0.635~cm). There 
-should be no extra spacing between paragraphs within a section. 
+\section{Human Studies - John}
+Research Questions: 
+\begin{enumerate}
+	\item Does context matter?
+	\item Do people agree? 
+\end{enumerate}
  
-You may want to quote an excerpt of relevant text that appears in 
-the published work of some other authors: 
 
-\begin{quote}
-Such a quotation should begin 0.25 inches (0.635 cm) below the preceding 
-line of regular text and end 0.25 inches (0.635 cm) before it begins
-again. The left and right margins should be 0.35 inches (0.889 cm) larger 
-than for the regular text, but the quoted text should have the same
-font as regular text, with a vertical spacing of 12~points.
-\end{quote}
+\section{Modeling - Nick}
+If we want to capture this data in a generative model, what is our hypothesis space. 
+Related work? 
 
-\noindent
-You should remember to cite the source of the quotation, and you should 
-close off each quotation with some regular text, which should not be
-indented.
+\subsection{Symbolic Boundary Method - KLENK}
 
-You can use footnotes\footnote{For the sake of readability, footnotes
-should be complete sentences.} to provide readers with additional
-information about a topic without interrupting the flow of the paper.
-Indicate footnotes with a number in the text where the point is most
-relevant. Place the footnote in 10~point type at the bottom of the
-page on which it appears. Precede the first footnote on a page 
-with a horizontal rule of 2.0~inches (5.08~cm) to separate it from 
-the main text.\footnote{Multiple footnotes can appear on each page, 
-in the same order as they appear in the text, but spread them across
-pages if possible.}
+Overview
+Example
+Results?
+Discussion
 
-\subsubsection{Itemized and Enumerated Lists}
+\subsection{Kernel Methods - NICK}
 
-When you have a number of related but distinct points, you may want
-to organize them in an itemized list that: 
+Overview - either Chris’s approach or something similar
+Example
+Results?
+Discussion 
+Where do the points come from
 
-\vskip 0.05in
-
-\cbullet 
-begins 0.15 inches (0.381 cm) below the preceding line of regular text 
-and ends 0.15 inches (0.381 cm) before the regular text begins; 
-
-\cbullet 
-uses a left margin for each item that is 0.25 inches (0.635 cm) to the 
-right of the left margin for regular text; 
-
-\cbullet 
-includes a bullet at the beginning of the first line of each item,
-separated from the item's text by 0.075 inches (0.19 cm); and
-
-\cbullet 
-uses a vertical spacing of 12~points for lines within each item 
-and separates successive items by the same amount. 
-
-\vskip 0.05in
-\noindent
-In general, you should close off each itemized list with some sentences 
-of regular text, which should not be indented. In some cases, you may
-instead want to use an enumerated list that replaces bullets with numbers. 
-
-\begin{figure}[t]
-\vskip 0.05in
-\begin{center}
-% \setlength{\epsfxsize}{3.5in}
-% \centerline{\epsfbox{cascade.eps}}
-\includegraphics[width=3.5in]{cascade.png}
-% \vskip 0.1in
-\caption{Modules in the {\sc Icarus} cognitive architecture and their
-         cascaded organization.} 
-\label{sample-figure}
-\end{center}
-\vskip -0.2in
-\end{figure} 
-
-\subsection{Figures}
- 
-You may want to include figures in the paper to help readers visualize
-your approach and your results. Such artwork should be centered,
-legible, and separated from the text. Lines should be dark and at
-least 0.5~points thick for clear display and printing, and the text 
-should not appear on a dark background.
-
-% Use \newpage to insert a page break between paragraphs. 
-
-% \newpage
-
-Label all distinct components of each figure. If the figure takes
-the form of a graph, then give a name for each axis and include a 
-legend that briefly describes each curve. However, do {\it not\/} 
-include a title above the figure, as the caption already serves
-this function. 
-
-Number figures sequentially, placing the figure number and caption
-{\it after\/} the graphics, with at least 0.2~inches (0.508~cm) of 
-space before the caption and 0.3~inches (0.762~cm) after it, as in
-Figure~\ref{sample-figure}. The figure caption should be set in
-10~point type and centered unless it runs two or more lines, in which
-case it should be flush left. You may float a figure to the top or
-bottom of a page, but ideally it should appear on the page that
-first mentions it or on the page immediately afterward. 
- 
-\subsection{Tables} 
- 
-You may also want to include tables that summarize material. Like 
-figures, these should be centered, legible, and numbered consecutively. 
-However, place the title {\it above\/} the table with at least 
-0.1~inches (0.254~cm) of space before the title and the same after 
-it, as in Table~\ref{sample-table}. The table title should be set in
-11~point type and centered unless it runs two or more lines, in which
-case it should be flush left.
-
-Tables contain textual material that can be typeset, as contrasted 
-with figures, which contain graphical material that must be drawn. 
-Specify the contents of each column in the table's topmost row. Again,
-you may float a table to the top or bottom of a page, but attempt to 
-place each table on the page that first mentions it or on the one
-immediately afterward. 
-
-% Note use of \abovespace and \belowspace to get reasonable spacing 
-% above and below tabular lines. 
-
-\def\w{$\oplus$}
-\def\b{$\ominus$}
-\def\h{$\odot$}
-
-\begin{table}[t]
-\vskip -0.15in
-\caption{Adequacy of four models of learning in problem solving in 
-         terms of whether they account (\w), fail to account (\b), 
-         or partially account (\h) for phenomena from \cite{in-book-vanlehn}
-         [{\tt *}] and Jones (1989) [$\diamond$].}
-\label{sample-table}
-\begin{small}
-\begin{center}
-% \vskip -0.10in
-\begin{tabular}{lcccc}
-\hline
-\abovespace\belowspace
-                       & ~~~ACT-R~~~ & ~~~Soar~~~ & {\sc ~~Eureka~~} & {\sc Daedalus} \\
-\hline\abovespace
-Means-ends analysis$^{\diamond}$  &   \h  &     \w    &      \w   &      \w \\
-\hbox{Nonsystematicity$^{\diamond}$\hskip -0.2in} &   \b  &     \b    &      \w   &      \b \\
-Problem isomorphs$^*$   &   \h  &     \h    &      \h   &      \h \\
-Reduced search$^*$ &   \w  &     \w    &      \w   &      \w \\
-Asymmetrical transfer$^*$    &   \w  &     \w    &      \w   &      \w \\
-Einstellung effects$^*$    &   \w  &     \w    &      \w   &      \w \\
-% Strategy differences   &   \h  &     \h    &      \h   &      \h \\
-Reduced verbalization$^*$  &   \w  &     \w    &      \b   &      \b \\
-Reduced solution time$^*$   &   \w  &     \w    &      \b   &      \b \\
-% Self-monitoring        &   \h  &     \h    &      \b   &      \b \\
-Rare analogies$^*$   &   \b  &     \b    &      \h   &      \h \\
-\belowspace
-% \belowstrut{0.10in}
-Superficial analogies$^*$ &   \b  &     \b    &      \w   &      \w \\
-\hline 
-\end{tabular}
-\end{center}
-\vskip -0.10in
-\end{small}
-\end{table}
- 
-\subsection{Citations and References} 
-
-Please use APA reference format regardless of your formatter or word
-processor. If you rely on the \LaTeX\/ bibliographic facility, use the 
-files {\tt\small cogsysapa.sty} and {\tt\small cogsysapa.bst}, which
-are available on the Web site, to obtain this format. These require
-you to place your references in a separate file with a {\tt\small bib}
-extension, as explained in the \LaTeX\/ manual.
-
-Citations within the text should include the authors' last names and
-year. If the authors' names are included as part of the sentence, place 
-only the year in parentheses, as in Jones and VanLehn (1994), but 
-otherwise place the entire reference in parentheses with the authors
-and year separated by a comma (Jones \& VanLehn, 1984). 
-List multiple references alphabetically and separate them by semicolons 
-\cite{paper-laird-etal,book-newell-simon}. Use the 
-`et~al.'  construction only for citations with four or more authors or
-after listing all authors to a publication in an earlier reference.
-
-Use an unnumbered first-level section heading for the references, and 
-use a hanging indent style, with the first line of the reference flush
-against the left margin and subsequent lines indented by 10 points. 
-The references at the end of this document include examples for journal
-articles \singlecite{article-forbus}, conference publications \singlecite{paper-laird-etal},
-book chapters \singlecite{in-book-vanlehn}, books \singlecite{book-newell-simon}, 
-edited volumes \singlecite{book-shrager-langley}, technical reports 
-\singlecite{techreport-shapiro-etal}, and dissertations \singlecite{phd-choi}.
-
-Alphabetize references in both the text and at its end by the surnames
-of the first authors, with single author entries preceding multiple
-author entries. Order references for the same authors by year of
-publication, with the earliest first.
-
-\section{Electronic Formatting and Submission}
-
-{\it Advances in Cognitive Systems\/} will rely on electronic submission 
-of papers for review and publication. We assume that nearly all authors 
-will have access to \LaTeX\/ or Word to format their documents and can
-use a Web browser to download style files and upload their papers. 
-Authors who do not have such access should send email with their
-concerns to {\sl acs@cogsys.org}.
-
-\subsection{Paper Length and Format}
-
-The title {\it Advances in Cognitive Systems\/} is associated with
-both an electronic journal and an annual conference, with many of the
-articles appearing in the former having been submitted and reviewed
-under the auspices of the latter. 
-
-Papers submitted to the annual conference must not exceed sixteen (16)
-pages, including all figures, tables, and references. We will return
-to the authors any submissions that exceed this page limit or that
-diverge significantly from the format specified herein.
-Papers submitted for publication in the journal but not for presentation
-at the meeting are not subject to this constraint. However, we encourage 
-authors to keep their papers the same length as those for the conference.
-
-Submissions may be accompanied by online appendices that contain data,
-demonstrations, instructions for obtaining source code, or the source
-code itself. We encourage authors to include such appendices when they
-submit papers. This material will not count in a submission's page
-length.
-
-Electronic templates for producing the camera-ready copy are available
-for \LaTeX\/ and Microsoft Word. Style files and sample papers are 
-available on the Web at: 
-\vskip 0.1in
-\begin{small}
-\centerline{{\tt http://www.cogsys.org/formats/} .}
-\end{small}
-\vskip 0.1in
-\noindent
-Authors who have questions about these electronic formats should direct
-them to {\sl acs@cogsys.org}.
-
-To ensure the ability to preview and print submissions, authors must
-provide their manuscripts in pdf format. Papers prepared in Word
-should be saved as pdf files and submitted in this format. To support
-the review process, each submission must be accompanied by information
-about the paper's title and abstract, as well as the authors' names
-and physical addresses. 
-
-\subsection{Submitting Initial and Final Papers}
-
-Submission of initial and final papers will take place in a purely
-electronic manner through the World Wide Web. Authors who intend to
-submit a paper for presentation at the annual conference should upload
-their file to the submission repository at
-\vskip 0.1in
-\begin{small}
-\centerline{{\tt http://www.cogsys.org/submit/} .}
-\end{small}
-\vskip 0.12in
-\noindent
-Submission should be completed no later than 11:59 PM Pacific time 
-on the conference due date, which will be stated clearly on the 
-meeting Web site. If a submission is late, then it will not be 
-considered for inclusion at the meeting.
-
-{\it Advances in Cognitive Systems\/} will also consider submissions
-that are not intended for presentation at the annual conference. 
-Authors who wish to submit papers of this sort should upload their
-file to the submission repository at
-\vskip 0.1in
-\begin{small}
-\centerline{{\tt http://www.cogsys.org/journal/submit/} .}
-\end{small}
-\vskip 0.08in
-\noindent
-Such submissions may occur at any time, unless they are related to 
-special issues of the journal, which will have their own deadlines. 
-
-% You are welcome to submit a paper simultaneously to another meeting 
-% or publication, but only if you indicate this fact clearly on the
-% submission form. Simultaneous submissions that are not clearly
-% specified as such will be rejected on discovery. 
-
-Final versions of papers accepted for publication, and resubmissions 
-of conditionally accepted papers, should follow the same format 
-as that for initial submissions. Authors should upload their revised 
-papers to the same Web repository as used for the originals. 
-For the annual conference, final versions should be deposited no 
-later than 11:59 PM Pacific time on the due date. Authors of late 
-submissions will not be provided with a slot to present their work 
-at the meeting and their papers will not appear in the journal.
-Papers not related to the conference may be uploaded at any time. 
-
-In both cases, papers that have been conditionally accepted will be
-examined for compliance with conditions placed on their acceptance. 
-Final papers must follow the content, format and length restrictions 
-that are specified in these instructions.
-
-% \newpage
+\section{Discussion}
  
 \begin{acknowledgements} 
 \noindent
 STRANDS etc.
 \end{acknowledgements} 
+
+
+
 
 \vspace{-0.25in}
 
