@@ -735,14 +735,16 @@ IFOPTALL(%(feature_options), planning_sa)
     VARDEFAULT old_planning_history=
     IFEQ(%(old_planning_history),true)
         SETVAR old_planning_history=--oldhistory
-    ENDIF
-
-    COMPONENT PYTHON PlannerPythonServer PythonServer --debug --domain %(planning_domain) --nodot --pdb  --low-p-threshold 0.01 --default %(conceptual_defaults) --config %(planning_config) --expl_rules %(expl_rules) --consistency_rules %(cons_rules) %(old_planning_history)
-    COMPONENT CPP PlannerDTServer DTPCONTROL
+    ENDIF 
     
-    SUBARCHITECTURE planner.sa
+COMPONENT PYTHON PlannerPythonServer PythonServer --debug --domain %(planning_domain) --nodot --pdb  --low-p-threshold 0.01 --default %(conceptual_defaults) --config %(planning_config) --expl_rules %(expl_rules) --consistency_rules %(cons_rules) %(old_planning_history)
+    COMPONENT CPP PlannerDTServer DTPCONTROL
+
+    SUBARCHITECTURE planner.sa 
     JAVA WM cast.architecture.SubarchitectureWorkingMemory
     CPP TM AlwaysPositiveTaskManager
+
+
 
 #  timeout was 500
     CPP MG Planner WMControl --belief-timeout 750 #--log
