@@ -147,7 +147,7 @@ SETVAR feature_options=<multiline>
     !plan_verbalisation	
     motivation	
     !motivation_external
-    !motivation_explanation
+    motivation_explanation
     visualization
 </multiline>
 
