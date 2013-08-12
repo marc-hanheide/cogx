@@ -2,6 +2,7 @@ Files:
 - polygoncode.py contains the main classes for computing data about task 1.
 - CDSRStimuliKey.xls explains the ids of the results
 - results.csv contains the pilot human trial results
+-- 2013_08_12_PilotBeta.csv is the most recent data
 - stimuli contains images of each of the regions used in the experiment along with the .pdfs of the abstract views
 - polygondata is a directory that contains preprocessed data used by polycodecode.py
 - polygoncode contains a simple pyhton test function to ensure that things are working

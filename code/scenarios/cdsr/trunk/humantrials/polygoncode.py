@@ -11,6 +11,14 @@ class PolygonAreaTest():
       def __init__(self, d):
             self.datadir = d 
             self.test_polygons=dict()
+            self.csv_results = []
+
+      def getDataFromFile(file):
+            with open(file) as csvfile:
+                  reader = csv.reader(csvfile)
+                  for row in reader:
+                        self.csv_results.append(row)
+            print 'rows: ' + self.csv_results.length()
 
       def getData(self):
             for f in os.listdir(self.datadir):
