@@ -1,14 +1,39 @@
 Files:
 - polygoncode.py contains the main classes for computing data about task 1.
-- CDSRStimuliKey.xls explains the ids of the results
-- results.csv contains the pilot human trial results
+-- sample cmd: python polygoncode.py 2013_08_12_PilotBeta.csv
+- CDSRDataKey.pdf explains all of the colomns in the current data format
+- results.csv contains the pilot human trial results (old format discribed in CDSRStimuliKey.xls)
 -- 2013_08_12_PilotBeta.csv is the most recent data
 - stimuli contains images of each of the regions used in the experiment along with the .pdfs of the abstract views
 - polygondata is a directory that contains preprocessed data used by polycodecode.py
+-- This is no longer used
 - polygoncode contains a simple pyhton test function to ensure that things are working
 
 
 ----
+
+Notes from regarding task 2
+
+Room
+(100, 188): this is close to the left-hand side of the image (100 pixels from edge).  Should have a high front rating for non-flipped images (including circle) and a low rating for flipped images.
+(250, 188): towards the middle of the room.  Should presumably be low for most images.  Would be interesting to see if there is a difference between rows and U/circle for this location
+(400, 188): 100 pixels from right-hand side of image.  Should be high for front ratings in flipped images, low otherwise.
+
+Bottleneck
+(50, 50): Upper left-hand corner of image (in the light green area).  Presumably should be low for all images.
+(450, 310): Lower right corner in the green area.  Should be low as it is past the bottleneck/relatively low?
+(330, 200): Close to the middle of the bottle neck for large bottleneck a little towards the bottom of the bottleneck (vertically), still central horizontally for the narrower bottleneck.  Should probably be the highest rated.
+
+Safety:
+(235, 300): Behind the line of friendly turrets/tanks, should be highly ranked for safety
+(235, 240): In front of line of turrets but behind forward turret.  For tanks, this is still behind the tanks in the position where they are closer to the bad guys (stimuli 3_1).  In front of the tanks when they are further away (stimuli 3_2)
+(235, 110): Forward of front turret (should presumably be lowest ranked since no more friendly items between scout and back guys
+
+
+
+
+----
+
 
 We would like to analyze the pilot data stored in (results.csv) for the following properties:
 - In task 1, we expect the region size to grow between the following regions:
