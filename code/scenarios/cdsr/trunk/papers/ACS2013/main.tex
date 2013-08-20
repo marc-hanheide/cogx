@@ -51,15 +51,66 @@ The desiderata of the model - context, extent, generalises to unseen examples
 
 % subsubsection subsubsection_name (end)
 
-
-
 \section{Human Studies - John}
 Research Questions: 
 \begin{enumerate}
 	\item Does context matter?
 	\item Do people agree? 
 \end{enumerate}
+
+Method and Materials 
+Trial 1
+Trial 2
+Trial 3
+
+-----------------
+
+Task 1: The participant draws a polygon denoting the region
+Analysis of results:
+(1) Do participants agree/understand-the-task? (validation of approach) + Should anyone be excluded?
+Within the data for each trial,
+-- For each participant, generate the intersection and union polygon of all the other participants
+---- Generate N random points in the area of the full stimulus
+---- For each of these N points check whether the participant's polygon and the [intersection/union] polygon both include it (agree++) or if one includes it and the other doesn't (disagree++)
+---- Then we calculate a Cohen Kappa score as a measure of agreement between the participant and eveyone else. Note we need to calculate the chance of random agreement but we can do this as a function over the relative size of the participant's polygon in the total area of the stimulus and the relative size of the intersection/union polygon
+(see http://en.wikipedia.org/wiki/Cohen%27s_kappa )
+
+This process will result in for each trial a list of kappa scores for each participant indicating the extent to which they agree with everyone else. We are hoping for a high kappa score
+
+(2) Does context matter?
+I understand that all the rooms stimuli have the same extent.
+So one way of evaluating whether context matters is to use the kapp score between the intersection/union polygon generated using all the response (less the excluded partitipants) for one trial and the equivalent polygon for another trial.
+We are hoping for a low kappa score
+
+-----------------
+
+Task 2: The participant selected a point denoting the sweetspot of the region
+Analysis of results:
+(1) Do participants agree/understand-the-task? (validation of approach) + Should anyone be excluded?
+Compare the variance across the subjects with the variance across a number of set of randomly generate points, where set size equals the number of participants, using the F distribution (http://www.ltcconline.net/greenl/courses/201/regression/comparingVariances.htm) where we are checking if the variance of the random points are greater than that of the participants.
+We would hope that the variance of the subjects responses is lower than that of randomly generated points.
+After the initial comparison with the random point sets we may exclude participants based on extreme variance.
  
+(2) Does context matter?
+Do the clusters of participants responses move?
+- for each experimental stimulus compute the mean x and y location for the responses for that trial
+- check whether the variance between the means of different stimuli responses is greater than the variance within each stimulus responses.
+
+-----------------
+
+
+Task 3: The participant grades a point with respect to membership of the region on a likert scale
+I understand this experiment to be useful because (a) it asks the participants to evaluate (rather than generate cf task 1 and 2) (b) hopefully we can use it to reinforce our findings in task 1 and task 2
+I think we need to be careful that the points we present to people for evaluation are reasonably well distributed so that we have a good chance of getting a variation across the responses
+Assuming that there is a variation across the likert scores for a particular stimulus then check if their is a correlation between the scores and:
+(a) inclusion in the intersection/union polygons from task 1 for the same stimulus
+(b) distance from the mean sweet spot for that stimulus from task 2
+
+-----------------
+ 
+
+
+
 
 \section{Modeling - Nick}
 
