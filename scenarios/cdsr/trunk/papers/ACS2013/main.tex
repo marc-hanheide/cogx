@@ -38,18 +38,40 @@ Representing and reasoning about spatial terms is an essential ability for cogni
 \section{Introduction - KLENK} 
 Natural communication between humans and cognitive systems requires both participants to communicate with spatial language.  Many spatial terms are defined not only be their geometry, but also their context.  That is, to understand this language requires considering the other objects and agents in the environment, as well as their configuration and functional roles.  We call such regions \textit{context-dependent spatial regions}(CDSRs).
 
-We begin by discussing CDSRs with examples and two claims about these regions.  Next, we discuss desired properties of a cognitive system solution.  The contribution of this paper is a human study exploring our claims about CDSRs and an empirical exploration of current models and their shortcomings.  We close with a discussion of related and future work. 
+We begin by discussing CDSRs with examples.  We claim that (1) people can effectively communicate with these regions, and (2) the size and shape of these regions change with the context.  Next, we discuss desired properties of a cognitive system solution.  The contribution of this paper is a human study exploring our claims about CDSRs and an empirical exploration of current models and their shortcomings.  We close with a discussion of related and future work. 
 
 \section{Context-Dependent Spatial Regions - KLENK}
-Consider the following regions: the front of a classroom (\ref{fig:classroom}), safety in military engagement (\ref{fig:safety}), or the geographical feature of a bottleneck (\ref{fig:bottleneck}).  To identify these regions, one must identify the physical boundaries (e.g., walls), the objects within the room and their functional use (e.g., desks oriented toward a whiteboard), and other agent's intentions and capabilities (e.g., enemy tanks can move and have a range of attack).  These regions exists at different levels of spatial resolution.  Consider a neighborhood in a city, whose boundaries expand and contract overtime with changes to the surrounding residents and businesses
+Consider the following regions (shown in Figure \ref{examples}): the front of a classroom (\ref{fig:classroom}), safety in military engagement (\ref{fig:safety}), or the geographical feature of a bottleneck (\ref{fig:bottleneck}).  To identify these regions, one must identify the physical boundaries (e.g., walls), the objects within the room and their functional use (e.g., desks oriented toward a whiteboard), and other agent's intentions and capabilities (e.g., enemy tanks can move and have a range of attack).  Furthermore, these regions exists at different levels of spatial resolution.  Consider a neighborhood in a city, whose boundaries expand and contract overtime with changes to the surrounding residents and businesses.
 
+%Combine these figures into a single figure across
+\begin{figure}
+  \includegraphics[width=\columnwidth*.3]{figures/classroom.png}
+  \caption{The front of the classroom is the area between the desks and the whiteboard where people give presentations.}
+  \label{fig:classroom}
+\end{figure}
 
-\subsubsection{Model Desiderata} % (fold)
-\label{sec:desiderata}
+\begin{figure}
+  \includegraphics[width=\columnwidth*.3]{figures/safety-3.jpg}
+  \caption{Safety for the scout is defined by the location of the friendly turrets and the capabilities of the opposing force.}
+  \label{fig:safety}
+\end{figure}
 
-The desiderata of the model - context, extent, generalises to unseen examples
+\begin{figure}
+  \includegraphics[width=\columnwidth*.3]{figures/bottleneck.JPG}
+  \caption{A bottleneck occurs when paths are confined to a narrow region by geographic features.  In this case, the water prevents ground movement.}
+  \label{fig:safety}
+\end{figure}
 
-% subsubsection subsubsection_name (end)
+Understanding these regions is crucial to joint intelligent action with humans.  Not only are these regions frequently tied to goals and commands: "go to the front of the classroom", "defend the bottleneck", and "get to safety", but they are also central to understanding human activities: e.g., "Is there a class in session?".
+
+Representing and reasoning about these regions is a Cognitive Systems problem. for the following reasons:
+\begin{itemize}
+\item Understanding context requires integration of different types of knowledge including geometric, semantic, and functional knowledge about the environment.
+\item The representation should be transferable to new situations.  While humans do not demonstrate mastery after a single example of concept, they are able to begin using it immediately refining it over time.
+\item The representation should be applicable in different reasoning tasks.  The functional nature of these regions makes them important for many tasks from action planning to activity recognition.
+\end{itemize}
+ 
+ 
 
 \section{Human Studies - John}
 Research Questions: 
@@ -124,11 +146,17 @@ As the results above show, in order for an artificial cognitive system to operat
 In the following sections we explore whether two possible CDSR models (one based on boundary segments, one based on a spatial function) are able to satisfy the previously described desiderata for a cognitive systems approach to representing and recognising CDSRs. The surrounding discussion is intended to explore the strengths and weaknesses of these models, providing directions for future research.
 
 \subsection{Symbolic Boundary Method - KLENK}
+In our previous work \cite{Hawes:2012}, we presented an approach on a mobile robot that combined qualitative spatial relations, object recognition, and analogy to transfer CDSRs represented as polygons defined by \textit{anchor points} \cite{DBLP:journals/jetai/KlenkFTK11}.  Anchor points are symbolic descriptions that link a conceptual entity (e.g., the front of a classroom) to perceived entities (e.g., the lower left extent of a desk).  An example of the representation and transfer approach is Figure \ref{fig:anchor-point-transfer}.  In the know example, a human defines the front of the classroom as a polygon consisting of four anchor points.  Analogical transfer works by aligning structured representations and transferring partially aligned statements from the known example to the new environment.  In this case, the anchor points are transferred from the group of desks in the known example to the corresponding group of desks in the new environment. 
 
-Overview
-Example
-Results?
-Discussion
+\begin{figure}
+  \includegraphics[width=\columnwidth]{figures/classroom-transfer.png}
+  \caption{The known example defines the front of the room with four anchor points.  By transferring the anchor points to the new environment, the system is able to ground the room's front in its perception.}
+  \label{fig:anchor-point-transfer}
+\end{figure}
+
+This method satisfies our criteria for a cognitive systems solution for the following reasons: (1) the alignment process integrates spatial and semantic knowledge about the environment, (2) analogy enables transfer from a single example, (3) while untested, by linking conceptual knowledge to perception, regions defined by anchor points should support any symbolic reasoning task.
+ 
+Applying this model to the points and regions indicated in our experiment illustrates two limitations.  Regions do not always physically bounded by objects.  In the classroom examples, people frequently did not extend the front of the room all way into the corners.  In the safety example, people did not indicate that it was safe behind the lone turret in front of the others.  This indicates that people consider the dynamics of the situation when evaluating these terms, which is not accounted for in this model.
 
 \subsection{Spatial Function Method - NICK}
 
