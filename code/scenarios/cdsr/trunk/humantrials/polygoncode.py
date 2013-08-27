@@ -25,6 +25,9 @@ def pointToTuple(pt):
       result = re.sub('\)', '', result)
       return tuple(map(int,result.split(':')))
 
+def rowToLikertTuple(row):
+      return [pointToTuple(row[6]),int(row[7])]
+      
 class PolygonAreaTest():
 
       #trials is a list of tuples of the form stimtype,stimnum
@@ -55,7 +58,7 @@ class PolygonAreaTest():
 
       # returns a list of pairs where the first is the point tuple and the second is rating
       def getLikertValuesForTrial(self,stimtype,stimnum):
-            return map(lambda row:[pointToTuple(row[6]),int(row[7])],
+            return map(rowToLikertTuple,
                        filter(lambda row: row[2]=="3" and int(row[4])==stimtype and int(row[5])==stimnum,self.csv_results))
 
       # Not doing any check for not applicable.  So we will need to check that out later.
