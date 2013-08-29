@@ -6,6 +6,10 @@
 \usepackage[T1]{fontenc}
 \usepackage{times}
 \usepackage[pdftex]{graphicx} % use this when importing PDF files
+\usepackage{caption}
+\usepackage{subcaption}
+
+
 
 
 % Put back in
@@ -38,40 +42,37 @@ Representing and reasoning about spatial terms is an essential ability for cogni
 \section{Introduction - KLENK} 
 Natural communication between humans and cognitive systems requires both participants to communicate with spatial language.  Many spatial terms are defined not only be their geometry, but also their context.  That is, to understand this language requires considering the other objects and agents in the environment, as well as their configuration and functional roles.  We call such regions \textit{context-dependent spatial regions}(CDSRs).
 
-We begin by discussing CDSRs with examples.  We claim that (1) people can effectively communicate with these regions, and (2) the size and shape of these regions change with the context.  Next, we discuss desired properties of a cognitive system solution.  The contribution of this paper is a human study exploring our claims about CDSRs and an empirical exploration of current models and their shortcomings.  We close with a discussion of related and future work. 
+We begin by discussing CDSRs with examples.  We claim that (1) people can effectively communicate with these regions, and (2) the size and shape of these regions change with the context.  We argue that to account for this behavior, a cognitive systems solution must respond to changing context, apply learned regions to new situations, and reuse learned knowledge in multiple tasks.  To explore these claims, we present the results of a human study, in which, people marked and rated points and regions for three different regions in 13 different contexts.  In discussing the results, we consider a number of approaches from current cognitive systems and robotics.  Each approach has a number of shortcomings that must be addressed not only to improve our understanding of human spatial reasoning, but also, to enable robust intelligent assistants in human environments.
 
-\section{Context-Dependent Spatial Regions - KLENK}
-Consider the following regions (shown in Figure \ref{examples}): the front of a classroom (\ref{fig:classroom}), safety in military engagement (\ref{fig:safety}), or the geographical feature of a bottleneck (\ref{fig:bottleneck}).  To identify these regions, one must identify the physical boundaries (e.g., walls), the objects within the room and their functional use (e.g., desks oriented toward a whiteboard), and other agent's intentions and capabilities (e.g., enemy tanks can move and have a range of attack).  Furthermore, these regions exists at different levels of spatial resolution.  Consider a neighborhood in a city, whose boundaries expand and contract overtime with changes to the surrounding residents and businesses.
+\section{Context-Dependent Spatial Regions}
+Consider the following regions (shown in Figure \ref{examples}): the front of a classroom , safety in military engagement, or the geographical feature of a bottleneck.  To identify these regions, one must identify the physical boundaries (e.g., walls), the objects within the room and their functional use (e.g., desks oriented toward a whiteboard), and other agent's intentions and capabilities (e.g., enemy tanks can move and have a range of attack).  Furthermore, these regions exists at different levels of spatial resolution.  Consider a neighborhood in a city, whose boundaries expand and contract overtime with changes to the surrounding residents and businesses.
 
 %Combine these figures into a single figure across
 \begin{figure}
-  \includegraphics[width=\columnwidth*.3]{figures/classroom.png}
+\centering
+%% Change the classroom to be a picture stimuli
+  \begin{subfigure}[b]{0.3\textwidth}
+  \includegraphics[width=\textwidth]{figures/classroom.png}
   \caption{The front of the classroom is the area between the desks and the whiteboard where people give presentations.}
-  \label{fig:classroom}
-\end{figure}
-
-\begin{figure}
-  \includegraphics[width=\columnwidth*.3]{figures/safety-3.jpg}
+  \end{subfigure}
+\begin{subfigure}[b]{0.3\textwidth}
+  \includegraphics[width=\textwidth]{figures/safety-3.jpg}
   \caption{Safety for the scout is defined by the location of the friendly turrets and the capabilities of the opposing force.}
-  \label{fig:safety}
-\end{figure}
-
-\begin{figure}
-  \includegraphics[width=\columnwidth*.3]{figures/bottleneck.JPG}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\textwidth}
+  \includegraphics[width=\textwidth]{figures/bottleneck.JPG}
   \caption{A bottleneck occurs when paths are confined to a narrow region by geographic features.  In this case, the water prevents ground movement.}
   \label{fig:safety}
+  \end{subfigure}
+  
+  \caption{Examples of spatial regions used as stimuli in our experiments.}
+  \label{fig:examples}
 \end{figure}
 
 Understanding these regions is crucial to joint intelligent action with humans.  Not only are these regions frequently tied to goals and commands: "go to the front of the classroom", "defend the bottleneck", and "get to safety", but they are also central to understanding human activities: e.g., "Is there a class in session?".
 
-Representing and reasoning about these regions is a Cognitive Systems problem. for the following reasons:
-\begin{itemize}
-\item Understanding context requires integration of different types of knowledge including geometric, semantic, and functional knowledge about the environment.
-\item The representation should be transferable to new situations.  While humans do not demonstrate mastery after a single example of concept, they are able to begin using it immediately refining it over time.
-\item The representation should be applicable in different reasoning tasks.  The functional nature of these regions makes them important for many tasks from action planning to activity recognition.
-\end{itemize}
- 
- 
+The long-term goal of this work is to create of agents that can naturally interact with people in human environments.  While the study presented below illustrates the importance of context, object types and configurations, on human spatial judgements, constructing a cognitive systems approach requires more than reproducing these results.  First, the representational approach should be transferable to new situations.  While humans do not demonstrate mastery after a single example of concept, they are able to begin using it immediately refining it over time.  Second, the representation should be applicable in different reasoning tasks.  The functional nature of these regions makes them important for many tasks from action planning to activity recognition.
+
 
 \section{Human Studies - John}
 Research Questions: 
