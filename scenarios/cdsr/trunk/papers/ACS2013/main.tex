@@ -75,35 +75,128 @@ The long-term goal of this work is to create of agents that can naturally intera
 
 
 \section{Human Studies - John}
-Research Questions: 
+
+\subsection{Research Question, Design and Stimuli}
+
+The study was designed to examine the following questions about spatial regions:
 \begin{enumerate}
-	\item Does context matter?
-	\item Do people agree? 
+	\item Given a particular situation how well do people agree on the location and extent of a named spatial region?
+	\item Does the orientation and location of objects (with relevant functional semantics) in a given situation effect the location and extent of a named spatial region?
 \end{enumerate}
 
-Method and Materials 
-Trial 1
+To examine these questions we developed three different trials. In all three trial types the subject was presented with a visual stimuli (such as a room floor plan or a map) and an accompanying linguistic description (such as \emph{go to the front of the room}, however the way the task the subject was set varied across the trials:
+\begin{enumerate}
+	\item Trial type 1: the subject was asked to draw a polygon that defined the extent of the spatial region described in the description or to select a no region option.
+	\item Trial type 2: a location was marked on the visual stimuli (using a red x) and the subject was asked to rank on a five point likert scale their judgement of how well the location matched the described spatial region. Three points were pre-selected for each stimuli such that one point was located near the expected prototypical center of the described spatial region and the other two points were at varying distances from this location. The selection of these points was informed by the results of a pilot study. 
+	\item Trial type 3: subjects were asked to mark on the visual stimuli, by clicking with the mouse, the location that they felt was most prototypical of the spatial description. 
+\end{enumerate}
+
+All three trial types use the same visual stimuli and accompanying spatial descriptions. Figure \ref{fig:exp_stimuli} presents the stimuli used in the experiment. The stimuli can be broken into three groups based on the domain and the spatial region that accompanied them: the classroom domain stimuli were always accompanied by the spatial description \emph{the front of the classroom}; the geographical map stimuli were always accompanied by the description \emph{the bottleneck}; and the military engagement stimuli were always accompanied by the description \emph{safety}. 
+
+The classroom stimuli consisted of pairs of floor plans and photos of classrooms with different chair configurations. For example, Figure \ref{fig:classroom-a} is a floor plan of a classroom where the chairs have been arranged in a circle and Figure \ref{fig:classroom-b} is the accompanying photo of this classroom. We developed four different classroom stimuli each with a different layout of chairs: a circular chair layout, a U shaped layout (Figure \ref{fig:classroom-c} and Figure \ref{fig:classroom-d}), a prototypical layout with the chairs close to the expected front of the room (Figure \ref{fig:classroom-e}), and a prototypical layout with the chairs far away from the expected front of the room (Figure \ref{fig:classroom-f})\footnote{In the interest of saving space we do not show all the classroom photo stimuli}. To control for left-right bias effects two versions of the U shaped layout, close rows layout and far rows layout were created by horizontally flipping the layouts. Conseqeuntly, there were 7 classroom stimuli (circle, U $\times 2$, close $\times 2$, far $\times 2$). In designing these stimuli we deliberately chose some layouts that were very prototypical or close variations on standard layouts - e.g., Figures \ref{fig:classroom-e} and \ref{fig:classroom-f} - and others were more novel - Figure \ref{fig:classroom-a} and \ref{fig:classroom-c}. By varying the prototypicality of the layouts we hoped to get some variation across the between subject agreement on a per stimuli basis, for example we expected to get a higher between subject agreement for the stimuli that were more prototypical. This would provide insight into research question 1, in particular it would point to the effect of prototypicality on the semantics of contextually defined spatial regions. Also, because the prototypicality of the scenes was varied by adjusting the location and orientation of objects in the scenes, a variation in agreement across the stimuli would provide evidence that the orientation and location of objects do effect the location and extent of spatial regions.
+
+The geographical map stimuli, Figures \ref{fig:bottleneck-a} and \ref{fig:bottleneck-b}, differed in the width of the bottleneck region. Finally, the military engagement stimuli, Figures \ref{fig:tanks-a}, \ref{fig:tanks-b}, \ref{fig:turrets-a}, \ref{fig:tanks-b} varied the functionality of the objects in the scene (tanks that could move versus fixed turret emplacements), the location of the objects in the scenes (were the tanks close to the bottom of the image or near the top), and the number and layout of the objects (the number and layout of the turrets were varied). Again, a variation across the between subject agreement on the different stimuli would provide evidence for the impact of object location and orientation on spatial semantics.
+
+\begin{figure}
+%\includegraphics[width=0.4\textwidth]{figures/turrets-plus-one.jpeg}
+\centerline{
+\begin{tabular}{cccc}
+\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/classroom-circle.pdf}\caption{}\label{fig:classroom-a}\end{subfigure}&
+\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/classroom-circle-photo.jpg}\caption{}\label{fig:classroom-b}\end{subfigure}&
+\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/classroom-u-shaped.pdf}\caption{}\label{fig:classroom-c}\end{subfigure}&
+\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/classroom-u-photo.jpg}\caption{}\label{fig:classroom-d}\end{subfigure}\\
+\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/classroom-close.pdf}\caption{}\label{fig:classroom-f}\end{subfigure}&
+\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/classroom-far-away.pdf}\caption{}\label{fig:classroom-e}\end{subfigure}&
+\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/bottleneck-1.jpg}\caption{}\label{fig:bottleneck-a}\end{subfigure}&
+\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/bottleneck-2.jpg}\caption{}\label{fig:bottleneck-b}\end{subfigure}\\
+\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/tanks-close.jpg}\caption{}\label{fig:tanks-a}\end{subfigure}&
+\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/tanks-far.jpg}\caption{}\label{fig:tanks-b}\end{subfigure}&
+\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/turrets.jpeg}\caption{}\label{fig:turrets-a}\end{subfigure}&
+\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/turrets-plus-one.jpeg}\caption{}\label{fig:turrets-b}\end{subfigure}
+\end{tabular}
+}
+\caption{Experiment Stimuli}
+\label{fig:exp_stimuli}
+\end{figure}
+
+
+\subsection{Participants}
+
+43 undergraduate students from two different third level institutes took part in the study. 
+
+\subsection{Analysis}
+
+%Task 1: The participant draws a polygon denoting the region
+%Analysis of results:
+%(1) Do participants agree/understand-the-task? (validation of approach) + Should anyone be excluded?
+%Within the data for each trial,
+%-- For each participant, generate the intersection and union polygon of all the other participants
+%---- Generate N random points in the area of the full stimulus
+%---- For each of these N points check whether the participant's polygon and the [intersection/union] polygon both include it (agree++) or if one includes it and the other doesn't (disagree++)
+%---- Then we calculate a Cohen Kappa score as a measure of agreement between the participant and eveyone else. Note we need to calculate the chance of random agreement but we can do this as a function over the relative size of the participant's polygon in the total area of the stimulus and the relative size of the intersection/union polygon
+%(see http://en.wikipedia.org/wiki/Cohen%27s_kappa )
+%This process will result in for each trial a list of kappa scores for each participant indicating the extent to which they agree with everyone else. We are hoping for a high kappa score
+%(2) Does context matter?
+%I understand that all the rooms stimuli have the same extent.
+%So one way of evaluating whether context matters is to use the kapp score between the intersection/union polygon generated using all the response (less the excluded partitipants) for one trial and the equivalent polygon for another trial.
+%We are hoping for a low kappa score
+
+%Cohen's kappa measures the agreement between two annotators who each classify a number of items into two or more mutually exclusive classes as is defined as follows:
+%\begin{equation*}
+%\kappa = \frac{P(a)-P(ca)}{1-P(ca)}
+%\end{equation*}
+%where $P(a)$ is the observed relative agreement between the annotators, and $P(ca)$ is the probability of a chance agreement between these to annotators. 
+In the type 1 trials subjects drew a polygon on the visual stimuli that defined the location and extent of the relevant spatial region. In analysising the results of these trials we wished to investigate how well the subject's responses agreed with each other and, also, whether the location and orientation of objects in the scene effected the definition of spatial regions in the scene. 
+
+One well known metric for analysising interannotator agreement is the \textbf{Cohen's kappa coefficient}, $\kappa$. Cohen's kappa measures the agreement between two annotators who each classify a number of items into two or more mutually exclusive classes. $\kappa$ ranges from 0 indicating no agreement beyond chance to 1 indicating complete agreement. In order to use Cohen's kappa to measure the agreement between subject responses in our type 1 trials we generated a set of 47,000 test points that were uniformly distribute across each stimuli and used each subject's polygon to classify the test points as being inside or outside the polygon. After classifying the test points for each subject we then computed an average pairwise kappa score for each subject with all the other subjects on a per stimuli basis. In this calculation if either of the subjects in a pair entered a no region response for a particular stimuli a $\kappa$ value of 0 was used. Figure \ref{fig:subj-kappa} shows a histogram of the per subject average kappa scores using ten equal width intervals covering the $\kappa$ range between 0 and 1.  It is evident from this figure that most subjects had a $\kappa$ score between $0.2-0.5$ with a overall majority of subjects having a $\kappa$ score between $0.3-0.4$. A $\kappa$ score between $0.3-0.4$ would be considered as being poor to fair. This would indicate that there was some agreement between subjects but less that would be expected. However, this calculation was done across all the stimuli and as we have already mentioned some of the stimuli were deliberately designed to be non-prototypical, in particular expected the classroom stimuli where the chairs were arranged in a circle (Figure \ref{fig:classroom-a}) and in a U shaped pattern (Figure \ref{fig:classroom-c} and its horizontally flipped equivalent) to be relatively novel situations for the subjects. Indeed, if we look at the histogram of the average pairwise $\kappa$ scores by stimuli, Figure \ref{fig:stim-kappa}, it is evident that there is a large variation, ranging from $0$ to $0.8$, in $\kappa$ scores for each stimuli. In more detail, Table \ref{tab:stimuli-kappa-scores} lists the average pairwise $\kappa$ score for each of the visual stimuli used in the experiment and the number of no regrion responses for each stimuli. It is clear from this table that the non-prototypical stimuli have the lowest $\kappa$ scores and also relationship between typicality and the number of no region responses. Given this relatively large variation across stimuli, which we attribute to the prototypicality of the depicted situation, we computed the average pairwise $\kappa$ scores for each subject when the non-prototypical stimuli trials were excluded. Figure \ref{fig:subj-kappa-proto} presents the histogram of the resulting average pairwise subject  $\kappa$ scores by subject. Not surpringly, with the exclusion on the non-prototypical stimuli the average pairwise $\kappa$ scores increase, with over half the subjects having an average pairwise $\kappa$ score between $0.4$ and $0.6$. $\kappa$ scores in this range can to interpreted as fair to good.
+
+\begin{figure}
+%\includegraphics[width=0.4\textwidth]{figures/turrets-plus-one.jpeg}
+\centerline{
+\begin{tabular}{ccc}
+\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/subj-kappa-hist.pdf}\caption{}\label{fig:subj-kappa}\end{subfigure}&
+\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/stimuli-kappa-hist.pdf}\caption{}\label{fig:stim-kappa}\end{subfigure}&
+\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/subj-kappa-hist-protostim.pdf}\caption{}\label{fig:subj-kappa-proto}\end{subfigure}
+\end{tabular}
+}
+\caption{(a) Histogram of average pairwise subject kappa score across all stimuli by subject, (b) histogram of average pairwise subject kappa scores for each stimuli, (c) histogram of average pairwise subject kappa score excluding non-prototypical stimuli by subject.}
+\label{fig:type-1-hists}
+\end{figure}
+
+\begin{table}
+\centerline{
+\begin{tabular}{l c c}
+Stim ID & Average Pairwise $\kappa$ & No Region Responses\\
+\hline
+\hline
+(h) & 0.5034 & 0\\ % 1_2
+(g) & 0.4585 & 1\\ % 1_1
+(k) & 0.4548 & 0\\ % 3_3
+(f) & 0.3930 & 0\\ % 2_4
+(i) & 0.3906 & 0\\ % 3_1
+(e-flipped) & 0.3813 & 2\\ % 2_3
+(j) & 0.3787 & 1\\ % 3_2
+(f-flipped) & 0.3720 & 2\\ % 2_5
+(e) & 0.3629 & 1\\ %2_2
+(l) & 0.3164& 0\\ % 3_4
+(c) & 0.2438 & 2\\ % 2_6
+(c-flipped) & 0.2414 & 4\\ %2_7
+(a) & 0.0996 & 10 \\ % 2_1
+\hline
+\end{tabular}
+}
+\label{tab:stimuli-kappa-scores}
+\caption{The average pairwise $\kappa$ scores and the number of no region response by visual stimuli. The stimuli id are based on the labels in Figure \ref{exp-stimuli} with the horizontally flipped versions of stimuli indicated.}
+\end{table}
+
+The analysis of the type 1 trials indicates that, over a range of domains and spatial regions, the responses from the subjects did agree, to a good degree. Furthermore, there results support the hypothesis that the defintion of spatial regions in a given context is effected by the location and orientation of objects in the context. For example, focusing on the classroom scenes (stimuli, $a$, $c$, $e$, and $f$) the only difference between these trials was the layout of the chairs in the room and yet there is a substantial variation across these stimuli of the agreement between subjects on the specified spatial region, namely \textit{the front of the room}. Situation $f$ resulted in an average pairwise agreement of $0.393$ and in comparision situation $a$ had an average pairwise agreement of $0.0996$. 
+
+
 Trial 2
 Trial 3
 
 -----------------
 
-Task 1: The participant draws a polygon denoting the region
-Analysis of results:
-(1) Do participants agree/understand-the-task? (validation of approach) + Should anyone be excluded?
-Within the data for each trial,
--- For each participant, generate the intersection and union polygon of all the other participants
----- Generate N random points in the area of the full stimulus
----- For each of these N points check whether the participant's polygon and the [intersection/union] polygon both include it (agree++) or if one includes it and the other doesn't (disagree++)
----- Then we calculate a Cohen Kappa score as a measure of agreement between the participant and eveyone else. Note we need to calculate the chance of random agreement but we can do this as a function over the relative size of the participant's polygon in the total area of the stimulus and the relative size of the intersection/union polygon
-(see http://en.wikipedia.org/wiki/Cohen%27s_kappa )
-
-This process will result in for each trial a list of kappa scores for each participant indicating the extent to which they agree with everyone else. We are hoping for a high kappa score
-
-(2) Does context matter?
-I understand that all the rooms stimuli have the same extent.
-So one way of evaluating whether context matters is to use the kapp score between the intersection/union polygon generated using all the response (less the excluded partitipants) for one trial and the equivalent polygon for another trial.
-We are hoping for a low kappa score
 
 -----------------
 
