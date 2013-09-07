@@ -8,9 +8,7 @@
 \usepackage[pdftex]{graphicx} % use this when importing PDF files
 \usepackage{caption}
 \usepackage{subcaption}
-
-
-
+\usepackage{multirow}
 
 % Put back in
 
@@ -87,7 +85,7 @@ The study was designed to examine the following questions about spatial regions:
 To examine these questions we developed three different trials. In all three trial types the subject was presented with a visual stimuli (such as a room floor plan or a map) and an accompanying linguistic description (such as \emph{go to the front of the room}, however the way the task the subject was set varied across the trials:
 \begin{enumerate}
 	\item Trial type 1: the subject was asked to draw a polygon that defined the extent of the spatial region described in the description or to select a no region option.
-	\item Trial type 2: a location was marked on the visual stimuli (using a red x) and the subject was asked to rank on a five point likert scale their judgement of how well the location matched the described spatial region. Three points were pre-selected for each stimuli such that one point was located near the expected prototypical center of the described spatial region and the other two points were at varying distances from this location. The selection of these points was informed by the results of a pilot study. 
+	\item Trial type 2: a location was marked on the visual stimuli (using a red dot) and the subject was asked to rank on a five point likert scale their judgement of how well the location matched the described spatial region.  
 	\item Trial type 3: subjects were asked to mark on the visual stimuli, by clicking with the mouse, the location that they felt was most prototypical of the spatial description. 
 \end{enumerate}
 
@@ -193,8 +191,62 @@ Stim ID & Average Pairwise $\kappa$ & No Region Responses\\
 The analysis of the type 1 trials indicates that, over a range of domains and spatial regions, the responses from the subjects did agree, to a good degree. Furthermore, there results support the hypothesis that the defintion of spatial regions in a given context is effected by the location and orientation of objects in the context. For example, focusing on the classroom scenes (stimuli, $a$, $c$, $e$, and $f$) the only difference between these trials was the layout of the chairs in the room and yet there is a substantial variation across these stimuli of the agreement between subjects on the specified spatial region, namely \textit{the front of the room}. Situation $f$ resulted in an average pairwise agreement of $0.393$ and in comparision situation $a$ had an average pairwise agreement of $0.0996$. 
 
 
-Trial 2
-Trial 3
+The type 2 trials the same visual stimuli and accompanying spatial descriptions as the type 1 trials with the addition that a location was marked on the visual stimuli (using a red dot) and the subject was asked to rank on a five point likert scale their judgement of how well the location matched the described spatial region. For each stimuli domain (classroom, map, military engagement) three points were pre-selected such that for each particular stimuli one of the points was located near the expected prototypical center of the described spatial region and the other two points were at varying distances from this location. For clarity it is worth emphaising that, although the same three points were used for all the stimuli from a particular domain, the particular point that acted as the sweetspot for a particular stimuli within a domain set would vary from stimuli to stimuli. The selection of these points was informed by the results of a pilot study. Figure \ref{fig:locations} illustrates the points selected for each domain and overlays them on one of the visual stimuli from each domain. Table \ref{tab:point-likert-scores} list the average likert scores for the different points in each domain. In the map domain the points are named from top-left to bottom-right (e.g., $Pt1$ is the point in the top left of Figure \ref{fig:bottleneck-points}); in the classroom domain the points are named in order from left to right (e.g. $Pt1$ is the leftmost point marked in Figure \ref{fig:classromm-points}); and, in the military engagment domain the points are named from top to bottom (e.g., $Pt1$ is the point nearest the top of Figure \ref{fig:tanks-points}).
+
+\begin{figure}
+%\includegraphics[width=0.4\textwidth]{figures/turrets-plus-one.jpeg}
+\centerline{
+\begin{tabular}{ccc}
+\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/classroom-circle-points.png}\caption{}\label{fig:classroom-points}\end{subfigure}&
+\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/bottleneck-2-points.png}\caption{}\label{fig:bottleneck-points}\end{subfigure}&
+\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/tanks-close-points.png}\caption{}\label{fig:tanks-points}\end{subfigure}\\
+\end{tabular}
+}
+\caption{The pre-selected locations for each domain used in the Type 2 Trials.}
+\label{fig:locations}
+\end{figure}
+
+\begin{table}
+\centerline{
+\begin{tabular}{l c c c l}
+\hline
+Domain & \multicolumn{4}{c}{Map/Bottleneck} \\
+ ~ & \multicolumn{3}{c}{Average Likert Rating} & Sweetspot\\
+Stim ID & P1 & P2 & P3 & Significance\\
+(g) & $1.1707$ & $\mathbf{4.6667}$ & $1.85$ & ToDo\\ % 1_1
+(h) & $1.1707$ & $\mathbf{4.7561}$ & $1.585$ & ToDo\\ % 1_2
+\hline
+Domain & \multicolumn{4}{c}{Classrom/Front of Room} \\
+ ~ & \multicolumn{3}{c}{Average Likert Rating} & Sweetspot\\
+Stim ID & P1 & P2 & P3 & Significance\\
+(a) & $\mathbf{3.5122}$ & $2.6341$ & $1.9024$ & ToDo\\ % 2_1
+(c) & $\mathbf{4.7073}$ & $2.9024$ & $1.3571$ & ToDo\\ % 2_6
+(c-flipped) & $1.244$ & $2.9268$ & $\mathbf{4.6429}$ & ToDo\\ %2_7
+(e) & $\mathbf{4.7561}$ & $2.0000$ & $1.2439$ & ToDo\\ %2_2
+(e-flipped) & $1.2439$ & $1.8500$ & $\mathbf{4.7073}$ & ToDo\\ % 2_3
+(f) & $\mathbf{4.8292}$ & $2.0976$ & $1.2750$ & ToDo\\ % 2_4
+(f-flipped) & $1.1463$ & $2.3171$ & $\mathbf{4.6585}$ & ToDo\\\\ % 2_5
+\hline
+Domain & \multicolumn{4}{c}{Military Engagement/Safe Region} \\
+ ~ & \multicolumn{3}{c}{Average Likert Rating} & Sweetspot\\
+Stim ID & P1 & P2 & P3 & Significance\\
+(i) & $1.1951$ & $4.3902$ & $\mathbf{4.6428}$ & ToDo\\ % 3_1
+(j) & $1.0952$ & $2.2927$ & $\mathbf{4.5122}$ & ToDo\\ % 3_2
+(k) & $1.0714$ & $2.7804$ & $\mathbf{4.6585}$ & ToDo\\ % 3_3
+(l) & $1.2327$ & $3.1667$ & $\mathbf{4.7073}$ & ToDo\\ % 3_4
+\hline
+\hline
+\end{tabular}
+}
+\label{tab:point-likert-scores}
+\caption{Need to put in caption!!!}
+\end{table}
+
+
+
+
+
+
 
 -----------------
 
