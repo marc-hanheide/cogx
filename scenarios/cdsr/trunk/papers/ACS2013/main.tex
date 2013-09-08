@@ -211,36 +211,54 @@ The type 2 trials the same visual stimuli and accompanying spatial descriptions 
 \begin{tabular}{l c c c l}
 \hline
 Domain & \multicolumn{4}{c}{Map/Bottleneck} \\
- ~ & \multicolumn{3}{c}{Average Likert Rating} & Sweetspot\\
-Stim ID & P1 & P2 & P3 & Significance\\
-(g) & $1.1707$ & $\mathbf{4.6667}$ & $1.85$ & ToDo\\ % 1_1
-(h) & $1.1707$ & $\mathbf{4.7561}$ & $1.585$ & ToDo\\ % 1_2
+ ~ & \multicolumn{3}{c}{Average Likert Rating} & Sweetspot Rated Significantly Higher? \\
+Stim ID & P1 & P2 & P3 & One-Tailed Two Sample T-Test with $\alpha=0.05$, $H_0:\mu(P_i)=\mu(P_j)$\\
+(g) & $1.1707$ & $\mathbf{4.6667}$ & $1.85$ & $H_A:\mu(P2)>\mu(P1),~p<2.2^{-16};~H_A:\mu(P2)>\mu(P3),~p<2.2^{-16}$\\ % 1_1
+(h) & $1.1707$ & $\mathbf{4.7561}$ & $1.585$ & $H_A:\mu(P2)>\mu(P1),~p<2.2^{-16};~H_A:\mu(P2)>\mu(P3),~p<2.2^{-16}$\\ % 1_2
 \hline
 Domain & \multicolumn{4}{c}{Classrom/Front of Room} \\
- ~ & \multicolumn{3}{c}{Average Likert Rating} & Sweetspot\\
-Stim ID & P1 & P2 & P3 & Significance\\
-(a) & $\mathbf{3.5122}$ & $2.6341$ & $1.9024$ & ToDo\\ % 2_1
-(c) & $\mathbf{4.7073}$ & $2.9024$ & $1.3571$ & ToDo\\ % 2_6
-(c-flipped) & $1.244$ & $2.9268$ & $\mathbf{4.6429}$ & ToDo\\ %2_7
-(e) & $\mathbf{4.7561}$ & $2.0000$ & $1.2439$ & ToDo\\ %2_2
-(e-flipped) & $1.2439$ & $1.8500$ & $\mathbf{4.7073}$ & ToDo\\ % 2_3
-(f) & $\mathbf{4.8292}$ & $2.0976$ & $1.2750$ & ToDo\\ % 2_4
-(f-flipped) & $1.1463$ & $2.3171$ & $\mathbf{4.6585}$ & ToDo\\\\ % 2_5
+ ~ & \multicolumn{3}{c}{Average Likert Rating} & Sweetspot Rated Significantly Higher? \\
+Stim ID & P1 & P2 & P3 & One-Tailed Two Sample T-Test with $\alpha=0.05$, $H_0:\mu(P_i)=\mu(P_j)$\\
+(a) & $\mathbf{3.5122}$ & $2.6341$ & $1.9024$ & $H_A:\mu(P1)>\mu(P2),~p=6.497^{-4};~H_A:\mu(P1)>\mu(P3),~p=4.073^{-8}$\\ % 2_1
+(c) & $\mathbf{4.7073}$ & $2.9024$ & $1.3571$ & $H_A:\mu(P1)>\mu(P2),~p=6.396^{-16};~H_A:\mu(P1)>\mu(P3),~p<2.2^{-16}$\\ % 2_6
+(c-flipped) & $1.244$ & $2.9268$ & $\mathbf{4.6429}$ & $H_A:\mu(P3)>\mu(P1),~p<2.2^{-16};~H_A=\mu(P3)>\mu(P2),~p:1.864^{-12}$\\ %2_7
+(e) & $\mathbf{4.7561}$ & $2.0000$ & $1.2439$ & $H_A=\mu(P1)>\mu(P2),~p<2.2^{-16};~H_A=\mu(P1)>\mu(P3):~p<2.2^{-16}$\\ %2_2
+(e-flipped) & $1.2439$ & $1.8500$ & $\mathbf{4.7073}$ & $H_A=\mu(P3)>\mu(P1),~p<2.2^{-16};~H_A=\mu(P3)>\mu(P2):~p<2.2^{-16}$\\ % 2_3
+(f) & $\mathbf{4.8292}$ & $2.0976$ & $1.2750$ & $H_A=\mu(P1)>\mu(P2),~p<2.2^{-16};~H_A=\mu(P1)>\mu(P3),~p<2.2^{-16}$\\ % 2_4
+(f-flipped) & $1.1463$ & $2.3171$ & $\mathbf{4.6585}$ & $H_A=\mu(P3)>\mu(P1),~p<2.2^{-16};~H_A=\mu(P3)>\mu(P2),~p<2.2^{-16}$\\\\ % 2_5
 \hline
 Domain & \multicolumn{4}{c}{Military Engagement/Safe Region} \\
- ~ & \multicolumn{3}{c}{Average Likert Rating} & Sweetspot\\
-Stim ID & P1 & P2 & P3 & Significance\\
-(i) & $1.1951$ & $4.3902$ & $\mathbf{4.9024}$ & ToDo\\ % 3_1
-(j) & $1.0952$ & $2.2927$ & $\mathbf{4.5122}$ & ToDo\\ % 3_2
-(k) & $1.0714$ & $2.7804$ & $\mathbf{4.6585}$ & ToDo\\ % 3_3
-(l) & $1.2327$ & $3.1667$ & $\mathbf{4.7073}$ & ToDo\\ % 3_4
+ ~ & \multicolumn{3}{c}{Average Likert Rating} &  Sweetspot Rated Significantly Higher?\\
+Stim ID & P1 & P2 & P3 & One-Tailed Two Sample T-Test with $\alpha=0.05$, $H_0:\mu(P_i)=\mu(P_j)$\\
+(i) & $1.1951$ & $4.3902$ & $\mathbf{4.9024}$ & $H_A=\mu(P3)>\mu(P1),~p<2.2^{-16};~H_A=\mu(P3)>\mu(P2),~p=5.382^{-4}$\\ % 3_1
+(j) & $1.0952$ & $2.2927$ & $\mathbf{4.5122}$ & $H_A=\mu(P3)>\mu(P1),~p<2.2^{-16};~H_A=\mu(P3)>\mu(P2),~p<7.981^{-14}$\\ % 3_2
+(k) & $1.0714$ & $2.7804$ & $\mathbf{4.6585}$ & $H_A=\mu(P3)>\mu(P1),~p<2.2^{-16};~H_A=\mu(P3)>\mu(P2),~p=2.708^{-13}$\\ % 3_3
+(l) & $1.2327$ & $3.1667$ & $\mathbf{4.7073}$ & $H_A=\mu(P3)>\mu(P1),~p<2.2^{-16};~H_A=\mu(P3)>\mu(P2),~p=6.621^{-12}$\\ % 3_4
 \hline
 \hline
 \end{tabular}
 }
 \label{tab:point-likert-scores}
-\caption{Need to put in caption!!!}
+\caption{Average Likert Ratings per Point by Domain with T-Test results: in all cases the average rating of the sweetspot is significantly higher than the other points tested for that stimuli}
 \end{table}
+
+\begin{table}
+\centerline{
+\begin{tabular}{c c c c }
+\hline
+Domain & \multicolumn{3}{c}{Classrom/Front of Room} \\
+$H_0$ & $H_A$ & $\alpha$ & p-value\\
+$\mu(c.P1)=\mu(c-flipped.P3)$ & $\mu(c.P1)!=\mu(c-flipped.P3)$ & $0.05$ & $0.6315$\\
+$\mu(e.P1)=\mu(e-flipped.P3)$ & $\mu(e.P1)!=\mu(e-flipped.P3)$ & $0.05$ & $0.7358$\\
+$\mu(f.P1)=\mu(f-flipped.P3)$ & $\mu(f.P1)!=\mu(f-flipped.P3)$ & $0.05$ & $0.2592$\\
+\hline
+\hline
+\end{tabular}
+}
+\label{tab:flipped-point-likert-scores}
+\caption{Two Tailed Two Sample T-Tests for flipped stimuli pair trials.}
+\end{table}
+
 
 
 
