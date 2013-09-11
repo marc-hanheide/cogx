@@ -356,19 +356,12 @@ Taken together these results indicate that: (a) for all stimuli there was a loca
 
 
 
-\section{Modeling - Nick}
+\section{Related Work}
 
 
-As the results above show, in order for an artificial cognitive system to operate successfully with humans (e.g. understanding spatially-situated task utterances), they must have access to internal models which can represent CDSRs and recognise them in new environments. Whilst spatial reasoning has been an active topic in AI and robotics for decades, CDSRs present a new problem which requires solutions beyond the current state-of-the-art. Regions are central to QSR work~\cite{Cohn:2001}. Regions can either have crisp boundaries, usually defined by geometric shapes (e.g. the bounding boxes of visually tracked objects~\cite{SridharCohn:10}), or vague boundaries created qualitatively by multiple crisp regions (e.g. the `egg-yolk model'~\cite{Cohn96b}), or by thresholding an underlying spatially-mapped function (e.g. those created by potential fields~\cite{brenneretal07ijcai} or by Gaussian kernels~\cite{burbridge-dearden12}). The fundamental decision when creating a computational model of a CDSR is the method used to represent its boundary. Given their context-dependent nature, boundary definitions based purely on single geometric shapes seem unlikely to work. However, arbitrary boundaries can be defined using a sequence of geometric primitives (usually straight lines), as in chain code for image region representations~\cite{Freeman:1961}. This is an approach we followed in previous work, where boundary segments connected vertices defined by contextually-appropriate anchor points~\cite{Hawes:2012}.  Whilst our previous approach provided basic performance, the crisp boundaries it generated caused mismatches with human data over the extent of regions. Methods based on underlying spatial functions may be more flexible in this regard, as they can be selectively thresholded depending on context. 
+As the results above show, in order for an artificial cognitive system to operate successfully with humans (e.g. understanding spatially-situated task utterances), they must have access to internal models which can both represent CDSRs and recognise them in new environments. Whilst spatial reasoning has been an active topic in AI and robotics for decades, CDSRs present a new problem which requires solutions beyond the current state-of-the-art. Regions are central to QSR work~\cite{Cohn:2001}. Regions can either have crisp boundaries, usually defined by geometric shapes (e.g. the bounding boxes of visually tracked objects~\cite{SridharCohn:10}), or vague boundaries created qualitatively by multiple crisp regions (e.g. the `egg-yolk model'~\cite{Cohn96b}), or by thresholding an underlying spatially-mapped function (e.g. those created by potential fields~\cite{brenneretal07ijcai} or by Gaussian kernels~\cite{burbridge-dearden12}). The fundamental decision when creating a computational model of a CDSR is the method used to represent its boundary. Given their context-dependent nature, boundary definitions based purely on single geometric shapes seem unlikely to model the regions with sufficient accuracy. However, arbitrary boundaries can be defined using a sequence of geometric primitives (usually straight lines), as in chain codes for image region representations~\cite{Freeman:1961}. 
 
-% Basic approaches
-
-\textbf{TODO:} Perhaps add related work on robot spatial representations, e.g. maps, rooms.  
-
-In the following sections we explore whether two possible CDSR models (one based on boundary segments, one based on a spatial function) are able to satisfy the previously described desiderata for a cognitive systems approach to representing and recognising CDSRs. The surrounding discussion is intended to explore the strengths and weaknesses of these models, providing directions for future research.
-
-\subsection{Symbolic Boundary Method - KLENK}
-In our previous work \cite{Hawes:2012}, we presented an approach on a mobile robot that combined qualitative spatial relations, object recognition, and analogy to transfer CDSRs represented as polygons defined by \textit{anchor points} \cite{DBLP:journals/jetai/KlenkFTK11}.  Anchor points are symbolic descriptions that link a conceptual entity (e.g., the front of a classroom) to perceived entities (e.g., the lower left extent of a desk).  An example of the representation and transfer approach is Figure \ref{fig:anchor-point-transfer}.  In the know example, a human defines the front of the classroom as a polygon consisting of four anchor points.  Analogical transfer works by aligning structured representations and transferring partially aligned statements from the known example to the new environment.  In this case, the anchor points are transferred from the group of desks in the known example to the corresponding group of desks in the new environment. 
+This is an approach we followed in previous work \cite{Hawes:2012}, where we developed an approach that defined CDSRs using \textit{anchor points} \cite{DBLP:journals/jetai/KlenkFTK11} as the vertices of the region polygon. Anchor points are symbolic descriptions that link a conceptual entity (e.g., the front of a classroom) to perceived entities (e.g., the lower left extent of a desk).  Once a particular representation has been modelled in this manner, we were able to find the same type of region in previously unseen rooms using analogical transfer. An example of the representation and transfer approach is Figure \ref{fig:anchor-point-transfer}.  In the know example, a human defines the front of the classroom as a polygon consisting of four anchor points.  Analogical transfer works by aligning structured representations and transferring partially aligned statements from the known example to the new environment.  In this case, the anchor points are transferred from the group of desks in the known example to the corresponding group of desks in the new environment.
 
 \begin{figure}
   \includegraphics[width=\columnwidth]{figures/classroom-transfer.png}
@@ -376,23 +369,16 @@ In our previous work \cite{Hawes:2012}, we presented an approach on a mobile rob
   \label{fig:anchor-point-transfer}
 \end{figure}
 
-This method satisfies our criteria for a cognitive systems solution for the following reasons: (1) the alignment process integrates spatial and semantic knowledge about the environment, (2) analogy enables transfer from a single example, (3) while untested, by linking conceptual knowledge to perception, regions defined by anchor points should support any symbolic reasoning task.
- 
-Applying this model to the points and regions indicated in our experiment illustrates two limitations.  Regions do not always physically bounded by objects.  In the classroom examples, people frequently did not extend the front of the room all way into the corners.  In the safety example, people did not indicate that it was safe behind the lone turret in front of the others.  This indicates that people consider the dynamics of the situation when evaluating these terms, which is not accounted for in this model.
+This method satisfies our criteria for a cognitive systems solution for the following reasons: (1) the alignment process integrates spatial and semantic knowledge about the environment, (2) analogy enables transfer from a single example, (3) while untested, by linking conceptual knowledge to perception, regions defined by anchor points should support any symbolic reasoning task. Applying this model to the points and regions indicated in our experiment illustrates two limitations.  Regions do not always physically bounded by objects.  In the classroom examples, people frequently did not extend the front of the room all way into the corners.  In the safety example, people did not indicate that it was safe behind the lone turret in front of the others.  This indicates that people consider the dynamics of the situation when evaluating these terms, which is not accounted for in this model.
 
-\subsection{Spatial Function Method - NICK}
+The use of spatial regions connected to function has been explored in other robotics work, e.g. ~\cite{Karg:2012,Fasola:2013}, but these regions are based on fields anchored at single points in the environment or on a particular object. Such fields can only vary with respect to context in terms of their size, which does not make them particularly well suited to modelling CDSRs.
 
-Overview - either Chris's approach or something similar
-Example
-Results?
-Discussion 
-Where do the points come from
 
 \section{Discussion}
  
 \begin{acknowledgements} 
 \noindent
-STRANDS etc.
+The research leading to these results has received funding from the European Union Seventh Framework Program (FP7/2007-2013) under the project STRANDS (grant agreement No 600623), and from the EPSRC under grant EP/K014293/1.
 \end{acknowledgements} 
 
 
