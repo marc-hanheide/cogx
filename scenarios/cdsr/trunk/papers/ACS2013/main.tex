@@ -9,6 +9,7 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{multirow}
+% \usepackage{subfig}
 
 % Put back in
 
@@ -137,10 +138,12 @@ We use \textbf{Cohen's kappa coefficient}, $\kappa$, to measure the agreement be
 
 %However, this calculation was done across all the stimuli and as we have already mentioned some of the stimuli were deliberately designed to be non-prototypical, in particular we expected the classroom stimuli where the chairs were arranged in a circle (Figure \ref{fig:classroom-a}) and in a U shaped pattern (Figure \ref{fig:classroom-c} and its horizontally flipped equivalent) to be relatively novel contexts for the subjects. Indeed, if we look at the histogram of the average pairwise $\kappa$ scores by stimuli, Figure \ref{fig:stim-kappa}, it is evident that there is a large variation, ranging from $0$ to $0.8$, in $\kappa$ scores for each stimuli. 
 
-\begin{table}
-\centerline{
+\begin{table}[t]
+\parbox{.35\linewidth}{
 \begin{tabular}{l c c}
-Stim ID & Average Pairwise $\kappa$ & No Region Responses\\
+% Stim ID & Average Pairwise $\kappa$ & No Region Responses\\
+ & Average & No \\
+Stim ID & Pairwise $\kappa$ & Reg.\\
 \hline
 \hline
 (h) & 0.5034 & 0\\ % 1_2
@@ -158,10 +161,31 @@ Stim ID & Average Pairwise $\kappa$ & No Region Responses\\
 (a) & 0.0996 & 10 \\ % 2_1
 \hline
 \end{tabular}
-}
 \label{tab:stimuli-kappa-scores}
-\caption{The average pairwise $\kappa$ scores and the number of no region response by visual stimuli. The stimuli id are based on the labels in Figure \ref{exp-stimuli} with the horizontally flipped versions of stimuli indicated.}
+\caption{The average pairwise $\kappa$ scores and the number of no region response by visual stimuli.}
+}
+\hfill
+\parbox{.65\linewidth}{
+\begin{tabular}{c c}
+Expected Relationship & Human Results  \\
+\hline
+\hline
+area(g) > area(h) & 291.2 > 276.2 (p<.003) \\
+maximumX(f) > maximumX(e) & 176.1 > 167.1   (p<.47) \\
+% minimumX(e-flipped) > minimumX(f-flipped) & 336.1 > 321.3 (p<.12) \\
+minimumX(e-flipped)  &  \\
+ > minimumX(f-flipped) & 336.1 > 321.3 (p<.12) \\
+maximumY(i) > maxmimumY(j) & 304.64 > 265.04 (p<.03) \\
+maximumY(j) > maxmimumY(k) & 265.04 > 251.71 (p<.47) \\
+maximumY(k) = maxmimumY(l) & 265.04 != 290.03 (p<.04) \\
+\hline
+\end{tabular}
+\label{tab:region-location-tests}
+\caption{Comparison of the expected relationships to the mean human responses.}
+}
 \end{table}
+
+
 
 %\begin{table}
 %\centerline{
@@ -206,24 +230,6 @@ Table \ref{tab:stimuli-kappa-scores} lists the average pairwise $\kappa$ score f
 %\label{fig:type-1-hists}
 %\end{figure}
 
-\begin{table}
-\centerline{
-\begin{tabular}{c c}
-Expected Relationship & Human Results  \\
-\hline
-\hline
-area(g) > area(h) & 291.2 > 276.2 (p<.003) \\
-maximumX(f) > maximumX(e) & 176.1 > 167.1   (p<.47) \\
-minimumX(e-flipped) > minimumX(f-flipped) & 336.1 > 321.3 (p<.12) \\
-maximumY(i) > maxmimumY(j) & 304.64 > 265.04 (p<.03) \\
-maximumY(j) > maxmimumY(k) & 265.04 > 251.71 (p<.47) \\
-maximumY(k) = maxmimumY(l) & 265.04 != 290.03 (p<.04) \\
-\hline
-\end{tabular}
-}
-\label{tab:region-location-tests}
-\caption{Comparison of the expected relationships to the mean human responses.}
-\end{table}
 
 
 
