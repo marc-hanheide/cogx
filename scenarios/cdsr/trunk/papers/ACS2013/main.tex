@@ -125,27 +125,18 @@ The geographical map stimuli, Figures \ref{fig:bottleneck-a} and \ref{fig:bottle
 \subsection{Participants and Procedure}
 Using these stimuli pairs, we developed an online experiment with two different types of trials to explore our initial questions. 43 undergraduate students from two different third level institutes took part in the study. To control for sequence effects the presentation order of the trials were randomised for each participant as was the order of the stimuli presented within each trial.   
 
-\subsection{Trial Type 1 - Design}
+\subsection{Task 1 - Design}
 In the first set of trials, the subject was asked to draw a polygon that defined the extent of the CDSR given or to select a no region option.  The drawing was done on the diagram in all stimuli with the classroom photographs provided for reference in those trials.  Subjects drew polygons by clicking to position the vertices with lines being automatically generated between each point indicated as the subject drew.  There was no upper bound placed on the number of line segments drawn but subjects were required to provide at least three line segments or to choose no region before continuing to the next stimulus.
 
-\subsection{Trial Type 1 - Results}
+\subsection{Task 1 - Results}
+We use two methods to analyze the results of region drawing task.  First, we use interannotator agreement for two reasons: (1) if there is fair to good overall agreement, this is evidence that people change the regions they produce based systematically with context, (2) we expect less agreement in ambiguous situations (e.g., the circle (a) and U-shaped (c) of desk arrangements as well as the turret + 1 (l) military engagement configuration).  Second, we use the extent points of the regions to assess changes between trials.  That is, as the desks are moved back from stimuli (e) to (f), we expect the maximum x-coordinate of the region to increase.
 
-One well known metric for analysising interannotator agreement is the \textbf{Cohen's kappa coefficient}, $\kappa$. Cohen's kappa measures the agreement between two annotators who each classify a number of items into two or more mutually exclusive classes. $\kappa$ ranges from 0 indicating no agreement beyond chance to 1 indicating complete agreement. In order to use Cohen's kappa to measure the agreement between subject responses in our type 1 trials we generated a set of 47,000 test points that were uniformly distributed across each stimuli and used each subject's polygon to classify the test points as being inside or outside the polygon. After classifying the test points for each subject we then computed an average pairwise kappa score for each subject with all the other subjects on a per stimuli basis. In this calculation if either of the subjects in a pair entered a no region response for a particular stimuli a $\kappa$ value of 0 was used. Figure \ref{fig:subj-kappa} shows a histogram of the per subject average kappa scores using ten equal width intervals covering the $\kappa$ range between 0 and 1.  It is evident from this figure that most subjects had a $\kappa$ score between $0.2-0.5$ with a overall majority of subjects having a $\kappa$ score between $0.3-0.4$. A $\kappa$ score between $0.3-0.4$ would be considered as indicating poor to fair agreement, i.e. there was some agreement between subjects but less that would be expected. However, this calculation was done across all the stimuli and as we have already mentioned some of the stimuli were deliberately designed to be non-prototypical, in particular we expected the classroom stimuli where the chairs were arranged in a circle (Figure \ref{fig:classroom-a}) and in a U shaped pattern (Figure \ref{fig:classroom-c} and its horizontally flipped equivalent) to be relatively novel situations for the subjects. Indeed, if we look at the histogram of the average pairwise $\kappa$ scores by stimuli, Figure \ref{fig:stim-kappa}, it is evident that there is a large variation, ranging from $0$ to $0.8$, in $\kappa$ scores for each stimuli. 
+We use \textbf{Cohen's kappa coefficient}, $\kappa$, to measure the agreement between two regions as follows.  We generated a set of 47,000 test points that were uniformly distributed across each stimuli and used each subject's polygon to classify the test points as being inside or outside the polygon. After classifying the test points for each subject we then computed an average pairwise kappa score for each subject with all the other subjects on a per stimuli basis. In this calculation if either of the subjects in a pair entered a no region response for a particular stimuli a $\kappa$ value of 0 was used.  $\kappa$ ranges from 0 indicating no agreement beyond chance to 1 indicating complete agreement. 
 
-In more detail, Table \ref{tab:stimuli-kappa-scores} lists the average pairwise $\kappa$ score for each of the visual stimuli used in the experiment and the number of no region responses for each stimuli. It is clear from this table that the non-prototypical stimuli have the lowest $\kappa$ scores and also that there is relationship between typicality and the number of no region responses. Given this relatively large variation across stimuli, which we attribute to the prototypicality of the depicted situation, we computed the average pairwise $\kappa$ scores for each subject when the non-prototypical stimuli trials were excluded. Figure \ref{fig:subj-kappa-proto} presents the histogram of the resulting average pairwise subject  $\kappa$ scores by subject. Not surpringly, with the exclusion on the non-prototypical stimuli the average pairwise $\kappa$ scores increase, with over half the subjects having an average pairwise $\kappa$ score between $0.4$ and $0.6$. $\kappa$ scores in this range can be interpreted as fair to good.
+% Klenk: This is where I left off.  I think we can drop the histogram and talk.
 
-\begin{figure}
-%\includegraphics[width=0.4\textwidth]{figures/turrets-plus-one.jpeg}
-\centerline{
-\begin{tabular}{ccc}
-\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/subj-kappa-hist.pdf}\caption{}\label{fig:subj-kappa}\end{subfigure}&
-\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/stimuli-kappa-hist.pdf}\caption{}\label{fig:stim-kappa}\end{subfigure}&
-\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/subj-kappa-hist-protostim.pdf}\caption{}\label{fig:subj-kappa-proto}\end{subfigure}
-\end{tabular}
-}
-\caption{(a) Histogram of average pairwise subject kappa score across all stimuli by subject, (b) histogram of average pairwise subject kappa scores for each stimuli, (c) histogram of average pairwise subject kappa score excluding non-prototypical stimuli by subject.}
-\label{fig:type-1-hists}
-\end{figure}
+Figure \ref{fig:subj-kappa} shows a histogram of the per subject average kappa scores using ten equal width intervals covering the $\kappa$ range between 0 and 1.  It is evident from this figure that most subjects had a $\kappa$ score between $0.2-0.5$ with a overall majority of subjects having a $\kappa$ score between $0.3-0.4$. A $\kappa$ score between $0.3-0.4$ would be considered as indicating poor to fair agreement, i.e. there was some agreement between subjects but less that would be expected. However, this calculation was done across all the stimuli and as we have already mentioned some of the stimuli were deliberately designed to be non-prototypical, in particular we expected the classroom stimuli where the chairs were arranged in a circle (Figure \ref{fig:classroom-a}) and in a U shaped pattern (Figure \ref{fig:classroom-c} and its horizontally flipped equivalent) to be relatively novel situations for the subjects. Indeed, if we look at the histogram of the average pairwise $\kappa$ scores by stimuli, Figure \ref{fig:stim-kappa}, it is evident that there is a large variation, ranging from $0$ to $0.8$, in $\kappa$ scores for each stimuli. 
+
 
 \begin{table}
 \centerline{
@@ -173,13 +164,49 @@ Stim ID & Average Pairwise $\kappa$ & No Region Responses\\
 \caption{The average pairwise $\kappa$ scores and the number of no region response by visual stimuli. The stimuli id are based on the labels in Figure \ref{exp-stimuli} with the horizontally flipped versions of stimuli indicated.}
 \end{table}
 
+In more detail, Table \ref{tab:stimuli-kappa-scores} lists the average pairwise $\kappa$ score for each of the visual stimuli used in the experiment and the number of no region responses for each stimuli. It is clear from this table that the non-prototypical stimuli have the lowest $\kappa$ scores and also that there is relationship between typicality and the number of no region responses. Given this relatively large variation across stimuli, which we attribute to the prototypicality of the depicted situation, we computed the average pairwise $\kappa$ scores for each subject when the non-prototypical stimuli trials were excluded. Figure \ref{fig:subj-kappa-proto} presents the histogram of the resulting average pairwise subject  $\kappa$ scores by subject. Not surpringly, with the exclusion on the non-prototypical stimuli the average pairwise $\kappa$ scores increase, with over half the subjects having an average pairwise $\kappa$ score between $0.4$ and $0.6$. $\kappa$ scores in this range can be interpreted as fair to good.
 
-The analysis of the type 1 trials indicates that, over a range of domains and spatial regions, the responses from the subjects did agree, to a good degree. Furthermore, their results support the hypothesis that the defintion of CDSRs in a given context is effected by the location and orientation of objects in the environment. For example, focusing on the classroom scenes (stimuli, $a$, $c$, $e$, and $f$) the only difference between these trials was the layout of the chairs in the room and yet there is a substantial variation across these stimuli of the agreement between subjects on the specified spatial region, namely \textit{the front of the room}. Situation $f$ resulted in an average pairwise agreement of $0.393$ and in comparision situation $a$ had an average pairwise agreement of $0.0996$. 
+The analysis of the task 1 trials indicates that, over a range of domains and spatial regions, the responses from the subjects did agree, to a good degree. Furthermore, their results support the hypothesis that the defintion of CDSRs in a given context is effected by the location and orientation of objects in the environment. For example, focusing on the classroom scenes (stimuli, $a$, $c$, $e$, and $f$) the only difference between these trials was the layout of the chairs in the room and yet there is a substantial variation across these stimuli of the agreement between subjects on the specified spatial region, namely \textit{the front of the room}. Situation $f$ resulted in an average pairwise agreement of $0.393$ and in comparision situation $a$ had an average pairwise agreement of $0.0996$. 
 
-\subsection{Trial Type 2 - Design} 
+
+%\begin{figure}
+%%\includegraphics[width=0.4\textwidth]{figures/turrets-plus-one.jpeg}
+%\centerline{
+%\begin{tabular}{ccc}
+%\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/subj-kappa-hist.pdf}\caption{}\label{fig:subj-kappa}\end{subfigure}&
+%\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/stimuli-kappa-hist.pdf}\caption{}\label{fig:stim-kappa}\end{subfigure}&
+%\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/subj-kappa-hist-protostim.pdf}\caption{}\label{fig:subj-kappa-proto}\end{subfigure}
+%\end{tabular}
+%}
+%\caption{(a) Histogram of average pairwise subject kappa score across all stimuli by subject, (b) histogram of average pairwise subject kappa scores for each stimuli, (c) histogram of average pairwise subject kappa score excluding non-prototypical stimuli by subject.}
+%\label{fig:type-1-hists}
+%\end{figure}
+
+\begin{table}
+\centerline{
+\begin{tabular}{c c}
+Expected Relationship & Human Results  \\
+\hline
+\hline
+area(g) > area(h) & 291.2 > 276.2 (p<.003) \\
+maximumX(f) > maximumX(e) & 176.1 > 167.1   (p<.47) \\
+minimumX(e-flipped) > minimumX(f-flipped) & 336.1 > 321.3 (p<.12) \\
+maximumY(i) > maxmimumY(j) & 304.64 > 265.04 (p<.03) \\
+maximumY(j) > maxmimumY(k) & 265.04 > 251.71 (p<.47) \\
+maximumY(k) = maxmimumY(l) & 265.04 != 290.03 (p<.04) \\
+\hline
+\end{tabular}
+}
+\label{tab:region-location-tests}
+\caption{Comparison of the expected relationships to the mean human responses.}
+\end{table}
+
+
+
+\subsection{Task 2 - Design} 
 In the second set of trials, a location was marked on the visual stimuli (using a red dot) and the subject was asked to rank on a five point likert scale their judgement of how well the location matched the described spatial region.  The location of these points was informed by the results of a pilot study. In the final study they were positioned such that one of the domain's points, called the \textbf{sweetspot}, was located near the expected prototypical center of the described spatial region. In the classroom domain the three points were located along the horizontal line that bisected the stimuli with P1 positioned on the left of the stimuli, P2 in the center and P3 on the right of the stimuli (as shown in Figure \ref{fig:classroom-points}). One of the aims of this configuration of points was to provide comparable data points between the trials where the classroom stimuli were horizontally flipped. In the classroom domain the expected sweetspot varied between the points depending on the stimuli. In the map domain P1 was positioned in the top left corner of the stimuli,  P2 was the expected sweetspot and was located within the expected bottleneck region for both stimuli and P3 was located in the bottom right corner of the stimuli (see Figure \ref{fig:bottleneck-points}).  In the military engagement domain the three test points were located on the vertical line that bisected the stimuli: P1 was located near the top of the image in the proximity of the enemy tanks, P2 was located near the center of the image such that in some stimuli it was in a no-man's land position and in other stimuli (specifically stimuli (i) in the friendly tanks have moved forward and (l) where there is an extra friendly turret) it could be considered to be in a protected area, and P3 was located near the bottom of the stimuli and consequently was always located behind the friendly tanks/turrets. P3 was the expected sweetspot in the military engagement domain but it was also hoped that P2 rating would differ between the stimuli where it was in no-mans land and where it recieved some protection. 
 
-\subsection{Trial Type 2 - Results}
+\subsection{Task 2 - Results}
 
 %Task 1: The participant draws a polygon denoting the region
 %Analysis of results:
