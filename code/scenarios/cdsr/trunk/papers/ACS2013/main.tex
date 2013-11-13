@@ -13,7 +13,7 @@
 
 % Put back in
 
- % First page headings for accepted submissions.
+% First page headings for accepted submissions.
 % \cogsysheading{1}{2012}{1-18}{9/2012}{12/2012}
  % First page headings for poster submissions.
 %\cogsysposterheading{First}{2012}{1-18}
@@ -41,10 +41,6 @@ Representing and reasoning about spatial terms is an essential ability for cogni
 
 \section{Introduction} 
 Natural collaboration between humans and cognitive systems requires both participants to communicate using a shared understanding of spatial language.  Cognitive systems can already understand spatial terms defined in terms of coordinates on a map~\cite{Zender2008a}, or that can be specified using known landmarks~\cite{brenneretal07ijcai}.  However, many spatial terms are defined not only by their geometry, but also by their context.  That is, to understand this language requires considering the other objects and agents in the environment as well as their configuration, functional roles, and goals.  We call regions that can only be understood in this way \textit{context-dependent spatial regions} (CDSRs).
-
-We claim that (1) people can effectively communicate using these regions and (2) the size, location and shape of these regions change with the context.  To explore these claims, we present the results of a human study in which people marked regions and rated points representing CDSRs in three different environments in 13 different contexts.  In discussing the results, we consider a number of approaches from current cognitive systems and robotics.  We posit that to account for this ability, a cognitive system must respond to changing context, apply learned regions to new contexts, and reuse learned knowledge in multiple tasks.  Each approach has a number of shortcomings that must be addressed not only to improve our understanding of human spatial reasoning, but also to enable robust intelligent assistants in human environments.
-
-\section{Context-Dependent Spatial Regions}\label{sec:cdsrs}
 
 Consider the following regions shown in Figure \ref{fig:examples}: the front of a classroom, safety in a military engagement, and a geographic bottleneck.  To determine the extent of these regions, one must identify the physical boundaries (e.g., walls, bodies of water), the objects within the environment, their orientation and their functional use (e.g., desks oriented toward a whiteboard), and other agents' intentions and capabilities (e.g., enemy tanks can move and have a range of attack).%  Furthermore, these regions exist at different levels of spatial resolution.  Consider a neighborhood in a city, whose boundaries expand and contract over time with changes to the surrounding residents and businesses.
 
@@ -74,7 +70,7 @@ Consider the following regions shown in Figure \ref{fig:examples}: the front of 
   \label{fig:examples}
 \end{figure}
 
-Understanding CDSRs is crucial to joint intelligent action with humans; among other reasons they are frequently tieds to goals and commands: ``go to the front of the classroom'', ``defend the bottleneck'', and ``get to safety''. In the rest of the paper we present a study that examines the contextual dependence of these regions.  Following this we discuss how the results align with previous research and requirements for a cognitive systems model of this ability.
+Understanding CDSRs is crucial to joint intelligent action with humans; among other reasons they are frequently tieds to goals and commands: ``go to the front of the classroom'', ``defend the bottleneck'', and ``get to safety''.  We claim that (1) people can effectively communicate using these regions and (2) the size, location and shape of these regions change with the context.  To explore these claims, we present the results of a human study in which people marked regions and rated points representing CDSRs in three different environments in 13 different contexts.  In discussing the results, we consider the applicability of approaches from cognitive systems and robotics.  We posit that to account for this ability, a cognitive system must respond to changing context, apply learned regions to new contexts, and reuse learned knowledge in multiple tasks.  Current approaches have a number of shortcomings that must be addressed not only to improve our understanding of human spatial reasoning, but also to enable robust intelligent assistants in human environments.
 
 %JK Removed the following text and replaced with text above primarily to save space, feel free to switch back.
 %  Not only are these regions frequently tied to goals and commands: ``go to the front of the classroom'', ``defend the bottleneck'', and ``get to safety'', but they are also central to understanding human activities: e.g., ``Is there a class in session?''.
@@ -108,19 +104,19 @@ The classroom stimuli consisted of pairs of floor plans and photos of classrooms
 \begin{figure}
 %\includegraphics[width=0.4\textwidth]{figures/turrets-plus-one.jpeg}
 \centerline{
-\begin{tabular}{cccc}
-\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/classroom-circle.pdf}\caption{}\label{fig:classroom-a}\end{subfigure}&
-\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/classroom-circle-photo.jpg}\caption{}\label{fig:classroom-b}\end{subfigure}&
-\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/classroom-u-shaped.pdf}\caption{}\label{fig:classroom-c}\end{subfigure}&
-\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/classroom-u-photo.jpg}\caption{}\label{fig:classroom-d}\end{subfigure}\\
-\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/classroom-close.pdf}\caption{}\label{fig:classroom-f}\end{subfigure}&
-\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/classroom-far-away.pdf}\caption{}\label{fig:classroom-e}\end{subfigure}&
-\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/bottleneck-1.jpg}\caption{}\label{fig:bottleneck-a}\end{subfigure}&
-\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/bottleneck-2.jpg}\caption{}\label{fig:bottleneck-b}\end{subfigure}\\
-\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/tanks-close.jpg}\caption{}\label{fig:tanks-a}\end{subfigure}&
-\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/tanks-far.jpg}\caption{}\label{fig:tanks-b}\end{subfigure}&
-\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/turrets.jpeg}\caption{}\label{fig:turrets-a}\end{subfigure}&
-\begin{subfigure}[b]{0.18\textwidth}\includegraphics[width=\textwidth]{figures/turrets-plus-one.jpeg}\caption{}\label{fig:turrets-b}\end{subfigure}
+\begin{tabular}{ccc}
+\begin{subfigure}[b]{0.33\textwidth}\includegraphics[width=\textwidth]{figures/classroom-circle.pdf}\caption{}\label{fig:classroom-a}\end{subfigure}&
+\begin{subfigure}[b]{0.33\textwidth}\includegraphics[width=\textwidth]{figures/classroom-circle-photo.jpg}\caption{}\label{fig:classroom-b}\end{subfigure}&
+\begin{subfigure}[b]{0.33\textwidth}\includegraphics[width=\textwidth]{figures/classroom-u-shaped.pdf}\caption{}\label{fig:classroom-c}\end{subfigure}\\
+\begin{subfigure}[b]{0.33\textwidth}\includegraphics[width=\textwidth]{figures/classroom-u-photo.jpg}\caption{}\label{fig:classroom-d}\end{subfigure}&
+\begin{subfigure}[b]{0.33\textwidth}\includegraphics[width=\textwidth]{figures/classroom-close.pdf}\caption{}\label{fig:classroom-f}\end{subfigure}&
+\begin{subfigure}[b]{0.33\textwidth}\includegraphics[width=\textwidth]{figures/classroom-far-away.pdf}\caption{}\label{fig:classroom-e}\end{subfigure}\\
+\begin{subfigure}[b]{0.33\textwidth}\includegraphics[width=\textwidth]{figures/bottleneck-1.jpg}\caption{}\label{fig:bottleneck-a}\end{subfigure}&
+\begin{subfigure}[b]{0.33\textwidth}\includegraphics[width=\textwidth]{figures/bottleneck-2.jpg}\caption{}\label{fig:bottleneck-b}\end{subfigure}&
+\begin{subfigure}[b]{0.33\textwidth}\includegraphics[width=\textwidth]{figures/tanks-close.jpg}\caption{}\label{fig:tanks-a}\end{subfigure}\\
+\begin{subfigure}[b]{0.33\textwidth}\includegraphics[width=\textwidth]{figures/tanks-far.jpg}\caption{}\label{fig:tanks-b}\end{subfigure}&
+\begin{subfigure}[b]{0.33\textwidth}\includegraphics[width=\textwidth]{figures/turrets.jpeg}\caption{}\label{fig:turrets-a}\end{subfigure}&
+\begin{subfigure}[b]{0.33\textwidth}\includegraphics[width=\textwidth]{figures/turrets-plus-one.jpeg}\caption{}\label{fig:turrets-b}\end{subfigure}
 \end{tabular}
 }
 \caption{The stimuli used in the experiment.}
@@ -132,15 +128,18 @@ The classroom stimuli consisted of pairs of floor plans and photos of classrooms
 
 \textbf{Participants and Procedure:} The experiment was delivered online. 43 undergraduate students from two third-level institutes took part in the study. To control for sequence effects the order of the trials were randomised for each participant as was the order of the stimuli within each trial.   
 
-\subsection{Task 1 - Design}
-In task one, the subject was asked to draw a polygon that defined the extent of the CDSR given or to select a no region option.  The drawing was done on the diagram in all stimuli with the classroom photographs provided for reference in those situations.  Subjects drew polygons by creating a sequence of vertices with lines being automatically generated between them as the subject drew.  There was no upper bound placed on the number of line segments drawn, but subjects were required to provide at least three line segments or to choose no region before continuing.
+\subsection{Task 1 - Marking Region}
+In task one, the subject was asked to draw a polygon that defined the extent of the CDSR given or to select a no region option.  The drawing was done on the diagram in all stimuli with the classroom photographs provided for reference in those situations.  Subjects drew polygons by creating a sequence of vertices with lines being automatically generated between them as the subject drew.  There was no upper bound placed on the number of line segments drawn, but subjects were required to provide at least three line segments or to choose no region before continuing.  We used two methods to analyze the results inter-annotator agreement and comparing features of CDSRs between stimuli. 
 
-\subsection{Task 1 - Results}
-We use two methods to analyze the results of the region drawing task.  First, we use interannotator agreement for two reasons: (1) fair to good overall agreement would provide evidence that people have a shared interpretation of CDSRs in the given contexts, (2) we expect less agreement in ambiguous contexts (e.g., the circle (a) and U-shaped (c) desk arrangements as well as the turret + 1 (l) military engagement configuration).  Second, we use the extent points of the regions to assess changes between trials.  That is, as the desks are moved back from stimuli (e) to (f), we expect the maximum x-coordinate of the region to increase showing that region extent varies systematically with context changes.
+
+Second, we use features of the regions (e.g., area, maximum x-coordinate) to assess changes between trials.  That is, as the desks are moved back from stimuli (e) to (f), we expect the maximum x-coordinate of the region to increase showing that region extent varies systematically with context changes.
+
+\subsubsection{Inter-Annotator Agreement}
 
 %Kate:  (1) if there is fair to good overall agreement, this is evidence that people change the regions they produce based systematically with %context,  I changed this SUBSTANTIALLY to something that I think sounds better, but makes a different argument.  Let me know if it is ok.  Really %agreement would indicated shared understanding while variation between contexts would lend support to the importance of context.  Not sure I %captured this
+We use two methods to analyze the results of the region drawing task.  First, we use inter-annotator agreement for two reasons: (1) fair to good overall agreement would provide evidence that people have a shared interpretation of CDSRs in the given contexts, (2) we expect less agreement in ambiguous contexts (e.g., the circle (a) and U-shaped (c) desk arrangements as well as the turret + 1 (l) military engagement configuration).
 
-We use \textit{Cohen's kappa} coefficient, $\kappa$, to measure the agreement between two regions as follows.  We generated a set of 47,000 test points that were uniformly distributed across each stimulus and used each subject's polygon to classify the test points as being inside or outside the polygon. After classifying the test points for each subject, we then computed an average pairwise kappa score for each subject with all the other subjects on a per stimulus basis. In this calculation, if either of the subjects in a pair entered a no region response for a particular stimulus a $\kappa$ value of 0 was used.  $\kappa$ ranges from 0 indicating no agreement to 1 indicating complete agreement.  Typically, scores above 0.4 are considered fair agreement and 0.75 considered excellent.
+To measure the agreement between two regions, we use \textit{Cohen's kappa} coefficient, $\kappa$, as follows.  We generated a set of 47,000 test points that were uniformly distributed across each stimulus and used each subject's polygon to classify the test points as being inside or outside the polygon. After classifying the test points for each subject, we then computed an average pairwise kappa score for each subject with all the other subjects on a per stimulus basis. In this calculation, if either of the subjects in a pair entered a no region response for a particular stimulus a $\kappa$ value of 0 was used.  $\kappa$ ranges from 0 indicating no agreement to 1 indicating complete agreement.  Typically, scores above 0.4 are considered fair agreement and 0.75 considered excellent.
 
 % Klenk: This is where I left off.  I think we can drop the histogram and talk.
 
@@ -201,24 +200,24 @@ We use \textit{Cohen's kappa} coefficient, $\kappa$, to measure the agreement be
 
 \begin{table}[htb]
 \begin{center}
-\begin{tabular}{l c c}
+\begin{tabular}{l c c c}
 % Stim ID & Average Pairwise $\kappa$ & No Region Responses\\
-Stim ID & Average Pairwise $\kappa$ & No Reg.\\
+Stim ID & Ambiguity Expected? & Average Pairwise $\kappa$ & No Reg.\\
 \hline
 \hline
-(h) & 0.5034 & 0\\ % 1_2
-(g) & 0.4585 & 1\\ % 1_1
-(k) & 0.4548 & 0\\ % 3_3
-(f) & 0.3930 & 0\\ % 2_4
-(i) & 0.3906 & 0\\ % 3_1
-(e-flipped) & 0.3813 & 2\\ % 2_3
-(j) & 0.3787 & 1\\ % 3_2
-(f-flipped) & 0.3720 & 2\\ % 2_5
-(e) & 0.3629 & 1\\ %2_2
-(l) & 0.3164& 0\\ % 3_4
-(c) & 0.2438 & 2\\ % 2_6
-(c-flipped) & 0.2414 & 4\\ %2_7
-(a) & 0.0996 & 10 \\ % 2_1
+(h) & N & 0.5034 & 0\\ % 1_2
+(g) & N & 0.4585 & 1\\ % 1_1
+(k) & N & 0.4548 & 0\\ % 3_3
+(f) & N & 0.3930 & 0\\ % 2_4
+(i) & N & 0.3906 & 0\\ % 3_1
+(e-flipped) & N & 0.3813 & 2\\ % 2_3
+(j) & N & 0.3787 & 1\\ % 3_2
+(f-flipped) & N & 0.3720 & 2\\ % 2_5
+(e) & N & 0.3629 & 1\\ %2_2
+(l) & Y & 0.3164& 0\\ % 3_4
+(c) & Y & 0.2438 & 2\\ % 2_6
+(c-flipped) & Y & 0.2414 & 4\\ %2_7
+(a) & Y & 0.0996 & 10 \\ % 2_1
 \hline
 \end{tabular}
 \end{center}
@@ -226,25 +225,6 @@ Stim ID & Average Pairwise $\kappa$ & No Reg.\\
 \label{tab:stimuli-kappa-scores}
 \end{table}
 
-\begin{table}[htb]
-\begin{center}
-\begin{tabular}{r c l r c l}
-\multicolumn{3}{c}{Expected Relationship} & \multicolumn{3}{c}{Human Results}  \\
-\hline
-\hline
-area(g) &>& area(h) & 291.2 & >& 276.2* \\
-maxX(f) &>& maxX(e) & 176.1& >& 167.1 \\
-% minimumX(e-flipped) &>& minimumX(f-flipped) & 336.1& >& 321.3 (p<.12) \\
-minX(e-flipped) &>& minX(f-flipped) & 336.1& >& 321.3* \\
-maxY(i) &>& maxY(j) & 304.64 &>& 265.04* \\
-maxY(j) &>& maxY(k) & 265.04 &>& 251.71 \\
-maxY(k) &=& maxY(l) & 265.04 &!=& 290.03 \\
-\hline
-\end{tabular}
-\end{center}
-\caption{Comparison of the expected relationships to the mean human responses. *Significance value from t-test (p<0.1).}
-\label{tab:region-location-tests}
-\end{table}
 
 
 
@@ -292,16 +272,54 @@ Table \ref{tab:stimuli-kappa-scores} lists the average pairwise $\kappa$ score f
 %\label{fig:type-1-hists}
 %\end{figure}
 
-Table \ref{tab:region-location-tests} compares the expected relationships between the geometric extent of a CDSR in different contexts.  In five of the six comparisons, the expected relationships were found, supporting our claim that changes of context systematically change the perceived extent of a CDSR.  The comparison of the safety area with tanks (j) versus turrets (k) is interesting as it provides some evidence that people are simulating actions of other agents in the scene.  Because the tanks can move and turrets cannot, the safe region extends higher on screen in the tanks context.  The case that did not demonstrate the expected relationship was the safety region between the row of turrets (k) and turrets +1(l).  That is, a single turret does not provide safety from three tanks.  A possible explanation for this is that there is a domain expertise component to understanding contexts.
+\subsubsection{Predicted Region Changes and Simulation}
+\label{sec:simulation}
+To assess the claim that changing contexts predictably affects the CDSRs, we identified six expected relationships of region features between stimuli.  For example, we expect the wider bottleneck (g) to result in a larger area than (h), and, in the classroom, the maximum-x coordinate of the region should be greater in the case where the desks are further away from the whiteboard (f) than (e).  CDSRs are dynamic, in the move to safety scenario, we expect that people will simulate the actions of the agents.  Therefore, we expect the maximum-Y to be larger in the tanks scenario (j) than the turrets (k) because the friendly tanks will pursue the enemy tanks.  Similarly, we expect maximum-Y coordinate to the be same in the two different turrets scenarios (k) and (l), because people would simulate the results of the battle and realize that a single turret will not provide safety against three tanks.  
+
+\begin{table}[htb]
+\begin{center}
+\begin{tabular}{r c l r c l}
+\multicolumn{3}{c}{Expected Relationship} & \multicolumn{3}{c}{Human Results}  \\
+\hline
+\hline
+area(g) &>& area(h) & 291.2 & >& 276.2* \\
+maxX(f) &>& maxX(e) & 176.1& >& 167.1 \\
+% minimumX(e-flipped) &>& minimumX(f-flipped) & 336.1& >& 321.3 (p<.12) \\
+minX(e-flipped) &>& minX(f-flipped) & 336.1& >& 321.3* \\
+maxY(i) &>& maxY(j) & 304.64 &>& 265.04* \\
+maxY(j) &>& maxY(k) & 265.04 &>& 251.71 \\
+maxY(k) &=& maxY(l) & 265.04 &!=& 290.03 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Comparison of the expected relationships to the mean human responses. *Significance value from t-test (p<0.1).}
+\label{tab:region-location-tests}
+\end{table}
+
+
+Table \ref{tab:region-location-tests} compares the expected relationships between the CDSR features between stimuli.  In five of the six comparisons, the expected relationships were found, supporting our claim that changes of context systematically change the perceived extent of a CDSR.  The last two rows test our hypothesis that people are simulating the actions of others in defining the extent of the CDSR.  The comparison between the maximum-y coordinate of the safety area with tanks (j) versus turrets (k) provides some evidence, although not statistically significant, that people are simulating actions of other agents in the scene.  In the other simulation case, we did not observe the expected relationship between the row of turrets (k) and turrets +1(l).  The average maximum-Y was greater for the turret +1 stimuli indicating that people felt that the single turret provided protection from the enemy tanks.  As discussed in the previous section, we expected some ambiguity in this trial as people likely have different models for the capabilities of the different units in this scenario.
+
 
 %Kate: I took out "Our expectation was that people would reason that a lone turret would be no match for three tanks and indicate the safe region. " because it didn't make sense to me.
 
-\subsection{Task 2 - Design} 
-In task two, a location was marked on the stimulus (using a red dot) and the subject was asked to rank on a five point \textit{Likert scale} how well the location matched the given CDSR, or select not applicable.  The location of these points was informed by the results of a pilot study, such that one of the domain's points, called the \textit{sweetspot}, was located near the expected prototypical center of the CDSR. In the classroom domain, the three points were located along the horizontal line that bisected the stimulus with P1 positioned on the left of the stimulus, P2 in the center and P3 on the right of the stimulus. This provides comparable data points between the trials where the classroom stimuli were horizontally flipped.  In the geography situations, P1 was positioned in the top left corner of the stimulus, P2 was the expected \textit{sweetspot} and was located within the expected bottleneck region for both stimulus and P3 was located in the bottom right corner of the stimulus.  In the military engagement domain the three test points were located on the vertical line that bisected the stimulus: P1 was located near the enemy tanks, P3 was located with all friendly units between it and the enemy tanks and P2 was located near the center of the image as follows. In stimuli (j) and (k) the point lay between all forces, in stimulus (i), it lay behind the friendly tanks, and in stimulus (l) , it lay behind the lone turret but in front of the row turrets.  P3 was the expected \textit{sweetspot} in the military engagement domain but the rating of P2 should differ with (i) receiving the highest score and (k) the lowest score.
-
+\subsection{Task 2 - Rating Points} 
+In task two, the subject was asked to rank three points on a five point \textit{Likert scale} how well the location matched the given CDSR, or select not applicable.  The location of these points was informed by the results of a pilot study, such that one of the domain's points, called the \textit{sweetspot}, was located near the expected prototypical center of the CDSR. In the classroom domain, the three points were located along the horizontal line that bisected the stimulus with P1 positioned on the left of the stimulus, P2 in the center and P3 on the right of the stimulus.  This provides comparable data points between the trials where the classroom stimuli were horizontally flipped.  In the geography situations, P1 was positioned in the top left corner of the stimulus, P2 was the expected \textit{sweetspot} and was located within the expected bottleneck region for both stimulus and P3 was located in the bottom right corner of the stimulus.  In the military engagement domain the three test points were located on the vertical line that bisected the stimulus: P1 was located near the enemy tanks, P3 was located with all friendly units between it and the enemy tanks and P2 was located near the center of the image.  The locations are shown in Figure \ref{fig:locations}.
 %Kate: to save some space, maybe we could talk generally about location placement and only give specifics for one set of stimuli?  Just a though
 
-\subsection{Task 2 - Results}
+\begin{figure}
+\centerline{
+\begin{tabular}{ccc}
+\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/classroom-circle-points.png}\caption{}\label{fig:classroom-points}\end{subfigure}&
+\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/bottleneck-2-points.png}\caption{}\label{fig:bottleneck-points}\end{subfigure}&
+\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/tanks-close-points.png}\caption{}\label{fig:tanks-points}\end{subfigure}\\
+\end{tabular}
+}
+\caption{The pre-selected locations for each domain used in the Type 2 Trials.}
+\label{fig:locations}
+\end{figure}
+
+
+\subsubsection{Sweetspots}
 
 %Task 1: The participant draws a polygon denoting the region
 %Analysis of results:
@@ -331,8 +349,7 @@ In task two, a location was marked on the stimulus (using a red dot) and the sub
 
 %The type 2 trials the same visual stimulus and accompanying spatial descriptions as the type 1 trials with the addition that a location was marked on %the visual stimulus (using a red dot) and the subject was asked to rank on a five point \textit{Likert scale} their judgement of how well the location matched %the described spatial region. For each stimulus domain (classroom, map, military engagement) three points (P1, P2, and P3) were pre-selected.
 
-
-Table \ref{tab:point-likert-scores} lists the average Likert scores for the different points in each context. In all contexts, the expected \textit{sweetspot} received the maximum average Likert rating that was statistically significant using one-tailed two-sample t-tests $(p<.05)$.  To control for left--right bias, we compared the ratings of \textit{sweetspots} in the classroom stimuli (c), (e), and (f) with their flipped variants.  There was no statistical difference between the stimuli and their flipped variants.  These Likert ratings on individual stimuli support the claim that people are able to agree on the locations of CDSRs with changing context.  
+Our hypothesis was that the expected \textit{sweetspots} would score highest among the three points in all situations, and this would demonstrate broad agreement between participants concerning the locations of the CDSRs.  Table \ref{tab:point-likert-scores} lists the average Likert scores for the different points in each context. In all contexts, the expected \textit{sweetspot} received the maximum average Likert rating that was statistically significant using one-tailed two-sample t-tests $(p<.05)$.  To control for left--right bias, we compared the ratings of \textit{sweetspots} in the classroom stimuli (c), (e), and (f) with their flipped variants.  There was no statistical difference between the stimuli and their flipped variants.  These Likert ratings on individual stimuli support the claim that people are able to agree on the locations of CDSRs with changing context.  
 
 %There were two of these t-tests carried out for each stimulus, each one tested whether the \textit{sweetspot} ranking was statistically higher than one of the other points. Table \ref{tab:point-likert-scores} also lists the results of these t-tests for each stimulus. In all cases, the results indicate that the null hypothesis, $H_0$, should be rejected and that the alternative hypothesis, namely that the \textit{sweetspot} was rated significantly higher than the other point, could be accepted with $\alpha=0.05$.
 
@@ -340,21 +357,6 @@ Table \ref{tab:point-likert-scores} lists the average Likert scores for the diff
 
 % The following paragraph should end by saying this about question 1.
 
-Another way of testing the relationship between the variation in context and the variation in definition of the CDSRs is to look at the differences in the ranking of the P2 point in the military domain between the stimuli (i) and (j) and the stimuli (k) and (l). In stimulus (i) the friendly tanks are positioned between the P2 point and the enemy tanks whereas in stimulus (j) the P2 point is in \textit{no-man's land}\footnote{We use the term no-man's land to describe the unoccupied and contested area between the opposing forces.}. Given this change in context one would expect a higher ranking for the P2 point in context (i) than in context (j). This is confirmed by the results in Table \ref{tab:point-likert-scores} and the higher rating is statistically significant $(p<.05)$. Stimuli (k) and (l) present an analagous context with P2 being protected by an extra turret in stimulus (l) but in no-man's land in stimulus (k). Again, the average rating of P2 for stimulus (l) is higher than that of (k), although this difference is not statistically significant. Thus, it is unclear the extent to which participants were simulating the outcome of the battle. Notice, that the rating of the \textit{sweetspot} for the stimuli (i) and (l) remain quite high. This would indicate that the increase in the rating of the P2 points for these stimuli results from an increase in the area of the CDSR rather than a moving of the locus of the CDSR. Overall, the analysis of the ratings of the different \textit{sweetspots} across the non-flipped and flipped stimuli and the variation in the ratings of the P2 points in the military domain stimuli point to the fact that both the location and the extent of a CDSR is contextually dependent.
-
-
-%\begin{figure}
-%%\includegraphics[width=0.4\textwidth]{figures/turrets-plus-one.jpeg}
-%\centerline{
-%\begin{tabular}{ccc}
-%\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/classroom-circle-points.png}\caption{}\label{fig:classroom-points}\end{subfigure}&
-%\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/bottleneck-2-points.png}\caption{}\label{fig:bottleneck-points}\end{subfigure}&
-%\begin{subfigure}[b]{0.3\textwidth}\includegraphics[width=\textwidth]{figures/tanks-close-points.png}\caption{}\label{fig:tanks-points}\end{subfigure}\\
-%\end{tabular}
-%}
-%\caption{The pre-selected locations for each domain used in the Type 2 Trials.}
-%\label{fig:locations}
-%\end{figure}
 
 \begin{table}
 \centerline{
@@ -384,6 +386,12 @@ P3 & $\mathbf{4.9024}$ & $\mathbf{4.5122}$ & $\mathbf{4.6585}$ & $\mathbf{4.7073
 \caption{Average Likert ratings per point by situation and stimulus.}
 \label{tab:point-likert-scores}
 \end{table}
+
+
+\subsubsection{Between Stimuli Comparisons}
+
+To assess the claim that changing contexts predictably affects the CDSRs, we can compare the ratings of points between stimuli.  In the classroom domain, we assume that part of the definition of the front of the room is that where one would stand when teaching a class, therefore, we expected the rating for the center point, P2, to be higher in the u-shaped scenario (c) than the rows scenarios (e) and (f).  This is confirmed in the results from Table \ref{tab:point-likert-scores}.  In the military domain,  In stimulus (i) the friendly tanks are positioned between the P2 point and the enemy tanks whereas in stimulus (j) the P2 point is in \textit{no-man's land}\footnote{We use the term no-man's land to describe the unoccupied and contested area between the opposing forces.}.  Given this change in context one would expect a higher ranking for the P2 point in context (i) than in context (j). This is confirmed in Table \ref{tab:point-likert-scores} and is statistically significant $(p<.05)$.  To assess the extent of participants use of simulation in determining the context, we compare the scores the \textit{no-man's land} point between the tanks (j) to the turrets (k) stimuli and the turrent (k) and turrets +1 (l).  The mobility of the friendly tanks should increase the size of the safe area over time resulting in higher ratings in stimuli (j) than (k).  The single turret should offer only temporary protection against the energy tank force, therefore it should not increase the safety rating.  Neither of these results were found in Table \ref{tab:point-likert-scores}.  As discussed in Section \ref{sec:simulation}, we expected ambiguity with the turrets +1 stimuli.  The difference in the rating of P2 between the tanks and turrets scenario provides two alternative explanations regarding how participants interpreted the context:  (1) the turrets were viewed as superior defensive units and, thus, better able to provide safety, or (2) the turrets being fixed could not move away, and thus, establish a more permanent CDSR for safety.  Further experiments are needed to explore these hypotheses. 
+
 
 
 %\begin{table}
@@ -424,7 +432,6 @@ P3 & $\mathbf{4.9024}$ & $\mathbf{4.5122}$ & $\mathbf{4.6585}$ & $\mathbf{4.7073
 %\label{tab:point-likert-scores}
 %\caption{Average Likert Ratings per Point by Domain and stimulus.}
 %\end{table}
-
 
 %\begin{table}
 %\centerline{
@@ -483,7 +490,7 @@ P3 & $\mathbf{4.9024}$ & $\mathbf{4.5122}$ & $\mathbf{4.6585}$ & $\mathbf{4.7073
 %\caption{Two Tailed Two Sample t-tests for flipped stimuli pair trials.}
 %\end{table}
 
-Taken together these results indicate that: (1) for all stimuli there was a location that was considered to be inside the region described by the linguistic term and that other locations were considered to be outside of this region; (2) within each domain the particular location that was considered to be the \textit{sweetspot} was determined by the particular context depicted in the visual stimulus (i.e., changes in the position and orientation of objects with functional significance effected the location of the region); and (3) the impact of the changes in the depicted context was consistent across similar contexts, as shown by the fact that the \textit{sweetspot} flipped from P1 to P3 when the context was flipped.
+
 
 
 
@@ -513,9 +520,8 @@ Taken together these results indicate that: (1) for all stimuli there was a loca
 %
 %-----------------
  
-
-
-
+\subsection{discussion}
+Taken together, these results support the following conclusions. First, people are able to agree on location and area of CDSRs.  This agreement is reduced in situations where the domain knowledge of the context is ambiguous, such as, the circular desk arrangement or the defensive capabilities of a single turret.  Second, changing the context predictably changes the subjects assessments of location, shape and size of the CDSR.  These results were supported by tasks involving people labeling regions as well as rating individual points.  On the other hand, our experiments produced mixed results concerning our hypothesis that people use simulation to evaluate dynamic changes to CDSRs.  Further studies are required to control for the domain knowledge of the participants exploring this question.
 
 \section{Applicability of Previous Work to CDSRs}
 
